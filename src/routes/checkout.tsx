@@ -277,7 +277,7 @@ function CheckoutPage() {
     } catch (err: unknown) {
       console.error("Order placement failed:", err);
       const msg = err instanceof Error ? err.message : "Could not place order";
-      toast.error(`Order failed: ${msg}. You can also call us at +91 9621617360 to place it.`);
+      toast.error(`Order failed: ${msg}. You can also call us at +91 6388354988 to place it.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -316,7 +316,7 @@ function CheckoutPage() {
           </h1>
         </div>
         <a
-          href={telHref(settings?.phone ?? "+919621617360")}
+          href={telHref(settings?.phone ?? "+916388354988")}
           className="flex items-center gap-1.5 rounded-full border border-[#145A45]/30 bg-[#FAF8F2] px-3 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD]"
         >
           <PhoneCall className="size-3.5" /> {lang === "hi" ? "फोन पर ऑर्डर?" : "Order on Phone?"}
@@ -782,10 +782,10 @@ function CheckoutPage() {
               <p>
                 Need help ordering? Call{" "}
                 <a
-                  href={telHref(settings?.phone ?? "+919621617360")}
+                  href={telHref(settings?.phone ?? "+916388354988")}
                   className="font-semibold text-[#145A45] hover:underline"
                 >
-                  +91 9621617360
+                  +91 6388354988
                 </a>
               </p>
             </div>

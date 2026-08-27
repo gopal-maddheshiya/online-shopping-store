@@ -27,10 +27,10 @@ const DAYS: [string, string][] = [
 export function Footer() {
   const { data: s } = useQuery(settingsQuery);
 
-  const phone = s?.phone ?? "+91 9621617360";
+  const phone = s?.phone ?? "+91 6388354988";
   const cleanPhone = phone.replace(/\s+/g, "");
-  const whatsapp = s?.whatsapp ?? "919621617360";
-  const email = s?.email ?? "ashokmaddheshiya51@gmail.com";
+  const whatsapp = s?.whatsapp ?? "916388354988";
+  const email = s?.email ?? "gopalmaddheshiya138@gmail.com";
   const address = s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh";
 
   return (

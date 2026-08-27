@@ -58,8 +58,8 @@ function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const storePhone = settings?.phone ?? "+919621617360";
-  const storeWhatsApp = settings?.whatsapp ?? "919621617360";
+  const storePhone = settings?.phone ?? "+916388354988";
+  const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
   async function fetchOrder(orderNo: string, phone: string) {
     if (!orderNo.trim() || !phone.trim()) return;
@@ -99,7 +99,7 @@ function TrackPage() {
     } catch (err: unknown) {
       console.error("Order lookup error:", err);
       setErrorMsg(
-        "Unable to fetch order details. Please contact the store directly at +91 9621617360.",
+        "Unable to fetch order details. Please contact the store directly at +91 6388354988.",
       );
       setSearchedOrder(null);
     } finally {

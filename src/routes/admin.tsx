@@ -120,6 +120,8 @@ function AdminPage() {
     e.preventDefault();
     // Default demo PIN or password for owner access
     if (
+      adminPin.trim() === "6388" ||
+      adminPin.trim() === "6388354988" ||
       adminPin.trim() === "9621" ||
       adminPin.trim() === "admin123" ||
       adminPin.trim() === "9621617360"
@@ -128,7 +130,7 @@ function AdminPage() {
       localStorage.setItem("agt.admin_session", "unlocked");
       toast.success("Welcome back, Arun Gopal Traders Manager!");
     } else {
-      toast.error("Incorrect Admin PIN. Hint: Use 9621 or your store phone.");
+      toast.error("Incorrect Admin PIN. Hint: Use 6388 or your store phone.");
     }
   }
 
@@ -330,7 +332,7 @@ function AdminPage() {
             <div className="mt-6 border-t border-[#E8E4DA] pt-4 px-2 text-[11px] text-[#6B746F]">
               📍 Maharajganj, Uttar Pradesh
               <br />
-              📞 +91 9621617360
+              📞 +91 6388354988
             </div>
           </aside>
 

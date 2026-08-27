@@ -55,7 +55,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Buy Chakki Atta, Basmati Rice, Mustard Oil, Spices, Pulses & daily Kirana essentials online or by phone (+91 9621617360) with fast delivery in Maharajganj, UP.",
+          "Buy Chakki Atta, Basmati Rice, Mustard Oil, Spices, Pulses & daily Kirana essentials online or by phone (+91 6388354988) with fast delivery in Maharajganj, UP.",
       },
       {
         property: "og:title",
@@ -81,9 +81,9 @@ function PremiumStoreHome() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   const status = isOpenNow(settings);
-  const storePhone = settings?.phone ?? "+91 9621617360";
+  const storePhone = settings?.phone ?? "+91 6388354988";
   const cleanPhone = storePhone.replace(/\s+/g, "");
-  const storeWhatsApp = settings?.whatsapp ?? "919621617360";
+  const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
   // Filter categories
   const parentCategories = categories.filter((c) => !c.parent_id);
@@ -491,7 +491,7 @@ function PremiumStoreHome() {
                 {lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "WhatsApp Quick Order"}
               </p>
               <p className="text-[10px] text-[#0E4333] truncate">
-                {lang === "hi" ? "राशन पर्ची भेजें" : "+91 9621617360"}
+                {lang === "hi" ? "राशन पर्ची भेजें" : "+91 6388354988"}
               </p>
             </div>
           </a>
@@ -983,8 +983,8 @@ function PremiumStoreHome() {
                 </h4>
                 <p className="mt-0.5 text-xs text-[#6B746F]">
                   {lang === "hi"
-                    ? "कॉल या व्हाट्सएप: +91 9621617360"
-                    : "Call or WhatsApp: +91 9621617360"}
+                    ? "कॉल या व्हाट्सएप: +91 6388354988"
+                    : "Call or WhatsApp: +91 6388354988"}
                 </p>
               </div>
             </div>

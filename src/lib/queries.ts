@@ -149,9 +149,9 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   store_name: "Arun Gopal Traders",
   tagline:
     "Your Trusted Local Grocery Store in Maharajganj. Quality products, fair rates, and reliable doorstep delivery.",
-  phone: "+91 9621617360",
-  whatsapp: "919621617360",
-  email: "ashokmaddheshiya51@gmail.com",
+  phone: "+91 6388354988",
+  whatsapp: "916388354988",
+  email: "gopalmaddheshiya138@gmail.com",
   address: "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh",
   maps_link:
     "https://www.google.com/maps/search/?api=1&query=Ramnagar%20Adda%20Bazar%20Road%20Maharajganj%20Uttar%20Pradesh",

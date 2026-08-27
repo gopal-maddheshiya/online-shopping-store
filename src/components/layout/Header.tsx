@@ -47,7 +47,7 @@ export function Header() {
     void navigate({ to: "/shop", search: { q: term.trim() || undefined } as never });
   }
 
-  const storePhone = settings?.phone ?? "+91 9621617360";
+  const storePhone = settings?.phone ?? "+91 6388354988";
   const cleanPhone = storePhone.replace(/\s+/g, "");
 
   const navLinks = [

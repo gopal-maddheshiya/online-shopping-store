@@ -25,12 +25,12 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Need help with grocery delivery, product inquiries, or store pickup? Call +91 9621617360 or visit Arun Gopal Traders at Ramnagar, Adda Bazar Road, Maharajganj.",
+          "Need help with grocery delivery, product inquiries, or store pickup? Call +91 6388354988 or visit Arun Gopal Traders at Ramnagar, Adda Bazar Road, Maharajganj.",
       },
       { property: "og:title", content: "Contact & Store Support — Arun Gopal Traders" },
       {
         property: "og:description",
-        content: "Call +91 9621617360 or message on WhatsApp for instant local kirana assistance.",
+        content: "Call +91 6388354988 or message on WhatsApp for instant local kirana assistance.",
       },
     ],
   }),
@@ -51,10 +51,10 @@ function ContactPage() {
   const { data: s } = useQuery(settingsQuery);
   const status = isOpenNow(s);
 
-  const phone = s?.phone ?? "+91 9621617360";
+  const phone = s?.phone ?? "+91 6388354988";
   const cleanPhone = phone.replace(/\s+/g, "");
-  const whatsapp = s?.whatsapp ?? "919621617360";
-  const email = s?.email ?? "ashokmaddheshiya51@gmail.com";
+  const whatsapp = s?.whatsapp ?? "916388354988";
+  const email = s?.email ?? "gopalmaddheshiya138@gmail.com";
   const address = s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh";
 
   // Help Request Form

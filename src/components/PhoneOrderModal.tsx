@@ -21,8 +21,8 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
   const { items, subtotal } = useCart();
   const { data: settings } = useQuery(settingsQuery);
 
-  const phone = settings?.phone ?? "+919621617360";
-  const whatsapp = settings?.whatsapp ?? "919621617360";
+  const phone = settings?.phone ?? "+916388354988";
+  const whatsapp = settings?.whatsapp ?? "916388354988";
 
   let waMessage = `Namaste Arun Gopal Traders, I want to place a grocery order:`;
   if (items.length > 0) {

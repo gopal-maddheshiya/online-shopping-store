@@ -37,7 +37,7 @@ export function MobileNav() {
     return null;
   }
 
-  const storeWhatsApp = "919621617360";
+  const storeWhatsApp = "916388354988";
 
   const links: NavItem[] = [
     { to: "/", label: lang === "hi" ? "होम" : "Home", icon: Home },

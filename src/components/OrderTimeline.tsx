@@ -29,7 +29,7 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
         </h4>
         <p className="mt-1 text-xs text-muted-foreground">
           If you have questions regarding this cancellation, please contact Arun Gopal Traders at
-          +91 9621617360.
+          +91 6388354988.
         </p>
       </div>
     );

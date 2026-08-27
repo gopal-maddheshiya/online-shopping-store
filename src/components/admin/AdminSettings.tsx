@@ -50,9 +50,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
     if (settings) {
       setStoreName(settings.store_name ?? "Arun Gopal Traders");
       setTagline(settings.tagline ?? "Your Trusted Local Grocery Store");
-      setPhone(settings.phone ?? "+919621617360");
-      setWhatsapp(settings.whatsapp ?? "919621617360");
-      setEmail(settings.email ?? "ashokmaddheshiya51@gmail.com");
+      setPhone(settings.phone ?? "+916388354988");
+      setWhatsapp(settings.whatsapp ?? "916388354988");
+      setEmail(settings.email ?? "gopalmaddheshiya138@gmail.com");
       setAddress(settings.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh");
       setMapsLink(settings.maps_link ?? "");
       setAnnouncement(

@@ -250,7 +250,7 @@ function ProductPage() {
             {/* WhatsApp Quick Order & Direct Call Action */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               <a
-                href={`https://wa.me/919621617360?text=${encodeURIComponent(
+                href={`https://wa.me/916388354988?text=${encodeURIComponent(
                   `Namaste Arun Gopal Traders, I want to order ${qty}x ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for home delivery in Maharajganj.`,
                 )}`}
                 target="_blank"
@@ -261,7 +261,7 @@ function ProductPage() {
               </a>
 
               <a
-                href="tel:+919621617360"
+                href="tel:+916388354988"
                 className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] px-4 text-xs font-bold text-[#145A45] hover:bg-[#DCEBDD] hover:border-[#145A45] active:scale-95 transition-all"
               >
                 <span>{lang === "hi" ? "फोन पर पूछें" : "Call Store"}</span>
