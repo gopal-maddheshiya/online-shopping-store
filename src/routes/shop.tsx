@@ -318,10 +318,10 @@ function Shop() {
         </aside>
 
         {/* Products Grid */}
-        <main className="space-y-4">
+        <main className="min-w-0 w-full max-w-full space-y-4">
           {/* Quick Category Switcher Pills */}
           <div
-            className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-1 touch-pan-x scroll-smooth overscroll-x-contain"
+            className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-1 touch-pan-x scroll-smooth overscroll-x-contain w-full min-w-0 max-w-full"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             <button
