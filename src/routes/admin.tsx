@@ -185,7 +185,7 @@ function AdminPage() {
           </form>
 
           <div className="mt-6 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 text-center text-xs text-[#6B746F]">
-            💡 <strong>Store PIN:</strong> <code>9621</code> or <code>admin123</code>
+            💡 <strong>Store PIN:</strong> <code>6388</code>, <code>9621</code> or <code>admin123</code>
           </div>
 
           <div className="mt-4 text-center">

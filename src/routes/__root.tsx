@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -142,6 +143,8 @@ function RootDocument({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const routerState = useRouterState();
+  const isAdminRoute = routerState.location.pathname.startsWith("/admin");
 
   return (
     <RootDocument>
@@ -150,13 +153,19 @@ function RootComponent() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <div className="flex min-h-screen flex-col pb-16 lg:pb-0">
-                  <Header />
+                <div
+                  className={
+                    isAdminRoute
+                      ? "min-h-screen flex flex-col bg-[#FAF8F2]"
+                      : "flex min-h-screen flex-col pb-16 lg:pb-0"
+                  }
+                >
+                  {!isAdminRoute && <Header />}
                   <main className="flex-1">
                     <Outlet />
                   </main>
-                  <Footer />
-                  <MobileNav />
+                  {!isAdminRoute && <Footer />}
+                  {!isAdminRoute && <MobileNav />}
                 </div>
                 <Toaster position="top-center" richColors />
               </WishlistProvider>
