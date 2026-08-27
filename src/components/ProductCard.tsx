@@ -71,8 +71,16 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
-        className="relative my-2 flex w-full items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F5] border border-[#EFECE6] p-2 transition-all duration-200 group-hover:border-[#18483B]/30 group-hover:bg-white group-hover:shadow-xs shrink-0"
-        style={{ height: "135px", maxHeight: "135px" }}
+        className="relative my-2 flex w-full items-center justify-center overflow-hidden rounded-xl bg-white border border-[#EFECE6] p-2 transition-all duration-200 group-hover:border-[#18483B]/30 group-hover:shadow-xs shrink-0"
+        style={{
+          height: "135px",
+          maxHeight: "135px",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ffffff",
+        }}
       >
         <img
           src={getProductImage(product)}
@@ -81,8 +89,14 @@ export function ProductCard({ product }: { product: Product }) {
           onError={(e) => {
             e.currentTarget.src = "/images/products/aashirvaad-atta.jpg";
           }}
-          className="h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
-          style={{ maxHeight: "120px", maxWidth: "100%", objectFit: "contain" }}
+          className="max-h-[120px] max-w-full object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
+          style={{
+            maxHeight: "120px",
+            maxWidth: "100%",
+            objectFit: "contain",
+            margin: "0 auto",
+            display: "block",
+          }}
         />
         {stock <= 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs">

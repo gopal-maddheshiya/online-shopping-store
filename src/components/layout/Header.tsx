@@ -251,11 +251,11 @@ export function Header() {
             </Sheet>
 
             {/* Brand Logo / Wordmark */}
-            <Link to="/" className="flex flex-col group">
-              <span className="font-sans text-xl font-black tracking-tight text-[#18483B] sm:text-2xl flex items-center gap-1.5">
+            <Link to="/" className="flex flex-col group shrink-0">
+              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#18483B] flex items-center gap-1.5 whitespace-nowrap">
                 Arun Gopal Traders
               </span>
-              <span className="hidden sm:block text-[11px] font-medium text-[#676D68] group-hover:text-[#18483B] transition-colors">
+              <span className="hidden md:block text-[11px] font-medium text-[#676D68] group-hover:text-[#18483B] transition-colors whitespace-nowrap">
                 {lang === "hi"
                   ? "महाराजगंज • शुद्ध एवं विश्वसनीय किराना"
                   : "Maharajganj • Trusted Local Kirana"}
