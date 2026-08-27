@@ -139,58 +139,42 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
         </div>
       </div>
 
-      {/* Inventory Table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground">
-                <th className="py-3 px-4 font-semibold">Grocery Product</th>
-                <th className="py-3 px-4 font-semibold">Pack Variant</th>
-                <th className="py-3 px-4 font-semibold">Unit Price</th>
-                <th className="py-3 px-4 font-semibold">Stock Status</th>
-                <th className="py-3 px-4 text-center font-semibold">Quick Stock Adjustment</th>
-                <th className="py-3 px-4 text-right font-semibold">Direct Set</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredRows.length > 0 ? (
-                filteredRows.map((r) => {
-                  const draftVal = stockChanges[r.variantId] ?? r.currentStock;
-                  const isLow = r.currentStock <= r.threshold && r.currentStock > 0;
-                  const isOut = r.currentStock === 0;
+      {/* Inventory List: Mobile Cards + Desktop Table */}
+      {filteredRows.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+          No items match inventory criteria.
+        </div>
+      ) : (
+        <>
+          {/* Mobile Inventory Cards (< sm) */}
+          <div className="space-y-3 sm:hidden">
+            {filteredRows.map((r) => {
+              const draftVal = stockChanges[r.variantId] ?? r.currentStock;
+              const isLow = r.currentStock <= r.threshold && r.currentStock > 0;
+              const isOut = r.currentStock === 0;
 
-                  return (
-                    <tr key={r.variantId} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={getProductImage({
-                              slug: r.slug,
-                              name: r.productName,
-                              image_url: r.imageUrl,
-                            })}
-                            alt={r.productName}
-                            className="size-10 rounded-lg object-cover bg-muted"
-                          />
-                          <div>
-                            <p className="font-semibold text-foreground">{r.productName}</p>
-                            <p className="text-[10px] text-muted-foreground">
-                              {r.brand || "Local Kirana"}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 font-medium text-foreground">{r.variantLabel}</td>
-
-                      <td className="py-3 px-4 font-display font-semibold text-foreground">
-                        {inr(r.price)}
-                      </td>
-
-                      <td className="py-3 px-4">
+              return (
+                <div
+                  key={r.variantId}
+                  className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={getProductImage({
+                        slug: r.slug,
+                        name: r.productName,
+                        image_url: r.imageUrl,
+                      })}
+                      alt={r.productName}
+                      className="size-12 rounded-xl object-contain bg-white border border-[#EFECE6] p-1 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          {r.variantLabel}
+                        </span>
                         <span
-                          className={`rounded-md px-2 py-0.5 font-bold ${
+                          className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
                             isOut
                               ? "bg-destructive/10 text-destructive"
                               : isLow
@@ -201,78 +185,180 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
                           {isOut
                             ? "Out of Stock"
                             : isLow
-                              ? `Low (${r.currentStock} left)`
+                              ? `Low (${r.currentStock})`
                               : `${r.currentStock} in stock`}
                         </span>
-                      </td>
+                      </div>
+                      <p className="font-semibold text-foreground text-xs leading-snug truncate">
+                        {r.productName}
+                      </p>
+                      <p className="font-display font-extrabold text-foreground text-sm mt-0.5">
+                        {inr(r.price)}
+                      </p>
+                    </div>
+                  </div>
 
-                      <td className="py-3 px-4 text-center">
-                        <div className="inline-flex items-center gap-1.5 rounded-xl border border-border p-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={r.currentStock <= 0 || savingId === r.variantId}
-                            onClick={() => updateStock(r.variantId, r.currentStock - 1)}
-                            className="size-7 rounded-lg"
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+                    <span className="text-xs font-bold text-muted-foreground">Adjust Stock:</span>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/30 px-2 py-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={r.currentStock <= 0 || savingId === r.variantId}
+                        onClick={() => updateStock(r.variantId, r.currentStock - 1)}
+                        className="size-7 rounded-full bg-card shadow-2xs"
+                      >
+                        <Minus className="size-3.5" />
+                      </Button>
+
+                      <span className="w-8 text-center text-sm font-extrabold text-foreground">
+                        {r.currentStock}
+                      </span>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={savingId === r.variantId}
+                        onClick={() => updateStock(r.variantId, r.currentStock + 1)}
+                        className="size-7 rounded-full bg-card shadow-2xs"
+                      >
+                        <Plus className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Inventory Table (>= sm) */}
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                    <th className="py-3 px-4 font-semibold">Grocery Product</th>
+                    <th className="py-3 px-4 font-semibold">Pack Variant</th>
+                    <th className="py-3 px-4 font-semibold">Unit Price</th>
+                    <th className="py-3 px-4 font-semibold">Stock Status</th>
+                    <th className="py-3 px-4 text-center font-semibold">Quick Stock Adjustment</th>
+                    <th className="py-3 px-4 text-right font-semibold">Direct Set</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredRows.map((r) => {
+                    const draftVal = stockChanges[r.variantId] ?? r.currentStock;
+                    const isLow = r.currentStock <= r.threshold && r.currentStock > 0;
+                    const isOut = r.currentStock === 0;
+
+                    return (
+                      <tr key={r.variantId} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getProductImage({
+                                slug: r.slug,
+                                name: r.productName,
+                                image_url: r.imageUrl,
+                              })}
+                              alt={r.productName}
+                              className="size-10 rounded-lg object-cover bg-muted"
+                            />
+                            <div>
+                              <p className="font-semibold text-foreground">{r.productName}</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {r.brand || "Local Kirana"}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4 font-medium text-foreground">{r.variantLabel}</td>
+
+                        <td className="py-3 px-4 font-display font-semibold text-foreground">
+                          {inr(r.price)}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span
+                            className={`rounded-md px-2 py-0.5 font-bold ${
+                              isOut
+                                ? "bg-destructive/10 text-destructive"
+                                : isLow
+                                  ? "bg-warning/10 text-warning"
+                                  : "bg-success/10 text-success"
+                            }`}
                           >
-                            <Minus className="size-3" />
-                          </Button>
-
-                          <span className="w-10 text-center font-bold text-foreground">
-                            {r.currentStock}
+                            {isOut
+                              ? "Out of Stock"
+                              : isLow
+                                ? `Low (${r.currentStock} left)`
+                                : `${r.currentStock} in stock`}
                           </span>
+                        </td>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={savingId === r.variantId}
-                            onClick={() => updateStock(r.variantId, r.currentStock + 1)}
-                            className="size-7 rounded-lg"
-                          >
-                            <Plus className="size-3" />
-                          </Button>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5 justify-end">
-                          <Input
-                            type="number"
-                            value={draftVal}
-                            onChange={(e) =>
-                              setStockChanges((prev) => ({
-                                ...prev,
-                                [r.variantId]: Math.max(0, Number(e.target.value)),
-                              }))
-                            }
-                            className="h-8 w-16 rounded-lg text-center text-xs"
-                          />
-                          {draftVal !== r.currentStock ? (
+                        <td className="py-3 px-4 text-center">
+                          <div className="inline-flex items-center gap-1.5 rounded-xl border border-border p-1">
                             <Button
-                              size="sm"
-                              onClick={() => updateStock(r.variantId, draftVal)}
-                              disabled={savingId === r.variantId}
-                              className="h-8 rounded-lg text-xs font-semibold"
+                              variant="ghost"
+                              size="icon"
+                              disabled={r.currentStock <= 0 || savingId === r.variantId}
+                              onClick={() => updateStock(r.variantId, r.currentStock - 1)}
+                              className="size-7 rounded-lg"
                             >
-                              <Save className="size-3 mr-1" /> Set
+                              <Minus className="size-3" />
                             </Button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    No items match inventory criteria.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+                            <span className="w-10 text-center font-bold text-foreground">
+                              {r.currentStock}
+                            </span>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={savingId === r.variantId}
+                              onClick={() => updateStock(r.variantId, r.currentStock + 1)}
+                              className="size-7 rounded-lg"
+                            >
+                              <Plus className="size-3" />
+                            </Button>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          <div className="inline-flex items-center gap-1.5 justify-end">
+                            <Input
+                              type="number"
+                              value={draftVal}
+                              onChange={(e) =>
+                                setStockChanges((prev) => ({
+                                  ...prev,
+                                  [r.variantId]: Math.max(0, Number(e.target.value)),
+                                }))
+                              }
+                              className="h-8 w-16 rounded-lg text-center text-xs"
+                            />
+                            {draftVal !== r.currentStock ? (
+                              <Button
+                                size="sm"
+                                onClick={() => updateStock(r.variantId, draftVal)}
+                                disabled={savingId === r.variantId}
+                                className="h-8 rounded-lg text-xs font-semibold"
+                              >
+                                <Save className="size-3 mr-1" /> Set
+                              </Button>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

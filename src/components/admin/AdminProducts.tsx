@@ -337,76 +337,40 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
       </div>
 
       {/* Products Table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground">
-                <th className="py-3 px-4 font-semibold">Product</th>
-                <th className="py-3 px-4 font-semibold">Brand &amp; Category</th>
-                <th className="py-3 px-4 font-semibold">Variants / Sizes</th>
-                <th className="py-3 px-4 font-semibold">Price Range</th>
-                <th className="py-3 px-4 font-semibold">Total Stock</th>
-                <th className="py-3 px-4 font-semibold">Status</th>
-                <th className="py-3 px-4 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((p) => {
-                  const cat = categories.find((c) => c.id === p.category_id);
-                  const vars = p.product_variants ?? [];
-                  const totalStock = vars.reduce((s, v) => s + v.stock, 0);
-                  const minPrice = vars.length ? Math.min(...vars.map((v) => Number(v.price))) : 0;
-                  const maxPrice = vars.length ? Math.max(...vars.map((v) => Number(v.price))) : 0;
+      {/* Products List: Mobile Cards + Desktop Table */}
+      {filteredProducts.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+          No products found. Click "Add Product" to add grocery items.
+        </div>
+      ) : (
+        <>
+          {/* Mobile Product Cards (< sm) */}
+          <div className="space-y-3 sm:hidden">
+            {filteredProducts.map((p) => {
+              const cat = categories.find((c) => c.id === p.category_id);
+              const vars = p.product_variants ?? [];
+              const totalStock = vars.reduce((s, v) => s + v.stock, 0);
+              const minPrice = vars.length ? Math.min(...vars.map((v) => Number(v.price))) : 0;
+              const maxPrice = vars.length ? Math.max(...vars.map((v) => Number(v.price))) : 0;
 
-                  return (
-                    <tr key={p.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={getProductImage(p)}
-                            alt={p.name}
-                            className="size-12 rounded-xl object-cover bg-muted"
-                          />
-                          <div className="min-w-0 max-w-[200px]">
-                            <p className="truncate font-semibold text-foreground">{p.name}</p>
-                            <span className="text-[10px] text-muted-foreground font-mono">
-                              /{p.slug}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <p className="font-semibold text-foreground">{p.brand || "—"}</p>
-                        <p className="text-muted-foreground">{cat?.name || "General"}</p>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {vars.map((v) => (
-                            <span
-                              key={v.id}
-                              className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px]"
-                            >
-                              {v.label} ({inr(v.price)})
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-foreground font-display">
-                          {minPrice === maxPrice
-                            ? inr(minPrice)
-                            : `${inr(minPrice)} – ${inr(maxPrice)}`}
+              return (
+                <div
+                  key={p.id}
+                  className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={getProductImage(p)}
+                      alt={p.name}
+                      className="size-14 rounded-xl object-contain bg-white border border-[#EFECE6] p-1 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          {p.brand || "Arun Gopal"}
                         </span>
-                      </td>
-
-                      <td className="py-3 px-4">
                         <span
-                          className={`rounded-md px-2 py-0.5 font-bold ${
+                          className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
                             totalStock === 0
                               ? "bg-destructive/10 text-destructive"
                               : totalStock <= 10
@@ -414,60 +378,203 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                                 : "bg-success/10 text-success"
                           }`}
                         >
-                          {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
+                          {totalStock === 0 ? "Out of Stock" : `${totalStock} in stock`}
                         </span>
-                      </td>
+                      </div>
+                      <p className="font-semibold text-foreground text-xs leading-snug line-clamp-1">
+                        {p.name}
+                      </p>
+                      <p className="font-display font-extrabold text-foreground text-sm mt-0.5">
+                        {minPrice === maxPrice
+                          ? inr(minPrice)
+                          : `${inr(minPrice)} – ${inr(maxPrice)}`}
+                      </p>
+                    </div>
+                  </div>
 
-                      <td className="py-3 px-4">
-                        <button
-                          onClick={() => handleToggleActive(p)}
-                          className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${
-                            p.is_active
-                              ? "bg-success/10 text-success"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {p.is_active ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
-                          {p.is_active ? "Active" : "Hidden"}
-                        </button>
-                      </td>
+                  <div className="flex flex-wrap gap-1 pt-1 border-t border-border">
+                    {vars.map((v) => (
+                      <span
+                        key={v.id}
+                        className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px]"
+                      >
+                        {v.label}: {inr(v.price)}
+                      </span>
+                    ))}
+                  </div>
 
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end gap-1.5">
-                          <Button
-                            onClick={() => openEditModal(p)}
-                            variant="outline"
-                            size="icon"
-                            className="size-7 rounded-lg"
-                            aria-label="Edit"
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+                    <button
+                      onClick={() => handleToggleActive(p)}
+                      className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                        p.is_active
+                          ? "bg-success/10 text-success"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {p.is_active ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+                      {p.is_active ? "Active" : "Hidden"}
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => openEditModal(p)}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 rounded-lg text-xs font-semibold px-3"
+                      >
+                        <Edit2 className="mr-1 size-3.5" /> Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteProduct(p)}
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 rounded-lg text-destructive hover:bg-destructive/10"
+                        aria-label="Delete"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Product Table (>= sm) */}
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                    <th className="py-3 px-4 font-semibold">Product</th>
+                    <th className="py-3 px-4 font-semibold">Brand &amp; Category</th>
+                    <th className="py-3 px-4 font-semibold">Variants / Sizes</th>
+                    <th className="py-3 px-4 font-semibold">Price Range</th>
+                    <th className="py-3 px-4 font-semibold">Total Stock</th>
+                    <th className="py-3 px-4 font-semibold">Status</th>
+                    <th className="py-3 px-4 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredProducts.map((p) => {
+                    const cat = categories.find((c) => c.id === p.category_id);
+                    const vars = p.product_variants ?? [];
+                    const totalStock = vars.reduce((s, v) => s + v.stock, 0);
+                    const minPrice = vars.length
+                      ? Math.min(...vars.map((v) => Number(v.price)))
+                      : 0;
+                    const maxPrice = vars.length
+                      ? Math.max(...vars.map((v) => Number(v.price)))
+                      : 0;
+
+                    return (
+                      <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getProductImage(p)}
+                              alt={p.name}
+                              className="size-12 rounded-xl object-contain bg-white border border-[#EFECE6] p-1"
+                            />
+                            <div className="min-w-0 max-w-[200px]">
+                              <p className="truncate font-semibold text-foreground">{p.name}</p>
+                              <span className="text-[10px] text-muted-foreground font-mono">
+                                /{p.slug}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <p className="font-semibold text-foreground">{p.brand || "—"}</p>
+                          <p className="text-muted-foreground">{cat?.name || "General"}</p>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <div className="flex flex-wrap gap-1">
+                            {vars.map((v) => (
+                              <span
+                                key={v.id}
+                                className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px]"
+                              >
+                                {v.label} ({inr(v.price)})
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span className="font-bold text-foreground font-display">
+                            {minPrice === maxPrice
+                              ? inr(minPrice)
+                              : `${inr(minPrice)} – ${inr(maxPrice)}`}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <span
+                            className={`rounded-md px-2 py-0.5 font-bold ${
+                              totalStock === 0
+                                ? "bg-destructive/10 text-destructive"
+                                : totalStock <= 10
+                                  ? "bg-warning/10 text-warning"
+                                  : "bg-success/10 text-success"
+                            }`}
                           >
-                            <Edit2 className="size-3.5" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteProduct(p)}
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 rounded-lg text-destructive hover:bg-destructive/10"
-                            aria-label="Delete"
+                            {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={() => handleToggleActive(p)}
+                            className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${
+                              p.is_active
+                                ? "bg-success/10 text-success"
+                                : "bg-muted text-muted-foreground"
+                            }`}
                           >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
-                    No products found. Click "Add Product" to add grocery items.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                            {p.is_active ? (
+                              <Eye className="size-3" />
+                            ) : (
+                              <EyeOff className="size-3" />
+                            )}
+                            {p.is_active ? "Active" : "Hidden"}
+                          </button>
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <Button
+                              onClick={() => openEditModal(p)}
+                              variant="outline"
+                              size="icon"
+                              className="size-7 rounded-lg"
+                              aria-label="Edit"
+                            >
+                              <Edit2 className="size-3.5" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteProduct(p)}
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 rounded-lg text-destructive hover:bg-destructive/10"
+                              aria-label="Delete"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Add / Edit Product Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>

@@ -86,82 +86,127 @@ export function AdminCustomers({ orders, onSelectOrder }: AdminCustomersProps) {
         </span>
       </div>
 
-      {/* Customers Table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground">
-                <th className="py-3 px-4 font-semibold">Customer Name</th>
-                <th className="py-3 px-4 font-semibold">Mobile Number</th>
-                <th className="py-3 px-4 font-semibold">Email</th>
-                <th className="py-3 px-4 font-semibold">Total Orders</th>
-                <th className="py-3 px-4 font-semibold">Lifetime Spend</th>
-                <th className="py-3 px-4 font-semibold">Last Order Date</th>
-                <th className="py-3 px-4 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredCustomers.length > 0 ? (
-                filteredCustomers.map((c) => (
-                  <tr key={c.phone} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <span className="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                          {c.name.charAt(0).toUpperCase()}
-                        </span>
-                        <span className="font-semibold text-foreground">{c.name}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-4">
+      {/* Customers List: Mobile Cards + Desktop Table */}
+      {filteredCustomers.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+          No customers found matching search.
+        </div>
+      ) : (
+        <>
+          {/* Mobile Customer Cards (< sm) */}
+          <div className="space-y-3 sm:hidden">
+            {filteredCustomers.map((c) => (
+              <div
+                key={c.phone}
+                className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3"
+              >
+                <div className="flex items-center justify-between border-b border-border pb-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="grid size-8 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {c.name.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <p className="font-semibold text-foreground text-xs leading-snug">{c.name}</p>
                       <a
                         href={telHref(c.phone)}
-                        className="flex items-center gap-1 font-mono text-primary hover:underline"
+                        className="flex items-center gap-1 font-mono text-[11px] text-primary font-bold hover:underline"
                       >
                         <Phone className="size-3" /> +91 {c.phone}
                       </a>
-                    </td>
+                    </div>
+                  </div>
+                  <span className="font-display font-extrabold text-foreground text-sm">
+                    {inr(c.totalSpend)}
+                  </span>
+                </div>
 
-                    <td className="py-3 px-4 text-muted-foreground">{c.email || "—"}</td>
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span className="text-[11px] text-muted-foreground">
+                    {c.orders.length} orders placed
+                  </span>
+                  <Button
+                    onClick={() => setSelectedPhone(c.phone)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-lg text-xs font-semibold px-3"
+                  >
+                    <Eye className="mr-1 size-3.5" /> Order History
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
 
-                    <td className="py-3 px-4">
-                      <span className="rounded-md bg-muted px-2 py-0.5 font-bold">
-                        {c.orders.length} orders
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4 font-display font-bold text-foreground">
-                      {inr(c.totalSpend)}
-                    </td>
-
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {formatDate(c.lastOrderDate)}
-                    </td>
-
-                    <td className="py-3 px-4 text-right">
-                      <Button
-                        onClick={() => setSelectedPhone(c.phone)}
-                        variant="outline"
-                        size="sm"
-                        className="h-7 rounded-lg text-xs font-semibold"
-                      >
-                        <Eye className="mr-1 size-3.5" /> Order History
-                      </Button>
-                    </td>
+          {/* Desktop Customer Table (>= sm) */}
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                    <th className="py-3 px-4 font-semibold">Customer Name</th>
+                    <th className="py-3 px-4 font-semibold">Mobile Number</th>
+                    <th className="py-3 px-4 font-semibold">Email</th>
+                    <th className="py-3 px-4 font-semibold">Total Orders</th>
+                    <th className="py-3 px-4 font-semibold">Lifetime Spend</th>
+                    <th className="py-3 px-4 font-semibold">Last Order Date</th>
+                    <th className="py-3 px-4 text-right font-semibold">Actions</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
-                    No customers found matching search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredCustomers.map((c) => (
+                    <tr key={c.phone} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="grid size-7 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                            {c.name.charAt(0).toUpperCase()}
+                          </span>
+                          <span className="font-semibold text-foreground">{c.name}</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <a
+                          href={telHref(c.phone)}
+                          className="flex items-center gap-1 font-mono text-primary hover:underline"
+                        >
+                          <Phone className="size-3" /> +91 {c.phone}
+                        </a>
+                      </td>
+
+                      <td className="py-3 px-4 text-muted-foreground">{c.email || "—"}</td>
+
+                      <td className="py-3 px-4">
+                        <span className="rounded-md bg-muted px-2 py-0.5 font-bold">
+                          {c.orders.length} orders
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 font-display font-bold text-foreground">
+                        {inr(c.totalSpend)}
+                      </td>
+
+                      <td className="py-3 px-4 text-muted-foreground">
+                        {formatDate(c.lastOrderDate)}
+                      </td>
+
+                      <td className="py-3 px-4 text-right">
+                        <Button
+                          onClick={() => setSelectedPhone(c.phone)}
+                          variant="outline"
+                          size="sm"
+                          className="h-7 rounded-lg text-xs font-semibold"
+                        >
+                          <Eye className="mr-1 size-3.5" /> Order History
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Customer Orders History Modal */}
       {activeCustomer ? (

@@ -136,111 +136,197 @@ export function AdminOrders({
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground">
-                <th className="py-3 px-4 font-semibold">Order ID &amp; Date</th>
-                <th className="py-3 px-4 font-semibold">Customer Details</th>
-                <th className="py-3 px-4 font-semibold">Fulfillment</th>
-                <th className="py-3 px-4 font-semibold">Items</th>
-                <th className="py-3 px-4 font-semibold">Amount &amp; Payment</th>
-                <th className="py-3 px-4 font-semibold">Current Status</th>
-                <th className="py-3 px-4 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4">
-                      <span className="font-mono font-bold text-foreground">{order.order_no}</span>
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatDate(order.created_at)}
-                      </p>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <p className="font-semibold text-foreground">{order.customer_name}</p>
-                      <a
-                        href={telHref(order.customer_phone)}
-                        className="flex items-center gap-1 text-[11px] text-primary hover:underline"
-                      >
-                        <Phone className="size-3" /> +91 {order.customer_phone}
-                      </a>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <span className="font-semibold capitalize text-foreground">
-                        {order.order_type}
-                      </span>
-                      <p className="line-clamp-1 max-w-[160px] text-[10px] text-muted-foreground">
-                        {order.order_type === "delivery"
-                          ? `${order.address?.house ?? ""}, ${order.address?.area ?? ""}`
-                          : "Store Pickup"}
-                      </p>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <span className="font-semibold">{order.order_items?.length ?? 1} items</span>
-                      <p className="line-clamp-1 max-w-[140px] text-[10px] text-muted-foreground">
-                        {order.order_items?.map((i) => i.name).join(", ") || "Groceries"}
-                      </p>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <p className="font-display font-bold text-foreground">{inr(order.total)}</p>
-                      <span className="text-[10px] text-muted-foreground uppercase">
-                        {order.payment_method}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <Select
-                        value={order.status}
-                        onValueChange={(val) => handleStatusChange(order.id, val)}
-                        disabled={updatingId === order.id}
-                      >
-                        <SelectTrigger className="h-7 w-36 rounded-lg text-[11px] font-bold">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="placed">Order Placed</SelectItem>
-                          <SelectItem value="confirmed">Confirmed</SelectItem>
-                          <SelectItem value="preparing">Preparing</SelectItem>
-                          <SelectItem value="ready">Ready</SelectItem>
-                          <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
-                          <SelectItem value="delivered">Delivered</SelectItem>
-                          <SelectItem value="cancelled">Cancelled</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-
-                    <td className="py-3 px-4 text-right">
-                      <Button
-                        onClick={() => setSelectedOrder(order)}
-                        variant="outline"
-                        size="sm"
-                        className="h-7 rounded-lg text-xs font-semibold"
-                      >
-                        <Eye className="mr-1 size-3.5" /> View
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-muted-foreground">
-                    No orders match your filter.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Orders List: Mobile Cards + Desktop Table */}
+      {filteredOrders.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+          No orders match your filter.
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Mobile Order Cards View (< sm) */}
+          <div className="space-y-3 sm:hidden">
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3"
+              >
+                <div className="flex items-center justify-between border-b border-border pb-2.5">
+                  <div>
+                    <span className="font-mono font-bold text-foreground text-sm">
+                      {order.order_no}
+                    </span>
+                    <p className="text-[10px] text-muted-foreground">
+                      {formatDate(order.created_at)}
+                    </p>
+                  </div>
+                  <span className="font-display font-extrabold text-foreground text-sm">
+                    {inr(order.total)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                      Customer
+                    </span>
+                    <p className="font-semibold text-foreground truncate">{order.customer_name}</p>
+                    <a
+                      href={telHref(order.customer_phone)}
+                      className="flex items-center gap-1 text-[11px] text-primary font-bold hover:underline"
+                    >
+                      <Phone className="size-3" /> +91 {order.customer_phone}
+                    </a>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold">
+                      Fulfillment
+                    </span>
+                    <p className="font-semibold capitalize text-foreground">{order.order_type}</p>
+                    <span className="text-[10px] text-muted-foreground uppercase">
+                      {order.payment_method}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+                  <div className="flex-1">
+                    <Select
+                      value={order.status}
+                      onValueChange={(val) => handleStatusChange(order.id, val)}
+                      disabled={updatingId === order.id}
+                    >
+                      <SelectTrigger className="h-8 w-full rounded-lg text-xs font-bold">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="placed">Order Placed</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="preparing">Preparing</SelectItem>
+                        <SelectItem value="ready">Ready</SelectItem>
+                        <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={() => setSelectedOrder(order)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-lg text-xs font-semibold px-3"
+                  >
+                    <Eye className="mr-1 size-3.5" /> View
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (>= sm) */}
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                    <th className="py-3 px-4 font-semibold">Order ID &amp; Date</th>
+                    <th className="py-3 px-4 font-semibold">Customer Details</th>
+                    <th className="py-3 px-4 font-semibold">Fulfillment</th>
+                    <th className="py-3 px-4 font-semibold">Items</th>
+                    <th className="py-3 px-4 font-semibold">Amount &amp; Payment</th>
+                    <th className="py-3 px-4 font-semibold">Current Status</th>
+                    <th className="py-3 px-4 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="font-mono font-bold text-foreground">
+                          {order.order_no}
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </p>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-foreground">{order.customer_name}</p>
+                        <a
+                          href={telHref(order.customer_phone)}
+                          className="flex items-center gap-1 text-[11px] text-primary hover:underline"
+                        >
+                          <Phone className="size-3" /> +91 {order.customer_phone}
+                        </a>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <span className="font-semibold capitalize text-foreground">
+                          {order.order_type}
+                        </span>
+                        <p className="line-clamp-1 max-w-[160px] text-[10px] text-muted-foreground">
+                          {order.order_type === "delivery"
+                            ? `${order.address?.house ?? ""}, ${order.address?.area ?? ""}`
+                            : "Store Pickup"}
+                        </p>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <span className="font-semibold">
+                          {order.order_items?.length ?? 1} items
+                        </span>
+                        <p className="line-clamp-1 max-w-[140px] text-[10px] text-muted-foreground">
+                          {order.order_items?.map((i) => i.name).join(", ") || "Groceries"}
+                        </p>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <p className="font-display font-bold text-foreground">{inr(order.total)}</p>
+                        <span className="text-[10px] text-muted-foreground uppercase">
+                          {order.payment_method}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <Select
+                          value={order.status}
+                          onValueChange={(val) => handleStatusChange(order.id, val)}
+                          disabled={updatingId === order.id}
+                        >
+                          <SelectTrigger className="h-7 w-36 rounded-lg text-[11px] font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="placed">Order Placed</SelectItem>
+                            <SelectItem value="confirmed">Confirmed</SelectItem>
+                            <SelectItem value="preparing">Preparing</SelectItem>
+                            <SelectItem value="ready">Ready</SelectItem>
+                            <SelectItem value="out_for_delivery">Out for Delivery</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+
+                      <td className="py-3 px-4 text-right">
+                        <Button
+                          onClick={() => setSelectedOrder(order)}
+                          variant="outline"
+                          size="sm"
+                          className="h-7 rounded-lg text-xs font-semibold"
+                        >
+                          <Eye className="mr-1 size-3.5" /> View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Order Details Dialog */}
       {selectedOrder ? (
