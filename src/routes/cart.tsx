@@ -294,6 +294,24 @@ function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Checkout Bar (Above Bottom Nav) */}
+      {items.length > 0 && (
+        <div className="fixed bottom-14 left-0 right-0 z-40 border-t border-[#EAE6DF] bg-white/95 backdrop-blur-md p-3 lg:hidden shadow-lg">
+          <div className="container-page flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] text-[#676D68] uppercase font-bold">{t.totalAmount}</p>
+              <p className="text-base font-extrabold text-[#191C1B]">{inr(subtotal + fee)}</p>
+            </div>
+            <Button
+              asChild
+              className="flex-1 rounded-full bg-[#18483B] text-xs font-bold text-white shadow-xs hover:bg-[#133A2F] active:scale-95 transition-all"
+            >
+              <Link to="/checkout">{t.proceedToCheckout} →</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -186,52 +186,88 @@ function ProductPage() {
             )}
           </div>
 
-          {/* Quantity Stepper & Add to Cart Action */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <div className="flex h-10 items-center rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-2">
-              <button
-                type="button"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                aria-label="Decrease"
-                className="flex size-7 items-center justify-center rounded-full text-[#676D68] hover:bg-white transition-colors"
+          {/* Quantity Stepper, Add to Cart & Buy Now Actions */}
+          <div className="space-y-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex h-11 items-center rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-2 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  aria-label="Decrease"
+                  className="flex size-8 items-center justify-center rounded-full text-[#676D68] hover:bg-white active:scale-95 transition-all"
+                >
+                  <Minus className="size-4" />
+                </button>
+                <span className="w-8 text-center text-xs font-bold text-[#191C1B]">{qty}</span>
+                <button
+                  type="button"
+                  aria-label="Increase"
+                  disabled={qty >= (variant?.stock ?? 1)}
+                  onClick={() => setQty((q) => q + 1)}
+                  className="flex size-8 items-center justify-center rounded-full text-[#676D68] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
+                >
+                  <Plus className="size-4" />
+                </button>
+              </div>
+
+              <Button
+                disabled={!variant || variant.stock <= 0}
+                onClick={() => {
+                  if (!variant) return;
+                  for (let i = 0; i < qty; i++) {
+                    add({
+                      variantId: variant.id,
+                      productId: product.id,
+                      slug: product.slug,
+                      name: localizedName,
+                      variantLabel: getVariantLabel(variant.label),
+                      price: Number(variant.price),
+                      mrp: Number(variant.mrp),
+                      imageUrl: getProductImage(product),
+                      stock: variant.stock,
+                    });
+                  }
+                  toast.success(`${qty}x ${localizedName} ${t.added.toLowerCase()}`);
+                }}
+                className="flex-1 h-11 rounded-full bg-[#18483B] px-6 text-xs font-bold text-white shadow-xs hover:bg-[#133A2F] active:scale-95 transition-all"
               >
-                <Minus className="size-3.5" />
-              </button>
-              <span className="w-8 text-center text-xs font-bold text-[#191C1B]">{qty}</span>
-              <button
-                type="button"
-                aria-label="Increase"
-                disabled={qty >= (variant?.stock ?? 1)}
-                onClick={() => setQty((q) => q + 1)}
-                className="flex size-7 items-center justify-center rounded-full text-[#676D68] hover:bg-white transition-colors disabled:opacity-40"
-              >
-                <Plus className="size-3.5" />
-              </button>
+                <ShoppingBag className="mr-2 size-4" /> {t.add}
+              </Button>
             </div>
 
-            <Button
-              disabled={!variant || variant.stock <= 0}
-              onClick={() => {
-                if (!variant) return;
-                for (let i = 0; i < qty; i++) {
-                  add({
-                    variantId: variant.id,
-                    productId: product.id,
-                    slug: product.slug,
-                    name: localizedName,
-                    variantLabel: getVariantLabel(variant.label),
-                    price: Number(variant.price),
-                    mrp: Number(variant.mrp),
-                    imageUrl: getProductImage(product),
-                    stock: variant.stock,
-                  });
-                }
-                toast.success(`${qty}x ${localizedName} ${t.added.toLowerCase()}`);
-              }}
-              className="h-10 rounded-full bg-[#18483B] px-6 text-xs font-bold text-white shadow-sm hover:bg-[#133A2F]"
-            >
-              <ShoppingBag className="mr-2 size-4" /> {t.add}
-            </Button>
+            {/* WhatsApp Quick Order & Direct Call Action */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <a
+                href={`https://wa.me/919621617360?text=${encodeURIComponent(
+                  `Namaste Arun Gopal Traders, I want to order ${qty}x ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for home delivery in Maharajganj.`,
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white shadow-xs hover:bg-[#20ba59] active:scale-95 transition-all"
+              >
+                <span>{lang === "hi" ? "व्हाट्सएप ऑर्डर" : "WhatsApp Order"}</span>
+              </a>
+
+              <a
+                href="tel:+919621617360"
+                className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-4 text-xs font-bold text-[#18483B] hover:bg-[#EBF4F0] hover:border-[#18483B] active:scale-95 transition-all"
+              >
+                <span>{lang === "hi" ? "फोन पर पूछें" : "Call Store"}</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Product Description & Quality Features */}
+          <div className="border-t border-[#EAE6DF] pt-4 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#191C1B]">
+              {lang === "hi" ? "उत्पाद विवरण व शुद्धता" : "Product Details & Purity"}
+            </h3>
+            <p className="text-xs leading-relaxed text-[#676D68]">
+              {product.description ||
+                (lang === "hi"
+                  ? "महाराजगंज के विश्वसनीय किराना स्टोर 'अरुण गोपाल ट्रेडर्स' द्वारा 100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।"
+                  : "100% authentic, hygienically packed, and carefully sourced by Arun Gopal Traders for doorstep delivery in Maharajganj.")}
+            </p>
           </div>
 
           {/* Trust Guarantees */}

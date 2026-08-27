@@ -254,9 +254,40 @@ function AdminPage() {
 
       {/* Main Admin Workspace Grid */}
       <div className="container-page py-6">
+        {/* Mobile Horizontal Tabs Switcher */}
+        <div className="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:hidden">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id !== "orders") setSelectedOrder(null);
+                }}
+                className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-3.5" />
+                <span>{tab.label.split(" ")[0]}</span>
+                {tab.id === "orders" && pendingOrdersCount > 0 ? (
+                  <span className="rounded-full bg-warning px-1.5 py-0.2 text-[9px] font-black text-warning-foreground">
+                    {pendingOrdersCount}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
-          {/* Sidebar Navigation */}
-          <aside className="rounded-3xl border border-border bg-card p-3 shadow-xs lg:sticky lg:top-24 h-fit">
+          {/* Desktop Sidebar Navigation */}
+          <aside className="hidden lg:block rounded-3xl border border-border bg-card p-3 shadow-xs lg:sticky lg:top-24 h-fit">
             <nav className="space-y-1">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
