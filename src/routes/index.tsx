@@ -78,153 +78,12 @@ function PremiumStoreHome() {
   const { items: cartItems, add, setQty } = useCart();
   const navigate = useNavigate();
 
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
-  const [copiedCoupon, setCopiedCoupon] = useState(false);
-  const [spotlightVariantIndex, setSpotlightVariantIndex] = useState(0);
-
-  // Mobile Touch Swipe State for Hero Banner
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchEndX, setTouchEndX] = useState<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.targetTouches[0];
-    if (touch) {
-      setTouchStartX(touch.clientX);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const touch = e.targetTouches[0];
-    if (touch) {
-      setTouchEndX(touch.clientX);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX === null || touchEndX === null) return;
-    const distance = touchStartX - touchEndX;
-    const minSwipeDistance = 45;
-
-    if (distance > minSwipeDistance) {
-      // Swiped left -> next slide
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    } else if (distance < -minSwipeDistance) {
-      // Swiped right -> prev slide
-      setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
-    }
-    setTouchStartX(null);
-    setTouchEndX(null);
-  };
-
-  // Live countdown timer for deal of the day
-  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 5, minutes: 59, seconds: 59 };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const status = isOpenNow(settings);
   const storePhone = settings?.phone ?? "+91 9621617360";
   const cleanPhone = storePhone.replace(/\s+/g, "");
   const storeWhatsApp = settings?.whatsapp ?? "919621617360";
-
-  const HERO_SLIDES = [
-    {
-      id: 1,
-      tag: lang === "hi" ? "🌾 आपकी विश्वसनीय किराना दुकान" : "🌾 Trusted Neighbourhood Kirana",
-      statusLabel: lang === "hi" ? "⏰ फ्लैश ऑफर समाप्त होने में:" : "⏰ Flash Sale Ends In:",
-      showTimer: true,
-      preTitle:
-        lang === "hi"
-          ? "WELCOME50 कूपन के साथ ₹50 की सीधी छूट"
-          : "Flat ₹50 OFF with Code: WELCOME50",
-      mainTitle:
-        lang === "hi"
-          ? "हर दिन की जरूरत, अब आपके घर तक।"
-          : "Everyday essentials, from your trusted local store.",
-      subtitle:
-        lang === "hi"
-          ? "100% शुद्ध चक्की आटा, दालें, सरसों तेल, मसाले और दैनिक राशन। सही तौल, पक्का बिल और आसान होम डिलीवरी।"
-          : "Freshly milled chakki atta, pure pulses, cold-pressed mustard oil and daily grocery staples at genuine prices.",
-      cta: lang === "hi" ? "सामान खरीदें →" : "Shop Groceries Now →",
-      coupon: "WELCOME50",
-      link: "/shop",
-      bgGradient: "from-[#145A45] via-[#104737] to-[#0A3327]",
-      pillBg: "bg-[#E3B341]/20 text-[#E3B341] border-[#E3B341]/40",
-      accentIcon: "🌾",
-      tabLabel: lang === "hi" ? "ताज़ा किराना ऑफर" : "Fresh Staples",
-    },
-    {
-      id: 2,
-      tag: lang === "hi" ? "🚚 सुपरफास्ट लोकल डिलीवरी" : "🚚 EXPRESS LOCAL DELIVERY",
-      statusLabel: lang === "hi" ? "⚡ 30-मिनट डिलीवरी चालू है" : "⚡ 30-Min Fast Delivery Active",
-      showTimer: false,
-      preTitle:
-        lang === "hi" ? "महाराजगंज व रामनगर क्षेत्र में" : "In Maharajganj & Ramnagar Area",
-      mainTitle:
-        lang === "hi"
-          ? "₹499+ के ऑर्डर पर 100% फ्री डिलीवरी"
-          : "100% FREE Home Delivery on ₹499+",
-      subtitle:
-        lang === "hi"
-          ? "आशीर्वाद आटा, फॉर्च्यून तेल, टाटा दालें और मसाले सीधे आपके घर तक। समय पर डिलीवरी, कोई हिडन चार्ज नहीं।"
-          : "Fortune Mustard Oil, Aashirvaad Atta, Tata Dal & Pure Ghee delivered safely to your doorstep.",
-      cta: lang === "hi" ? "किराना सामान देखें →" : "Browse Groceries →",
-      coupon: null,
-      link: "/shop",
-      bgGradient: "from-[#124E3C] via-[#0E3F30] to-[#08291F]",
-      pillBg: "bg-[#DCEBDD]/20 text-[#DCEBDD] border-[#DCEBDD]/40",
-      accentIcon: "🚚",
-      tabLabel: lang === "hi" ? "फ्री होम डिलीवरी" : "Free Delivery",
-    },
-    {
-      id: 3,
-      tag: lang === "hi" ? "💬 दुकान से सीधा संपर्क" : "💬 DIRECT STORE CONTACT",
-      statusLabel: lang === "hi" ? "🟢 2 मिनट में पर्ची पैकिंग" : "🟢 Quick Order Packing",
-      showTimer: false,
-      preTitle: lang === "hi" ? "पर्ची की फोटो या लिस्ट भेजें" : "Send List Photo or Call",
-      mainTitle:
-        lang === "hi"
-          ? "व्हाट्सएप या फोन पर 1-टैप ऑर्डर"
-          : "Order Directly on WhatsApp / Phone",
-      subtitle:
-        lang === "hi"
-          ? "ऐप में सामान खोजने का झंझट छोड़ें — अपनी मासिक राशन पर्ची +91 9621617360 पर भेजें या सीधे कॉल करें।"
-          : "Skip adding items one by one — simply send your monthly grocery list to +91 9621617360 for doorstep packing.",
-      cta: lang === "hi" ? "व्हाट्सएप पर लिस्ट भेजें" : "Send List on WhatsApp",
-      isWhatsApp: true,
-      coupon: null,
-      link: "/contact",
-      bgGradient: "from-[#0E3D30] via-[#0B3026] to-[#061E18]",
-      pillBg: "bg-[#DCEBDD]/20 text-[#DCEBDD] border-[#DCEBDD]/40",
-      accentIcon: "📞",
-      tabLabel: lang === "hi" ? "फोन / व्हाट्सएप ऑर्डर" : "WhatsApp Order",
-    },
-  ];
-
-  // Auto-advance banner carousel every 6 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [HERO_SLIDES.length]);
-
-  function copyCode(code: string) {
-    void navigator.clipboard.writeText(code);
-    setCopiedCoupon(true);
-    toast.success(`Coupon code ${code} copied!`);
-    setTimeout(() => setCopiedCoupon(false), 3000);
-  }
 
   // Filter categories
   const parentCategories = categories.filter((c) => !c.parent_id);
@@ -323,16 +182,6 @@ function PremiumStoreHome() {
       p.name.toLowerCase().includes("gulab jamun"),
   );
 
-  const activeSlide = HERO_SLIDES[currentSlide] ?? HERO_SLIDES[0]!;
-
-  // Spotlight Deal product for right hero widget
-  const spotlightProduct = products.find((p) => p.is_featured) ?? products[0];
-  const spotlightVariants = (spotlightProduct?.product_variants ?? []).filter((v) => v.is_active);
-  const activeSpotlightVariant = spotlightVariants[spotlightVariantIndex] ?? spotlightVariants[0];
-  const spotlightDiscount = activeSpotlightVariant
-    ? discountPercent(Number(activeSpotlightVariant.mrp), Number(activeSpotlightVariant.price))
-    : 0;
-  const spotlightInCart = cartItems.find((i) => i.variantId === activeSpotlightVariant?.id);
 
   // Trending search suggestions
   const TRENDING_SEARCHES = [
@@ -349,10 +198,10 @@ function PremiumStoreHome() {
 
   return (
     <div className="space-y-6 sm:space-y-10 pb-28 overflow-x-hidden">
-      {/* 1. Category Showcase Grid/Cards */}
-      <section className="border-b border-[#E8E4DA] bg-white py-4 sm:py-5 shadow-2xs">
+      {/* 1. Category Showcase Shortcuts Strip */}
+      <section className="border-b border-[#E8E4DA] bg-white py-3.5 sm:py-4 shadow-2xs">
         <div className="container-page">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#6B746F] flex items-center gap-1.5">
               <span>🏪</span>{" "}
               {lang === "hi" ? "कैटेगरी के अनुसार खरीदारी करें" : "Shop by Category"}
@@ -365,12 +214,12 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="no-scrollbar flex items-center gap-3 overflow-x-auto px-1 py-1">
+          <div className="no-scrollbar flex items-center gap-2.5 sm:gap-3 overflow-x-auto px-1 py-1">
             {catLoading
               ? Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 min-w-[5.5rem]">
-                    <Skeleton className="size-16 rounded-2xl" />
-                    <Skeleton className="h-3 w-16" />
+                  <div key={i} className="flex flex-col items-center gap-2 min-w-[5.2rem]">
+                    <Skeleton className="size-14 sm:size-16 rounded-2xl" />
+                    <Skeleton className="h-3 w-14" />
                   </div>
                 ))
               : parentCategories.map((c) => (
@@ -378,9 +227,9 @@ function PremiumStoreHome() {
                     key={c.id}
                     to="/shop"
                     search={{ category: c.slug }}
-                    className="group flex flex-col items-center gap-2 min-w-[5.4rem] sm:min-w-[6.4rem] shrink-0 text-center transition-all hover:-translate-y-1"
+                    className="group flex flex-col items-center gap-1.5 min-w-[5.2rem] sm:min-w-[6.2rem] shrink-0 text-center transition-all hover:-translate-y-1"
                   >
-                    <div className="relative flex size-16 sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-1 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                    <div className="relative flex size-14 sm:size-18 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-1 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
                       <img
                         src={getCategoryThumbnail(c)}
                         alt={c.name}
@@ -388,7 +237,7 @@ function PremiumStoreHome() {
                         className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-semibold text-[#1F2924] group-hover:text-[#145A45] line-clamp-1 max-w-[6.2rem]">
+                    <span className="text-[11px] sm:text-xs font-semibold text-[#1F2924] group-hover:text-[#145A45] line-clamp-1 max-w-[5.8rem]">
                       {getCategoryName(c.name, c.slug)}
                     </span>
                   </Link>
@@ -397,479 +246,232 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      {/* 2. Top Hero Section with Slider & Deal Spotlight */}
+      {/* 2. NEW STATIC HERO: Premium Local Grocery Showcase (One Hero = One Message) */}
       <section className="container-page pt-1">
-        <div className="grid gap-4 lg:grid-cols-[1fr_21.5rem] items-stretch">
-          {/* Left Column: Interactive Swipeable Banner Slider with Locked Height */}
-          <div
-            className="relative overflow-hidden rounded-3xl shadow-lg border border-[#145A45]/30 flex flex-col justify-between select-none bg-[#145A45]"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* Horizontal Sliding Track */}
-            <div
-              className="flex w-full transition-transform duration-500 ease-out items-stretch"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {HERO_SLIDES.map((slide) => (
-                <div
-                  key={slide.id}
-                  className={`w-full shrink-0 relative flex flex-col justify-between bg-gradient-to-br ${slide.bgGradient} p-5 sm:p-8 md:p-10 text-white min-h-[380px] sm:min-h-[400px] md:min-h-[430px] overflow-hidden`}
-                >
-                  {/* Subtle ambient lighting */}
-                  <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-[#DCEBDD]/10 blur-3xl" />
-                  <div className="pointer-events-none absolute -left-16 -bottom-16 size-80 rounded-full bg-[#E3B341]/10 blur-3xl" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#145A45] via-[#104838] to-[#0A3327] border border-[#145A45]/30 shadow-lg text-white">
+          {/* Ambient Warm Sunlight & Soft Leaves Glow */}
+          <div className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-[#DCEBDD]/15 blur-3xl" />
+          <div className="pointer-events-none absolute -left-20 -bottom-20 size-80 rounded-full bg-[#E3B341]/10 blur-3xl" />
 
-                  <div className="relative z-10 grid md:grid-cols-[1fr_auto] gap-6 items-center flex-1">
-                    {/* Left: Text Content with Uniform Height Rhythm */}
-                    <div className="max-w-xl flex flex-col justify-between h-full space-y-2.5 sm:space-y-3">
-                      {/* Top Eyebrow Badge & Contextual Status */}
-                      <div className="flex flex-wrap items-center gap-2 min-h-[28px]">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-[11px] font-bold tracking-wide backdrop-blur-md ${slide.pillBg}`}
-                        >
-                          <Sparkles className="size-3.5" />
-                          <span>{slide.tag}</span>
-                        </span>
-
-                        {/* Contextual Status / Timer Pill */}
-                        {slide.showTimer ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/40 border border-[#E3B341]/50 px-3 py-1 text-[11px] font-mono font-bold text-[#E3B341] backdrop-blur-md shadow-2xs">
-                            <Timer className="size-3.5 text-[#E3B341] animate-pulse" />
-                            <span className="font-sans font-medium text-amber-100/90 mr-0.5">
-                              {slide.statusLabel}
-                            </span>
-                            <span>
-                              {String(timeLeft.hours).padStart(2, "0")}:
-                              {String(timeLeft.minutes).padStart(2, "0")}:
-                              {String(timeLeft.seconds).padStart(2, "0")}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/35 border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/95 backdrop-blur-md shadow-2xs">
-                            <span>{slide.statusLabel}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Clear Typography Hierarchy: Subheading + Headline */}
-                      <div className="space-y-1 min-h-[62px] sm:min-h-[76px] flex flex-col justify-center">
-                        <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#E3B341] drop-shadow-2xs">
-                          {slide.preTitle}
-                        </p>
-                        <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
-                          {slide.mainTitle}
-                        </h1>
-                      </div>
-
-                      <p className="text-xs sm:text-sm text-white/90 leading-relaxed max-w-lg min-h-[36px] sm:min-h-[40px] line-clamp-2 sm:line-clamp-none">
-                        {slide.subtitle}
-                      </p>
-
-                      {/* Benefit Row */}
-                      <div className="min-h-[36px] flex items-center">
-                        {slide.coupon ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => copyCode(slide.coupon!)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-[#E3B341]/60 px-3.5 py-1.5 text-xs font-mono font-bold text-[#E3B341] shadow-sm hover:bg-black/60 transition-colors cursor-pointer active:scale-95"
-                            >
-                              <Tag className="size-3.5 text-[#E3B341]" />
-                              <span>Code: {slide.coupon}</span>
-                              {copiedCoupon ? (
-                                <span className="flex items-center gap-1 text-[#DCEBDD] font-sans text-[11px]">
-                                  <Check className="size-3.5" />{" "}
-                                  {lang === "hi" ? "कॉपी हो गया!" : "COPIED!"}
-                                </span>
-                              ) : (
-                                <Copy className="size-3.5 text-white/80" />
-                              )}
-                            </button>
-                            <span className="text-[11px] text-white/80 font-medium">
-                              {lang === "hi" ? "(टैप करके कूपन कोड कॉपी करें)" : "(Tap to copy)"}
-                            </span>
-                          </div>
-                        ) : slide.id === 2 ? (
-                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/35 border border-[#DCEBDD]/40 px-3.5 py-1.5 text-xs font-medium text-[#DCEBDD] shadow-sm">
-                            <Truck className="size-3.5 text-[#DCEBDD]" />
-                            <span>
-                              {lang === "hi"
-                                ? "₹499+ के ऑर्डर पर 0 डिलीवरी शुल्क • सीधा घर तक"
-                                : "Zero Delivery Fee on ₹499+ • Doorstep Delivery"}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/35 border border-[#DCEBDD]/40 px-3.5 py-1.5 text-xs font-medium text-[#DCEBDD] shadow-sm">
-                            <PhoneCall className="size-3.5 text-[#DCEBDD]" />
-                            <span>
-                              {lang === "hi"
-                                ? "फोन / व्हाट्सएप: +91 9621617360 पर तुरंत संपर्क"
-                                : "Call / WhatsApp: +91 9621617360"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="pt-2 flex flex-wrap items-center gap-3">
-                        {slide.isWhatsApp ? (
-                          <Button
-                            asChild
-                            size="lg"
-                            className="rounded-full bg-white text-[#145A45] font-extrabold px-6 sm:px-7 py-2.5 sm:py-3 text-xs shadow-xl hover:bg-[#FAF8F2] transition-all hover:scale-105"
-                          >
-                            <a
-                              href={waHref(
-                                storeWhatsApp,
-                                "Namaste Arun Gopal Traders, I want to send my grocery list.",
-                              )}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <MessageCircle className="mr-2 size-4 fill-[#145A45] text-[#145A45]" /> {slide.cta}
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button
-                            asChild
-                            size="lg"
-                            className="rounded-full bg-white px-6 sm:px-7 py-2.5 sm:py-3 text-xs font-extrabold text-[#145A45] shadow-xl hover:bg-[#FAF8F2] transition-all hover:scale-105 active:scale-95"
-                          >
-                            <Link to={slide.link}>
-                              <ShoppingBag className="mr-2 size-4 text-[#145A45]" /> {slide.cta}
-                            </Link>
-                          </Button>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => setOrderModalOpen(true)}
-                          className="rounded-full border border-white/40 bg-white/15 px-4 py-2 sm:py-2.5 text-xs font-bold text-white backdrop-blur-xs hover:bg-white/25 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-                        >
-                          <PhoneCall className="size-3.5 text-[#E3B341]" /> {t.orderOnPhone}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Right: Fresh Grocery Showcase Podium */}
-                    <div className="hidden md:flex flex-col items-center justify-center relative shrink-0">
-                      <div className="relative w-64 lg:w-72 rounded-3xl bg-black/25 backdrop-blur-md p-4 border border-white/20 shadow-2xl overflow-hidden flex flex-col items-center">
-                        {/* Ambient Glow */}
-                        <div className="pointer-events-none absolute -top-10 inset-x-0 h-32 rounded-full bg-[#DCEBDD]/15 blur-2xl" />
-
-                        {/* Platform Top Badge */}
-                        <div className="relative z-10 mb-3 flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md border border-white/20">
-                          <Sparkles className="size-3 text-[#E3B341]" />
-                          <span>
-                            {lang === "hi"
-                              ? "100% शुद्ध ताज़ा किराना"
-                              : "100% Pure Fresh Groceries"}
-                          </span>
-                        </div>
-
-                        {/* Counter Showcase */}
-                        <div className="relative z-10 flex items-end justify-center gap-2 w-full pt-1 pb-1">
-                          {/* Product 1: Fortune Oil */}
-                          <div className="flex flex-col items-center group/item">
-                            <div className="w-16 sm:w-20 h-28 rounded-xl bg-white p-1.5 shadow-lg border border-white/60 flex items-center justify-center transition-transform group-hover/item:scale-105">
-                              <img
-                                src="/images/products/fortune-mustard-oil.jpg"
-                                alt="Fortune Mustard Oil"
-                                className="size-full object-contain"
-                              />
-                            </div>
-                            <div className="w-14 h-1.5 bg-black/50 rounded-full blur-[2px] mt-1" />
-                            <span className="text-[9px] font-bold text-white/90 mt-1 text-center">
-                              {lang === "hi" ? "सरसों तेल" : "Mustard Oil"}
-                            </span>
-                          </div>
-
-                          {/* Product 2: Aashirvaad Atta */}
-                          <div className="flex flex-col items-center group/item z-10 -mx-1">
-                            <div className="w-20 sm:w-24 h-32 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#E3B341] flex items-center justify-center transition-transform group-hover/item:scale-105 relative">
-                              <span className="absolute -top-2 rounded-full bg-[#E3B341] px-2 py-0.2 text-[8px] font-black text-[#1F2924] uppercase tracking-wider shadow-xs">
-                                {lang === "hi" ? "सर्वश्रेष्ठ" : "Bestseller"}
-                              </span>
-                              <img
-                                src="/images/products/aashirvaad-atta.jpg"
-                                alt="Aashirvaad Atta"
-                                className="size-full object-contain"
-                              />
-                            </div>
-                            <div className="w-20 h-2 bg-black/60 rounded-full blur-[2px] mt-1" />
-                            <span className="text-[10px] font-extrabold text-[#E3B341] mt-1 text-center">
-                              {lang === "hi" ? "चक्की आटा" : "Chakki Atta"}
-                            </span>
-                          </div>
-
-                          {/* Product 3: Amul Desi Ghee */}
-                          <div className="flex flex-col items-center group/item">
-                            <div className="w-16 sm:w-20 h-28 rounded-xl bg-white p-1.5 shadow-lg border border-white/60 flex items-center justify-center transition-transform group-hover/item:scale-105">
-                              <img
-                                src="/images/products/amul-desi-ghee.jpg"
-                                alt="Amul Pure Desi Ghee"
-                                className="size-full object-contain"
-                              />
-                            </div>
-                            <div className="w-14 h-1.5 bg-black/50 rounded-full blur-[2px] mt-1" />
-                            <span className="text-[9px] font-bold text-white/90 mt-1 text-center">
-                              {lang === "hi" ? "देसी घी" : "Desi Ghee"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Base Surface */}
-                        <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent mt-1" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Interactive Offer Switcher Bar */}
-            <div className="border-t border-white/15 bg-black/35 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-              {/* Offer Category Pills */}
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                {HERO_SLIDES.map((slide, idx) => (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => setCurrentSlide(idx)}
-                    className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
-                      currentSlide === idx
-                        ? "bg-white text-[#145A45] shadow-xs scale-105"
-                        : "bg-white/10 text-white/80 hover:bg-white/20"
-                    }`}
-                  >
-                    <span>{slide.accentIcon}</span>
-                    <span>{slide.tabLabel}</span>
-                  </button>
-                ))}
+          {/* Hero Content Grid: Clean & Viewport-friendly */}
+          <div className="relative z-10 p-5 sm:p-8 md:p-10 lg:p-12 grid gap-6 lg:grid-cols-[1.15fr_1fr] items-center">
+            {/* Left Column: Brand, Headline, Benefits, CTAs */}
+            <div className="flex flex-col items-start justify-center space-y-3 sm:space-y-4 max-w-xl">
+              {/* Brand / Trust Label */}
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#DCEBDD]/20 border border-[#DCEBDD]/30 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-[#DCEBDD] backdrop-blur-xs">
+                <Sparkles className="size-3.5 text-[#E3B341]" />
+                <span>
+                  {lang === "hi"
+                    ? "🌿 आपकी भरोसेमंद किराना दुकान"
+                    : "🌿 Your Trusted Neighbourhood Kirana"}
+                </span>
               </div>
 
-              {/* Slider Dots + Arrows */}
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Dots indicator */}
-                <div className="flex items-center gap-1.5">
-                  {HERO_SLIDES.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setCurrentSlide(idx)}
-                      aria-label={`Go to slide ${idx + 1}`}
-                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                        currentSlide === idx ? "w-5 bg-[#E3B341]" : "w-1.5 bg-white/40"
-                      }`}
-                    />
-                  ))}
+              {/* Main Headline */}
+              <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                {lang === "hi" ? (
+                  <>
+                    हर दिन की जरूरत,<br />
+                    <span className="text-[#E3B341]">अब आपके घर तक।</span>
+                  </>
+                ) : (
+                  <>
+                    Everyday Grocery Essentials,<br />
+                    <span className="text-[#E3B341]">Delivered to Your Doorstep.</span>
+                  </>
+                )}
+              </h1>
+
+              {/* Supporting Text */}
+              <p className="text-xs sm:text-sm md:text-base text-white/90 leading-relaxed max-w-lg">
+                {lang === "hi"
+                  ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का जरूरी सामान — आसान ऑनलाइन ऑर्डर के साथ।"
+                  : "Fresh chakki atta, pulses, mustard oil, spices & household staples with quick doorstep delivery in Maharajganj."}
+              </p>
+
+              {/* Main Customer Offer */}
+              <div className="inline-flex items-center gap-2 rounded-xl bg-black/30 border border-[#E3B341]/50 px-3.5 py-1.5 text-xs font-bold text-[#E3B341] backdrop-blur-xs shadow-2xs">
+                <Truck className="size-4 text-[#E3B341]" />
+                <span>
+                  {lang === "hi"
+                    ? "₹499+ के ऑर्डर पर FREE DELIVERY"
+                    : "FREE Home Delivery on Orders ₹499+"}
+                </span>
+              </div>
+
+              {/* Primary & Secondary Action Buttons */}
+              <div className="pt-1.5 flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-full bg-white px-6 sm:px-8 py-3 text-xs sm:text-sm font-black text-[#145A45] shadow-xl hover:bg-[#FAF8F2] hover:scale-105 active:scale-95 transition-all"
+                >
+                  <Link to="/shop">
+                    <ShoppingBag className="mr-2 size-4 text-[#145A45]" />
+                    {lang === "hi" ? "सामान खरीदें →" : "Shop Groceries Now →"}
+                  </Link>
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setOrderModalOpen(true)}
+                  className="rounded-full border border-white/40 bg-white/15 px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-white/25 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <PhoneCall className="size-3.5 sm:size-4 text-[#E3B341]" />
+                  <span>{lang === "hi" ? "फोन पर ऑर्डर करें" : "Order by Phone"}</span>
+                </button>
+              </div>
+
+              {/* Desktop Supporting Micro-Row */}
+              <div className="hidden lg:flex items-center gap-3 pt-3 border-t border-white/15 text-[11px] text-white/80 font-medium">
+                <span className="flex items-center gap-1">
+                  <Truck className="size-3.5 text-[#DCEBDD]" />{" "}
+                  {lang === "hi" ? "30 मिनट होम डिलीवरी" : "30-Min Fast Delivery"}
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="size-3.5 text-[#DCEBDD]" />{" "}
+                  {lang === "hi" ? "100% शुद्ध व असली" : "100% Pure & Authentic"}
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Phone className="size-3.5 text-[#E3B341]" />{" "}
+                  {lang === "hi" ? "फोन / WhatsApp ऑर्डर" : "Call & WhatsApp Support"}
+                </span>
+              </div>
+            </div>
+
+            {/* Right Column: Premium Grocery Showcase Composition */}
+            <div className="relative flex items-center justify-center pt-2 lg:pt-0">
+              <div className="relative w-full max-w-sm lg:max-w-md rounded-3xl bg-black/25 backdrop-blur-md p-4 sm:p-5 border border-white/20 shadow-2xl flex flex-col items-center">
+                {/* Ambient Glow */}
+                <div className="pointer-events-none absolute -top-8 inset-x-0 h-28 rounded-full bg-[#DCEBDD]/20 blur-2xl" />
+
+                {/* Top Badge */}
+                <div className="relative z-10 mb-3 flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] sm:text-[11px] font-bold text-white backdrop-blur-md border border-white/25">
+                  <Sparkles className="size-3 text-[#E3B341]" />
+                  <span>
+                    {lang === "hi"
+                      ? "100% शुद्ध ताज़ा किराना राशन"
+                      : "100% Pure Fresh Grocery Staples"}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-1 ml-1">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCurrentSlide(
-                        (prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length,
-                      )
-                    }
-                    aria-label="Previous slide"
-                    className="flex size-6 sm:size-7 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30 active:scale-95 transition-all cursor-pointer"
+                {/* 3-Item Real Grocery Product Showcase Stage */}
+                <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 items-end w-full pt-1 pb-2">
+                  {/* Product 1: Fortune Mustard Oil */}
+                  <Link
+                    to="/shop"
+                    search={{ category: "oil-ghee" }}
+                    className="group flex flex-col items-center text-center transition-transform hover:scale-105"
                   >
-                    <ChevronLeft className="size-3.5 sm:size-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
-                    aria-label="Next slide"
-                    className="flex size-6 sm:size-7 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30 active:scale-95 transition-all cursor-pointer"
+                    <div className="w-full aspect-[3/4] rounded-2xl bg-white p-2 shadow-lg border border-white/60 flex items-center justify-center">
+                      <img
+                        src="/images/products/fortune-mustard-oil.jpg"
+                        alt="Fortune Mustard Oil"
+                        className="size-full object-contain"
+                      />
+                    </div>
+                    <div className="w-4/5 h-1.5 bg-black/50 rounded-full blur-[2px] mt-1.5" />
+                    <span className="text-[10px] sm:text-xs font-bold text-white mt-1 line-clamp-1">
+                      {lang === "hi" ? "सरसों तेल" : "Mustard Oil"}
+                    </span>
+                  </Link>
+
+                  {/* Product 2: Aashirvaad Chakki Atta (Center Stage) */}
+                  <Link
+                    to="/shop"
+                    search={{ category: "flour-atta" }}
+                    className="group flex flex-col items-center text-center z-10 -mx-1 transition-transform hover:scale-105"
                   >
-                    <ChevronRight className="size-3.5 sm:size-4" />
-                  </button>
+                    <div className="w-full aspect-[3/4] rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#E3B341] flex items-center justify-center relative">
+                      <span className="absolute -top-2 rounded-full bg-[#E3B341] px-2 py-0.5 text-[8px] font-black text-[#1F2924] uppercase tracking-wider shadow-xs">
+                        {lang === "hi" ? "सर्वश्रेष्ठ" : "Bestseller"}
+                      </span>
+                      <img
+                        src="/images/products/aashirvaad-atta.jpg"
+                        alt="Aashirvaad Chakki Atta"
+                        className="size-full object-contain"
+                      />
+                    </div>
+                    <div className="w-full h-2 bg-black/60 rounded-full blur-[2px] mt-1.5" />
+                    <span className="text-[11px] sm:text-xs font-extrabold text-[#E3B341] mt-1 line-clamp-1">
+                      {lang === "hi" ? "चक्की आटा" : "Chakki Atta"}
+                    </span>
+                  </Link>
+
+                  {/* Product 3: Amul Desi Ghee */}
+                  <Link
+                    to="/shop"
+                    search={{ category: "oil-ghee" }}
+                    className="group flex flex-col items-center text-center transition-transform hover:scale-105"
+                  >
+                    <div className="w-full aspect-[3/4] rounded-2xl bg-white p-2 shadow-lg border border-white/60 flex items-center justify-center">
+                      <img
+                        src="/images/products/amul-desi-ghee.jpg"
+                        alt="Amul Pure Desi Ghee"
+                        className="size-full object-contain"
+                      />
+                    </div>
+                    <div className="w-4/5 h-1.5 bg-black/50 rounded-full blur-[2px] mt-1.5" />
+                    <span className="text-[10px] sm:text-xs font-bold text-white mt-1 line-clamp-1">
+                      {lang === "hi" ? "शुद्ध देसी घी" : "Pure Ghee"}
+                    </span>
+                  </Link>
+                </div>
+
+                {/* Base Surface Line */}
+                <div className="w-full h-1 rounded-full bg-gradient-to-r from-transparent via-white/40 to-transparent mt-1" />
+
+                <div className="mt-2 text-[10px] text-white/75 font-medium text-center">
+                  📍 Ramnagar, Adda Bazar Road, Maharajganj
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Right Column: "Deal of the Day" Live Product Spotlight Box */}
-          {spotlightProduct && activeSpotlightVariant && (
-            <div className="card-base hidden lg:flex flex-col justify-between p-5 bg-white border border-[#E8E4DA] relative overflow-hidden shadow-xs">
-              {/* Spotlight Header */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E4DA]">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#145A45] uppercase tracking-wider">
-                  <span className="flex size-2 rounded-full bg-[#E3B341] animate-ping" />
-                  <Flame className="size-4 text-[#E3B341] fill-[#E3B341]" />
-                  {lang === "hi" ? "आज का खास ऑफर" : "Deal of the Day"}
-                </span>
-                <span className="rounded-full bg-[#DCEBDD] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
-                  {spotlightDiscount}% {t.off}
-                </span>
-              </div>
-
-              {/* Product Image with Floating Savings Badge */}
-              <Link
-                to="/product/$slug"
-                params={{ slug: spotlightProduct.slug }}
-                className="group relative my-2.5 flex aspect-square w-full max-h-48 items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 transition-all duration-200 group-hover:border-[#145A45]/40"
-              >
-                <img
-                  src={getProductImage(spotlightProduct)}
-                  alt={getProductName(spotlightProduct.name, spotlightProduct.slug)}
-                  className="size-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
-                />
-                {activeSpotlightVariant.mrp > activeSpotlightVariant.price && (
-                  <span className="absolute top-2.5 left-2.5 rounded-full bg-[#15803D] px-2.5 py-0.5 text-[10px] font-bold text-white shadow-xs">
-                    {t.save} ₹
-                    {Math.round(activeSpotlightVariant.mrp - activeSpotlightVariant.price)}
-                  </span>
-                )}
-              </Link>
-
-              {/* Details & Variant Pills */}
-              <div>
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-[#6B746F]">
-                  <span>{spotlightProduct.brand}</span>
-                  <span className="flex items-center gap-1 text-[#145A45]">
-                    <Star className="size-3 fill-[#E3B341] text-[#E3B341]" /> 4.9 (120+)
-                  </span>
-                </div>
-
-                <Link
-                  to="/product/$slug"
-                  params={{ slug: spotlightProduct.slug }}
-                  className="font-sans text-sm font-bold text-[#1F2924] hover:text-[#145A45] line-clamp-1 mt-0.5"
-                >
-                  {getProductName(spotlightProduct.name, spotlightProduct.slug)}
-                </Link>
-
-                {/* Variant Selector Pills */}
-                {spotlightVariants.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {spotlightVariants.map((v, i) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSpotlightVariantIndex(i)}
-                        className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
-                          i === spotlightVariantIndex
-                            ? "border-[#145A45] bg-[#145A45] text-white"
-                            : "border-[#E8E4DA] bg-white text-[#6B746F] hover:border-[#145A45]"
-                        }`}
-                      >
-                        {getVariantLabel(v.label)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Price Row */}
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-lg font-extrabold text-[#1F2924]">
-                    {inr(activeSpotlightVariant.price)}
-                  </span>
-                  {activeSpotlightVariant.mrp > activeSpotlightVariant.price && (
-                    <span className="text-xs text-[#6B746F] line-through">
-                      {inr(activeSpotlightVariant.mrp)}
-                    </span>
-                  )}
-                  <span className="text-[11px] font-semibold text-[#15803D] ml-auto">
-                    {lang === "hi" ? "🔥 स्टॉक में उपलब्ध" : "🔥 In Stock"}
-                  </span>
-                </div>
-
-                {/* Instant Add to Cart / Stepper */}
-                <div className="mt-3">
-                  {spotlightInCart ? (
-                    <div className="flex h-9 items-center justify-between rounded-full border border-[#145A45] bg-[#DCEBDD] px-3">
-                      <button
-                        type="button"
-                        onClick={() => setQty(spotlightInCart.variantId, spotlightInCart.qty - 1)}
-                        className="flex size-6 items-center justify-center rounded-full text-[#145A45] hover:bg-white transition-colors"
-                      >
-                        <Minus className="size-3.5" />
-                      </button>
-                      <span className="text-xs font-bold text-[#145A45]">
-                        {spotlightInCart.qty} {lang === "hi" ? "जोड़ा गया" : "Added"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setQty(spotlightInCart.variantId, spotlightInCart.qty + 1)}
-                        className="flex size-6 items-center justify-center rounded-full text-[#145A45] hover:bg-white transition-colors"
-                      >
-                        <Plus className="size-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        add({
-                          variantId: activeSpotlightVariant.id,
-                          productId: spotlightProduct.id,
-                          slug: spotlightProduct.slug,
-                          name: getProductName(spotlightProduct.name, spotlightProduct.slug),
-                          variantLabel: getVariantLabel(activeSpotlightVariant.label),
-                          price: Number(activeSpotlightVariant.price),
-                          mrp: Number(activeSpotlightVariant.mrp),
-                          imageUrl: getProductImage(spotlightProduct),
-                          stock: activeSpotlightVariant.stock,
-                        });
-                        toast.success(
-                          `${getProductName(spotlightProduct.name, spotlightProduct.slug)} added to cart`,
-                        );
-                      }}
-                      className="w-full rounded-full bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
-                    >
-                      <Plus className="mr-1 size-3.5" /> {t.add}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+      </section>
 
-        {/* 4-Item Trust & Assurance Ribbon under Hero */}
-        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
+      {/* 3. TRUST / SERVICE STRIP (Compact & Clean) */}
+      <section className="container-page">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          <div className="card-base flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-white border border-[#E8E4DA]">
+            <div className="grid size-8 sm:size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <Truck className="size-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#1F2924] truncate">
                 {lang === "hi" ? "30 मिनट होम डिलीवरी" : "30-Min Fast Delivery"}
               </p>
-              <p className="text-[10px] text-[#6B746F]">
+              <p className="text-[10px] text-[#6B746F] truncate">
                 {lang === "hi" ? "रामनगर व महाराजगंज में" : "In Ramnagar & City"}
               </p>
             </div>
           </div>
 
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
+          <div className="card-base flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-white border border-[#E8E4DA]">
+            <div className="grid size-8 sm:size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <Award className="size-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#1F2924] truncate">
                 {lang === "hi" ? "100% शुद्ध एवं असली" : "100% Pure & Authentic"}
               </p>
-              <p className="text-[10px] text-[#6B746F]">
+              <p className="text-[10px] text-[#6B746F] truncate">
                 {lang === "hi" ? "सीधे मंडी व ब्रांड से" : "Fresh Mandi Sourcing"}
               </p>
             </div>
           </div>
 
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
+          <div className="card-base flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-white border border-[#E8E4DA]">
+            <div className="grid size-8 sm:size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <ShieldCheck className="size-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#1F2924] truncate">
                 {lang === "hi" ? "कैश ऑन डिलीवरी / UPI" : "Pay on Delivery / UPI"}
               </p>
-              <p className="text-[10px] text-[#6B746F]">
+              <p className="text-[10px] text-[#6B746F] truncate">
                 {lang === "hi" ? "सामान देखकर भुगतान करें" : "Safe & Easy Payments"}
               </p>
             </div>
@@ -879,23 +481,23 @@ function PremiumStoreHome() {
             href={waHref(storeWhatsApp, "Namaste! I want to order monthly grocery list.")}
             target="_blank"
             rel="noreferrer"
-            className="card-base flex items-center gap-3 p-3 bg-[#DCEBDD]/40 border border-[#145A45]/30 hover:border-[#145A45] transition-colors"
+            className="card-base flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3.5 bg-[#DCEBDD]/40 border border-[#145A45]/30 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#145A45] text-white shrink-0">
+            <div className="grid size-8 sm:size-9 place-items-center rounded-full bg-[#145A45] text-white shrink-0">
               <MessageCircle className="size-4 fill-white text-[#145A45]" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-[#145A45]">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#145A45] truncate">
                 {lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "WhatsApp Quick Order"}
               </p>
-              <p className="text-[10px] text-[#0E4333]">
+              <p className="text-[10px] text-[#0E4333] truncate">
                 {lang === "hi" ? "राशन पर्ची भेजें" : "+91 9621617360"}
               </p>
             </div>
           </a>
         </div>
 
-        {/* Trending Quick Search Bar below Hero */}
+        {/* Trending Popular Searches */}
         <div className="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <span className="flex items-center gap-1 text-[11px] font-bold text-[#6B746F] shrink-0">
             <TrendingUp className="size-3 text-[#145A45]" />
@@ -907,7 +509,7 @@ function PremiumStoreHome() {
                 key={idx}
                 type="button"
                 onClick={() => void navigate({ to: "/shop", search: { q: item.q } as never })}
-                className="shrink-0 rounded-full border border-[#E8E4DA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#1F2924] hover:border-[#145A45] hover:text-[#145A45] transition-colors shadow-2xs"
+                className="shrink-0 rounded-full border border-[#E8E4DA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#1F2924] hover:border-[#145A45] hover:text-[#145A45] transition-colors shadow-2xs cursor-pointer"
               >
                 {item.label}
               </button>
@@ -916,7 +518,49 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      {/* 3. Quick Actions Row */}
+      {/* 4. TODAY'S OFFERS: "आज के खास ऑफर" (Horizontal Swipe on Mobile with partial card peek) */}
+      <section className="container-page">
+        <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="grid size-7 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
+              <Flame className="size-4 text-[#E3B341] fill-[#E3B341]" />
+            </span>
+            <div>
+              <h2 className="font-sans text-base sm:text-xl font-bold text-[#1F2924]">
+                {lang === "hi" ? "आज के खास ऑफर" : "Today's Special Offers"}
+              </h2>
+              <p className="text-[11px] sm:text-xs text-[#6B746F]">
+                {lang === "hi"
+                  ? "रसोई के दैनिक किराना सामानों पर विशेष छूट"
+                  : "Special discounts on daily grocery essentials"}
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/shop"
+            className="text-xs font-bold text-[#145A45] hover:underline flex items-center gap-1 shrink-0"
+          >
+            {t.viewAll} ({products.length}) <ChevronRight className="size-3.5" />
+          </Link>
+        </div>
+
+        {/* Mobile: Horizontal scrollable track with peeking card / Desktop: 5-Col Grid */}
+        <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2">
+          {prodLoading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="min-w-[155px] sm:min-w-0 shrink-0">
+                  <Skeleton className="h-64 rounded-2xl" />
+                </div>
+              ))
+            : flashDeals.map((product) => (
+                <div key={product.id} className="min-w-[160px] sm:min-w-0 shrink-0 snap-start">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+        </div>
+      </section>
+
+      {/* 5. Quick Store Actions */}
       <section className="container-page">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           <Link
@@ -994,82 +638,6 @@ function PremiumStoreHome() {
               <p className="text-[10px] text-[#6B746F]">Ramnagar, Adda Bazar</p>
             </div>
           </a>
-        </div>
-      </section>
-
-      {/* 4. Trust Badges Row */}
-      <section className="container-page">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 card-base p-3 sm:p-4 bg-white border border-[#E8E4DA]">
-          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
-              <Truck className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">{t.freeDeliveryTitle}</p>
-              <p className="text-[10px] text-[#6B746F]">{t.freeDeliverySub}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
-              <Store className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">{t.storePickupTitle}</p>
-              <p className="text-[10px] text-[#6B746F]">{t.storePickupSub}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
-              <ShieldCheck className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#1F2924]">{t.genuineBrandsTitle}</p>
-              <p className="text-[10px] text-[#6B746F]">{t.genuineBrandsSub}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
-              <Award className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#145A45]">{t.purityTagline}</p>
-              <p className="text-[10px] text-[#1F2924] font-medium">{t.puritySub}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. ⚡ Flash Deals of the Day / आज के खास ऑफर्स */}
-      <section className="container-page">
-        <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
-          <div className="flex items-center gap-2">
-            <span className="grid size-7 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
-              <Flame className="size-4 text-[#E3B341] fill-[#E3B341]" />
-            </span>
-            <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
-                {t.dealsOfDay}
-              </h2>
-              <p className="text-xs text-[#6B746F]">{t.dealsOfDaySub}</p>
-            </div>
-          </div>
-          <Link
-            to="/shop"
-            className="text-xs font-semibold text-[#145A45] hover:underline flex items-center gap-1"
-          >
-            {t.viewAll} ({products.length}) <ArrowRight className="size-3.5" />
-          </Link>
-        </div>
-
-        <div className="mt-4 home-shelf-grid">
-          {prodLoading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-xl" />
-              ))
-            : flashDeals.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
 
