@@ -307,6 +307,60 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
   });
 }
 
+export function featuredProductsQuery(limit: number = 12) {
+  const fallback = ADDITIONAL_PRODUCTS
+    .filter((p) => p.is_active)
+    .sort((a, b) => {
+      const featDiff = (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+      if (featDiff !== 0) return featDiff;
+      const soldA = a.sold_count ?? 0;
+      const soldB = b.sold_count ?? 0;
+      return soldB - soldA;
+    })
+    .slice(0, limit);
+
+  return queryOptions({
+    queryKey: ["featured-products", limit],
+    queryFn: async (): Promise<Product[]> => {
+      return withTimeout(
+        (async () => {
+          try {
+            const { data, error } = await supabase
+              .from("products")
+              .select(PRODUCT_SELECT)
+              .eq("is_active", true)
+              .order("is_featured", { ascending: false, nullsFirst: false })
+              .order("sold_count", { ascending: false, nullsFirst: false })
+              .order("created_at", { ascending: false })
+              .limit(limit);
+
+            if (error) throw error;
+            const remote = (data ?? []) as unknown as Product[];
+            if (remote.length >= limit) return remote;
+
+            // Fill remaining slots up to limit if database has fewer items
+            const existingSlugs = new Set(remote.map((p) => p.slug));
+            const merged = [...remote];
+            for (const p of fallback) {
+              if (merged.length >= limit) break;
+              if (!existingSlugs.has(p.slug)) {
+                merged.push(p);
+                existingSlugs.add(p.slug);
+              }
+            }
+            return merged;
+          } catch {
+            return fallback;
+          }
+        })(),
+        2500,
+        fallback,
+      );
+    },
+    staleTime: 60_000,
+  });
+}
+
 export function productQuery(slug: string) {
   const fallback = ADDITIONAL_PRODUCTS.find((p) => p.slug === slug) ?? null;
 

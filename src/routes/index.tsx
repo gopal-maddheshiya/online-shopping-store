@@ -40,6 +40,7 @@ import { useCart } from "@/lib/cart";
 import {
   categoriesQuery,
   productsQuery,
+  featuredProductsQuery,
   settingsQuery,
   isOpenNow,
   type Product,
@@ -53,6 +54,7 @@ export const Route = createFileRoute("/")({
     await Promise.allSettled([
       context.queryClient.ensureQueryData(settingsQuery),
       context.queryClient.ensureQueryData(categoriesQuery),
+      context.queryClient.ensureQueryData(featuredProductsQuery(12)),
       context.queryClient.ensureQueryData(productsQuery()),
     ]);
   },
@@ -93,6 +95,7 @@ export const Route = createFileRoute("/")({
 function PremiumStoreHome() {
   const { data: settings } = useQuery(settingsQuery);
   const { data: categories = [], isLoading: catLoading } = useQuery(categoriesQuery);
+  const { data: featuredProducts = [], isLoading: featLoading } = useQuery(featuredProductsQuery(12));
   const { data: products = [], isLoading: prodLoading } = useQuery(productsQuery());
   const { lang, t, getCategoryName, getProductName, getVariantLabel } = useLanguage();
   const { items: cartItems, add, setQty } = useCart();
@@ -538,7 +541,44 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      {/* 4. TODAY'S OFFERS: "आज के खास ऑफर" (Horizontal Swipe on Mobile with partial card peek) */}
+      {/* 4. ⭐ BEST SELLERS & POPULAR PRODUCTS GRID (2 Cols Mobile, 4 Cols Desktop) */}
+      <section className="container-page">
+        <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="grid size-8 sm:size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
+              <Sparkles className="size-4 sm:size-5 text-[#E3B341] fill-[#E3B341]" />
+            </span>
+            <div>
+              <h2 className="font-sans text-base sm:text-2xl font-black text-[#1F2924]">
+                {lang === "hi" ? "⭐ लोकप्रिय उत्पाद एवं बेस्ट सेलर्स" : "⭐ Popular Groceries & Best Sellers"}
+              </h2>
+              <p className="text-[11px] sm:text-xs text-[#6B746F]">
+                {lang === "hi"
+                  ? "दैनिक रसोई के सबसे ज्यादा बिकने वाले शुद्ध उत्पाद"
+                  : "Most ordered authentic grocery essentials at honest rates"}
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/shop"
+            className="text-xs sm:text-sm font-bold text-[#145A45] hover:underline flex items-center gap-1 shrink-0"
+          >
+            {t.viewAll} ({products.length || 302}) <ChevronRight className="size-3.5 sm:size-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {featLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            : featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+        </div>
+      </section>
+
+      {/* 5. TODAY'S OFFERS: "आज के खास ऑफर" (Horizontal Swipe on Mobile with partial card peek) */}
       <section className="container-page">
         <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3 mb-3">
           <div className="flex items-center gap-2">
