@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   User,
   Package,
+  Search,
   MapPin,
   Heart,
   Phone,
@@ -69,6 +70,7 @@ function AccountPage() {
   // Guest / Phone identification state
   const [identifiedPhone, setIdentifiedPhone] = useState<string>("");
   const [identifiedName, setIdentifiedName] = useState<string>("");
+  const [guestTrackInput, setGuestTrackInput] = useState("");
 
   // Login form state
   const [loginPhone, setLoginPhone] = useState("");
@@ -172,6 +174,26 @@ function AccountPage() {
     });
     return Array.from(map.values());
   }, [orders]);
+
+  // Handle Quick Guest Order Tracking (Above the Fold)
+  function handleGuestTrack(e: React.FormEvent) {
+    e.preventDefault();
+    const clean = guestTrackInput.trim();
+    if (!clean) {
+      toast.error(
+        lang === "hi"
+          ? "कृपया ऑर्डर नंबर या 10 अंकों का मोबाइल नंबर डालें"
+          : "Please enter an order number or mobile number",
+      );
+      return;
+    }
+    const cleanDigits = clean.replace(/\D/g, "");
+    if (cleanDigits.length === 10) {
+      void navigate({ to: "/track", search: { phone: cleanDigits } as never });
+    } else {
+      void navigate({ to: "/track", search: { orderNo: clean.toUpperCase() } as never });
+    }
+  }
 
   // Handle Phone Identification (Fast Login for local customers)
   function handlePhoneIdentify(e: React.FormEvent) {
@@ -312,29 +334,89 @@ function AccountPage() {
   // If not logged in & no stored phone -> Show Customer Identification / Login Screen
   if (!isIdentified && !authLoading) {
     return (
-      <div className="container-page py-12">
-        <div className="mx-auto max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-sm sm:p-8">
-          <div className="text-center">
-            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]">
-              <User className="size-6" />
+      <div className="container-page py-6 sm:py-10 max-w-lg mx-auto space-y-5">
+        {/* Header Title */}
+        <div className="text-center space-y-1">
+          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#DCEBDD] text-[#145A45] border border-[#145A45]/20 shadow-2xs">
+            <User className="size-6" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#1F2924]">
+            {lang === "hi" ? "ग्राहक सेवा एवं खाता पोर्टल" : "Customer Account & Orders"}
+          </h1>
+          <p className="text-xs text-[#6B746F]">
+            {lang === "hi"
+              ? "लाइव डिलीवरी ट्रैक करें, पिछला राशन दोबारा मंगाएं और अपने ऑर्डर देखें"
+              : "Track live delivery, reorder groceries and manage your account"}
+          </p>
+        </div>
+
+        {/* 1. ⭐ TOP PROMINENT CARD: Instant Guest Order Tracking (Above the Fold) */}
+        <div className="rounded-3xl border-2 border-[#145A45] bg-[#FAF8F2] p-5 sm:p-6 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="grid size-8 place-items-center rounded-full bg-[#145A45] text-white shrink-0">
+              <Package className="size-4" />
+            </span>
+            <div>
+              <h2 className="text-sm sm:text-base font-extrabold text-[#1F2924]">
+                {lang === "hi" ? "📦 बिना लॉगिन लाइव ऑर्डर ट्रैक करें" : "📦 Instant Guest Order Tracking"}
+              </h2>
+              <p className="text-[11px] text-[#6B746F]">
+                {lang === "hi" ? "ऑर्डर नंबर या 10 अंकों का मोबाइल नंबर डालें" : "Enter Order # (e.g. AGT-1024) or 10-digit mobile"}
+              </p>
             </div>
-            <h1 className="mt-3 font-sans text-2xl font-bold text-[#1F2924]">
-              Customer Account
-            </h1>
-            <p className="mt-1 text-xs text-[#6B746F]">
-              Sign in with your mobile number to view past grocery orders, track deliveries, and
-              reorder quickly.
-            </p>
           </div>
 
-          <div className="mt-6 flex rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 text-xs font-semibold">
+          <form onSubmit={handleGuestTrack} className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#6B746F]" />
+              <Input
+                type="text"
+                placeholder={lang === "hi" ? "उदा. AGT-1024 या 9876543210" : "e.g. AGT-1024 or 9876543210"}
+                value={guestTrackInput}
+                onChange={(e) => setGuestTrackInput(e.target.value)}
+                className="h-11 sm:h-12 pl-10 rounded-2xl border-[#E8E4DA] bg-white font-medium text-xs sm:text-sm text-[#1F2924] shadow-2xs focus-visible:ring-[#145A45]"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-11 sm:h-12 rounded-full bg-[#145A45] text-white font-bold text-xs sm:text-sm shadow-md hover:bg-[#0E4333] active:scale-98 transition-all flex items-center justify-center gap-2"
+            >
+              <Search className="size-4 text-[#E3B341]" />
+              <span>{lang === "hi" ? "ट्रैक लाइव स्टेटस (Track Order) →" : "Track Live Status →"}</span>
+            </Button>
+          </form>
+        </div>
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center py-1">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-[#E8E4DA]" />
+          </div>
+          <span className="relative bg-[#FAF8F2] px-4 text-[11px] font-bold text-[#6B746F] uppercase tracking-wider rounded-full border border-[#E8E4DA]">
+            {lang === "hi" ? "या पूरा ऑर्डर इतिहास देखें (Sign In)" : "OR SIGN IN FOR FULL HISTORY"}
+          </span>
+        </div>
+
+        {/* 2. Full Account Login Card */}
+        <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs sm:text-sm font-bold text-[#1F2924] flex items-center gap-1.5">
+              <User className="size-4 text-[#145A45]" />
+              <span>{lang === "hi" ? "अपना खाता खोलें" : "Sign In to Account"}</span>
+            </h3>
+            <span className="text-[10px] font-semibold text-[#145A45] bg-[#DCEBDD] px-2.5 py-0.5 rounded-full">
+              {lang === "hi" ? "1-क्लिक रीऑर्डर" : "1-Click Reorder"}
+            </span>
+          </div>
+
+          <div className="flex rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 text-xs font-semibold">
             <button
               onClick={() => setAuthMode("phone")}
               className={`flex-1 rounded-lg py-2 transition-all ${
                 authMode === "phone" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
               }`}
             >
-              Mobile Number (Instant)
+              {lang === "hi" ? "मोबाइल नंबर (त्वरित)" : "Mobile Number (Instant)"}
             </button>
             <button
               onClick={() => setAuthMode("email")}
@@ -342,17 +424,17 @@ function AccountPage() {
                 authMode === "email" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
               }`}
             >
-              Email / Password
+              {lang === "hi" ? "ईमेल / पासवर्ड" : "Email / Password"}
             </button>
           </div>
 
           {authMode === "phone" ? (
-            <form onSubmit={handlePhoneIdentify} className="mt-6 space-y-4">
-              <div className="space-y-1.5">
+            <form onSubmit={handlePhoneIdentify} className="space-y-3">
+              <div className="space-y-1">
                 <Label htmlFor="login-phone" className="text-xs font-semibold text-[#1F2924]">
-                  Enter 10-Digit Mobile Number
+                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर डालें" : "Enter 10-Digit Mobile Number"}
                 </Label>
-                <div className="flex rounded-xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20">
+                <div className="flex rounded-xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20 bg-white">
                   <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#6B746F] rounded-l-xl border-r border-[#E8E4DA]">
                     +91
                   </span>
@@ -364,34 +446,34 @@ function AccountPage() {
                     placeholder="9876543210"
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-l-none rounded-r-xl focus-visible:ring-0"
+                    className="border-0 rounded-l-none rounded-r-xl focus-visible:ring-0 text-xs sm:text-sm font-semibold"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label htmlFor="login-name" className="text-xs font-semibold text-[#1F2924]">
-                  Your Full Name{" "}
-                  <span className="text-[#6B746F] font-normal">(Optional)</span>
+                  {lang === "hi" ? "आपका नाम" : "Your Name"}{" "}
+                  <span className="text-[#6B746F] font-normal">({lang === "hi" ? "वैकल्पिक" : "Optional"})</span>
                 </Label>
                 <Input
                   id="login-name"
-                  placeholder="e.g. Ramesh Kumar"
+                  placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                   value={loginName}
                   onChange={(e) => setLoginName(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] bg-white"
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
                 />
               </div>
 
-              <Button type="submit" className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]">
-                Continue to My Orders <ArrowRight className="ml-2 size-4" />
+              <Button type="submit" className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all">
+                {lang === "hi" ? "ऑर्डर इतिहास व खाता देखें →" : "Continue to My Orders →"}
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleEmailSignIn} className="mt-6 space-y-4">
-              <div className="space-y-1.5">
+            <form onSubmit={handleEmailSignIn} className="space-y-3">
+              <div className="space-y-1">
                 <Label htmlFor="auth-email" className="text-xs font-semibold text-[#1F2924]">
-                  Email Address
+                  {lang === "hi" ? "ईमेल आईडी" : "Email Address"}
                 </Label>
                 <Input
                   id="auth-email"
@@ -400,13 +482,13 @@ function AccountPage() {
                   placeholder="name@example.com"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] bg-white"
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <Label htmlFor="auth-pwd" className="text-xs font-semibold text-[#1F2924]">
-                  Password
+                  {lang === "hi" ? "पासवर्ड" : "Password"}
                 </Label>
                 <Input
                   id="auth-pwd"
@@ -415,26 +497,19 @@ function AccountPage() {
                   placeholder="••••••••"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] bg-white"
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isSigningIn}
-                className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]"
+                className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all"
               >
-                <Lock className="mr-2 size-4" /> {isSigningIn ? "Signing In…" : "Sign In"}
+                <Lock className="mr-2 size-4" /> {isSigningIn ? (lang === "hi" ? "लॉगिन हो रहा है..." : "Signing In…") : (lang === "hi" ? "लॉगिन करें" : "Sign In")}
               </Button>
             </form>
           )}
-
-          <div className="mt-6 border-t border-[#E8E4DA] pt-4 text-center text-xs text-[#6B746F]">
-            Want to track an existing order without logging in?{" "}
-            <Link to="/track" className="font-semibold text-[#145A45] hover:underline">
-              Track Order here →
-            </Link>
-          </div>
         </div>
       </div>
     );

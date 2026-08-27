@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
+import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 import { waHref } from "@/lib/format";
 
@@ -27,22 +28,35 @@ type NavItem = {
 export function MobileNav() {
   const { count: cartCount } = useCart();
   const { items: wishlistItems } = useWishlist();
+  const { user } = useAuth();
   const { lang, t } = useLanguage();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [hasLocalPhone, setHasLocalPhone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasLocalPhone(Boolean(localStorage.getItem("agt.last_phone")));
+    }
+  }, []);
 
   // Don't show mobile bottom nav on admin workspace
   if (currentPath.startsWith("/admin")) {
     return null;
   }
 
+  const isIdentified = Boolean(user || hasLocalPhone);
+  const accountLabel = isIdentified
+    ? (lang === "hi" ? "मेरा खाता" : "My Account")
+    : (lang === "hi" ? "लॉगिन / ट्रैक" : "Login / Track");
+
   const storeWhatsApp = "916388354988";
 
   const links: NavItem[] = [
     { to: "/", label: lang === "hi" ? "होम" : "Home", icon: Home },
     { to: "/shop", label: lang === "hi" ? "कैटेगरी" : "Categories", icon: LayoutGrid },
-    { to: "/track", label: lang === "hi" ? "ऑर्डर्स" : "Orders", icon: Package },
+    { to: "/account", label: accountLabel, icon: User },
     {
       to: "/wishlist",
       label: lang === "hi" ? "पसंद" : "Wishlist",
@@ -91,7 +105,8 @@ export function MobileNav() {
           {links.map((link) => {
             const Icon = link.icon;
             const isActive =
-              currentPath === link.to &&
+              (currentPath === link.to ||
+                (link.to === "/account" && (currentPath === "/account" || currentPath === "/track"))) &&
               (!link.search ||
                 JSON.stringify(routerState.location.search) === JSON.stringify(link.search));
 
