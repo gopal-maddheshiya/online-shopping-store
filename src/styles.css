@@ -237,33 +237,20 @@
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 0.75rem !important;
+  width: 100% !important;
 }
 
 @media (min-width: 640px) {
   .grocery-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.875rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .grocery-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 1rem !important;
+    gap: 0.875rem !important;
   }
 }
 
 @media (min-width: 1024px) {
   .grocery-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 1rem !important;
-  }
-}
-
-@media (min-width: 1280px) {
-  .grocery-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 1.25rem !important;
+    gap: 1rem !important;
   }
 }
 
@@ -271,6 +258,7 @@
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 0.75rem !important;
+  width: 100% !important;
 }
 
 @media (min-width: 640px) {

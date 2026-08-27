@@ -320,7 +320,10 @@ function Shop() {
         {/* Products Grid */}
         <main className="space-y-4">
           {/* Quick Category Switcher Pills */}
-          <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div
+            className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-1 touch-pan-x scroll-smooth overscroll-x-contain"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             <button
               onClick={() => update({ category: undefined, subcategory: undefined })}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
@@ -374,14 +377,7 @@ function Shop() {
             })}
           </div>
           {isLoading ? (
-            <div
-              className="grocery-grid grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-                gap: "0.75rem",
-              }}
-            >
+            <div className="grocery-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <Skeleton key={i} className="h-64 rounded-xl" />
               ))}
@@ -406,14 +402,7 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div
-              className="grocery-grid grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-                gap: "0.75rem",
-              }}
-            >
+            <div className="grocery-grid">
               {results.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
