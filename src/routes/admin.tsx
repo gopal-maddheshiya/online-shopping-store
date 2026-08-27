@@ -125,9 +125,28 @@ function AdminPage() {
   }
 
   useEffect(() => {
-    if (isAuthorizedAdmin) {
-      void loadAllOrders();
-    }
+    if (!isAuthorizedAdmin) return;
+
+    void loadAllOrders();
+
+    // Realtime subscription for live order updates
+    const channel = supabase
+      .channel("admin-orders-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        (payload) => {
+          void loadAllOrders();
+          if (payload.eventType === "INSERT") {
+            toast.success("🔔 New Customer Order Received!");
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [isAuthorizedAdmin]);
 
   // Check stored admin session

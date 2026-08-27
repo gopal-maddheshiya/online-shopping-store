@@ -408,29 +408,43 @@ export function AdminOrders({
               </div>
 
               {/* Items List */}
-              <div className="rounded-2xl border border-[#E8E4DA] divide-y divide-[#E8E4DA] overflow-hidden bg-white">
-                {(selectedOrder.order_items ?? []).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 text-xs">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <img
-                        src={getProductImage({
-                          name: item.name,
-                          image_url: item.image_url,
-                        })}
-                        alt={item.name}
-                        className="size-10 rounded-lg object-cover bg-[#FAF8F2] shrink-0 border border-[#E8E4DA]"
-                      />
-                      <div className="min-w-0">
-                        <p className="font-semibold text-[#1F2924] truncate">{item.name}</p>
-                        <p className="text-[#6B746F]">
-                          {item.variant_label} × {item.qty}
-                        </p>
+              {(() => {
+                const orderItems =
+                  selectedOrder.order_items && selectedOrder.order_items.length > 0
+                    ? selectedOrder.order_items
+                    : (selectedOrder as unknown as { items?: typeof selectedOrder.order_items }).items &&
+                        (selectedOrder as unknown as { items?: typeof selectedOrder.order_items }).items!
+                          .length > 0
+                      ? (selectedOrder as unknown as { items?: typeof selectedOrder.order_items }).items!
+                      : (selectedOrder.address as unknown as { items?: typeof selectedOrder.order_items })
+                            ?.items ?? [];
+
+                return (
+                  <div className="rounded-2xl border border-[#E8E4DA] divide-y divide-[#E8E4DA] overflow-hidden bg-white">
+                    {orderItems.map((item, idx) => (
+                      <div key={item.id ?? `item-${idx}`} className="flex items-center justify-between p-3 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={getProductImage({
+                              name: item.name,
+                              image_url: item.image_url,
+                            })}
+                            alt={item.name}
+                            className="size-10 rounded-lg object-cover bg-[#FAF8F2] shrink-0 border border-[#E8E4DA]"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-[#1F2924] truncate">{item.name}</p>
+                            <p className="text-[#6B746F]">
+                              {item.variant_label} × {item.qty}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-bold text-[#1F2924] shrink-0 ml-2">{inr(item.price * item.qty)}</span>
                       </div>
-                    </div>
-                    <span className="font-bold text-[#1F2924] shrink-0 ml-2">{inr(item.price * item.qty)}</span>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
 
               {/* Financial Totals */}
               <dl className="space-y-1.5 rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2]/50 p-3.5 text-xs">

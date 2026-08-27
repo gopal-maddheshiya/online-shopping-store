@@ -192,7 +192,6 @@ function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Create order record
       const orderPayload = {
         user_id: user?.id ?? null,
         customer_name: name.trim(),
@@ -216,26 +215,12 @@ function CheckoutPage() {
         discount: couponDiscount,
         delivery_fee: deliveryFee,
         total: grandTotal,
-        status: "placed" as const,
         notes: instructions.trim() || null,
       };
 
-      const { data: orderData, error: orderError } = await supabase
-        .from("orders")
-        .insert(orderPayload as never)
-        .select("id, order_no")
-        .single();
-
-      if (orderError) throw orderError;
-
-      const orderId = (orderData as { id: string; order_no: string }).id;
-      const orderNo = (orderData as { id: string; order_no: string }).order_no;
-
-      // 2. Create order items
       const itemsPayload = items.map((item) => ({
-        order_id: orderId,
-        product_id: item.productId,
-        variant_id: item.variantId,
+        product_id: item.productId?.startsWith("temp-") ? null : item.productId,
+        variant_id: item.variantId?.startsWith("temp-") ? null : item.variantId,
         name: item.name,
         variant_label: item.variantLabel,
         image_url: item.imageUrl,
@@ -244,10 +229,35 @@ function CheckoutPage() {
         qty: item.qty,
       }));
 
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(itemsPayload as never);
-      if (itemsError) console.error("Error creating order items:", itemsError);
+      let orderNo = `AGT-${Date.now().toString().slice(-4)}`;
+
+      // 1. Try atomic place_order RPC procedure first
+      const { data: rpcRes, error: rpcErr } = await (supabase.rpc as Function)("place_order", {
+        _order_payload: orderPayload,
+        _items_payload: itemsPayload,
+      });
+
+      if (!rpcErr && rpcRes && typeof rpcRes === "object" && "order_no" in rpcRes) {
+        orderNo = String((rpcRes as { order_no: string }).order_no);
+      } else {
+        // Fallback: Direct table insertion
+        const { data: orderData, error: orderError } = await supabase
+          .from("orders")
+          .insert(orderPayload as never)
+          .select("id, order_no")
+          .maybeSingle();
+
+        if (orderError) throw orderError;
+        if (orderData?.order_no) orderNo = orderData.order_no;
+
+        if (orderData?.id) {
+          const itemsWithOrderId = itemsPayload.map((it) => ({
+            ...it,
+            order_id: orderData.id,
+          }));
+          await supabase.from("order_items").insert(itemsWithOrderId as never);
+        }
+      }
 
       // Save customer info locally for instant future checkout
       localStorage.setItem("agt.last_phone", cleanPhone);
@@ -267,7 +277,11 @@ function CheckoutPage() {
       // Clear the shopping cart
       clear();
 
-      toast.success("Order Placed Successfully!");
+      toast.success(
+        lang === "hi"
+          ? `ऑर्डर सफलतापूर्वक दर्ज हो गया! (ऑर्डर नं. ${orderNo})`
+          : `Order Placed Successfully! (Order No. ${orderNo})`,
+      );
 
       // Navigate to order confirmation / tracking page
       void navigate({

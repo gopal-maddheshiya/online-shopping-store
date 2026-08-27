@@ -359,38 +359,55 @@ function TrackPage() {
           </div>
 
           {/* Ordered Items List */}
-          <div className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs">
-            <h3 className="font-sans text-base font-bold text-[#1F2924]">
-              Items Ordered ({searchedOrder.order_items?.length ?? 0})
-            </h3>
+          {(() => {
+            const itemsList =
+              searchedOrder.order_items && searchedOrder.order_items.length > 0
+                ? searchedOrder.order_items
+                : (searchedOrder as unknown as { items?: typeof searchedOrder.order_items }).items &&
+                    (searchedOrder as unknown as { items?: typeof searchedOrder.order_items }).items!
+                      .length > 0
+                  ? (searchedOrder as unknown as { items?: typeof searchedOrder.order_items }).items!
+                  : (searchedOrder.address as unknown as { items?: typeof searchedOrder.order_items })
+                        ?.items ?? [];
 
-            <div className="mt-4 divide-y divide-[#E8E4DA]">
-              {(searchedOrder.order_items ?? []).map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-4 py-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getProductImage({
-                        name: item.name,
-                        image_url: item.image_url,
-                      })}
-                      alt={item.name}
-                      className="size-12 rounded-lg object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1"
-                    />
-                    <div>
-                      <p className="font-semibold text-[#1F2924]">{item.name}</p>
-                      <p className="text-[#6B746F]">
-                        {item.variant_label} × {item.qty}
-                      </p>
+            return (
+              <div className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs">
+                <h3 className="font-sans text-base font-bold text-[#1F2924]">
+                  Items Ordered ({itemsList.length})
+                </h3>
+
+                <div className="mt-4 divide-y divide-[#E8E4DA]">
+                  {itemsList.map((item, idx) => (
+                    <div
+                      key={item.id ?? `item-${idx}`}
+                      className="flex items-center justify-between gap-4 py-3 text-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getProductImage({
+                            name: item.name,
+                            image_url: item.image_url,
+                          })}
+                          alt={item.name}
+                          className="size-12 rounded-lg object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1"
+                        />
+                        <div>
+                          <p className="font-semibold text-[#1F2924]">{item.name}</p>
+                          <p className="text-[#6B746F]">
+                            {item.variant_label} × {item.qty}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
+                        <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
-                    <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            );
+          })()}
 
           {/* Bottom Store Assistance Card */}
           <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-6 text-center shadow-xs">
