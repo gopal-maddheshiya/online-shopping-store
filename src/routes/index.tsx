@@ -986,14 +986,16 @@ function PremiumStoreHome() {
         </section>
       )}
 
-      {/* 15. Local Store Trust & Rating Section: क्यों खरीदें Arun Gopal Traders से? */}
+      {/* 15. Local Store Trust Section: क्यों चुनें Arun Gopal Traders? */}
       <section className="container-page">
         <div className="card-base border border-[#E8E4DA] bg-white p-6 sm:p-10">
           <div className="max-w-2xl mx-auto text-center space-y-2">
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1 text-xs font-bold text-[#145A45]">
-              <Star className="size-3.5 fill-[#E3B341] text-[#E3B341]" />
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FAF8F2] border border-[#E8E4DA] px-3.5 py-1 text-xs font-bold text-[#145A45]">
+              <Store className="size-3.5 text-[#145A45]" />
               <span>
-                4.9 / 5.0 • {lang === "hi" ? "500+ स्थानीय परिवार" : "500+ Local Families"}
+                {lang === "hi"
+                  ? "📍 रामनगर, महाराजगंज की विश्वसनीय स्थानीय दुकान"
+                  : "📍 Trusted Local Grocery Store in Ramnagar, Maharajganj"}
               </span>
             </div>
             <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#1F2924]">
@@ -1003,8 +1005,8 @@ function PremiumStoreHome() {
             </h2>
             <p className="text-xs sm:text-sm text-[#6B746F]">
               {lang === "hi"
-                ? "रामनगर, महाराजगंज में स्थित आपकी अपनी भरोसेमंद किराना दुकान — 100% शुद्ध राशन, उचित दरें और विश्वसनीय सेवा।"
-                : "Your trusted neighbourhood grocery store in Ramnagar, Maharajganj — committed to pure staples, honest rates, and reliable doorstep delivery."}
+                ? "रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान — 100% शुद्ध राशन, सही वजन, उचित दरें और भरोसेमंद होम डिलीवरी।"
+                : "Your trusted neighbourhood grocery store at Ramnagar, Adda Bazar Road, Maharajganj — committed to pure staples, accurate weights, fair rates, and reliable doorstep delivery."}
             </p>
           </div>
 
