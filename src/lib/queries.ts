@@ -184,7 +184,18 @@ export const settingsQuery = queryOptions({
         .eq("id", 1)
         .single();
       if (error || !data) return DEFAULT_STORE_SETTINGS;
-      return data as unknown as StoreSettings;
+
+      const raw = data as unknown as StoreSettings;
+      const isOldPhone = !raw.phone || raw.phone.includes("9621617360");
+      const isOldWhatsApp = !raw.whatsapp || raw.whatsapp.includes("9621617360");
+      const isOldEmail = !raw.email || raw.email.includes("ashokmaddheshiya51");
+
+      return {
+        ...raw,
+        phone: isOldPhone ? "+91 6388354988" : raw.phone,
+        whatsapp: isOldWhatsApp ? "916388354988" : raw.whatsapp,
+        email: isOldEmail ? "gopalmaddheshiya138@gmail.com" : raw.email,
+      };
     } catch {
       return DEFAULT_STORE_SETTINGS;
     }
