@@ -20,12 +20,12 @@ import { inr } from "@/lib/format";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Shopping Cart — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Cart" },
       {
         name: "description",
         content: "Review your grocery basket before checkout at Arun Gopal Traders, Maharajganj.",
       },
-      { property: "og:title", content: "Shopping Cart — Arun Gopal Traders" },
+      { property: "og:title", content: "Arun Gopal Traders | Cart" },
       {
         property: "og:description",
         content: "Review items, quantities and totals before placing your order.",

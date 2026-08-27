@@ -52,13 +52,13 @@ export const Route = createFileRoute("/shop")({
   },
   head: () => ({
     meta: [
-      { title: "Shop Groceries Online — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Shop" },
       {
         name: "description",
         content:
           "Browse the full kirana catalogue: atta, rice, dal, oil, spices, snacks, dairy and household essentials with live prices and stock in Maharajganj.",
       },
-      { property: "og:title", content: "Shop Groceries Online — Arun Gopal Traders" },
+      { property: "og:title", content: "Arun Gopal Traders | Shop" },
       {
         property: "og:description",
         content: "Search, filter and order daily essentials for delivery in Maharajganj.",

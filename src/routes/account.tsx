@@ -39,7 +39,7 @@ import { ProductCard } from "@/components/ProductCard";
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "My Customer Account — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Account" },
       {
         name: "description",
         content:

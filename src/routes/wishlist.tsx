@@ -12,13 +12,13 @@ import { cheapestVariant } from "@/lib/queries";
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
-      { title: "My Wishlist — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Wishlist" },
       {
         name: "description",
         content:
           "View your saved grocery favorites and add them to your basket at Arun Gopal Traders.",
       },
-      { property: "og:title", content: "My Wishlist — Arun Gopal Traders" },
+      { property: "og:title", content: "Arun Gopal Traders | Wishlist" },
       {
         property: "og:description",
         content: "Review items, quantities and totals before placing your order.",

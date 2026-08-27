@@ -21,13 +21,13 @@ import { telHref, waHref } from "@/lib/format";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact & Store Support — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Contact" },
       {
         name: "description",
         content:
           "Need help with grocery delivery, product inquiries, or store pickup? Call +91 6388354988 or visit Arun Gopal Traders at Ramnagar, Adda Bazar Road, Maharajganj.",
       },
-      { property: "og:title", content: "Contact & Store Support — Arun Gopal Traders" },
+      { property: "og:title", content: "Arun Gopal Traders | Contact" },
       {
         property: "og:description",
         content: "Call +91 6388354988 or message on WhatsApp for instant local kirana assistance.",

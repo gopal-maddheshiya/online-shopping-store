@@ -1,29 +1,33 @@
-# Welcome to your Lovable project
+# Arun Gopal Traders — Online Grocery Store
 
-This project was built with [Lovable](https://lovable.dev).
+Official web application and store management platform for **Arun Gopal Traders**, your trusted neighbourhood grocery store in Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh.
 
-## Build with Lovable
+## Features
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- **Grocery Catalogue**: Chakki Atta, Basmati Rice, Mustard Oil, Pulses, Spices, Household & Dairy Essentials.
+- **Fast Local Delivery**: 30-min delivery across Maharajganj with free home delivery on orders above ₹499.
+- **Bilingual Experience**: Full Hindi & English localization.
+- **Multi-Channel Ordering**: Online checkout, WhatsApp list ordering, and Direct Call (+91 6388354988).
+- **Store Owner Management**: Admin dashboard for inventory, orders, customer directory, coupons, and business hours.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Local Development
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
 npm run dev
 ```
 
-## Built with
+## Production Build
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+```sh
+npm run build
+```
+
+## Tech Stack
+
+- **Framework**: TanStack Start (Vite + Nitro SSR)
+- **Routing**: TanStack Router
+- **State & Data Fetching**: TanStack Query
+- **Backend & Database**: Supabase PostgreSQL
+- **Styling**: Tailwind CSS & Vanilla CSS
+- **Icons**: Lucide Icons

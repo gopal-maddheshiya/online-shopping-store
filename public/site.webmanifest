@@ -1,0 +1,22 @@
+{
+  "name": "Arun Gopal Traders",
+  "short_name": "Arun Gopal Traders",
+  "description": "Trusted local grocery store in Ramnagar, Maharajganj.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F2",
+  "theme_color": "#145A45",
+  "icons": [
+    {
+      "src": "/agt-favicon.svg",
+      "sizes": "128x128 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 32x32 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

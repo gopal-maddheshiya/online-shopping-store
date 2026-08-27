@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Arun Gopal Traders — Trusted Grocery Store in Maharajganj, UP" },
+      { title: "Arun Gopal Traders | Online Grocery Store" },
       {
         name: "description",
         content:
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "Arun Gopal Traders — Trusted Grocery Store in Maharajganj, UP",
+        content: "Arun Gopal Traders | Online Grocery Store",
       },
       {
         property: "og:description",

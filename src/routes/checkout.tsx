@@ -31,7 +31,7 @@ import { inr, telHref } from "@/lib/format";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Checkout" },
       {
         name: "description",
         content: "Complete your grocery order with home delivery in Maharajganj or store pickup.",

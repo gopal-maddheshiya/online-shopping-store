@@ -44,7 +44,7 @@ import { AdminSettings } from "@/components/admin/AdminSettings";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Store Management & Admin Portal — Arun Gopal Traders" },
+      { title: "Arun Gopal Traders | Admin" },
       {
         name: "description",
         content: "Owner dashboard for products, inventory, orders, customers, and store settings.",
