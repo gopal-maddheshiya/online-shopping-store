@@ -82,19 +82,32 @@ function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  // Queries
-  const { data: products = [], refetch: refetchProducts } = useQuery(
-    productsQuery({ activeOnly: false }),
-  );
-  const { data: categories = [], refetch: refetchCategories } = useQuery(categoriesQuery);
-  const { data: settings, refetch: refetchSettings } = useQuery(settingsQuery);
-  const { data: coupons = [], refetch: refetchCoupons } = useQuery(couponsQuery);
+  const isAuthorizedAdmin = isUnlocked || isAdmin;
+
+  // Queries - only execute when authenticated/unlocked
+  const { data: products = [], refetch: refetchProducts } = useQuery({
+    ...productsQuery({ activeOnly: false }),
+    enabled: isAuthorizedAdmin,
+  });
+  const { data: categories = [], refetch: refetchCategories } = useQuery({
+    ...categoriesQuery,
+    enabled: isAuthorizedAdmin,
+  });
+  const { data: settings, refetch: refetchSettings } = useQuery({
+    ...settingsQuery,
+    enabled: isAuthorizedAdmin,
+  });
+  const { data: coupons = [], refetch: refetchCoupons } = useQuery({
+    ...couponsQuery,
+    enabled: isAuthorizedAdmin,
+  });
 
   // Load orders directly for admin
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
   async function loadAllOrders() {
+    if (!isAuthorizedAdmin) return;
     setOrdersLoading(true);
     try {
       const { data, error } = await supabase
@@ -112,10 +125,10 @@ function AdminPage() {
   }
 
   useEffect(() => {
-    if (isUnlocked || isAdmin) {
+    if (isAuthorizedAdmin) {
       void loadAllOrders();
     }
-  }, [isUnlocked, isAdmin]);
+  }, [isAuthorizedAdmin]);
 
   // Check stored admin session
   useEffect(() => {
@@ -139,17 +152,21 @@ function AdminPage() {
       setIsUnlocked(true);
       sessionStorage.setItem("agt.admin_session", "unlocked");
       localStorage.setItem("agt.admin_session", "unlocked");
+      setAdminPin("");
       toast.success("Welcome back to Arun Gopal Traders Admin!");
     } else {
       toast.error("Incorrect Admin PIN or Passcode. Access denied.");
     }
   }
 
-  function handleLock() {
+  async function handleLock() {
     setIsUnlocked(false);
     sessionStorage.removeItem("agt.admin_session");
     localStorage.removeItem("agt.admin_session");
     setMobileDrawerOpen(false);
+    if (user) {
+      await supabase.auth.signOut();
+    }
     toast.info("Admin portal locked successfully");
   }
 
