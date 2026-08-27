@@ -144,12 +144,50 @@ export type HelpRequest = {
 
 const PRODUCT_SELECT = "*, product_variants(*)";
 
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  id: 1,
+  store_name: "Arun Gopal Traders",
+  tagline:
+    "Your Trusted Local Grocery Store in Maharajganj. Quality products, fair rates, and reliable doorstep delivery.",
+  phone: "+91 9621617360",
+  whatsapp: "919621617360",
+  email: "ashokmaddheshiya51@gmail.com",
+  address: "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh",
+  maps_link:
+    "https://www.google.com/maps/search/?api=1&query=Ramnagar%20Adda%20Bazar%20Road%20Maharajganj%20Uttar%20Pradesh",
+  announcement: "⚡ Fast 30-Min Delivery in Maharajganj • Free on ₹499+",
+  hero_title: "100% Shuddh Kirana",
+  hero_subtitle: "Fresh Atta, Basmati Rice, Mustard Oil & Ghee",
+  delivery_fee: 30,
+  free_delivery_threshold: 499,
+  min_order_value: 100,
+  payment_methods: ["cod", "upi"],
+  business_hours: {
+    mon: { open: "07:00", close: "21:00", closed: false },
+    tue: { open: "07:00", close: "21:00", closed: false },
+    wed: { open: "07:00", close: "21:00", closed: false },
+    thu: { open: "07:00", close: "21:00", closed: false },
+    fri: { open: "07:00", close: "21:00", closed: false },
+    sat: { open: "07:00", close: "21:00", closed: false },
+    sun: { open: "07:00", close: "21:00", closed: false },
+  },
+  social: {},
+};
+
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
   queryFn: async (): Promise<StoreSettings> => {
-    const { data, error } = await supabase.from("store_settings").select("*").eq("id", 1).single();
-    if (error) throw error;
-    return data as unknown as StoreSettings;
+    try {
+      const { data, error } = await supabase
+        .from("store_settings")
+        .select("*")
+        .eq("id", 1)
+        .single();
+      if (error || !data) return DEFAULT_STORE_SETTINGS;
+      return data as unknown as StoreSettings;
+    } catch {
+      return DEFAULT_STORE_SETTINGS;
+    }
   },
   staleTime: 60_000,
 });
