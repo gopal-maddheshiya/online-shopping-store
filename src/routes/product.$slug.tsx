@@ -263,7 +263,7 @@ function ProductPage() {
               {t.viewAll} →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grocery-grid">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

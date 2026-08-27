@@ -374,7 +374,14 @@ function Shop() {
             })}
           </div>
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            <div
+              className="grocery-grid grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                gap: "0.75rem",
+              }}
+            >
               {Array.from({ length: 8 }).map((_, i) => (
                 <Skeleton key={i} className="h-64 rounded-xl" />
               ))}
@@ -399,7 +406,14 @@ function Shop() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            <div
+              className="grocery-grid grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+                gap: "0.75rem",
+              }}
+            >
               {results.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

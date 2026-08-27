@@ -120,7 +120,7 @@ function WishlistPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-6 home-shelf-grid">
         {items.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}

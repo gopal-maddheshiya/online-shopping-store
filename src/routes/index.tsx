@@ -1051,7 +1051,7 @@ function PremiumStoreHome() {
           </Link>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="mt-4 home-shelf-grid">
           {prodLoading
             ? Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-64 rounded-xl" />
@@ -1085,7 +1085,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {attaRiceProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1116,7 +1116,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {dalPulsesProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1149,7 +1149,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {oilGheeProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1205,7 +1205,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {spicesMasalaProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1238,7 +1238,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {snacksBreakfastProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1271,7 +1271,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {dairyProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1304,7 +1304,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {cookwareUtensils.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -1337,7 +1337,7 @@ function PremiumStoreHome() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="mt-4 home-shelf-grid">
             {cleaningProducts.slice(0, 10).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
