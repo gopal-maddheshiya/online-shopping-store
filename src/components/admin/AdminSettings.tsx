@@ -122,159 +122,170 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   }
 
   return (
-    <form onSubmit={handleSaveSettings} className="space-y-8 max-w-4xl">
+    <form onSubmit={handleSaveSettings} className="space-y-4 sm:space-y-6 max-w-4xl">
       {/* Basic Store Information */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <Store className="size-5 text-primary" /> Store Identity &amp; Contact Details
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          These details are displayed in the header, footer, contact page, and receipt bills across
-          the website.
-        </p>
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+            <Store className="size-5 text-[#145A45]" /> Store Identity &amp; Contact Details
+          </h3>
+          <p className="text-xs text-[#6B746F] mt-1">
+            Displayed across the website header, footer, contact page, and receipt bills.
+          </p>
+        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 pt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Store Name</Label>
+        <div className="grid gap-3 sm:grid-cols-2 pt-1">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Store Name</Label>
             <Input
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Store Tagline / Slogan</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Store Tagline / Slogan</Label>
             <Input
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Primary Contact Phone Number</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Primary Phone Number</Label>
             <Input
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">
               WhatsApp Number (with country code, no +)
             </Label>
             <Input
               required
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs font-semibold">Store Email</Label>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-xs font-semibold text-[#1F2924]">Store Email</Label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs font-semibold">Physical Store Address</Label>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-xs font-semibold text-[#1F2924]">Physical Store Address</Label>
             <Input
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label className="text-xs font-semibold">Google Maps URL / Location Link</Label>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-xs font-semibold text-[#1F2924]">Google Maps URL / Location Link</Label>
             <Input
               value={mapsLink}
               onChange={(e) => setMapsLink(e.target.value)}
-              className="rounded-xl text-xs"
+              className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
             />
           </div>
         </div>
       </div>
 
       {/* Delivery & Pricing Rules */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <Truck className="size-5 text-primary" /> Delivery Charges &amp; Thresholds
-        </h3>
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+            <Truck className="size-5 text-[#145A45]" /> Delivery Charges &amp; Thresholds
+          </h3>
+          <p className="text-xs text-[#6B746F] mt-1">
+            Rules applied automatically at cart and checkout for Maharajganj deliveries.
+          </p>
+        </div>
 
-        <div className="grid gap-4 sm:grid-cols-3 pt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Standard Delivery Fee (₹)</Label>
+        <div className="grid gap-3 sm:grid-cols-3 pt-1">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Standard Delivery Fee (₹)</Label>
             <Input
               type="number"
               value={deliveryFee}
               onChange={(e) => setDeliveryFee(Number(e.target.value))}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Free Delivery Above (₹)</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Free Delivery Above (₹)</Label>
             <Input
               type="number"
               value={freeDeliveryThreshold}
               onChange={(e) => setFreeDeliveryThreshold(Number(e.target.value))}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Minimum Order Value (₹)</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Minimum Order Value (₹)</Label>
             <Input
               type="number"
               value={minOrderValue}
               onChange={(e) => setMinOrderValue(Number(e.target.value))}
-              className="rounded-xl"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
             />
           </div>
         </div>
       </div>
 
       {/* Homepage & Announcement Banner */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <Sparkles className="size-5 text-primary" /> Homepage Content &amp; Announcement Bar
-        </h3>
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+            <Sparkles className="size-5 text-[#145A45]" /> Homepage Content &amp; Announcement Bar
+          </h3>
+          <p className="text-xs text-[#6B746F] mt-1">
+            Custom banners and hero slogans displayed to customers.
+          </p>
+        </div>
 
-        <div className="grid gap-4 pt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Top Announcement Bar Text</Label>
+        <div className="grid gap-3 pt-1">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Top Announcement Bar Text</Label>
             <Input
               value={announcement}
               onChange={(e) => setAnnouncement(e.target.value)}
-              className="rounded-xl text-xs"
+              className="rounded-xl text-xs border-[#E8E4DA] h-9"
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Hero Heading</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Hero Heading</Label>
               <Input
                 value={heroTitle}
                 onChange={(e) => setHeroTitle(e.target.value)}
-                className="rounded-xl"
+                className="rounded-xl border-[#E8E4DA] text-xs h-9"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Hero Subtitle</Label>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Hero Subtitle</Label>
               <Input
                 value={heroSubtitle}
                 onChange={(e) => setHeroSubtitle(e.target.value)}
-                className="rounded-xl"
+                className="rounded-xl border-[#E8E4DA] text-xs h-9"
               />
             </div>
           </div>
@@ -282,21 +293,23 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       </div>
 
       {/* Business Hours Schedule */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs space-y-4">
-        <h3 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
-          <Clock className="size-5 text-primary" /> Weekly Business Timings
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          Configure store opening and closing times for each day of the week.
-        </p>
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+            <Clock className="size-5 text-[#145A45]" /> Weekly Business Timings
+          </h3>
+          <p className="text-xs text-[#6B746F] mt-1">
+            Store opening and closing times shown to customers on the Contact page.
+          </p>
+        </div>
 
-        <div className="divide-y divide-border pt-2 text-xs">
+        <div className="divide-y divide-[#E8E4DA] pt-1 text-xs">
           {DAYS.map(({ key, label }) => {
             const h = businessHours[key] ?? { open: "07:00", close: "21:00", closed: false };
 
             return (
-              <div key={key} className="flex flex-wrap items-center justify-between gap-4 py-3">
-                <span className="w-24 font-bold text-foreground">{label}</span>
+              <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 py-3">
+                <span className="w-24 font-bold text-[#1F2924]">{label}</span>
 
                 <div className="flex items-center gap-2">
                   <Input
@@ -304,24 +317,24 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                     disabled={h.closed}
                     value={h.open}
                     onChange={(e) => updateDayHour(key, "open", e.target.value)}
-                    className="h-8 w-28 rounded-lg text-xs"
+                    className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
                   />
-                  <span>to</span>
+                  <span className="text-[#6B746F]">to</span>
                   <Input
                     type="time"
                     disabled={h.closed}
                     value={h.close}
                     onChange={(e) => updateDayHour(key, "close", e.target.value)}
-                    className="h-8 w-28 rounded-lg text-xs"
+                    className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
                   />
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer font-semibold">
+                <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#1F2924]">
                   <Checkbox
                     checked={h.closed}
                     onCheckedChange={(c) => updateDayHour(key, "closed", Boolean(c))}
                   />
-                  <span>Closed</span>
+                  <span>Closed on this day</span>
                 </label>
               </div>
             );
@@ -329,12 +342,12 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end pt-2 pb-6">
         <Button
           type="submit"
           disabled={isSaving}
           size="lg"
-          className="rounded-2xl font-bold shadow-md px-8"
+          className="w-full sm:w-auto rounded-2xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] shadow-md px-8 h-11 text-xs sm:text-sm"
         >
           <Save className="mr-2 size-4" />{" "}
           {isSaving ? "Saving Settings…" : "Save All Store Settings"}
@@ -343,3 +356,4 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
     </form>
   );
 }
+

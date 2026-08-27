@@ -49,6 +49,14 @@ export const Route = createFileRoute("/admin")({
         name: "description",
         content: "Owner dashboard for products, inventory, orders, customers, and store settings.",
       },
+      {
+        name: "robots",
+        content: "noindex, nofollow, noarchive, nosnippet",
+      },
+      {
+        name: "googlebot",
+        content: "noindex, nofollow",
+      },
     ],
   }),
   component: AdminPage,
@@ -72,6 +80,7 @@ function AdminPage() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Queries
   const { data: products = [], refetch: refetchProducts } = useQuery(
@@ -110,7 +119,8 @@ function AdminPage() {
 
   // Check stored admin session
   useEffect(() => {
-    const sessionToken = localStorage.getItem("agt.admin_session");
+    const sessionToken =
+      sessionStorage.getItem("agt.admin_session") || localStorage.getItem("agt.admin_session");
     if (sessionToken === "unlocked" || isAdmin) {
       setIsUnlocked(true);
     }
@@ -118,26 +128,29 @@ function AdminPage() {
 
   function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
-    // Default demo PIN or password for owner access
+    const pin = adminPin.trim();
     if (
-      adminPin.trim() === "6388" ||
-      adminPin.trim() === "6388354988" ||
-      adminPin.trim() === "9621" ||
-      adminPin.trim() === "admin123" ||
-      adminPin.trim() === "9621617360"
+      pin === "6388" ||
+      pin === "6388354988" ||
+      pin === "9621" ||
+      pin === "admin123" ||
+      pin === "9621617360"
     ) {
       setIsUnlocked(true);
+      sessionStorage.setItem("agt.admin_session", "unlocked");
       localStorage.setItem("agt.admin_session", "unlocked");
-      toast.success("Welcome back, Arun Gopal Traders Manager!");
+      toast.success("Welcome back to Arun Gopal Traders Admin!");
     } else {
-      toast.error("Incorrect Admin PIN. Hint: Use 6388 or your store phone.");
+      toast.error("Incorrect Admin PIN or Passcode. Access denied.");
     }
   }
 
   function handleLock() {
     setIsUnlocked(false);
+    sessionStorage.removeItem("agt.admin_session");
     localStorage.removeItem("agt.admin_session");
-    toast.info("Admin portal locked");
+    setMobileDrawerOpen(false);
+    toast.info("Admin portal locked successfully");
   }
 
   function refreshAllData() {
@@ -152,44 +165,47 @@ function AdminPage() {
   // If not unlocked -> show clean Admin Security Gate
   if (!isUnlocked && !isAdmin) {
     return (
-      <div className="container-page py-16">
-        <div className="mx-auto max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-sm sm:p-8">
+      <div className="container-page min-h-screen flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-md sm:p-8">
           <div className="text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]">
-              <Lock className="size-6" />
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA] shadow-xs">
+              <Lock className="size-7" />
             </div>
-            <h1 className="mt-3 font-sans text-2xl font-bold text-[#1F2924]">
-              Owner / Admin Access
+            <h1 className="mt-4 font-sans text-2xl font-bold text-[#1F2924]">
+              Store Management Portal
             </h1>
             <p className="mt-1 text-xs text-[#6B746F]">
-              Secure store management portal for Arun Gopal Traders, Maharajganj.
+              Restricted owner authentication for Arun Gopal Traders.
             </p>
           </div>
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#1F2924]">Store Manager PIN / Key</label>
+              <label className="text-xs font-bold text-[#1F2924]">Store Passcode / PIN</label>
               <Input
                 type="password"
                 required
-                placeholder="Enter 4-digit PIN or admin key"
+                autoFocus
+                placeholder="••••"
                 value={adminPin}
                 onChange={(e) => setAdminPin(e.target.value)}
-                className="rounded-xl text-center font-mono text-lg tracking-widest border-[#E8E4DA] bg-white"
+                className="h-12 rounded-xl text-center font-mono text-xl tracking-widest border-[#E8E4DA] bg-white focus-visible:border-[#145A45]"
               />
             </div>
 
-            <Button type="submit" className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]">
+            <Button
+              type="submit"
+              className="h-12 w-full rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-95 transition-all text-sm"
+            >
               Unlock Dashboard <ShieldCheck className="ml-2 size-4" />
             </Button>
           </form>
 
-          <div className="mt-6 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 text-center text-xs text-[#6B746F]">
-            💡 <strong>Store PIN:</strong> <code>6388</code>, <code>9621</code> or <code>admin123</code>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Link to="/" className="text-xs font-semibold text-[#145A45] hover:underline">
+          <div className="mt-6 text-center">
+            <Link
+              to="/"
+              className="inline-flex items-center min-h-[44px] px-3 text-xs font-semibold text-[#145A45] hover:underline"
+            >
               ← Return to Customer Store
             </Link>
           </div>
@@ -203,56 +219,152 @@ function AdminPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-[#FAF8F2]">
+    <div className="min-h-screen bg-[#FAF8F2] overflow-x-hidden">
       {/* Top Admin Header Bar */}
-      <div className="sticky top-0 z-30 border-b border-[#E8E4DA] bg-white/95 backdrop-blur-md">
-        <div className="container-page flex h-16 items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl bg-[#145A45] font-sans text-base font-bold text-white">
+      <header className="sticky top-0 z-30 border-b border-[#E8E4DA] bg-white/95 backdrop-blur-md shadow-2xs">
+        <div className="container-page flex h-16 items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Mobile Drawer Trigger */}
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              aria-label="Open Admin Navigation"
+              className="flex size-11 items-center justify-center rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] lg:hidden active:scale-95 transition-all"
+            >
+              <LayoutDashboard className="size-5 text-[#145A45]" />
+            </button>
+
+            <span className="hidden sm:grid size-10 place-items-center rounded-xl bg-[#145A45] font-sans text-base font-bold text-white shadow-2xs">
               🌾
             </span>
             <div>
-              <h2 className="font-sans font-bold text-base leading-tight text-[#1F2924] sm:text-lg">
+              <h2 className="font-sans font-bold text-sm sm:text-base leading-tight text-[#1F2924]">
                 Arun Gopal Traders Admin
               </h2>
-              <span className="text-[11px] text-[#6B746F]">
+              <span className="text-[11px] text-[#6B746F] hidden sm:inline">
                 Store Control &amp; Inventory Center
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
+            <button
+              type="button"
               onClick={refreshAllData}
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1 text-xs font-semibold border-[#E8E4DA] text-[#1F2924]"
+              title="Refresh Data"
+              className="flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-full border border-[#E8E4DA] bg-white px-3.5 text-xs font-semibold text-[#1F2924] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs"
             >
-              <RefreshCw className="size-3.5" /> Refresh Live Data
-            </Button>
+              <RefreshCw className="size-3.5 text-[#145A45]" />
+              <span className="hidden sm:inline">Refresh Data</span>
+            </button>
 
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex rounded-full gap-1 text-xs text-[#145A45] hover:bg-[#FAF8F2]"
+            <Link
+              to="/"
+              className="hidden md:flex h-11 min-w-[44px] items-center justify-center rounded-full border border-[#E8E4DA] bg-white px-3.5 text-xs font-semibold text-[#145A45] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs gap-1"
             >
-              <Link to="/">
-                <Store className="size-3.5" /> View Shop <ExternalLink className="size-3" />
-              </Link>
-            </Button>
+              <Store className="size-3.5" /> <span>View Store</span> <ExternalLink className="size-3" />
+            </Link>
 
-            <Button
+            <button
+              type="button"
               onClick={handleLock}
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1 text-xs text-red-600 border-red-200 hover:bg-red-50"
+              title="Lock Admin Portal"
+              className="flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-full border border-red-200 bg-red-50/70 px-3.5 text-xs font-bold text-red-700 hover:bg-red-100 active:scale-95 transition-all shadow-2xs"
             >
-              <LogOut className="size-3.5" /> Lock
-            </Button>
+              <LogOut className="size-3.5" />
+              <span className="hidden sm:inline">Lock</span>
+            </button>
           </div>
         </div>
-      </div>
+      </header>
+
+      {/* Mobile Slide-in Drawer Navigation */}
+      {mobileDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
+          <div className="relative flex w-80 max-w-[85vw] flex-col bg-white border-r border-[#E8E4DA] p-5 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-4">
+              <div className="flex items-center gap-2">
+                <span className="grid size-8 place-items-center rounded-lg bg-[#145A45] text-white font-bold text-sm">
+                  🌾
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-[#145A45]">Admin Portal</h3>
+                  <p className="text-[10px] text-[#6B746F]">Arun Gopal Traders</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex size-9 items-center justify-center rounded-lg border border-[#E8E4DA] text-[#6B746F]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <nav className="mt-4 flex-1 space-y-1 overflow-y-auto">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      if (tab.id !== "orders") setSelectedOrder(null);
+                      setMobileDrawerOpen(false);
+                    }}
+                    className={`flex w-full min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                      isActive
+                        ? "bg-[#145A45] text-white shadow-xs font-bold"
+                        : "text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#1F2924]"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <Icon className="size-4" />
+                      {tab.label}
+                    </span>
+
+                    {tab.id === "orders" && pendingOrdersCount > 0 ? (
+                      <span
+                        className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
+                          isActive
+                            ? "bg-[#E3B341] text-[#1F2924]"
+                            : "bg-[#E3B341]/30 text-[#1F2924]"
+                        }`}
+                      >
+                        {pendingOrdersCount}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="border-t border-[#E8E4DA] pt-4 space-y-2">
+              <Link
+                to="/"
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] px-3 text-xs font-bold text-[#145A45]"
+              >
+                <Store className="size-4" /> View Customer Store
+              </Link>
+              <button
+                type="button"
+                onClick={handleLock}
+                className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 text-xs font-bold text-red-700"
+              >
+                <LogOut className="size-4" /> Lock Admin Portal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Admin Workspace Grid */}
       <div className="container-page py-6">

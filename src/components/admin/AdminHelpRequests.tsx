@@ -65,48 +65,59 @@ export function AdminHelpRequests() {
   const openCount = requests.filter((r) => r.status === "open").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-xs">
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="font-display font-bold text-lg text-foreground">
+          <h3 className="font-sans font-bold text-base sm:text-lg text-[#1F2924]">
             Customer Support &amp; Order Inquiries
           </h3>
-          <p className="text-xs text-muted-foreground">
-            Inquiries and assistance tickets submitted by customers on the Contact page.
+          <p className="text-xs text-[#6B746F]">
+            Inquiries and assistance tickets submitted by Maharajganj customers.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Button
             variant={filter === "open" ? "default" : "outline"}
-            size="sm"
             onClick={() => setFilter("open")}
-            className="rounded-xl text-xs"
+            className={`rounded-xl text-xs h-10 px-3.5 ${
+              filter === "open"
+                ? "bg-[#145A45] text-white font-bold"
+                : openCount > 0
+                  ? "border-amber-300 text-amber-800 bg-amber-50"
+                  : "border-[#E8E4DA] text-[#1F2924]"
+            }`}
           >
             Open ({openCount})
           </Button>
           <Button
             variant={filter === "resolved" ? "default" : "outline"}
-            size="sm"
             onClick={() => setFilter("resolved")}
-            className="rounded-xl text-xs"
+            className={`rounded-xl text-xs h-10 px-3.5 ${
+              filter === "resolved"
+                ? "bg-[#145A45] text-white font-bold"
+                : "border-[#E8E4DA] text-[#1F2924]"
+            }`}
           >
             Resolved ({requests.length - openCount})
           </Button>
           <Button
             variant={filter === "all" ? "default" : "outline"}
-            size="sm"
             onClick={() => setFilter("all")}
-            className="rounded-xl text-xs"
+            className={`rounded-xl text-xs h-10 px-3.5 ${
+              filter === "all"
+                ? "bg-[#145A45] text-white font-bold"
+                : "border-[#E8E4DA] text-[#1F2924]"
+            }`}
           >
             All ({requests.length})
           </Button>
           <Button
             onClick={loadHelpRequests}
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="rounded-xl"
+            className="rounded-xl border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-10 w-10 shrink-0"
             aria-label="Refresh"
           >
             <RefreshCw className="size-4" />
@@ -114,83 +125,85 @@ export function AdminHelpRequests() {
         </div>
       </div>
 
-      {/* Requests Grid */}
+      {/* Requests List */}
       <div className="space-y-3">
         {filtered.length > 0 ? (
           filtered.map((req) => (
             <div
               key={req.id}
-              className={`rounded-2xl border p-5 shadow-xs transition-all ${
+              className={`rounded-2xl border p-4 sm:p-5 shadow-2xs transition-all space-y-3 ${
                 req.status === "open"
-                  ? "border-warning/40 bg-card"
-                  : "border-border bg-muted/30 opacity-75"
+                  ? "border-amber-300 bg-white"
+                  : "border-[#E8E4DA] bg-white opacity-85"
               }`}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-display font-bold text-base text-foreground">
+                    <span className="font-sans font-bold text-sm sm:text-base text-[#1F2924]">
                       {req.name}
                     </span>
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                         req.status === "open"
-                          ? "bg-warning/15 text-warning"
-                          : "bg-success/15 text-success"
+                          ? "bg-amber-100 text-amber-800 border border-amber-200"
+                          : "bg-emerald-100 text-emerald-800"
                       }`}
                     >
                       {req.status === "open" ? "Open Needs Call" : "Resolved"}
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-[#6B746F]">
                     <a
                       href={telHref(req.phone)}
-                      className="flex items-center gap-1 font-bold text-primary hover:underline"
+                      className="inline-flex items-center gap-1 font-bold text-[#145A45] hover:underline"
                     >
-                      <Phone className="size-3" /> +91 {req.phone}
+                      <Phone className="size-3.5" /> +91 {req.phone}
                     </a>
-                    {req.order_no ? (
+                    {req.order_no && (
                       <span>
                         • Order:{" "}
-                        <strong className="font-mono text-foreground">{req.order_no}</strong>
+                        <strong className="font-mono text-[#1F2924]">{req.order_no}</strong>
                       </span>
-                    ) : null}
+                    )}
                     <span>• {formatDate(req.created_at)}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button asChild size="sm" className="h-8 rounded-xl text-xs font-bold shadow-xs">
+                  <Button asChild className="h-10 rounded-xl text-xs font-bold bg-[#145A45] text-white hover:bg-[#0E4333] shadow-xs px-4">
                     <a href={telHref(req.phone)}>
-                      <Phone className="size-3 mr-1" /> Call Customer
+                      <Phone className="size-3.5 mr-1" /> Call Customer
                     </a>
                   </Button>
                   <Button
                     onClick={() => toggleStatus(req)}
                     variant="outline"
-                    size="sm"
-                    className="h-8 rounded-xl text-xs font-semibold"
+                    className="h-10 rounded-xl text-xs font-semibold px-4 border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2]"
                   >
                     {req.status === "open" ? "Mark Resolved" : "Re-open"}
                   </Button>
                 </div>
               </div>
 
-              <div className="mt-3 rounded-xl bg-muted/50 p-3 text-xs space-y-1">
-                <p className="font-semibold text-foreground">Issue Category: {req.problem_type}</p>
-                {req.message ? (
-                  <p className="text-muted-foreground leading-relaxed italic">{req.message}</p>
-                ) : null}
+              <div className="rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 text-xs space-y-1">
+                <p className="font-bold text-[#1F2924]">Issue Category: {req.problem_type}</p>
+                {req.message && (
+                  <p className="text-[#6B746F] leading-relaxed italic">{req.message}</p>
+                )}
               </div>
             </div>
           ))
         ) : (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground text-xs">
-            No support inquiries found in this view.
+          <div className="rounded-2xl border border-[#E8E4DA] bg-white p-12 text-center text-[#6B746F] text-xs">
+            <HelpCircle className="mx-auto size-8 text-[#6B746F]/40 mb-2" />
+            <p className="font-bold text-[#1F2924]">No support inquiries found in this view</p>
+            <p className="text-[11px] text-[#6B746F] mt-1">Customer inquiries from the contact form will appear here.</p>
           </div>
         )}
       </div>
     </div>
   );
 }
+

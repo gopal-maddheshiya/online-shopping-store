@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  LayoutDashboard,
 } from "lucide-react";
 import { settingsQuery } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
@@ -195,14 +194,6 @@ export function Footer() {
             <li>
               <Link to="/contact" className="hover:text-[#145A45]">
                 Help &amp; Support
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/admin"
-                className="font-semibold text-[#145A45] hover:underline flex items-center gap-1 mt-2"
-              >
-                <LayoutDashboard className="size-3.5" /> Owner / Admin Portal →
               </Link>
             </li>
           </ul>

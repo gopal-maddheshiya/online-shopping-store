@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -11,6 +11,7 @@ import {
   EyeOff,
   Image as ImageIcon,
   Check,
+  Boxes,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,13 +36,25 @@ type AdminProductsProps = {
   products: Product[];
   categories: Category[];
   onRefresh: () => void;
+  initialOpenAdd?: boolean;
 };
 
-export function AdminProducts({ products, categories, onRefresh }: AdminProductsProps) {
+export function AdminProducts({
+  products,
+  categories,
+  onRefresh,
+  initialOpenAdd = false,
+}: AdminProductsProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(initialOpenAdd);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (initialOpenAdd) {
+      openAddModal();
+    }
+  }, [initialOpenAdd]);
 
   type VariantFormItem = {
     id?: string | undefined;
@@ -73,7 +86,6 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
   const [isSaving, setIsSaving] = useState(false);
 
   const parentCategories = categories.filter((c) => !c.parent_id);
-  const subcategories = categories.filter((c) => c.parent_id === categoryId);
 
   function openAddModal() {
     setEditingProduct(null);
@@ -302,28 +314,28 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Header Bar */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex flex-col gap-3 rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-[#6B746F]" />
             <Input
-              placeholder="Search products by title or brand (Fortune, Tata, Maggi)…"
+              placeholder="Search products by name or brand (Fortune, Tata, Maggi)…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 rounded-xl text-xs"
+              className="pl-9.5 rounded-xl text-xs border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white h-11"
             />
           </div>
 
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48 rounded-xl text-xs font-semibold">
+            <SelectTrigger className="w-full sm:w-48 rounded-xl text-xs font-semibold border-[#E8E4DA] bg-[#FAF8F2]/60 h-11">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="all" className="text-xs">All Categories</SelectItem>
               {parentCategories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
+                <SelectItem key={c.id} value={c.id} className="text-xs">
                   {c.name}
                 </SelectItem>
               ))}
@@ -331,23 +343,26 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
           </Select>
         </div>
 
-        <Button onClick={openAddModal} className="rounded-xl font-bold shadow-xs">
+        <Button
+          onClick={openAddModal}
+          className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 text-xs shadow-xs shrink-0"
+        >
           <Plus className="mr-1.5 size-4" /> Add Product
         </Button>
       </div>
 
-      {/* Products Table */}
       {/* Products List: Mobile Cards + Desktop Table */}
       {filteredProducts.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
-          No products found. Click "Add Product" to add grocery items.
+        <div className="rounded-2xl border border-[#E8E4DA] bg-white p-12 text-center text-xs text-[#6B746F]">
+          <Package className="mx-auto size-8 text-[#6B746F]/40 mb-2" />
+          <p className="font-bold text-[#1F2924]">No products found</p>
+          <p className="text-[11px] text-[#6B746F] mt-1">Click "Add Product" to add grocery items to your store.</p>
         </div>
       ) : (
         <>
           {/* Mobile Product Cards (< sm) */}
           <div className="space-y-3 sm:hidden">
             {filteredProducts.map((p) => {
-              const cat = categories.find((c) => c.id === p.category_id);
               const vars = p.product_variants ?? [];
               const totalStock = vars.reduce((s, v) => s + v.stock, 0);
               const minPrice = vars.length ? Math.min(...vars.map((v) => Number(v.price))) : 0;
@@ -356,35 +371,35 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
               return (
                 <div
                   key={p.id}
-                  className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3"
+                  className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-2xs space-y-3"
                 >
                   <div className="flex items-center gap-3">
                     <img
                       src={getProductImage(p)}
                       alt={p.name}
-                      className="size-14 rounded-xl object-contain bg-white border border-[#EFECE6] p-1 shrink-0"
+                      className="size-14 rounded-xl object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                        <span className="text-[10px] uppercase font-bold text-[#6B746F]">
                           {p.brand || "Arun Gopal"}
                         </span>
                         <span
                           className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
                             totalStock === 0
-                              ? "bg-destructive/10 text-destructive"
+                              ? "bg-red-100 text-red-700"
                               : totalStock <= 10
-                                ? "bg-warning/10 text-warning"
-                                : "bg-success/10 text-success"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-100 text-emerald-800"
                           }`}
                         >
                           {totalStock === 0 ? "Out of Stock" : `${totalStock} in stock`}
                         </span>
                       </div>
-                      <p className="font-semibold text-foreground text-xs leading-snug line-clamp-1">
+                      <p className="font-semibold text-[#1F2924] text-xs leading-snug line-clamp-1">
                         {p.name}
                       </p>
-                      <p className="font-display font-extrabold text-foreground text-sm mt-0.5">
+                      <p className="font-sans font-extrabold text-[#145A45] text-sm mt-0.5">
                         {minPrice === maxPrice
                           ? inr(minPrice)
                           : `${inr(minPrice)} – ${inr(maxPrice)}`}
@@ -392,27 +407,27 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-1 pt-1 border-t border-border">
+                  <div className="flex flex-wrap gap-1 pt-1 border-t border-[#E8E4DA]/60">
                     {vars.map((v) => (
                       <span
                         key={v.id}
-                        className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px]"
+                        className="rounded-md border border-[#E8E4DA] bg-[#FAF8F2] px-1.5 py-0.5 text-[10px] text-[#1F2924]"
                       >
                         {v.label}: {inr(v.price)}
                       </span>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#E8E4DA]">
                     <button
                       onClick={() => handleToggleActive(p)}
-                      className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 min-h-[36px] text-xs font-bold transition-colors ${
                         p.is_active
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-stone-100 text-stone-600"
                       }`}
                     >
-                      {p.is_active ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+                      {p.is_active ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                       {p.is_active ? "Active" : "Hidden"}
                     </button>
 
@@ -420,8 +435,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                       <Button
                         onClick={() => openEditModal(p)}
                         variant="outline"
-                        size="sm"
-                        className="h-8 rounded-lg text-xs font-semibold px-3"
+                        className="h-10 rounded-xl text-xs font-semibold px-3.5 border-[#E8E4DA] bg-white text-[#145A45] hover:bg-[#FAF8F2]"
                       >
                         <Edit2 className="mr-1 size-3.5" /> Edit
                       </Button>
@@ -429,10 +443,10 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                         onClick={() => handleDeleteProduct(p)}
                         variant="ghost"
                         size="icon"
-                        className="size-8 rounded-lg text-destructive hover:bg-destructive/10"
+                        className="size-10 rounded-xl text-red-600 hover:bg-red-50"
                         aria-label="Delete"
                       >
-                        <Trash2 className="size-3.5" />
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </div>
@@ -442,11 +456,11 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
           </div>
 
           {/* Desktop Product Table (>= sm) */}
-          <div className="hidden sm:block overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+          <div className="hidden sm:block overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50 text-muted-foreground">
+                  <tr className="border-b border-[#E8E4DA] bg-[#FAF8F2]/60 text-[#6B746F]">
                     <th className="py-3 px-4 font-semibold">Product</th>
                     <th className="py-3 px-4 font-semibold">Brand &amp; Category</th>
                     <th className="py-3 px-4 font-semibold">Variants / Sizes</th>
@@ -456,7 +470,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                     <th className="py-3 px-4 text-right font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-[#E8E4DA]">
                   {filteredProducts.map((p) => {
                     const cat = categories.find((c) => c.id === p.category_id);
                     const vars = p.product_variants ?? [];
@@ -469,17 +483,17 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                       : 0;
 
                     return (
-                      <tr key={p.id} className="hover:bg-muted/30 transition-colors">
+                      <tr key={p.id} className="hover:bg-[#FAF8F2]/50 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <img
                               src={getProductImage(p)}
                               alt={p.name}
-                              className="size-12 rounded-xl object-contain bg-white border border-[#EFECE6] p-1"
+                              className="size-11 rounded-xl object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1"
                             />
                             <div className="min-w-0 max-w-[200px]">
-                              <p className="truncate font-semibold text-foreground">{p.name}</p>
-                              <span className="text-[10px] text-muted-foreground font-mono">
+                              <p className="truncate font-semibold text-[#1F2924]">{p.name}</p>
+                              <span className="text-[10px] text-[#6B746F] font-mono">
                                 /{p.slug}
                               </span>
                             </div>
@@ -487,8 +501,8 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                         </td>
 
                         <td className="py-3 px-4">
-                          <p className="font-semibold text-foreground">{p.brand || "—"}</p>
-                          <p className="text-muted-foreground">{cat?.name || "General"}</p>
+                          <p className="font-semibold text-[#1F2924]">{p.brand || "—"}</p>
+                          <p className="text-[#6B746F]">{cat?.name || "General"}</p>
                         </td>
 
                         <td className="py-3 px-4">
@@ -496,7 +510,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                             {vars.map((v) => (
                               <span
                                 key={v.id}
-                                className="rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px]"
+                                className="rounded-md border border-[#E8E4DA] bg-[#FAF8F2] px-1.5 py-0.5 text-[10px] text-[#1F2924]"
                               >
                                 {v.label} ({inr(v.price)})
                               </span>
@@ -505,7 +519,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                         </td>
 
                         <td className="py-3 px-4">
-                          <span className="font-bold text-foreground font-display">
+                          <span className="font-bold text-[#1F2924] font-sans">
                             {minPrice === maxPrice
                               ? inr(minPrice)
                               : `${inr(minPrice)} – ${inr(maxPrice)}`}
@@ -516,10 +530,10 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                           <span
                             className={`rounded-md px-2 py-0.5 font-bold ${
                               totalStock === 0
-                                ? "bg-destructive/10 text-destructive"
+                                ? "bg-red-100 text-red-700"
                                 : totalStock <= 10
-                                  ? "bg-warning/10 text-warning"
-                                  : "bg-success/10 text-success"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-emerald-100 text-emerald-800"
                             }`}
                           >
                             {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
@@ -531,8 +545,8 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                             onClick={() => handleToggleActive(p)}
                             className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${
                               p.is_active
-                                ? "bg-success/10 text-success"
-                                : "bg-muted text-muted-foreground"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-stone-100 text-stone-600"
                             }`}
                           >
                             {p.is_active ? (
@@ -550,7 +564,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                               onClick={() => openEditModal(p)}
                               variant="outline"
                               size="icon"
-                              className="size-7 rounded-lg"
+                              className="size-7.5 rounded-lg border-[#E8E4DA] text-[#145A45] hover:bg-[#FAF8F2]"
                               aria-label="Edit"
                             >
                               <Edit2 className="size-3.5" />
@@ -559,7 +573,7 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                               onClick={() => handleDeleteProduct(p)}
                               variant="ghost"
                               size="icon"
-                              className="size-7 rounded-lg text-destructive hover:bg-destructive/10"
+                              className="size-7.5 rounded-lg text-red-600 hover:bg-red-50"
                               aria-label="Delete"
                             >
                               <Trash2 className="size-3.5" />
@@ -576,98 +590,85 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
         </>
       )}
 
-      {/* Add / Edit Product Modal */}
+      {/* Add / Edit Product Modal (Organized, Mobile-Friendly) */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl">
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl border-[#E8E4DA] bg-white">
+          <DialogHeader className="border-b border-[#E8E4DA] pb-3">
+            <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
               {editingProduct ? `Edit "${editingProduct.name}"` : "Add New Grocery Product"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSaveProduct} className="space-y-5 py-2">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">
-                  Product Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  required
-                  placeholder="e.g. Fortune Chakki Fresh Atta"
-                  value={name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  className="rounded-xl"
-                />
-              </div>
+          <form onSubmit={handleSaveProduct} className="space-y-4 py-2">
+            {/* Section 1: Basic Info */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
+                1. Basic Information
+              </h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    Product Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    placeholder="e.g. Fortune Chakki Fresh Atta"
+                    value={name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">
-                  URL Slug <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  required
-                  placeholder="fortune-chakki-fresh-atta"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="rounded-xl font-mono text-xs"
-                />
-              </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    URL Slug <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    placeholder="fortune-chakki-fresh-atta"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Brand / Manufacturer</Label>
-                <Input
-                  placeholder="e.g. Fortune, Tata, MDH, Amul"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="rounded-xl"
-                />
-              </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">Brand / Manufacturer</Label>
+                  <Input
+                    placeholder="e.g. Fortune, Tata, MDH, Amul"
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Primary Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="rounded-xl">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parentCategories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold">Product Image URL / Asset</Label>
-                <Input
-                  placeholder="/images/atta.jpg or https://…"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="rounded-xl text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold">Description / Highlights</Label>
-                <Textarea
-                  rows={2}
-                  placeholder="Pure 100% whole wheat chakki atta with natural dietary fiber…"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="rounded-xl text-xs"
-                />
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-xs font-semibold text-[#1F2924]">Primary Category</Label>
+                  <Select value={categoryId} onValueChange={setCategoryId}>
+                    <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-9">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {parentCategories.map((c) => (
+                        <SelectItem key={c.id} value={c.id} className="text-xs">
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            {/* Variants Management */}
-            <div className="rounded-2xl border border-border bg-muted/40 p-4 space-y-3">
-              <div className="flex items-center justify-between">
+            {/* Section 2: Variants, Pricing & Stock */}
+            <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-3.5 sm:p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h4 className="font-display font-bold text-sm">Pack Sizes &amp; Variants</h4>
-                  <p className="text-[11px] text-muted-foreground">
-                    Set individual weight/volume, MRP, selling price, and stock for each pack.
+                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#1F2924]">
+                    2. Pack Sizes, Pricing &amp; Inventory
+                  </h4>
+                  <p className="text-[10px] sm:text-[11px] text-[#6B746F]">
+                    Set pack label, MRP, selling price, and stock quantity.
                   </p>
                 </div>
                 <Button
@@ -675,118 +676,200 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
                   onClick={addVariantRow}
                   variant="outline"
                   size="sm"
-                  className="rounded-lg text-xs"
+                  className="rounded-xl text-xs border-[#E8E4DA] bg-white text-[#145A45] hover:bg-[#FAF8F2] h-7.5"
                 >
-                  <Plus className="size-3.5 mr-1" /> Add Pack Size
+                  <Plus className="size-3.5 mr-1" /> Add Pack
                 </Button>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {variants.map((v, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-12 gap-2 items-center rounded-xl bg-card p-2.5 border border-border text-xs"
+                    className="rounded-xl bg-white p-3 border border-[#E8E4DA] text-xs shadow-2xs space-y-2"
                   >
-                    <div className="col-span-3">
-                      <Label className="text-[10px] text-muted-foreground">Pack Label</Label>
-                      <Input
-                        placeholder="e.g. 5 kg"
-                        value={v.label}
-                        onChange={(e) => updateVariant(idx, "label", e.target.value)}
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-center">
+                      <div>
+                        <Label className="text-[10px] text-[#6B746F] font-semibold">Pack Label</Label>
+                        <Input
+                          placeholder="e.g. 5 kg"
+                          value={v.label}
+                          onChange={(e) => updateVariant(idx, "label", e.target.value)}
+                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                        />
+                      </div>
 
-                    <div className="col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">MRP (₹)</Label>
-                      <Input
-                        type="number"
-                        placeholder="300"
-                        value={v.mrp}
-                        onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
+                      <div>
+                        <Label className="text-[10px] text-[#6B746F] font-semibold">MRP (₹)</Label>
+                        <Input
+                          type="number"
+                          placeholder="300"
+                          value={v.mrp}
+                          onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
+                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                        />
+                      </div>
 
-                    <div className="col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Selling (₹)</Label>
-                      <Input
-                        type="number"
-                        placeholder="275"
-                        value={v.price}
-                        onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
+                      <div>
+                        <Label className="text-[10px] text-[#6B746F] font-semibold">Selling (₹)</Label>
+                        <Input
+                          type="number"
+                          placeholder="275"
+                          value={v.price}
+                          onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
+                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                        />
+                      </div>
 
-                    <div className="col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Stock Qty</Label>
-                      <Input
-                        type="number"
-                        placeholder="50"
-                        value={v.stock}
-                        onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
+                      <div>
+                        <Label className="text-[10px] text-[#6B746F] font-semibold">Stock Qty</Label>
+                        <Input
+                          type="number"
+                          placeholder="50"
+                          value={v.stock}
+                          onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
+                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                        />
+                      </div>
 
-                    <div className="col-span-2">
-                      <Label className="text-[10px] text-muted-foreground">Low Alert</Label>
-                      <Input
-                        type="number"
-                        placeholder="5"
-                        value={v.low_stock_threshold}
-                        onChange={(e) =>
-                          updateVariant(idx, "low_stock_threshold", Number(e.target.value))
-                        }
-                        className="h-8 text-xs rounded-lg"
-                      />
-                    </div>
-
-                    <div className="col-span-1 text-right pt-4">
-                      <Button
-                        type="button"
-                        onClick={() => removeVariantRow(idx)}
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 text-destructive"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </Button>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex-1">
+                          <Label className="text-[10px] text-[#6B746F] font-semibold">Low Alert</Label>
+                          <Input
+                            type="number"
+                            placeholder="5"
+                            value={v.low_stock_threshold}
+                            onChange={(e) =>
+                              updateVariant(idx, "low_stock_threshold", Number(e.target.value))
+                            }
+                            className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                          />
+                        </div>
+                        {variants.length > 1 && (
+                          <Button
+                            type="button"
+                            onClick={() => removeVariantRow(idx)}
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 text-red-600 hover:bg-red-50 mt-3"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Badges and toggles */}
-            <div className="flex flex-wrap gap-6 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+            {/* Section 3: Media & Description */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
+                3. Image &amp; Description
+              </h4>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    Product Image URL / Asset Link
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={imageUrl || "/images/packaged.jpg"}
+                      alt="Preview"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                      }}
+                      className="size-14 rounded-xl object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1 shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <Input
+                        placeholder="https://... ya /images/atta.jpg"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        className="rounded-xl text-xs border-[#E8E4DA] h-9"
+                      />
+                      <p className="text-[10px] text-[#6B746F]">
+                        Koi bhi online image URL daalein ya neeche quick presets me se choose karein:
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Badges */}
+                  <div className="flex flex-wrap gap-1.5 pt-1.5">
+                    {[
+                      { label: "🌾 Atta", url: "/images/atta.jpg" },
+                      { label: "🍚 Rice", url: "/images/rice.jpg" },
+                      { label: "🫘 Dal", url: "/images/dal.jpg" },
+                      { label: "🛢️ Oil/Ghee", url: "/images/oil.jpg" },
+                      { label: "🌶️ Spices", url: "/images/spices.jpg" },
+                      { label: "🍪 Biscuits", url: "/images/biscuits.jpg" },
+                      { label: "🍵 Tea", url: "/images/tea.jpg" },
+                      { label: "🥨 Snacks", url: "/images/snacks.jpg" },
+                      { label: "🧼 Detergent", url: "/images/surf_excel_detergent_1787801991917.jpg" },
+                      { label: "📦 General", url: "/images/packaged.jpg" },
+                    ].map((preset) => (
+                      <button
+                        key={preset.url}
+                        type="button"
+                        onClick={() => setImageUrl(preset.url)}
+                        className={`rounded-lg px-2 py-1 text-[11px] font-medium border transition-colors ${
+                          imageUrl === preset.url
+                            ? "bg-[#145A45] text-white border-[#145A45]"
+                            : "bg-[#FAF8F2] text-[#1F2924] border-[#E8E4DA] hover:bg-white"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">Description / Highlights</Label>
+                  <Textarea
+                    rows={2}
+                    placeholder="Pure whole wheat chakki atta with natural dietary fiber…"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="rounded-xl text-xs border-[#E8E4DA]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Visibility & Badges */}
+            <div className="flex flex-wrap gap-4 pt-2 border-t border-[#E8E4DA]">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
                 <Checkbox checked={isFeatured} onCheckedChange={(c) => setIsFeatured(Boolean(c))} />
                 <span>Featured on Homepage</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
                 <Checkbox checked={isPopular} onCheckedChange={(c) => setIsPopular(Boolean(c))} />
                 <span>Popular in Maharajganj</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
                 <Checkbox checked={isActive} onCheckedChange={(c) => setIsActive(Boolean(c))} />
-                <span>Active &amp; Visible to Customers</span>
+                <span>Active &amp; Visible</span>
               </label>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-end gap-2 pt-3 border-t border-[#E8E4DA]">
               <Button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
                 variant="outline"
-                className="rounded-xl text-xs"
+                className="rounded-xl text-xs border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-9"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSaving} className="rounded-xl font-bold">
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs"
+              >
                 {isSaving ? "Saving…" : editingProduct ? "Update Product" : "Create Product"}
               </Button>
             </div>
@@ -796,3 +879,4 @@ export function AdminProducts({ products, categories, onRefresh }: AdminProducts
     </div>
   );
 }
+

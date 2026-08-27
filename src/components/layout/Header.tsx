@@ -12,7 +12,6 @@ import {
   Clock,
   Sparkles,
   PhoneCall,
-  LayoutDashboard,
   Store,
   ChevronRight,
   ShieldCheck,
@@ -25,8 +24,8 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
-import { settingsQuery, categoriesQuery, isOpenNow } from "@/lib/queries";
-import { getCategoryThumbnail } from "@/lib/product-images";
+import { settingsQuery, categoriesQuery, productsQuery, isOpenNow } from "@/lib/queries";
+import { getCategoryThumbnail, getProductImage } from "@/lib/product-images";
 import { telHref, inr } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 
@@ -35,15 +34,38 @@ export function Header() {
   const { count: cartCount, subtotal } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { profile } = useAuth();
-  const { lang, setLang, t, formatStatus, getCategoryName } = useLanguage();
+  const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const status = isOpenNow(settings);
 
+  const { data: categories = [] } = useQuery(categoriesQuery);
+  const { data: products = [] } = useQuery(productsQuery());
+
+  const matchingCategories = term.trim().length >= 2
+    ? categories.filter((c) =>
+        c.name.toLowerCase().includes(term.toLowerCase()) ||
+        c.slug.toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 3)
+    : [];
+
+  const matchingProducts = term.trim().length >= 2
+    ? products.filter((p) => {
+        const hName = getProductName(p.name, p.slug);
+        return (
+          p.name.toLowerCase().includes(term.toLowerCase()) ||
+          hName.toLowerCase().includes(term.toLowerCase()) ||
+          (p.brand && p.brand.toLowerCase().includes(term.toLowerCase()))
+        );
+      }).slice(0, 5)
+    : [];
+
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
+    setShowSuggestions(false);
     void navigate({ to: "/shop", search: { q: term.trim() || undefined } as never });
   }
 
@@ -57,8 +79,7 @@ export function Header() {
     { to: "/contact", label: t.helpCenter },
   ] as const;
 
-  const { data: categories } = useQuery(categoriesQuery);
-  const parentCategories = (categories ?? []).filter((c) => !c.parent_id);
+  const parentCategories = categories.filter((c) => !c.parent_id);
 
   return (
     <>
@@ -201,15 +222,6 @@ export function Header() {
                           : t.login}
                       </span>
                     </Link>
-                    <Link
-                      to="/admin"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[#145A45] hover:bg-[#DCEBDD]/50"
-                    >
-                      <span className="flex items-center gap-2">
-                        <LayoutDashboard className="size-4" /> {t.adminPortal}
-                      </span>
-                    </Link>
                   </nav>
 
                   {/* All Categories Directory in Hamburger */}
@@ -262,23 +274,114 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Desktop Center: Search Bar */}
-          <form onSubmit={submitSearch} className="relative hidden w-full max-w-lg md:block">
-            <Input
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              placeholder={t.searchPlaceholder}
-              className="h-10 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
-              aria-label="Search grocery items"
-            />
-            <button
-              type="submit"
-              className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#6B746F] hover:text-[#145A45]"
-              aria-label="Submit search"
-            >
-              <Search className="size-4" />
-            </button>
-          </form>
+          {/* Desktop Center: Search Bar with Live Suggestions Dropdown */}
+          <div className="relative hidden w-full max-w-lg md:block">
+            <form onSubmit={submitSearch} className="relative w-full">
+              <Input
+                value={term}
+                onChange={(e) => {
+                  setTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder={t.searchPlaceholder}
+                className="h-10 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
+                aria-label="Search grocery items"
+              />
+              <button
+                type="submit"
+                className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#6B746F] hover:text-[#145A45]"
+                aria-label="Submit search"
+              >
+                <Search className="size-4" />
+              </button>
+            </form>
+
+            {/* Desktop Autocomplete Popover */}
+            {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
+              <div
+                className="absolute top-12 left-0 right-0 z-50 rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-xl space-y-3"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                {matchingCategories.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                      {lang === "hi" ? "श्रेणियां" : "Categories"}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {matchingCategories.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setTerm("");
+                            void navigate({ to: "/shop", search: { category: c.slug } as never });
+                          }}
+                          className="flex items-center gap-1.5 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] px-2.5 py-1 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD] transition-colors"
+                        >
+                          <img
+                            src={getCategoryThumbnail(c)}
+                            alt={c.name}
+                            className="size-4 rounded object-cover"
+                          />
+                          <span>{getCategoryName(c.name, c.slug)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {matchingProducts.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                      {lang === "hi" ? "उत्पाद" : "Products"}
+                    </p>
+                    <div className="divide-y divide-[#E8E4DA]/60">
+                      {matchingProducts.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setTerm("");
+                            void navigate({ to: "/product/$slug", params: { slug: p.slug } });
+                          }}
+                          className="flex items-center justify-between w-full py-1.5 px-1 hover:bg-[#FAF8F2] rounded-lg text-left transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <img
+                              src={getProductImage(p)}
+                              alt={p.name}
+                              className="size-7 rounded object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5 shrink-0"
+                            />
+                            <span className="text-xs font-bold text-[#1F2924] truncate">
+                              {getProductName(p.name, p.slug)}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold text-[#145A45] shrink-0">
+                            {inr(p.product_variants?.[0]?.price ?? 0)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border-t border-[#E8E4DA] pt-1.5 text-center">
+                  <button
+                    type="button"
+                    onClick={(e) => submitSearch(e)}
+                    className="text-xs font-bold text-[#145A45] hover:underline"
+                  >
+                    {lang === "hi"
+                      ? `"${term}" के सभी परिणाम देखें →`
+                      : `View all results for "${term}" →`}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Desktop Right Actions: Call, Account, Wishlist, Cart */}
           <div className="flex items-center gap-2 sm:gap-4">
@@ -335,12 +438,16 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Search Bar Row */}
-        <div className="border-t border-[#E8E4DA] bg-white px-4 py-2.5 md:hidden">
+        {/* Mobile Search Bar Row with Dropdown */}
+        <div className="border-t border-[#E8E4DA] bg-white px-4 py-2.5 md:hidden relative">
           <form onSubmit={submitSearch} className="relative w-full">
             <Input
               value={term}
-              onChange={(e) => setTerm(e.target.value)}
+              onChange={(e) => {
+                setTerm(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
               placeholder={t.searchPlaceholder}
               className="h-9 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-9 pl-3.5 text-xs text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45]"
               aria-label="Mobile search"
@@ -352,6 +459,81 @@ export function Header() {
               <Search className="size-4" />
             </button>
           </form>
+
+          {/* Mobile Autocomplete Suggestions */}
+          {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
+            <div
+              className="absolute top-12 left-4 right-4 z-50 rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-xl space-y-2.5"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              {matchingCategories.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                    {lang === "hi" ? "श्रेणियां" : "Categories"}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {matchingCategories.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          setTerm("");
+                          void navigate({ to: "/shop", search: { category: c.slug } as never });
+                        }}
+                        className="flex items-center gap-1 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#145A45]"
+                      >
+                        <span>{getCategoryName(c.name, c.slug)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {matchingProducts.length > 0 && (
+                <div className="divide-y divide-[#E8E4DA]/60">
+                  {matchingProducts.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        setTerm("");
+                        void navigate({ to: "/product/$slug", params: { slug: p.slug } });
+                      }}
+                      className="flex items-center justify-between w-full py-1.5 px-1 text-left"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={getProductImage(p)}
+                          alt={p.name}
+                          className="size-6 rounded object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5 shrink-0"
+                        />
+                        <span className="text-xs font-bold text-[#1F2924] truncate">
+                          {getProductName(p.name, p.slug)}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-[#145A45] shrink-0">
+                        {inr(p.product_variants?.[0]?.price ?? 0)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="border-t border-[#E8E4DA] pt-1 text-center">
+                <button
+                  type="button"
+                  onClick={(e) => submitSearch(e)}
+                  className="text-xs font-bold text-[#145A45]"
+                >
+                  {lang === "hi"
+                    ? `"${term}" के सभी परिणाम देखें →`
+                    : `View all results for "${term}" →`}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
