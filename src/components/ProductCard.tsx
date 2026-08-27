@@ -35,9 +35,10 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className={`card-base group relative flex flex-col overflow-hidden bg-white p-3 sm:p-3.5 transition-all duration-300 ${
+      className={`card-base group relative flex flex-col overflow-hidden bg-white p-3 sm:p-3.5 transition-all duration-300 w-full max-w-full ${
         inCart ? "border-[#18483B]/30 ring-1 ring-[#18483B]/10 shadow-xs" : ""
       }`}
+      style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%" }}
     >
       {/* Top Header: Floating Discount Tag & Wishlist */}
       <div className="flex items-center justify-between">
@@ -76,10 +77,13 @@ export function ProductCard({ product }: { product: Product }) {
           height: "135px",
           maxHeight: "135px",
           width: "100%",
+          maxWidth: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           background: "#ffffff",
+          boxSizing: "border-box",
+          overflow: "hidden",
         }}
       >
         <img
@@ -93,6 +97,8 @@ export function ProductCard({ product }: { product: Product }) {
           style={{
             maxHeight: "120px",
             maxWidth: "100%",
+            width: "auto",
+            height: "auto",
             objectFit: "contain",
             margin: "0 auto",
             display: "block",

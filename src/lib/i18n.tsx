@@ -35,12 +35,14 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>("en");
+  const [lang, setLangState] = useState<Language>("hi");
 
   useEffect(() => {
     const saved = localStorage.getItem("agt.lang") as Language;
     if (saved === "hi" || saved === "en") {
       setLangState(saved);
+    } else {
+      setLangState("hi");
     }
   }, []);
 
