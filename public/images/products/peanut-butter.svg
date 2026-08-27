@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <!-- Background Studio Gradients -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="80%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#EFF3F8" />
+    </radialGradient>
+    
+    <!-- Pack Main Gradients -->
+    <linearGradient id="packGrad_peanutbuttersvg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#92400E" />
+      <stop offset="50%" stop-color="#78350F" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+    
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.05" />
+      <stop offset="70%" stop-color="#000000" stop-opacity="0" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.2" />
+    </linearGradient>
+
+    <!-- Shadow filter -->
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="500" height="500" rx="24" fill="url(#bgGrad)" />
+
+  <!-- Drop Shadow Base Ellipse -->
+  <ellipse cx="250" cy="435" rx="140" ry="16" fill="#0F172A" opacity="0.12" />
+  <ellipse cx="250" cy="432" rx="100" ry="10" fill="#0F172A" opacity="0.20" />
+
+  <!-- Product Pack Container with Shadow -->
+  <g filter="url(#softShadow)">
+    
+      <!-- Bottle / Jar Shape -->
+      <!-- Cap -->
+      <rect x="205" y="65" width="90" height="32" rx="8" fill="#FEF08A" stroke="#CBD5E1" stroke-width="2" />
+      <rect x="215" y="97" width="70" height="12" fill="#94A3B8" />
+      <!-- Body -->
+      <rect x="135" y="105" width="230" height="310" rx="36" fill="url(#packGrad_peanutbuttersvg)" />
+      <rect x="135" y="105" width="230" height="310" rx="36" fill="url(#sheen)" />
+      <!-- Label Plate -->
+      <rect x="150" y="150" width="200" height="235" rx="16" fill="#FFFFFF" opacity="0.96" />
+      
+
+    <!-- Content on White Label Plate -->
+    <!-- Brand Banner -->
+    <rect x="165" y="155" width="170" height="28" rx="8" fill="#78350F" />
+    <text x="250" y="174" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" font-size="13" letter-spacing="1.5">
+      PINTOLA
+    </text>
+
+    <!-- Badge Tag -->
+    
+    <text x="250" y="196" text-anchor="middle" fill="#78350F" font-family="system-ui, sans-serif" font-weight="800" font-size="9" letter-spacing="1">
+      ★ CRUNCHY 100% ROASTED ★
+    </text>
+    
+
+    <!-- Product Title English -->
+    <text x="250" y="222" text-anchor="middle" fill="#0F172A" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" font-size="16">
+      All Natural Peanut Butter
+    </text>
+
+    <!-- Product Title Hindi -->
+    <text x="250" y="246" text-anchor="middle" fill="#78350F" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="700" font-size="14">
+      पिंटोला पीनट बटर (मूंगफली)
+    </text>
+
+    <!-- Divider Line -->
+    <line x1="175" y1="258" x2="325" y2="258" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4,4" />
+
+    <!-- Center Icon Graphic / Food Visual -->
+    <circle cx="250" cy="305" r="38" fill="#FEF08A" opacity="0.4" />
+    <circle cx="250" cy="305" r="30" fill="#78350F" opacity="0.15" />
+    
+    <!-- Food Symbol based on type -->
+    
+      <!-- Quality Star Badge -->
+      <polygon points="250,285 255,298 268,298 258,306 261,319 250,311 239,319 242,306 232,298 245,298" fill="#78350F" />
+      
+
+    <!-- Subtitle / Quality note -->
+    <text x="250" y="360" text-anchor="middle" fill="#64748B" font-family="system-ui, sans-serif" font-weight="600" font-size="10">
+      High Protein Crunchy Spread
+    </text>
+
+    <!-- Weight & Veg Badge Footer -->
+    <rect x="175" y="372" width="150" height="20" rx="6" fill="#F1F5F9" />
+    
+    <!-- Green Veg Mark -->
+    <rect x="183" y="376" width="12" height="12" fill="#FFFFFF" stroke="#16A34A" stroke-width="1.5" />
+    <circle cx="189" cy="382" r="3" fill="#16A34A" />
+
+    <!-- Weight Text -->
+    <text x="255" y="386" text-anchor="middle" fill="#0F172A" font-family="system-ui, sans-serif" font-weight="800" font-size="11">
+      NET WT. 350 g
+    </text>
+  </g>
+
+  <!-- Store Guarantee Bottom Banner -->
+  <rect x="160" y="458" width="180" height="24" rx="12" fill="#18483B" />
+  <text x="250" y="474" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="800" font-size="10" letter-spacing="0.5">
+    ARUN GOPAL TRADERS • 100% GENUINE
+  </text>
+</svg>

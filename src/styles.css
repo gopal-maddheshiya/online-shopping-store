@@ -1,0 +1,234 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Arun Gopal Traders - Premium Modern Local Grocery Design System
+ * 
+ * Aesthetic: Modern D2C grocery brand + premium local store.
+ * Palette:
+ * - Primary: Deep Forest Green (#18483B) - Trust, organic freshness, authority
+ * - Primary Hover: #133A2F
+ * - Primary Light / Tint: #EBF4F0
+ * - Background: Warm Cream / Off-White (#FAF8F5)
+ * - Card / Surface: Pure Crisp White (#FFFFFF)
+ * - Subtle Surface: #F4F1EB
+ * - Border: #EAE6DF
+ * - Text Primary: #191C1B
+ * - Text Secondary / Muted: #676D68
+ * - Accent / Warmth: #D97706 (Amber) / #C2410C (Terracotta)
+ * - Success: #15803D (Calm Green)
+ */
+
+@theme inline {
+  --font-sans:
+    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display:
+    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-3xl: 28px;
+  --radius-full: 9999px;
+
+  --color-background: #faf8f5;
+  --color-foreground: #191c1b;
+  --color-card: #ffffff;
+  --color-card-foreground: #191c1b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #191c1b;
+  --color-primary: #18483b;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f4f1eb;
+  --color-secondary-foreground: #18483b;
+  --color-muted: #f2efea;
+  --color-muted-foreground: #676d68;
+  --color-accent: #ebf4f0;
+  --color-accent-foreground: #18483b;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
+  --color-success: #15803d;
+  --color-success-foreground: #ffffff;
+  --color-warning: #d97706;
+  --color-warning-foreground: #ffffff;
+  --color-border: #eae6df;
+  --color-input: #eae6df;
+  --color-ring: #18483b;
+  --color-ring-offset-background: #faf8f5;
+  --color-surface: #ffffff;
+
+  --shadow-card: 0 1px 3px 0 rgba(25, 28, 27, 0.04), 0 1px 2px -1px rgba(25, 28, 27, 0.02);
+  --shadow-hover: 0 8px 24px -4px rgba(24, 72, 59, 0.08), 0 2px 6px -1px rgba(24, 72, 59, 0.03);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: #faf8f5;
+  --foreground: #191c1b;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #191c1b;
+  --popover: #ffffff;
+  --popover-foreground: #191c1b;
+  --primary: #18483b;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f1eb;
+  --secondary-foreground: #18483b;
+  --muted: #f2efea;
+  --muted-foreground: #676d68;
+  --accent: #ebf4f0;
+  --accent-foreground: #18483b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #15803d;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --border: #eae6df;
+  --input: #eae6df;
+  --ring: #18483b;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-foreground);
+    letter-spacing: -0.02em;
+  }
+}
+
+.container-page {
+  width: 100%;
+  max-width: 78rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-page {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.card-base {
+  background-color: #ffffff;
+  border: 1px solid #efece6;
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px 0 rgba(25, 28, 27, 0.03),
+    0 1px 2px -1px rgba(25, 28, 27, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-base:hover {
+  border-color: #d8d2c4;
+  box-shadow:
+    0 10px 25px -5px rgba(24, 72, 59, 0.08),
+    0 4px 10px -2px rgba(24, 72, 59, 0.03);
+  transform: translateY(-2px);
+}
+
+/* Glassmorphism Classes */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(234, 230, 223, 0.8);
+}
+
+.glass-dark {
+  background: rgba(13, 51, 39, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(234, 230, 223, 0.9);
+}
+
+/* Rich Gradients */
+.bg-emerald-hero {
+  background: radial-gradient(120% 120% at 50% 0%, #1c5243 0%, #133a2f 60%, #0d2820 100%);
+}
+
+.bg-gold-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.bg-emerald-badge {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 60%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #18483b 0%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Clean category scrollbar hiding */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer / Pulse Effects */
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s infinite ease-in-out;
+}
