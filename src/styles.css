@@ -4,28 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Arun Gopal Traders - Premium Modern Local Grocery Design System
+ * Arun Gopal Traders - Fresh Indian Kirana & Natural Local Grocery Design System
  * 
- * Aesthetic: Modern D2C grocery brand + premium local store.
- * Palette:
- * - Primary: Deep Forest Green (#18483B) - Trust, organic freshness, authority
- * - Primary Hover: #133A2F
- * - Primary Light / Tint: #EBF4F0
- * - Background: Warm Cream / Off-White (#FAF8F5)
- * - Card / Surface: Pure Crisp White (#FFFFFF)
- * - Subtle Surface: #F4F1EB
- * - Border: #EAE6DF
- * - Text Primary: #191C1B
- * - Text Secondary / Muted: #676D68
- * - Accent / Warmth: #D97706 (Amber) / #C2410C (Terracotta)
- * - Success: #15803D (Calm Green)
+ * Aesthetic: Clean neighbourhood grocery store, fresh grains, natural packaging, warm sunlight.
+ * 
+ * Color Palette:
+ * - Primary (Deep Forest Green): #145A45 - Freshness, trust, authenticity
+ * - Primary Hover: #0E4333
+ * - Secondary (Sage Green): #DCEBDD - Natural, calm
+ * - Background (Warm Rice/Cream): #FAF8F2 - Warm paper / grocery store feel
+ * - White / Card Surface: #FFFFFF
+ * - Border (Soft warm border): #E8E4DA
+ * - Text Primary (Deep Charcoal): #1F2924
+ * - Text Secondary / Muted: #6B746F
+ * - Accent (Warm Haldi/Saffron - 5% max): #E3B341
+ * - Success Green: #15803D
  */
 
 @theme inline {
   --font-sans:
-    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Plus Jakarta Sans", "Noto Sans Devanagari", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display:
-    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Plus Jakarta Sans", "Noto Sans Devanagari", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -35,62 +35,64 @@
   --radius-3xl: 28px;
   --radius-full: 9999px;
 
-  --color-background: #faf8f5;
-  --color-foreground: #191c1b;
+  --color-background: #faf8f2;
+  --color-foreground: #1f2924;
   --color-card: #ffffff;
-  --color-card-foreground: #191c1b;
+  --color-card-foreground: #1f2924;
   --color-popover: #ffffff;
-  --color-popover-foreground: #191c1b;
-  --color-primary: #18483b;
+  --color-popover-foreground: #1f2924;
+  --color-primary: #145a45;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f4f1eb;
-  --color-secondary-foreground: #18483b;
-  --color-muted: #f2efea;
-  --color-muted-foreground: #676d68;
-  --color-accent: #ebf4f0;
-  --color-accent-foreground: #18483b;
+  --color-secondary: #dcebdd;
+  --color-secondary-foreground: #145a45;
+  --color-muted: #f2eee5;
+  --color-muted-foreground: #6b746f;
+  --color-accent: #dcebdd;
+  --color-accent-foreground: #145a45;
+  --color-saffron: #e3b341;
+  --color-saffron-foreground: #1f2924;
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
   --color-success: #15803d;
   --color-success-foreground: #ffffff;
-  --color-warning: #d97706;
-  --color-warning-foreground: #ffffff;
-  --color-border: #eae6df;
-  --color-input: #eae6df;
-  --color-ring: #18483b;
-  --color-ring-offset-background: #faf8f5;
+  --color-warning: #e3b341;
+  --color-warning-foreground: #1f2924;
+  --color-border: #e8e4da;
+  --color-input: #e8e4da;
+  --color-ring: #145a45;
+  --color-ring-offset-background: #faf8f2;
   --color-surface: #ffffff;
 
-  --shadow-card: 0 1px 3px 0 rgba(25, 28, 27, 0.04), 0 1px 2px -1px rgba(25, 28, 27, 0.02);
-  --shadow-hover: 0 8px 24px -4px rgba(24, 72, 59, 0.08), 0 2px 6px -1px rgba(24, 72, 59, 0.03);
+  --shadow-card: 0 1px 3px 0 rgba(31, 41, 36, 0.03), 0 1px 2px -1px rgba(31, 41, 36, 0.02);
+  --shadow-hover: 0 8px 24px -4px rgba(20, 90, 69, 0.08), 0 2px 6px -1px rgba(20, 90, 69, 0.03);
 }
 
 :root {
   --radius: 0.75rem;
-  --background: #faf8f5;
-  --foreground: #191c1b;
+  --background: #faf8f2;
+  --foreground: #1f2924;
   --surface: #ffffff;
   --card: #ffffff;
-  --card-foreground: #191c1b;
+  --card-foreground: #1f2924;
   --popover: #ffffff;
-  --popover-foreground: #191c1b;
-  --primary: #18483b;
+  --popover-foreground: #1f2924;
+  --primary: #145a45;
   --primary-foreground: #ffffff;
-  --secondary: #f4f1eb;
-  --secondary-foreground: #18483b;
-  --muted: #f2efea;
-  --muted-foreground: #676d68;
-  --accent: #ebf4f0;
-  --accent-foreground: #18483b;
+  --secondary: #dcebdd;
+  --secondary-foreground: #145a45;
+  --muted: #f2eee5;
+  --muted-foreground: #6b746f;
+  --accent: #dcebdd;
+  --accent-foreground: #145a45;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --success: #15803d;
   --success-foreground: #ffffff;
-  --warning: #d97706;
-  --warning-foreground: #ffffff;
-  --border: #eae6df;
-  --input: #eae6df;
-  --ring: #18483b;
+  --warning: #e3b341;
+  --warning-foreground: #1f2924;
+  --border: #e8e4da;
+  --input: #e8e4da;
+  --ring: #145a45;
 }
 
 @layer base {
@@ -104,8 +106,8 @@
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: #faf8f2;
+    color: #1f2924;
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
     overflow-x: hidden;
@@ -120,7 +122,7 @@
   h6 {
     font-family: var(--font-display);
     font-weight: 700;
-    color: var(--color-foreground);
+    color: #1f2924;
     letter-spacing: -0.02em;
   }
 }
@@ -143,61 +145,56 @@
 
 .card-base {
   background-color: #ffffff;
-  border: 1px solid #efece6;
+  border: 1px solid #e8e4da;
   border-radius: var(--radius-xl);
   box-shadow:
-    0 1px 3px 0 rgba(25, 28, 27, 0.03),
-    0 1px 2px -1px rgba(25, 28, 27, 0.02);
+    0 1px 3px 0 rgba(31, 41, 36, 0.03),
+    0 1px 2px -1px rgba(31, 41, 36, 0.02);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-base:hover {
-  border-color: #d8d2c4;
+  border-color: #d3cdc0;
   box-shadow:
-    0 10px 25px -5px rgba(24, 72, 59, 0.08),
-    0 4px 10px -2px rgba(24, 72, 59, 0.03);
+    0 8px 20px -4px rgba(20, 90, 69, 0.07),
+    0 3px 8px -2px rgba(20, 90, 69, 0.03);
   transform: translateY(-2px);
 }
 
-/* Glassmorphism Classes */
+/* Glass & Header Classes */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(234, 230, 223, 0.8);
+  border-bottom: 1px solid #e8e4da;
 }
 
 .glass-dark {
-  background: rgba(13, 51, 39, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #145a45;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(234, 230, 223, 0.9);
+  border: 1px solid #e8e4da;
 }
 
-/* Rich Gradients */
-.bg-emerald-hero {
-  background: radial-gradient(120% 120% at 50% 0%, #1c5243 0%, #133a2f 60%, #0d2820 100%);
+/* Natural Kirana Badges */
+.bg-saffron-badge {
+  background-color: #e3b341;
+  color: #1f2924;
 }
 
-.bg-gold-badge {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+.bg-forest-badge {
+  background-color: #145a45;
+  color: #ffffff;
 }
 
-.bg-emerald-badge {
-  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-}
-
-.text-gradient-gold {
-  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 60%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.bg-sage-badge {
+  background-color: #dcebdd;
+  color: #145a45;
 }
 
 .text-gradient-emerald {

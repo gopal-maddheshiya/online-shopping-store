@@ -90,22 +90,22 @@ function ProductPage() {
   return (
     <div className="container-page py-6 sm:py-10 space-y-10">
       {/* Breadcrumb Navigation */}
-      <nav className="text-xs text-[#676D68]">
-        <Link to="/" className="hover:text-[#18483B]">
+      <nav className="text-xs text-[#6B746F]">
+        <Link to="/" className="hover:text-[#145A45]">
           {t.home}
         </Link>
         <span className="mx-2">/</span>
-        <Link to="/shop" className="hover:text-[#18483B]">
+        <Link to="/shop" className="hover:text-[#145A45]">
           {t.allGroceries}
         </Link>
         <span className="mx-2">/</span>
-        <span className="font-semibold text-[#191C1B]">{localizedName}</span>
+        <span className="font-semibold text-[#1F2924]">{localizedName}</span>
       </nav>
 
       {/* Main Details Grid */}
       <div className="grid gap-8 md:grid-cols-2 items-start">
         {/* Left Image Gallery Container */}
-        <div className="card-base relative flex aspect-square w-full max-w-[460px] mx-auto items-center justify-center overflow-hidden rounded-2xl bg-white border border-[#EFECE6] p-6 sm:p-10 shadow-xs">
+        <div className="card-base relative flex aspect-square w-full max-w-[460px] mx-auto items-center justify-center overflow-hidden rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-6 sm:p-10 shadow-xs">
           <img
             src={getProductImage(product)}
             alt={localizedName}
@@ -114,27 +114,27 @@ function ProductPage() {
         </div>
 
         {/* Right Buy Box Content */}
-        <div className="card-base p-6 sm:p-8 space-y-6">
+        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E8E4DA]">
           <div>
             {product.brand ? (
-              <span className="text-xs font-bold uppercase tracking-wider text-[#676D68]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#6B746F]">
                 {product.brand}
               </span>
             ) : null}
-            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#191C1B] mt-1">
+            <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#1F2924] mt-1">
               {localizedName}
             </h1>
           </div>
 
           {/* Pricing Row */}
-          <div className="flex items-baseline gap-3 border-y border-[#EAE6DF] py-4">
-            <span className="text-3xl font-extrabold text-[#191C1B]">
+          <div className="flex items-baseline gap-3 border-y border-[#E8E4DA] py-4">
+            <span className="text-3xl font-extrabold text-[#1F2924]">
               {inr(variant?.price ?? 0)}
             </span>
             {off > 0 && variant?.mrp ? (
               <>
-                <span className="text-base text-[#676D68] line-through">{inr(variant.mrp)}</span>
-                <span className="rounded-full bg-[#EBF4F0] px-2.5 py-0.5 text-xs font-bold text-[#18483B]">
+                <span className="text-base text-[#6B746F] line-through">{inr(variant.mrp)}</span>
+                <span className="rounded-full bg-[#DCEBDD] px-2.5 py-0.5 text-xs font-bold text-[#145A45]">
                   {off}% {t.off}
                 </span>
               </>
@@ -143,7 +143,7 @@ function ProductPage() {
 
           {/* Pack Size Selector */}
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#676D68]">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#6B746F]">
               {lang === "hi" ? "पैकेट साइज चुनें" : "Select Pack Size"}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -154,8 +154,8 @@ function ProductPage() {
                   disabled={v.stock <= 0}
                   className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all disabled:opacity-40 ${
                     v.id === variant?.id
-                      ? "border-[#18483B] bg-[#18483B] text-white"
-                      : "border-[#EAE6DF] bg-white text-[#191C1B] hover:border-[#18483B]"
+                      ? "border-[#145A45] bg-[#145A45] text-white"
+                      : "border-[#E8E4DA] bg-white text-[#1F2924] hover:border-[#145A45]"
                   }`}
                 >
                   {getVariantLabel(v.label)} · {inr(v.price)}
@@ -174,7 +174,7 @@ function ProductPage() {
                     : `Only ${variant.stock} left in stock`}
                 </span>
               ) : (
-                <span className="font-semibold text-[#18483B] flex items-center gap-1">
+                <span className="font-semibold text-[#145A45] flex items-center gap-1">
                   <Check className="size-3.5" />
                   {lang === "hi"
                     ? "महाराजगंज में डिलीवरी हेतु उपलब्ध"
@@ -186,25 +186,25 @@ function ProductPage() {
             )}
           </div>
 
-          {/* Quantity Stepper, Add to Cart & Buy Now Actions */}
+          {/* Quantity Stepper, Add to Cart & Actions */}
           <div className="space-y-3 pt-2">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex h-11 items-center rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-2 shadow-2xs">
+              <div className="flex h-11 items-center rounded-full border border-[#E8E4DA] bg-[#FAF8F2] px-2 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   aria-label="Decrease"
-                  className="flex size-8 items-center justify-center rounded-full text-[#676D68] hover:bg-white active:scale-95 transition-all"
+                  className="flex size-8 items-center justify-center rounded-full text-[#6B746F] hover:bg-white active:scale-95 transition-all"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span className="w-8 text-center text-xs font-bold text-[#191C1B]">{qty}</span>
+                <span className="w-8 text-center text-xs font-bold text-[#1F2924]">{qty}</span>
                 <button
                   type="button"
                   aria-label="Increase"
                   disabled={qty >= (variant?.stock ?? 1)}
                   onClick={() => setQty((q) => q + 1)}
-                  className="flex size-8 items-center justify-center rounded-full text-[#676D68] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
+                  className="flex size-8 items-center justify-center rounded-full text-[#6B746F] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
                 >
                   <Plus className="size-4" />
                 </button>
@@ -229,7 +229,7 @@ function ProductPage() {
                   }
                   toast.success(`${qty}x ${localizedName} ${t.added.toLowerCase()}`);
                 }}
-                className="flex-1 h-11 rounded-full bg-[#18483B] px-6 text-xs font-bold text-white shadow-xs hover:bg-[#133A2F] active:scale-95 transition-all"
+                className="flex-1 h-11 rounded-full bg-[#145A45] px-6 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] active:scale-95 transition-all"
               >
                 <ShoppingBag className="mr-2 size-4" /> {t.add}
               </Button>
@@ -243,14 +243,14 @@ function ProductPage() {
                 )}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white shadow-xs hover:bg-[#20ba59] active:scale-95 transition-all"
+                className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-[#145A45] text-white px-4 text-xs font-bold shadow-xs hover:bg-[#0E4333] active:scale-95 transition-all"
               >
                 <span>{lang === "hi" ? "व्हाट्सएप ऑर्डर" : "WhatsApp Order"}</span>
               </a>
 
               <a
                 href="tel:+919621617360"
-                className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-4 text-xs font-bold text-[#18483B] hover:bg-[#EBF4F0] hover:border-[#18483B] active:scale-95 transition-all"
+                className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] px-4 text-xs font-bold text-[#145A45] hover:bg-[#DCEBDD] hover:border-[#145A45] active:scale-95 transition-all"
               >
                 <span>{lang === "hi" ? "फोन पर पूछें" : "Call Store"}</span>
               </a>
@@ -258,11 +258,11 @@ function ProductPage() {
           </div>
 
           {/* Product Description & Quality Features */}
-          <div className="border-t border-[#EAE6DF] pt-4 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#191C1B]">
+          <div className="border-t border-[#E8E4DA] pt-4 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2924]">
               {lang === "hi" ? "उत्पाद विवरण व शुद्धता" : "Product Details & Purity"}
             </h3>
-            <p className="text-xs leading-relaxed text-[#676D68]">
+            <p className="text-xs leading-relaxed text-[#6B746F]">
               {product.description ||
                 (lang === "hi"
                   ? "महाराजगंज के विश्वसनीय किराना स्टोर 'अरुण गोपाल ट्रेडर्स' द्वारा 100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।"
@@ -271,17 +271,17 @@ function ProductPage() {
           </div>
 
           {/* Trust Guarantees */}
-          <div className="grid grid-cols-2 gap-3 border-t border-[#EAE6DF] pt-5 text-xs text-[#676D68]">
+          <div className="grid grid-cols-2 gap-3 border-t border-[#E8E4DA] pt-5 text-xs text-[#6B746F]">
             <div className="flex items-center gap-2">
-              <Truck className="size-4 text-[#18483B]" />
+              <Truck className="size-4 text-[#145A45]" />
               <span>{t.freeDeliveryTitle}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Store className="size-4 text-[#18483B]" />
+              <Store className="size-4 text-[#145A45]" />
               <span>{t.storePickupTitle}</span>
             </div>
             <div className="flex items-center gap-2">
-              <ShieldCheck className="size-4 text-[#18483B]" />
+              <ShieldCheck className="size-4 text-[#145A45]" />
               <span>{t.genuineBrandsTitle}</span>
             </div>
           </div>
@@ -290,12 +290,12 @@ function ProductPage() {
 
       {/* Similar Items Section */}
       {related.length > 0 && (
-        <section className="space-y-4 pt-6 border-t border-[#EAE6DF]">
+        <section className="space-y-4 pt-6 border-t border-[#E8E4DA]">
           <div className="flex items-center justify-between">
-            <h2 className="font-sans text-xl font-bold text-[#191C1B]">
+            <h2 className="font-sans text-xl font-bold text-[#1F2924]">
               {lang === "hi" ? "मिलते-जुलते किराना सामान" : "Similar Essentials"}
             </h2>
-            <Link to="/shop" className="text-xs font-semibold text-[#18483B] hover:underline">
+            <Link to="/shop" className="text-xs font-semibold text-[#145A45] hover:underline">
               {t.viewAll} →
             </Link>
           </div>

@@ -151,43 +151,43 @@ function AdminPage() {
   if (!isUnlocked && !isAdmin) {
     return (
       <div className="container-page py-16">
-        <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-sm sm:p-8">
           <div className="text-center">
-            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]">
               <Lock className="size-6" />
             </div>
-            <h1 className="mt-3 font-display text-2xl font-bold text-foreground">
+            <h1 className="mt-3 font-sans text-2xl font-bold text-[#1F2924]">
               Owner / Admin Access
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-[#6B746F]">
               Secure store management portal for Arun Gopal Traders, Maharajganj.
             </p>
           </div>
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Store Manager PIN / Key</label>
+              <label className="text-xs font-semibold text-[#1F2924]">Store Manager PIN / Key</label>
               <Input
                 type="password"
                 required
                 placeholder="Enter 4-digit PIN or admin key"
                 value={adminPin}
                 onChange={(e) => setAdminPin(e.target.value)}
-                className="rounded-xl text-center font-mono text-lg tracking-widest"
+                className="rounded-xl text-center font-mono text-lg tracking-widest border-[#E8E4DA] bg-white"
               />
             </div>
 
-            <Button type="submit" className="w-full rounded-xl py-6 font-bold shadow-md">
+            <Button type="submit" className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]">
               Unlock Dashboard <ShieldCheck className="ml-2 size-4" />
             </Button>
           </form>
 
-          <div className="mt-6 rounded-xl bg-muted/60 p-3 text-center text-xs text-muted-foreground">
+          <div className="mt-6 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 text-center text-xs text-[#6B746F]">
             💡 <strong>Store PIN:</strong> <code>9621</code> or <code>admin123</code>
           </div>
 
           <div className="mt-4 text-center">
-            <Link to="/" className="text-xs font-semibold text-primary hover:underline">
+            <Link to="/" className="text-xs font-semibold text-[#145A45] hover:underline">
               ← Return to Customer Store
             </Link>
           </div>
@@ -201,19 +201,19 @@ function AdminPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-[#FAF8F2]">
       {/* Top Admin Header Bar */}
-      <div className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-md">
+      <div className="sticky top-0 z-30 border-b border-[#E8E4DA] bg-white/95 backdrop-blur-md">
         <div className="container-page flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl bg-primary font-display text-base font-bold text-primary-foreground">
-              A
+            <span className="grid size-9 place-items-center rounded-xl bg-[#145A45] font-sans text-base font-bold text-white">
+              🌾
             </span>
             <div>
-              <h2 className="font-display font-bold text-base leading-tight text-foreground sm:text-lg">
+              <h2 className="font-sans font-bold text-base leading-tight text-[#1F2924] sm:text-lg">
                 Arun Gopal Traders Admin
               </h2>
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[11px] text-[#6B746F]">
                 Store Control &amp; Inventory Center
               </span>
             </div>
@@ -224,7 +224,7 @@ function AdminPage() {
               onClick={refreshAllData}
               variant="outline"
               size="sm"
-              className="rounded-xl gap-1 text-xs font-semibold"
+              className="rounded-full gap-1 text-xs font-semibold border-[#E8E4DA] text-[#1F2924]"
             >
               <RefreshCw className="size-3.5" /> Refresh Live Data
             </Button>
@@ -233,7 +233,7 @@ function AdminPage() {
               asChild
               variant="ghost"
               size="sm"
-              className="hidden sm:flex rounded-xl gap-1 text-xs"
+              className="hidden sm:flex rounded-full gap-1 text-xs text-[#145A45] hover:bg-[#FAF8F2]"
             >
               <Link to="/">
                 <Store className="size-3.5" /> View Shop <ExternalLink className="size-3" />
@@ -244,7 +244,7 @@ function AdminPage() {
               onClick={handleLock}
               variant="outline"
               size="sm"
-              className="rounded-xl gap-1 text-xs text-destructive"
+              className="rounded-full gap-1 text-xs text-red-600 border-red-200 hover:bg-red-50"
             >
               <LogOut className="size-3.5" /> Lock
             </Button>
@@ -269,14 +269,14 @@ function AdminPage() {
                 }}
                 className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-card text-muted-foreground hover:text-foreground"
+                    ? "bg-[#145A45] text-white"
+                    : "border border-[#E8E4DA] bg-white text-[#6B746F] hover:text-[#1F2924]"
                 }`}
               >
                 <Icon className="size-3.5" />
                 <span>{tab.label.split(" ")[0]}</span>
                 {tab.id === "orders" && pendingOrdersCount > 0 ? (
-                  <span className="rounded-full bg-warning px-1.5 py-0.2 text-[9px] font-black text-warning-foreground">
+                  <span className="rounded-full bg-[#E3B341] px-1.5 py-0.2 text-[9px] font-black text-[#1F2924]">
                     {pendingOrdersCount}
                   </span>
                 ) : null}
@@ -287,7 +287,7 @@ function AdminPage() {
 
         <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
           {/* Desktop Sidebar Navigation */}
-          <aside className="hidden lg:block rounded-3xl border border-border bg-card p-3 shadow-xs lg:sticky lg:top-24 h-fit">
+          <aside className="hidden lg:block rounded-3xl border border-[#E8E4DA] bg-white p-3 shadow-xs lg:sticky lg:top-24 h-fit">
             <nav className="space-y-1">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
@@ -302,8 +302,8 @@ function AdminPage() {
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-xs font-bold"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-[#145A45] text-white shadow-xs font-bold"
+                        : "text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#1F2924]"
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
@@ -315,8 +315,8 @@ function AdminPage() {
                       <span
                         className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
                           isActive
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-warning/20 text-warning"
+                            ? "bg-[#E3B341] text-[#1F2924]"
+                            : "bg-[#E3B341]/30 text-[#1F2924]"
                         }`}
                       >
                         {pendingOrdersCount}
@@ -327,7 +327,7 @@ function AdminPage() {
               })}
             </nav>
 
-            <div className="mt-6 border-t border-border pt-4 px-2 text-[11px] text-muted-foreground">
+            <div className="mt-6 border-t border-[#E8E4DA] pt-4 px-2 text-[11px] text-[#6B746F]">
               📍 Maharajganj, Uttar Pradesh
               <br />
               📞 +91 9621617360

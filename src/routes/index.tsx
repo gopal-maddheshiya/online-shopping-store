@@ -140,61 +140,74 @@ function PremiumStoreHome() {
   const HERO_SLIDES = [
     {
       id: 1,
-      tag: lang === "hi" ? "✨ खास वेलकम ऑफर" : "✨ SPECIAL WELCOME OFFER",
+      tag: lang === "hi" ? "🌾 आपकी विश्वसनीय किराना दुकान" : "🌾 Trusted Neighbourhood Kirana",
       statusLabel: lang === "hi" ? "⏰ फ्लैश ऑफर समाप्त होने में:" : "⏰ Flash Sale Ends In:",
       showTimer: true,
-      preTitle: lang === "hi" ? "WELCOME50 कूपन कोड के साथ" : "With Coupon Code: WELCOME50",
-      mainTitle: lang === "hi" ? "₹50 की सीधी छूट" : "Flat ₹50 Instant OFF",
+      preTitle:
+        lang === "hi"
+          ? "WELCOME50 कूपन के साथ ₹50 की सीधी छूट"
+          : "Flat ₹50 OFF with Code: WELCOME50",
+      mainTitle:
+        lang === "hi"
+          ? "हर दिन की जरूरत, अब आपके घर तक।"
+          : "Everyday essentials, from your trusted local store.",
       subtitle:
         lang === "hi"
-          ? "₹300 से अधिक के राशन ऑर्डर पर पाएं ₹50 की तत्काल छूट। 100% शुद्ध चक्की आटा, दालें और शुद्ध तेल।"
-          : "Get Flat ₹50 instant discount on grocery orders above ₹300. Freshly milled chakki atta, pulses & cold-pressed oils.",
-      cta: lang === "hi" ? "ऑफर से खरीदारी करें →" : "Shop Offers Now →",
+          ? "100% शुद्ध चक्की आटा, दालें, सरसों तेल, मसाले और दैनिक राशन। सही तौल, पक्का बिल और आसान होम डिलीवरी।"
+          : "Freshly milled chakki atta, pure pulses, cold-pressed mustard oil and daily grocery staples at genuine prices.",
+      cta: lang === "hi" ? "सामान खरीदें →" : "Shop Groceries Now →",
       coupon: "WELCOME50",
       link: "/shop",
-      bgGradient: "from-[#0F382E] via-[#164E40] to-[#0A261F]",
-      pillBg: "bg-amber-400/20 text-amber-300 border-amber-400/40",
-      accentIcon: "🎁",
-      tabLabel: lang === "hi" ? "₹50 कूपन छूट" : "₹50 Welcome OFF",
+      bgGradient: "from-[#145A45] via-[#104737] to-[#0A3327]",
+      pillBg: "bg-[#E3B341]/20 text-[#E3B341] border-[#E3B341]/40",
+      accentIcon: "🌾",
+      tabLabel: lang === "hi" ? "ताज़ा किराना ऑफर" : "Fresh Staples",
     },
     {
       id: 2,
-      tag: lang === "hi" ? "🚚 सुपरफास्ट होम डिलीवरी" : "🚚 EXPRESS HOME DELIVERY",
+      tag: lang === "hi" ? "🚚 सुपरफास्ट लोकल डिलीवरी" : "🚚 EXPRESS LOCAL DELIVERY",
       statusLabel: lang === "hi" ? "⚡ 30-मिनट डिलीवरी चालू है" : "⚡ 30-Min Fast Delivery Active",
       showTimer: false,
-      preTitle: lang === "hi" ? "₹499+ के सभी राशन ऑर्डर्स पर" : "On All Grocery Orders Above ₹499",
-      mainTitle: lang === "hi" ? "100% फ्री होम डिलीवरी" : "100% FREE Home Delivery",
+      preTitle:
+        lang === "hi" ? "महाराजगंज व रामनगर क्षेत्र में" : "In Maharajganj & Ramnagar Area",
+      mainTitle:
+        lang === "hi"
+          ? "₹499+ के ऑर्डर पर 100% फ्री डिलीवरी"
+          : "100% FREE Home Delivery on ₹499+",
       subtitle:
         lang === "hi"
-          ? "आटा, फॉर्च्यून तेल, दालें और मसाले सीधे आपके घर तक पहुंचाएं। सही तौल, पक्का बिल, नो हिडन चार्ज।"
-          : "Daily essentials, Chakki Atta, Fortune Mustard Oil & Tata Salt delivered to your doorstep in Maharajganj.",
+          ? "आशीर्वाद आटा, फॉर्च्यून तेल, टाटा दालें और मसाले सीधे आपके घर तक। समय पर डिलीवरी, कोई हिडन चार्ज नहीं।"
+          : "Fortune Mustard Oil, Aashirvaad Atta, Tata Dal & Pure Ghee delivered safely to your doorstep.",
       cta: lang === "hi" ? "किराना सामान देखें →" : "Browse Groceries →",
       coupon: null,
       link: "/shop",
-      bgGradient: "from-[#143E33] via-[#1A5344] to-[#0E2F26]",
-      pillBg: "bg-emerald-400/20 text-emerald-300 border-emerald-400/40",
+      bgGradient: "from-[#124E3C] via-[#0E3F30] to-[#08291F]",
+      pillBg: "bg-[#DCEBDD]/20 text-[#DCEBDD] border-[#DCEBDD]/40",
       accentIcon: "🚚",
       tabLabel: lang === "hi" ? "फ्री होम डिलीवरी" : "Free Delivery",
     },
     {
       id: 3,
-      tag: lang === "hi" ? "💬 डायरेक्ट व्हाट्सएप सेवा" : "💬 DIRECT WHATSAPP ORDER",
-      statusLabel: lang === "hi" ? "🟢 2 मिनट में पर्ची पैकिंग" : "🟢 2-Min Quick Order Processing",
+      tag: lang === "hi" ? "💬 दुकान से सीधा संपर्क" : "💬 DIRECT STORE CONTACT",
+      statusLabel: lang === "hi" ? "🟢 2 मिनट में पर्ची पैकिंग" : "🟢 Quick Order Packing",
       showTimer: false,
-      preTitle: lang === "hi" ? "पर्ची की फोटो या मैसेज भेजें" : "Send List Photo or Message",
-      mainTitle: lang === "hi" ? "व्हाट्सएप पर 1-टैप ऑर्डर" : "Order on WhatsApp",
+      preTitle: lang === "hi" ? "पर्ची की फोटो या लिस्ट भेजें" : "Send List Photo or Call",
+      mainTitle:
+        lang === "hi"
+          ? "व्हाट्सएप या फोन पर 1-टैप ऑर्डर"
+          : "Order Directly on WhatsApp / Phone",
       subtitle:
         lang === "hi"
-          ? "ऐप में सामान ढूंढने का झंझट छोड़ें — अपनी मासिक राशन पर्ची की फोटो +91 9621617360 पर भेजें और घर बैठे पाएं।"
-          : "Skip adding items to cart — simply send your handwritten monthly grocery list to +91 9621617360 for instant packing.",
+          ? "ऐप में सामान खोजने का झंझट छोड़ें — अपनी मासिक राशन पर्ची +91 9621617360 पर भेजें या सीधे कॉल करें।"
+          : "Skip adding items one by one — simply send your monthly grocery list to +91 9621617360 for doorstep packing.",
       cta: lang === "hi" ? "व्हाट्सएप पर लिस्ट भेजें" : "Send List on WhatsApp",
       isWhatsApp: true,
       coupon: null,
       link: "/contact",
-      bgGradient: "from-[#0D3329] via-[#124235] to-[#08221B]",
-      pillBg: "bg-green-400/20 text-green-300 border-green-400/40",
-      accentIcon: "💬",
-      tabLabel: lang === "hi" ? "व्हाट्सएप ऑर्डर" : "WhatsApp Order",
+      bgGradient: "from-[#0E3D30] via-[#0B3026] to-[#061E18]",
+      pillBg: "bg-[#DCEBDD]/20 text-[#DCEBDD] border-[#DCEBDD]/40",
+      accentIcon: "📞",
+      tabLabel: lang === "hi" ? "फोन / व्हाट्सएप ऑर्डर" : "WhatsApp Order",
     },
   ];
 
@@ -337,16 +350,16 @@ function PremiumStoreHome() {
   return (
     <div className="space-y-6 sm:space-y-10 pb-28 overflow-x-hidden">
       {/* 1. Category Showcase Grid/Cards */}
-      <section className="border-b border-[#EAE6DF] bg-white py-4 sm:py-5 shadow-2xs">
+      <section className="border-b border-[#E8E4DA] bg-white py-4 sm:py-5 shadow-2xs">
         <div className="container-page">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#676D68] flex items-center gap-1.5">
+            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#6B746F] flex items-center gap-1.5">
               <span>🏪</span>{" "}
               {lang === "hi" ? "कैटेगरी के अनुसार खरीदारी करें" : "Shop by Category"}
             </h2>
             <Link
               to="/shop"
-              className="text-xs font-bold text-[#18483B] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-[#145A45] hover:underline flex items-center gap-1"
             >
               {t.viewAll} ({parentCategories.length}) <ChevronRight className="size-3.5" />
             </Link>
@@ -367,7 +380,7 @@ function PremiumStoreHome() {
                     search={{ category: c.slug }}
                     className="group flex flex-col items-center gap-2 min-w-[5.4rem] sm:min-w-[6.4rem] shrink-0 text-center transition-all hover:-translate-y-1"
                   >
-                    <div className="relative flex size-16 sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#EAE6DF] bg-white p-1 shadow-2xs group-hover:border-[#18483B] group-hover:shadow-md transition-all">
+                    <div className="relative flex size-16 sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-1 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
                       <img
                         src={getCategoryThumbnail(c)}
                         alt={c.name}
@@ -375,7 +388,7 @@ function PremiumStoreHome() {
                         className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-semibold text-[#191C1B] group-hover:text-[#18483B] line-clamp-1 max-w-[6.2rem]">
+                    <span className="text-[11px] sm:text-xs font-semibold text-[#1F2924] group-hover:text-[#145A45] line-clamp-1 max-w-[6.2rem]">
                       {getCategoryName(c.name, c.slug)}
                     </span>
                   </Link>
@@ -384,12 +397,12 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      {/* 2. Top-Notch Hero Section with Slider & Deal Spotlight */}
+      {/* 2. Top Hero Section with Slider & Deal Spotlight */}
       <section className="container-page pt-1">
         <div className="grid gap-4 lg:grid-cols-[1fr_21.5rem] items-stretch">
           {/* Left Column: Interactive Swipeable Banner Slider with Locked Height */}
           <div
-            className="relative overflow-hidden rounded-3xl shadow-lg border border-[#18483B]/20 flex flex-col justify-between select-none bg-[#0F382E]"
+            className="relative overflow-hidden rounded-3xl shadow-lg border border-[#145A45]/30 flex flex-col justify-between select-none bg-[#145A45]"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -404,9 +417,9 @@ function PremiumStoreHome() {
                   key={slide.id}
                   className={`w-full shrink-0 relative flex flex-col justify-between bg-gradient-to-br ${slide.bgGradient} p-5 sm:p-8 md:p-10 text-white min-h-[380px] sm:min-h-[400px] md:min-h-[430px] overflow-hidden`}
                 >
-                  {/* Subtle background ambient mesh */}
-                  <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-emerald-400/15 blur-3xl" />
-                  <div className="pointer-events-none absolute -left-16 -bottom-16 size-80 rounded-full bg-amber-400/15 blur-3xl" />
+                  {/* Subtle ambient lighting */}
+                  <div className="pointer-events-none absolute -right-16 -top-16 size-80 rounded-full bg-[#DCEBDD]/10 blur-3xl" />
+                  <div className="pointer-events-none absolute -left-16 -bottom-16 size-80 rounded-full bg-[#E3B341]/10 blur-3xl" />
 
                   <div className="relative z-10 grid md:grid-cols-[1fr_auto] gap-6 items-center flex-1">
                     {/* Left: Text Content with Uniform Height Rhythm */}
@@ -422,9 +435,9 @@ function PremiumStoreHome() {
 
                         {/* Contextual Status / Timer Pill */}
                         {slide.showTimer ? (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/50 border border-amber-400/50 px-3 py-1 text-[11px] font-mono font-bold text-amber-300 backdrop-blur-md shadow-2xs">
-                            <Timer className="size-3.5 text-amber-400 animate-pulse" />
-                            <span className="font-sans font-medium text-amber-200/90 mr-0.5">
+                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/40 border border-[#E3B341]/50 px-3 py-1 text-[11px] font-mono font-bold text-[#E3B341] backdrop-blur-md shadow-2xs">
+                            <Timer className="size-3.5 text-[#E3B341] animate-pulse" />
+                            <span className="font-sans font-medium text-amber-100/90 mr-0.5">
                               {slide.statusLabel}
                             </span>
                             <span>
@@ -434,15 +447,15 @@ function PremiumStoreHome() {
                             </span>
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/40 border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/95 backdrop-blur-md shadow-2xs">
+                          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/35 border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/95 backdrop-blur-md shadow-2xs">
                             <span>{slide.statusLabel}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* Clear Typography Hierarchy: Subheading + Massive Headline */}
+                      {/* Clear Typography Hierarchy: Subheading + Headline */}
                       <div className="space-y-1 min-h-[62px] sm:min-h-[76px] flex flex-col justify-center">
-                        <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-300 drop-shadow-2xs">
+                        <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#E3B341] drop-shadow-2xs">
                           {slide.preTitle}
                         </p>
                         <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
@@ -454,19 +467,19 @@ function PremiumStoreHome() {
                         {slide.subtitle}
                       </p>
 
-                      {/* Uniform 36px Value/Benefit Row */}
+                      {/* Benefit Row */}
                       <div className="min-h-[36px] flex items-center">
                         {slide.coupon ? (
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => copyCode(slide.coupon!)}
-                              className="inline-flex items-center gap-2 rounded-xl bg-black/50 border border-amber-400/60 px-3.5 py-1.5 text-xs font-mono font-bold text-amber-300 shadow-sm hover:bg-black/70 transition-colors cursor-pointer active:scale-95"
+                              className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-[#E3B341]/60 px-3.5 py-1.5 text-xs font-mono font-bold text-[#E3B341] shadow-sm hover:bg-black/60 transition-colors cursor-pointer active:scale-95"
                             >
-                              <Tag className="size-3.5 text-amber-400" />
+                              <Tag className="size-3.5 text-[#E3B341]" />
                               <span>Code: {slide.coupon}</span>
                               {copiedCoupon ? (
-                                <span className="flex items-center gap-1 text-emerald-400 font-sans text-[11px]">
+                                <span className="flex items-center gap-1 text-[#DCEBDD] font-sans text-[11px]">
                                   <Check className="size-3.5" />{" "}
                                   {lang === "hi" ? "कॉपी हो गया!" : "COPIED!"}
                                 </span>
@@ -479,8 +492,8 @@ function PremiumStoreHome() {
                             </span>
                           </div>
                         ) : slide.id === 2 ? (
-                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-emerald-400/40 px-3.5 py-1.5 text-xs font-medium text-emerald-200 shadow-sm">
-                            <Truck className="size-3.5 text-emerald-400" />
+                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/35 border border-[#DCEBDD]/40 px-3.5 py-1.5 text-xs font-medium text-[#DCEBDD] shadow-sm">
+                            <Truck className="size-3.5 text-[#DCEBDD]" />
                             <span>
                               {lang === "hi"
                                 ? "₹499+ के ऑर्डर पर 0 डिलीवरी शुल्क • सीधा घर तक"
@@ -488,12 +501,12 @@ function PremiumStoreHome() {
                             </span>
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/40 border border-green-400/40 px-3.5 py-1.5 text-xs font-medium text-green-200 shadow-sm">
-                            <MessageCircle className="size-3.5 text-green-400" />
+                          <div className="inline-flex items-center gap-2 rounded-xl bg-black/35 border border-[#DCEBDD]/40 px-3.5 py-1.5 text-xs font-medium text-[#DCEBDD] shadow-sm">
+                            <PhoneCall className="size-3.5 text-[#DCEBDD]" />
                             <span>
                               {lang === "hi"
-                                ? "व्हाट्सएप: +91 9621617360 पर पर्ची भेजें"
-                                : "WhatsApp: +91 9621617360 for Fast Packing"}
+                                ? "फोन / व्हाट्सएप: +91 9621617360 पर तुरंत संपर्क"
+                                : "Call / WhatsApp: +91 9621617360"}
                             </span>
                           </div>
                         )}
@@ -505,7 +518,7 @@ function PremiumStoreHome() {
                           <Button
                             asChild
                             size="lg"
-                            className="rounded-full bg-[#25D366] text-[#0A261F] font-extrabold px-6 sm:px-7 py-2.5 sm:py-3 text-xs shadow-xl hover:bg-[#20ba59] transition-all hover:scale-105"
+                            className="rounded-full bg-white text-[#145A45] font-extrabold px-6 sm:px-7 py-2.5 sm:py-3 text-xs shadow-xl hover:bg-[#FAF8F2] transition-all hover:scale-105"
                           >
                             <a
                               href={waHref(
@@ -515,17 +528,17 @@ function PremiumStoreHome() {
                               target="_blank"
                               rel="noreferrer"
                             >
-                              <MessageCircle className="mr-2 size-4 fill-current" /> {slide.cta}
+                              <MessageCircle className="mr-2 size-4 fill-[#145A45] text-[#145A45]" /> {slide.cta}
                             </a>
                           </Button>
                         ) : (
                           <Button
                             asChild
                             size="lg"
-                            className="rounded-full bg-white px-6 sm:px-7 py-2.5 sm:py-3 text-xs font-extrabold text-[#18483B] shadow-xl hover:bg-gray-100 transition-all hover:scale-105 active:scale-95"
+                            className="rounded-full bg-white px-6 sm:px-7 py-2.5 sm:py-3 text-xs font-extrabold text-[#145A45] shadow-xl hover:bg-[#FAF8F2] transition-all hover:scale-105 active:scale-95"
                           >
                             <Link to={slide.link}>
-                              <ShoppingBag className="mr-2 size-4 text-[#18483B]" /> {slide.cta}
+                              <ShoppingBag className="mr-2 size-4 text-[#145A45]" /> {slide.cta}
                             </Link>
                           </Button>
                         )}
@@ -535,20 +548,20 @@ function PremiumStoreHome() {
                           onClick={() => setOrderModalOpen(true)}
                           className="rounded-full border border-white/40 bg-white/15 px-4 py-2 sm:py-2.5 text-xs font-bold text-white backdrop-blur-xs hover:bg-white/25 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                         >
-                          <PhoneCall className="size-3.5 text-amber-300" /> {t.orderOnPhone}
+                          <PhoneCall className="size-3.5 text-[#E3B341]" /> {t.orderOnPhone}
                         </button>
                       </div>
                     </div>
 
-                    {/* Right: Grounded Supermarket Studio Product Showcase Podium */}
+                    {/* Right: Fresh Grocery Showcase Podium */}
                     <div className="hidden md:flex flex-col items-center justify-center relative shrink-0">
                       <div className="relative w-64 lg:w-72 rounded-3xl bg-black/25 backdrop-blur-md p-4 border border-white/20 shadow-2xl overflow-hidden flex flex-col items-center">
-                        {/* Studio Ambient Glow */}
-                        <div className="pointer-events-none absolute -top-10 inset-x-0 h-32 rounded-full bg-emerald-400/20 blur-2xl" />
+                        {/* Ambient Glow */}
+                        <div className="pointer-events-none absolute -top-10 inset-x-0 h-32 rounded-full bg-[#DCEBDD]/15 blur-2xl" />
 
                         {/* Platform Top Badge */}
                         <div className="relative z-10 mb-3 flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold text-white backdrop-blur-md border border-white/20">
-                          <Sparkles className="size-3 text-amber-300" />
+                          <Sparkles className="size-3 text-[#E3B341]" />
                           <span>
                             {lang === "hi"
                               ? "100% शुद्ध ताज़ा किराना"
@@ -556,9 +569,9 @@ function PremiumStoreHome() {
                           </span>
                         </div>
 
-                        {/* Studio Counter Showcase with 3 Grounded Products */}
+                        {/* Counter Showcase */}
                         <div className="relative z-10 flex items-end justify-center gap-2 w-full pt-1 pb-1">
-                          {/* Product 1: Fortune Oil (Left) */}
+                          {/* Product 1: Fortune Oil */}
                           <div className="flex flex-col items-center group/item">
                             <div className="w-16 sm:w-20 h-28 rounded-xl bg-white p-1.5 shadow-lg border border-white/60 flex items-center justify-center transition-transform group-hover/item:scale-105">
                               <img
@@ -573,10 +586,10 @@ function PremiumStoreHome() {
                             </span>
                           </div>
 
-                          {/* Product 2: Aashirvaad Atta (Center - Hero Product) */}
+                          {/* Product 2: Aashirvaad Atta */}
                           <div className="flex flex-col items-center group/item z-10 -mx-1">
-                            <div className="w-20 sm:w-24 h-32 rounded-2xl bg-white p-2 shadow-2xl border-2 border-amber-300 flex items-center justify-center transition-transform group-hover/item:scale-105 relative">
-                              <span className="absolute -top-2 rounded-full bg-amber-500 px-2 py-0.2 text-[8px] font-black text-black uppercase tracking-wider shadow-xs">
+                            <div className="w-20 sm:w-24 h-32 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#E3B341] flex items-center justify-center transition-transform group-hover/item:scale-105 relative">
+                              <span className="absolute -top-2 rounded-full bg-[#E3B341] px-2 py-0.2 text-[8px] font-black text-[#1F2924] uppercase tracking-wider shadow-xs">
                                 {lang === "hi" ? "सर्वश्रेष्ठ" : "Bestseller"}
                               </span>
                               <img
@@ -586,12 +599,12 @@ function PremiumStoreHome() {
                               />
                             </div>
                             <div className="w-20 h-2 bg-black/60 rounded-full blur-[2px] mt-1" />
-                            <span className="text-[10px] font-extrabold text-amber-300 mt-1 text-center">
+                            <span className="text-[10px] font-extrabold text-[#E3B341] mt-1 text-center">
                               {lang === "hi" ? "चक्की आटा" : "Chakki Atta"}
                             </span>
                           </div>
 
-                          {/* Product 3: Amul Desi Ghee (Right) */}
+                          {/* Product 3: Amul Desi Ghee */}
                           <div className="flex flex-col items-center group/item">
                             <div className="w-16 sm:w-20 h-28 rounded-xl bg-white p-1.5 shadow-lg border border-white/60 flex items-center justify-center transition-transform group-hover/item:scale-105">
                               <img
@@ -607,7 +620,7 @@ function PremiumStoreHome() {
                           </div>
                         </div>
 
-                        {/* Grounded Showcase Base Surface */}
+                        {/* Base Surface */}
                         <div className="w-full h-1.5 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent mt-1" />
                       </div>
                     </div>
@@ -616,8 +629,8 @@ function PremiumStoreHome() {
               ))}
             </div>
 
-            {/* Interactive Offer Switcher Bar (Tabs + Dots + Arrows at bottom of hero) */}
-            <div className="border-t border-white/15 bg-black/40 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+            {/* Interactive Offer Switcher Bar */}
+            <div className="border-t border-white/15 bg-black/35 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
               {/* Offer Category Pills */}
               <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 {HERO_SLIDES.map((slide, idx) => (
@@ -627,7 +640,7 @@ function PremiumStoreHome() {
                     onClick={() => setCurrentSlide(idx)}
                     className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-bold transition-all shrink-0 cursor-pointer ${
                       currentSlide === idx
-                        ? "bg-white text-[#18483B] shadow-xs scale-105"
+                        ? "bg-white text-[#145A45] shadow-xs scale-105"
                         : "bg-white/10 text-white/80 hover:bg-white/20"
                     }`}
                   >
@@ -648,7 +661,7 @@ function PremiumStoreHome() {
                       onClick={() => setCurrentSlide(idx)}
                       aria-label={`Go to slide ${idx + 1}`}
                       className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                        currentSlide === idx ? "w-5 bg-amber-400" : "w-1.5 bg-white/40"
+                        currentSlide === idx ? "w-5 bg-[#E3B341]" : "w-1.5 bg-white/40"
                       }`}
                     />
                   ))}
@@ -682,15 +695,15 @@ function PremiumStoreHome() {
 
           {/* Right Column: "Deal of the Day" Live Product Spotlight Box */}
           {spotlightProduct && activeSpotlightVariant && (
-            <div className="card-base hidden lg:flex flex-col justify-between p-5 bg-white border border-[#EAE6DF] relative overflow-hidden shadow-xs">
-              {/* Spotlight Header with Live Flame */}
-              <div className="flex items-center justify-between pb-2.5 border-b border-[#EAE6DF]">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-[#18483B] uppercase tracking-wider">
-                  <span className="flex size-2 rounded-full bg-amber-500 animate-ping" />
-                  <Flame className="size-4 text-amber-600 fill-amber-600" />
+            <div className="card-base hidden lg:flex flex-col justify-between p-5 bg-white border border-[#E8E4DA] relative overflow-hidden shadow-xs">
+              {/* Spotlight Header */}
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E4DA]">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#145A45] uppercase tracking-wider">
+                  <span className="flex size-2 rounded-full bg-[#E3B341] animate-ping" />
+                  <Flame className="size-4 text-[#E3B341] fill-[#E3B341]" />
                   {lang === "hi" ? "आज का खास ऑफर" : "Deal of the Day"}
                 </span>
-                <span className="rounded-full bg-[#EBF4F0] px-2.5 py-0.5 text-[11px] font-bold text-[#18483B]">
+                <span className="rounded-full bg-[#DCEBDD] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
                   {spotlightDiscount}% {t.off}
                 </span>
               </div>
@@ -699,7 +712,7 @@ function PremiumStoreHome() {
               <Link
                 to="/product/$slug"
                 params={{ slug: spotlightProduct.slug }}
-                className="group relative my-2.5 flex aspect-square w-full max-h-48 items-center justify-center overflow-hidden rounded-xl bg-white border border-[#EFECE6] p-3 transition-all duration-200 group-hover:border-[#D8D2C4]"
+                className="group relative my-2.5 flex aspect-square w-full max-h-48 items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3 transition-all duration-200 group-hover:border-[#145A45]/40"
               >
                 <img
                   src={getProductImage(spotlightProduct)}
@@ -716,17 +729,17 @@ function PremiumStoreHome() {
 
               {/* Details & Variant Pills */}
               <div>
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-[#676D68]">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase text-[#6B746F]">
                   <span>{spotlightProduct.brand}</span>
-                  <span className="flex items-center gap-1 text-amber-700">
-                    <Star className="size-3 fill-amber-400 text-amber-400" /> 4.9 (120+)
+                  <span className="flex items-center gap-1 text-[#145A45]">
+                    <Star className="size-3 fill-[#E3B341] text-[#E3B341]" /> 4.9 (120+)
                   </span>
                 </div>
 
                 <Link
                   to="/product/$slug"
                   params={{ slug: spotlightProduct.slug }}
-                  className="font-sans text-sm font-bold text-[#191C1B] hover:text-[#18483B] line-clamp-1 mt-0.5"
+                  className="font-sans text-sm font-bold text-[#1F2924] hover:text-[#145A45] line-clamp-1 mt-0.5"
                 >
                   {getProductName(spotlightProduct.name, spotlightProduct.slug)}
                 </Link>
@@ -741,8 +754,8 @@ function PremiumStoreHome() {
                         onClick={() => setSpotlightVariantIndex(i)}
                         className={`rounded-full border px-2 py-0.5 text-[10px] font-bold transition-all ${
                           i === spotlightVariantIndex
-                            ? "border-[#18483B] bg-[#18483B] text-white"
-                            : "border-[#EAE6DF] bg-white text-[#676D68] hover:border-[#18483B]"
+                            ? "border-[#145A45] bg-[#145A45] text-white"
+                            : "border-[#E8E4DA] bg-white text-[#6B746F] hover:border-[#145A45]"
                         }`}
                       >
                         {getVariantLabel(v.label)}
@@ -753,37 +766,37 @@ function PremiumStoreHome() {
 
                 {/* Price Row */}
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-lg font-extrabold text-[#191C1B]">
+                  <span className="text-lg font-extrabold text-[#1F2924]">
                     {inr(activeSpotlightVariant.price)}
                   </span>
                   {activeSpotlightVariant.mrp > activeSpotlightVariant.price && (
-                    <span className="text-xs text-[#676D68] line-through">
+                    <span className="text-xs text-[#6B746F] line-through">
                       {inr(activeSpotlightVariant.mrp)}
                     </span>
                   )}
                   <span className="text-[11px] font-semibold text-[#15803D] ml-auto">
-                    {lang === "hi" ? "🔥 स्टॉक में उपलब्ध" : "🔥 Live Stock"}
+                    {lang === "hi" ? "🔥 स्टॉक में उपलब्ध" : "🔥 In Stock"}
                   </span>
                 </div>
 
                 {/* Instant Add to Cart / Stepper */}
                 <div className="mt-3">
                   {spotlightInCart ? (
-                    <div className="flex h-9 items-center justify-between rounded-full border border-[#18483B] bg-[#EBF4F0] px-3">
+                    <div className="flex h-9 items-center justify-between rounded-full border border-[#145A45] bg-[#DCEBDD] px-3">
                       <button
                         type="button"
                         onClick={() => setQty(spotlightInCart.variantId, spotlightInCart.qty - 1)}
-                        className="flex size-6 items-center justify-center rounded-full text-[#18483B] hover:bg-white transition-colors"
+                        className="flex size-6 items-center justify-center rounded-full text-[#145A45] hover:bg-white transition-colors"
                       >
                         <Minus className="size-3.5" />
                       </button>
-                      <span className="text-xs font-bold text-[#18483B]">
+                      <span className="text-xs font-bold text-[#145A45]">
                         {spotlightInCart.qty} {lang === "hi" ? "जोड़ा गया" : "Added"}
                       </span>
                       <button
                         type="button"
                         onClick={() => setQty(spotlightInCart.variantId, spotlightInCart.qty + 1)}
-                        className="flex size-6 items-center justify-center rounded-full text-[#18483B] hover:bg-white transition-colors"
+                        className="flex size-6 items-center justify-center rounded-full text-[#145A45] hover:bg-white transition-colors"
                       >
                         <Plus className="size-3.5" />
                       </button>
@@ -807,7 +820,7 @@ function PremiumStoreHome() {
                           `${getProductName(spotlightProduct.name, spotlightProduct.slug)} added to cart`,
                         );
                       }}
-                      className="w-full rounded-full bg-[#18483B] text-xs font-bold text-white shadow-xs hover:bg-[#133A2F]"
+                      className="w-full rounded-full bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
                     >
                       <Plus className="mr-1 size-3.5" /> {t.add}
                     </Button>
@@ -820,43 +833,43 @@ function PremiumStoreHome() {
 
         {/* 4-Item Trust & Assurance Ribbon under Hero */}
         <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#EAE6DF]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B] shrink-0">
+          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <Truck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">
+              <p className="text-xs font-bold text-[#1F2924]">
                 {lang === "hi" ? "30 मिनट होम डिलीवरी" : "30-Min Fast Delivery"}
               </p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "रामनगर व महाराजगंज में" : "In Ramnagar & City"}
               </p>
             </div>
           </div>
 
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#EAE6DF]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B] shrink-0">
+          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <Award className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">
+              <p className="text-xs font-bold text-[#1F2924]">
                 {lang === "hi" ? "100% शुद्ध एवं असली" : "100% Pure & Authentic"}
               </p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "सीधे मंडी व ब्रांड से" : "Fresh Mandi Sourcing"}
               </p>
             </div>
           </div>
 
-          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#EAE6DF]">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B] shrink-0">
+          <div className="card-base flex items-center gap-3 p-3 bg-white border border-[#E8E4DA]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45] shrink-0">
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">
+              <p className="text-xs font-bold text-[#1F2924]">
                 {lang === "hi" ? "कैश ऑन डिलीवरी / UPI" : "Pay on Delivery / UPI"}
               </p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "सामान देखकर भुगतान करें" : "Safe & Easy Payments"}
               </p>
             </div>
@@ -866,16 +879,16 @@ function PremiumStoreHome() {
             href={waHref(storeWhatsApp, "Namaste! I want to order monthly grocery list.")}
             target="_blank"
             rel="noreferrer"
-            className="card-base flex items-center gap-3 p-3 bg-[#EBF4F0] border border-[#18483B]/20 hover:border-[#18483B] transition-colors"
+            className="card-base flex items-center gap-3 p-3 bg-[#DCEBDD]/40 border border-[#145A45]/30 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#25D366] text-white shrink-0">
-              <MessageCircle className="size-4 fill-white text-[#25D366]" />
+            <div className="grid size-9 place-items-center rounded-full bg-[#145A45] text-white shrink-0">
+              <MessageCircle className="size-4 fill-white text-[#145A45]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#18483B]">
+              <p className="text-xs font-bold text-[#145A45]">
                 {lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "WhatsApp Quick Order"}
               </p>
-              <p className="text-[10px] text-[#133A2F]">
+              <p className="text-[10px] text-[#0E4333]">
                 {lang === "hi" ? "राशन पर्ची भेजें" : "+91 9621617360"}
               </p>
             </div>
@@ -884,8 +897,8 @@ function PremiumStoreHome() {
 
         {/* Trending Quick Search Bar below Hero */}
         <div className="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          <span className="flex items-center gap-1 text-[11px] font-bold text-[#676D68] shrink-0">
-            <TrendingUp className="size-3 text-[#18483B]" />
+          <span className="flex items-center gap-1 text-[11px] font-bold text-[#6B746F] shrink-0">
+            <TrendingUp className="size-3 text-[#145A45]" />
             {lang === "hi" ? "लोकप्रिय खोजें:" : "Popular Searches:"}
           </span>
           <div className="flex items-center gap-1.5">
@@ -894,7 +907,7 @@ function PremiumStoreHome() {
                 key={idx}
                 type="button"
                 onClick={() => void navigate({ to: "/shop", search: { q: item.q } as never })}
-                className="shrink-0 rounded-full border border-[#EAE6DF] bg-white px-2.5 py-1 text-[11px] font-medium text-[#191C1B] hover:border-[#18483B] hover:text-[#18483B] transition-colors shadow-2xs"
+                className="shrink-0 rounded-full border border-[#E8E4DA] bg-white px-2.5 py-1 text-[11px] font-medium text-[#1F2924] hover:border-[#145A45] hover:text-[#145A45] transition-colors shadow-2xs"
               >
                 {item.label}
               </button>
@@ -908,14 +921,14 @@ function PremiumStoreHome() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           <Link
             to="/shop"
-            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#18483B] transition-colors"
+            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <ShoppingBag className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.quickShop}</p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-xs font-bold text-[#1F2924]">{t.quickShop}</p>
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "सामान सूची" : "Browse items"}
               </p>
             </div>
@@ -923,14 +936,14 @@ function PremiumStoreHome() {
 
           <Link
             to="/track"
-            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#18483B] transition-colors"
+            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <Package className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.quickOrders}</p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-xs font-bold text-[#1F2924]">{t.quickOrders}</p>
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "लाइव स्थिति" : "Track status"}
               </p>
             </div>
@@ -938,14 +951,14 @@ function PremiumStoreHome() {
 
           <Link
             to="/account"
-            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#18483B] transition-colors"
+            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <RotateCcw className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.quickBuyAgain}</p>
-              <p className="text-[10px] text-[#676D68]">
+              <p className="text-xs font-bold text-[#1F2924]">{t.quickBuyAgain}</p>
+              <p className="text-[10px] text-[#6B746F]">
                 {lang === "hi" ? "पुराना सामान" : "Past essentials"}
               </p>
             </div>
@@ -953,14 +966,14 @@ function PremiumStoreHome() {
 
           <a
             href={telHref(cleanPhone)}
-            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#18483B] transition-colors"
+            className="card-base flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <Phone className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.quickCall}</p>
-              <p className="text-[10px] text-[#676D68]">{storePhone}</p>
+              <p className="text-xs font-bold text-[#1F2924]">{t.quickCall}</p>
+              <p className="text-[10px] text-[#6B746F]">{storePhone}</p>
             </div>
           </a>
 
@@ -971,14 +984,14 @@ function PremiumStoreHome() {
             }
             target="_blank"
             rel="noreferrer"
-            className="card-base col-span-2 sm:col-span-1 flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#18483B] transition-colors"
+            className="card-base col-span-2 sm:col-span-1 flex items-center gap-3 p-3 sm:p-3.5 hover:border-[#145A45] transition-colors"
           >
-            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <MapPin className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.quickLocation}</p>
-              <p className="text-[10px] text-[#676D68]">Ramnagar, Adda Bazar</p>
+              <p className="text-xs font-bold text-[#1F2924]">{t.quickLocation}</p>
+              <p className="text-[10px] text-[#6B746F]">Ramnagar, Adda Bazar</p>
             </div>
           </a>
         </div>
@@ -986,44 +999,44 @@ function PremiumStoreHome() {
 
       {/* 4. Trust Badges Row */}
       <section className="container-page">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 card-base p-3 sm:p-4">
-          <div className="flex items-center gap-3 p-2 border-r border-[#EAE6DF] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 card-base p-3 sm:p-4 bg-white border border-[#E8E4DA]">
+          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
+            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <Truck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.freeDeliveryTitle}</p>
-              <p className="text-[10px] text-[#676D68]">{t.freeDeliverySub}</p>
+              <p className="text-xs font-bold text-[#1F2924]">{t.freeDeliveryTitle}</p>
+              <p className="text-[10px] text-[#6B746F]">{t.freeDeliverySub}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2 border-r border-[#EAE6DF] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
+            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <Store className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.storePickupTitle}</p>
-              <p className="text-[10px] text-[#676D68]">{t.storePickupSub}</p>
+              <p className="text-xs font-bold text-[#1F2924]">{t.storePickupTitle}</p>
+              <p className="text-[10px] text-[#6B746F]">{t.storePickupSub}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2 border-r border-[#EAE6DF] last:border-0">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+          <div className="flex items-center gap-3 p-2 border-r border-[#E8E4DA] last:border-0">
+            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#191C1B]">{t.genuineBrandsTitle}</p>
-              <p className="text-[10px] text-[#676D68]">{t.genuineBrandsSub}</p>
+              <p className="text-xs font-bold text-[#1F2924]">{t.genuineBrandsTitle}</p>
+              <p className="text-[10px] text-[#6B746F]">{t.genuineBrandsSub}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3 p-2">
-            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+            <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <Award className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#18483B]">{t.purityTagline}</p>
-              <p className="text-[10px] text-[#191C1B] font-medium">{t.puritySub}</p>
+              <p className="text-xs font-bold text-[#145A45]">{t.purityTagline}</p>
+              <p className="text-[10px] text-[#1F2924] font-medium">{t.puritySub}</p>
             </div>
           </div>
         </div>
@@ -1031,21 +1044,21 @@ function PremiumStoreHome() {
 
       {/* 5. ⚡ Flash Deals of the Day / आज के खास ऑफर्स */}
       <section className="container-page">
-        <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+        <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
           <div className="flex items-center gap-2">
-            <span className="grid size-7 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
-              <Flame className="size-4 text-amber-600 fill-amber-600" />
+            <span className="grid size-7 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
+              <Flame className="size-4 text-[#E3B341] fill-[#E3B341]" />
             </span>
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {t.dealsOfDay}
               </h2>
-              <p className="text-xs text-[#676D68]">{t.dealsOfDaySub}</p>
+              <p className="text-xs text-[#6B746F]">{t.dealsOfDaySub}</p>
             </div>
           </div>
           <Link
             to="/shop"
-            className="text-xs font-semibold text-[#18483B] hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-[#145A45] hover:underline flex items-center gap-1"
           >
             {t.viewAll} ({products.length}) <ArrowRight className="size-3.5" />
           </Link>
@@ -1063,14 +1076,14 @@ function PremiumStoreHome() {
       {/* 6. 🌾 Atta, Rice & Whole Grains Shelf (आटा, चावल व अनाज) */}
       {attaRiceProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🌾 आटा, बासमती चावल एवं अनाज"
                   : "🌾 Fresh Atta, Basmati Rice & Grains"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "आशीर्वाद, फॉर्च्यून चक्की आटा और प्रीमियम दावत बासमती चावल"
                   : "Aashirvaad, Fortune Chakki Atta, Daawat Basmati Rice & Poha"}
@@ -1079,7 +1092,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "flour-atta" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1096,12 +1109,12 @@ function PremiumStoreHome() {
       {/* 7. 🫘 Pure Pulses & Dal Shelf (दालें व दलहन) */}
       {dalPulsesProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi" ? "🫘 शुद्ध दालें एवं दलहन" : "🫘 Pure Pulses & Dal Varieties"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "अरहर/तूर दाल, मूंग दाल, चना दाल, राजमा और काबुली चना"
                   : "Arhar Dal, Moong Dal, Chana Dal, Rajma & Kabuli Chana"}
@@ -1110,7 +1123,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "pulses-dal" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1127,14 +1140,14 @@ function PremiumStoreHome() {
       {/* 8. 🛢️ Cooking Oil & Pure Ghee Shelf (सरसों तेल व देसी घी) */}
       {oilGheeProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🛢️ सरसों का तेल एवं शुद्ध देसी घी"
                   : "🛢️ Mustard Oil & Pure Desi Ghee"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "फॉर्च्यून कच्ची घानी, धारा और अमूल देसी घी"
                   : "Fortune Kachi Ghani, Dhara & Amul Pure Ghee"}
@@ -1143,7 +1156,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "oil-ghee" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1159,20 +1172,20 @@ function PremiumStoreHome() {
 
       {/* 9. Promotional Coupon Banner */}
       <section className="container-page">
-        <div className="card-base border border-[#EAE6DF] bg-gradient-to-br from-[#FAF8F5] via-[#F4F1EB] to-[#EBF4F0] p-6 sm:p-8">
+        <div className="card-base border border-[#E8E4DA] bg-gradient-to-br from-[#FAF8F2] via-[#FFFFFF] to-[#DCEBDD]/40 p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1.5 text-center sm:text-left">
-              <span className="inline-block rounded-full bg-[#18483B] px-3 py-0.5 text-[11px] font-bold text-white shadow-2xs">
+              <span className="inline-block rounded-full bg-[#145A45] px-3 py-0.5 text-[11px] font-bold text-white shadow-2xs">
                 {lang === "hi" ? "विशेष स्वागत कूपन" : "SPECIAL STORE COUPON"}
               </span>
-              <h3 className="font-sans text-xl sm:text-2xl font-bold text-[#191C1B]">
+              <h3 className="font-sans text-xl sm:text-2xl font-bold text-[#1F2924]">
                 {t.welcomeOfferTitle}
               </h3>
-              <p className="text-xs text-[#676D68]">{t.welcomeOfferSub}</p>
+              <p className="text-xs text-[#6B746F]">{t.welcomeOfferSub}</p>
             </div>
             <Button
               asChild
-              className="rounded-full bg-[#18483B] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#133A2F]"
+              className="rounded-full bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
             >
               <Link to="/shop">{t.shopNow}</Link>
             </Button>
@@ -1183,14 +1196,14 @@ function PremiumStoreHome() {
       {/* 10. 🌶️ Spices, Masala & Dry Fruits Shelf (मसाले व सूखे मेवे) */}
       {spicesMasalaProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🌶️ खड़े मसाले, पिसा मसाला व सूखे मेवे"
                   : "🌶️ Spices, Whole Masala & Dry Fruits"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "एमडीएच, एवरेस्ट मसाले, काजू, बादाम और किशमिश"
                   : "MDH, Everest Masala, Cashews, Almonds & Raisins"}
@@ -1199,7 +1212,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "spices-masala" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1216,14 +1229,14 @@ function PremiumStoreHome() {
       {/* 11. ☕ Snacks, Tea & Daily Essentials Shelf */}
       {snacksBreakfastProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "☕ चाय, नाश्ता, नमकीन एवं बिस्कुट"
                   : "☕ Tea, Coffee, Namkeen & Biscuits"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "टाटा टी गोल्ड, पारले-जी, गुड डे और हल्दीराम भुजिया"
                   : "Tata Tea Gold, Parle-G, Good Day & Haldiram Snacks"}
@@ -1232,7 +1245,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "snacks-namkeen" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1249,14 +1262,14 @@ function PremiumStoreHome() {
       {/* 12. 🥛 Fresh Dairy & Milk Products Shelf */}
       {dairyProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🥛 ताज़ा डेयरी, पनीर, दही एवं दूध उत्पाद"
                   : "🥛 Fresh Dairy, Paneer, Dahi & Cheese"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "अमूल मस्ती दही, मलाई पनीर, फ्रेश क्रीम, छाछ और चीज"
                   : "Amul Masti Dahi, Malai Paneer, Fresh Cream, Buttermilk & Cheese"}
@@ -1265,7 +1278,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "dairy" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1282,14 +1295,14 @@ function PremiumStoreHome() {
       {/* 13. 🍳 Cookware & Kitchen Utensils Shelf */}
       {cookwareUtensils.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🍳 बर्तन, प्रेशर कुकर एवं रसोई उपकरण"
                   : "🍳 Cookware, Pressure Cookers & Utensils"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "हॉकिन्स कुकर, प्रेस्टीज डोसा तवा, कड़ाही, मिक्सर ग्राइंडर व चकला बेलन"
                   : "Hawkins Cookers, Prestige Non-stick Tawa, Kadhai & Mixer Grinders"}
@@ -1298,7 +1311,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "utensils-cookware" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1315,14 +1328,14 @@ function PremiumStoreHome() {
       {/* 14. 🧽 Cleaning & Household Essentials Shelf */}
       {cleaningProducts.length > 0 && (
         <section className="container-page">
-          <div className="flex items-center justify-between border-b border-[#EAE6DF] pb-3">
+          <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-3">
             <div>
-              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#191C1B]">
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
                 {lang === "hi"
                   ? "🧽 सफाई आपूर्ति, डिटर्जेंट, झाड़ू व पोछा"
                   : "🧽 Cleaning Supplies, Detergents & Mops"}
               </h2>
-              <p className="text-xs text-[#676D68]">
+              <p className="text-xs text-[#6B746F]">
                 {lang === "hi"
                   ? "सर्फ एक्सेल, हार्पिक, प्रिल जेल, कोलिन, गाला झाड़ू व कॉटन पोछा"
                   : "Surf Excel, Harpic, Pril, Colin, Gala Broom & Cotton Mop"}
@@ -1331,7 +1344,7 @@ function PremiumStoreHome() {
             <Link
               to="/shop"
               search={{ category: "cleaning-supplies" }}
-              className="text-xs font-semibold text-[#18483B] hover:underline"
+              className="text-xs font-semibold text-[#145A45] hover:underline"
             >
               {t.viewAll} →
             </Link>
@@ -1345,64 +1358,64 @@ function PremiumStoreHome() {
         </section>
       )}
 
-      {/* 15. Local Store Trust & Rating Section */}
+      {/* 15. Local Store Trust & Rating Section: क्यों खरीदें Arun Gopal Traders से? */}
       <section className="container-page">
-        <div className="card-base border border-[#EAE6DF] bg-white p-6 sm:p-10">
+        <div className="card-base border border-[#E8E4DA] bg-white p-6 sm:p-10">
           <div className="max-w-2xl mx-auto text-center space-y-2">
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#FAF8F5] border border-[#EAE6DF] px-3 py-1 text-xs font-bold text-[#18483B]">
-              <Star className="size-3.5 fill-amber-400 text-amber-400" />
+            <div className="inline-flex items-center gap-1 rounded-full bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1 text-xs font-bold text-[#145A45]">
+              <Star className="size-3.5 fill-[#E3B341] text-[#E3B341]" />
               <span>
                 4.9 / 5.0 • {lang === "hi" ? "500+ स्थानीय परिवार" : "500+ Local Families"}
               </span>
             </div>
-            <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#191C1B]">
+            <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#1F2924]">
               {lang === "hi"
-                ? "अरुण गोपाल ट्रेडर्स पर क्यों करें भरोसा?"
-                : "Why shop with Arun Gopal Traders?"}
+                ? "क्यों खरीदें Arun Gopal Traders से?"
+                : "Why Choose Arun Gopal Traders?"}
             </h2>
-            <p className="text-xs sm:text-sm text-[#676D68]">
+            <p className="text-xs sm:text-sm text-[#6B746F]">
               {lang === "hi"
-                ? "रामनगर, महाराजगंज में स्थित आपकी अपनी भरोसेमंद किराना दुकान — शुद्ध राशन, सही तौल, और विश्वसनीय सेवा।"
-                : "Your trusted neighbourhood grocery store in Ramnagar, Maharajganj — committed to pure staples, accurate weights, and doorstep delivery."}
+                ? "रामनगर, महाराजगंज में स्थित आपकी अपनी भरोसेमंद किराना दुकान — 100% शुद्ध राशन, उचित दरें और विश्वसनीय सेवा।"
+                : "Your trusted neighbourhood grocery store in Ramnagar, Maharajganj — committed to pure staples, honest rates, and reliable doorstep delivery."}
             </p>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#EAE6DF]">
-              <CheckCircle2 className="size-5 shrink-0 text-[#18483B]" />
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA]">
+              <CheckCircle2 className="size-5 shrink-0 text-[#145A45]" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#191C1B]">
-                  {lang === "hi" ? "100% असली व शुद्ध ब्रांड्स" : "100% Genuine Brands"}
+                <h4 className="text-xs sm:text-sm font-bold text-[#1F2924]">
+                  {lang === "hi" ? "100% असली व शुद्ध सामान" : "100% Pure & Genuine Staples"}
                 </h4>
-                <p className="mt-0.5 text-xs text-[#676D68]">
-                  Fortune, Aashirvaad, Tata, MDH &amp; Amul.
+                <p className="mt-0.5 text-xs text-[#6B746F]">
+                  Fortune, Aashirvaad, Tata, MDH, Everest &amp; Amul.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#EAE6DF]">
-              <Truck className="size-5 shrink-0 text-[#18483B]" />
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA]">
+              <Truck className="size-5 shrink-0 text-[#145A45]" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#191C1B]">
-                  {lang === "hi" ? "महाराजगंज में तेज़ होम डिलीवरी" : "Fast Local Delivery"}
+                <h4 className="text-xs sm:text-sm font-bold text-[#1F2924]">
+                  {lang === "hi" ? "30 मिनट तेज़ होम डिलीवरी" : "Fast Local Delivery"}
                 </h4>
-                <p className="mt-0.5 text-xs text-[#676D68]">
+                <p className="mt-0.5 text-xs text-[#6B746F]">
                   {lang === "hi"
-                    ? `₹${settings?.free_delivery_threshold ?? 499} से ऊपर फ्री डिलीवरी।`
-                    : `Free delivery on orders above ₹${settings?.free_delivery_threshold ?? 499}.`}
+                    ? `₹${settings?.free_delivery_threshold ?? 499} से ऊपर 100% फ्री डिलीवरी।`
+                    : `Free doorstep delivery on orders above ₹${settings?.free_delivery_threshold ?? 499}.`}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F5] border border-[#EAE6DF]">
-              <PhoneCall className="size-5 shrink-0 text-[#18483B]" />
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA]">
+              <PhoneCall className="size-5 shrink-0 text-[#145A45]" />
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-[#191C1B]">
-                  {lang === "hi" ? "आसान फोन व व्हाट्सएप ऑर्डर" : "Easy Phone Ordering"}
+                <h4 className="text-xs sm:text-sm font-bold text-[#1F2924]">
+                  {lang === "hi" ? "दुकान से सीधा संपर्क" : "Direct Store Support"}
                 </h4>
-                <p className="mt-0.5 text-xs text-[#676D68]">
+                <p className="mt-0.5 text-xs text-[#6B746F]">
                   {lang === "hi"
-                    ? "कॉल या व्हाट्सएप करें: +91 9621617360"
+                    ? "कॉल या व्हाट्सएप: +91 9621617360"
                     : "Call or WhatsApp: +91 9621617360"}
                 </p>
               </div>

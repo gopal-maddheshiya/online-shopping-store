@@ -99,10 +99,10 @@ function ContactPage() {
     <div className="container-page py-8 sm:py-12 space-y-12">
       {/* Header */}
       <div className="max-w-2xl mx-auto text-center space-y-3">
-        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#191C1B]">
+        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#1F2924]">
           We're here to help.
         </h1>
-        <p className="text-xs sm:text-sm text-[#676D68]">
+        <p className="text-xs sm:text-sm text-[#6B746F]">
           Having trouble finding a product or placing an order? Talk to our Ramnagar store team
           directly.
         </p>
@@ -111,34 +111,34 @@ function ContactPage() {
       {/* 4 Clean Contact Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Call Us */}
-        <div className="card-base flex flex-col justify-between p-6">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E8E4DA]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <Phone className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#191C1B]">Call Us</h3>
-            <p className="text-xs text-[#676D68]">{phone}</p>
+            <h3 className="font-sans text-base font-bold text-[#1F2924]">Call Us</h3>
+            <p className="text-xs text-[#6B746F]">{phone}</p>
           </div>
           <Button
             asChild
-            className="mt-6 rounded-full bg-[#18483B] text-xs font-bold text-white shadow-xs"
+            className="mt-6 rounded-full bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
           >
             <a href={telHref(cleanPhone)}>Call Now</a>
           </Button>
         </div>
 
         {/* Card 2: WhatsApp */}
-        <div className="card-base flex flex-col justify-between p-6">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E8E4DA]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <MessageCircle className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#191C1B]">WhatsApp</h3>
-            <p className="text-xs text-[#676D68]">Send your kirana list</p>
+            <h3 className="font-sans text-base font-bold text-[#1F2924]">WhatsApp</h3>
+            <p className="text-xs text-[#6B746F]">Send your kirana list</p>
           </div>
           <Button
             asChild
-            className="mt-6 rounded-full bg-[#18483B] text-xs font-bold text-white shadow-xs"
+            className="mt-6 rounded-full bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
           >
             <a
               href={waHref(
@@ -154,38 +154,38 @@ function ContactPage() {
         </div>
 
         {/* Card 3: Email */}
-        <div className="card-base flex flex-col justify-between p-6">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E8E4DA]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <Mail className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#191C1B]">Email</h3>
-            <p className="text-xs text-[#676D68] truncate">{email}</p>
+            <h3 className="font-sans text-base font-bold text-[#1F2924]">Email</h3>
+            <p className="text-xs text-[#6B746F] truncate">{email}</p>
           </div>
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-full border-[#EAE6DF] text-xs font-semibold"
+            className="mt-6 rounded-full border-[#E8E4DA] text-[#145A45] text-xs font-semibold hover:bg-[#DCEBDD]"
           >
             <a href={`mailto:${email}`}>Email Us</a>
           </Button>
         </div>
 
         {/* Card 4: Store Location */}
-        <div className="card-base flex flex-col justify-between p-6">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E8E4DA]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F5] text-[#18483B]">
+            <div className="grid size-10 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
               <MapPin className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#191C1B]">Visit Store</h3>
-            <p className="text-xs text-[#676D68] line-clamp-2">
+            <h3 className="font-sans text-base font-bold text-[#1F2924]">Visit Store</h3>
+            <p className="text-xs text-[#6B746F] line-clamp-2">
               Ramnagar, Adda Bazar Road, Maharajganj
             </p>
           </div>
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-full border-[#EAE6DF] text-xs font-semibold"
+            className="mt-6 rounded-full border-[#E8E4DA] text-[#145A45] text-xs font-semibold hover:bg-[#DCEBDD]"
           >
             <a
               href={
@@ -204,24 +204,24 @@ function ContactPage() {
       {/* Main Support Grid: Help Ticket + Business Hours */}
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         {/* Help Form */}
-        <div className="card-base p-6 sm:p-8">
-          <h2 className="font-sans text-xl font-bold text-[#191C1B]">Send us a message</h2>
-          <p className="mt-1 text-xs text-[#676D68]">
+        <div className="card-base p-6 sm:p-8 bg-white border border-[#E8E4DA]">
+          <h2 className="font-sans text-xl font-bold text-[#1F2924]">Send us a message</h2>
+          <p className="mt-1 text-xs text-[#6B746F]">
             Need a product not listed on the website? Submit your request and we will arrange it.
           </p>
 
           {isSuccess ? (
-            <div className="mt-6 rounded-xl bg-[#EBF4F0] p-6 text-center">
-              <CheckCircle2 className="mx-auto size-8 text-[#18483B]" />
-              <h3 className="mt-2 font-bold text-[#18483B]">Message Received!</h3>
-              <p className="mt-1 text-xs text-[#676D68]">
+            <div className="mt-6 rounded-xl bg-[#DCEBDD] p-6 text-center">
+              <CheckCircle2 className="mx-auto size-8 text-[#145A45]" />
+              <h3 className="mt-2 font-bold text-[#145A45]">Message Received!</h3>
+              <p className="mt-1 text-xs text-[#6B746F]">
                 We'll call you at your provided phone number shortly.
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsSuccess(false)}
-                className="mt-4 rounded-full text-xs"
+                className="mt-4 rounded-full text-xs border-[#145A45] text-[#145A45]"
               >
                 Send another message
               </Button>
@@ -230,33 +230,33 @@ function ContactPage() {
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Your Full Name</Label>
+                  <Label className="text-xs font-semibold text-[#1F2924]">Your Full Name</Label>
                   <Input
                     required
                     placeholder="e.g. Ramesh Kumar"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="rounded-lg text-xs"
+                    className="rounded-lg text-xs border-[#E8E4DA] bg-white"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">10-Digit Mobile Number</Label>
+                  <Label className="text-xs font-semibold text-[#1F2924]">10-Digit Mobile Number</Label>
                   <Input
                     required
                     type="tel"
                     placeholder="9876543210"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="rounded-lg text-xs"
+                    className="rounded-lg text-xs border-[#E8E4DA] bg-white"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Topic / Inquiry Type</Label>
+                <Label className="text-xs font-semibold text-[#1F2924]">Topic / Inquiry Type</Label>
                 <Select value={topic} onValueChange={setTopic}>
-                  <SelectTrigger className="rounded-lg text-xs">
+                  <SelectTrigger className="rounded-lg text-xs border-[#E8E4DA] bg-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -270,21 +270,21 @@ function ContactPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Your Message / Item List</Label>
+                <Label className="text-xs font-semibold text-[#1F2924]">Your Message / Item List</Label>
                 <Textarea
                   required
                   rows={4}
                   placeholder="Describe your requirement or list items you need..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="rounded-lg text-xs"
+                  className="rounded-lg text-xs border-[#E8E4DA] bg-white"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-full bg-[#18483B] py-6 text-xs font-bold text-white shadow-xs hover:bg-[#133A2F]"
+                className="w-full rounded-full bg-[#145A45] py-6 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
               >
                 <Send className="mr-2 size-4" /> {isSubmitting ? "Sending..." : "Submit Inquiry"}
               </Button>
@@ -293,21 +293,21 @@ function ContactPage() {
         </div>
 
         {/* Store Timings & Address */}
-        <div className="card-base p-6 sm:p-8 space-y-6">
+        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E8E4DA]">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#18483B]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
               Store Schedule
             </span>
-            <h2 className="font-sans text-xl font-bold text-[#191C1B] mt-0.5">
+            <h2 className="font-sans text-xl font-bold text-[#1F2924] mt-0.5">
               Weekly Business Hours
             </h2>
-            <p className="mt-1 text-xs text-[#676D68]">
+            <p className="mt-1 text-xs text-[#6B746F]">
               Current status:{" "}
-              <strong className="text-[#18483B]">{status.text || "Open Daily"}</strong>
+              <strong className="text-[#145A45]">{status.text || "Open Daily"}</strong>
             </p>
           </div>
 
-          <div className="divide-y divide-[#EAE6DF] text-xs">
+          <div className="divide-y divide-[#E8E4DA] text-xs">
             {DAYS.map(({ key, label }) => {
               const h = s?.business_hours?.[key] ?? {
                 open: "07:00",
@@ -316,8 +316,8 @@ function ContactPage() {
               };
               return (
                 <div key={key} className="flex items-center justify-between py-2.5">
-                  <span className="font-medium text-[#191C1B]">{label}</span>
-                  <span className="text-[#676D68]">
+                  <span className="font-medium text-[#1F2924]">{label}</span>
+                  <span className="text-[#6B746F]">
                     {h.closed ? (
                       <span className="text-red-600 font-semibold">Closed</span>
                     ) : (
@@ -329,8 +329,8 @@ function ContactPage() {
             })}
           </div>
 
-          <div className="border-t border-[#EAE6DF] pt-4 text-xs text-[#676D68] space-y-1">
-            <p className="font-bold text-[#191C1B]">📍 Arun Gopal Traders</p>
+          <div className="border-t border-[#E8E4DA] pt-4 text-xs text-[#6B746F] space-y-1">
+            <p className="font-bold text-[#1F2924]">📍 Arun Gopal Traders</p>
             <p>{address}</p>
           </div>
         </div>

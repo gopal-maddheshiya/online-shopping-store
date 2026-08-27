@@ -63,32 +63,31 @@ export function Header() {
   return (
     <>
       {/* 1. Top Local Announcement Bar */}
-      <div className="border-b border-[#EAE6DF] bg-gradient-to-r from-[#18483B] to-[#133A2F] text-white">
+      <div className="border-b border-[#E8E4DA] bg-[#145A45] text-white">
         <div className="container-page flex items-center justify-between py-1.5 text-xs gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="flex size-2 shrink-0 rounded-full bg-[#F59E0B] animate-pulse" />
+            <span className="flex size-2 shrink-0 rounded-full bg-[#E3B341] animate-pulse" />
             <p className="font-medium tracking-wide text-white/95 text-[11px] sm:text-xs truncate">
-              ⚡{" "}
               <span className="hidden md:inline">
                 {lang === "hi"
-                  ? "महाराजगंज में 30 मिनट एक्सप्रेस होम डिलीवरी • "
+                  ? "महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी • "
                   : "30-Min Express Delivery in Maharajganj • "}
               </span>
-              <span className="text-[#FEF08A] font-bold">
-                {lang === "hi" ? "₹499+ पर फ्री डिलीवरी" : "Free Delivery on ₹499+"}
+              <span className="text-[#E3B341] font-bold">
+                {lang === "hi" ? "₹499+ के ऑर्डर पर फ्री डिलीवरी" : "Free Delivery on ₹499+"}
               </span>
             </p>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 text-xs font-medium shrink-0">
             {/* Language Switcher Pill */}
-            <div className="flex items-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 p-0.5 shadow-2xs">
+            <div className="flex items-center rounded-full bg-black/20 border border-white/20 p-0.5 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setLang("en")}
                 className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-all ${
                   lang === "en"
-                    ? "bg-white text-[#18483B] shadow-2xs"
+                    ? "bg-white text-[#145A45] shadow-2xs"
                     : "text-white/80 hover:text-white"
                 }`}
               >
@@ -99,7 +98,7 @@ export function Header() {
                 onClick={() => setLang("hi")}
                 className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-all ${
                   lang === "hi"
-                    ? "bg-white text-[#18483B] shadow-2xs"
+                    ? "bg-white text-[#145A45] shadow-2xs"
                     : "text-white/80 hover:text-white"
                 }`}
               >
@@ -110,14 +109,14 @@ export function Header() {
             <span className="hidden sm:inline opacity-30 text-white">|</span>
 
             <span className="hidden sm:flex items-center gap-1.5 text-white/90">
-              <Clock className="size-3 text-[#F59E0B]" /> {formatStatus(status)}
+              <Clock className="size-3 text-[#E3B341]" /> {formatStatus(status)}
             </span>
           </div>
         </div>
       </div>
 
       {/* 2. Compact Sticky Main Header */}
-      <header className="sticky top-0 z-40 border-b border-[#EAE6DF] bg-white/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[#E8E4DA] bg-[#FFFFFF]/95 backdrop-blur-md">
         <div className="container-page flex h-16 items-center justify-between gap-4 md:gap-8">
           {/* Mobile Menu Trigger & Wordmark */}
           <div className="flex items-center gap-3">
@@ -125,28 +124,28 @@ export function Header() {
               <SheetTrigger asChild>
                 <button
                   aria-label="Open menu"
-                  className="flex size-9 items-center justify-center rounded-lg text-[#191C1B] hover:bg-[#F4F1EB] lg:hidden"
+                  className="flex size-9 items-center justify-center rounded-lg text-[#1F2924] hover:bg-[#FAF8F2] lg:hidden"
                 >
                   <Menu className="size-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0 text-[#191C1B]">
-                <SheetHeader className="border-b border-[#EAE6DF] bg-[#FAF8F5] p-4.5 pr-14 text-left">
+              <SheetContent side="left" className="w-80 p-0 text-[#1F2924]">
+                <SheetHeader className="border-b border-[#E8E4DA] bg-[#FAF8F2] p-4.5 pr-14 text-left">
                   <div className="flex flex-col gap-1">
-                    <SheetTitle className="text-lg font-black text-[#18483B] tracking-tight">
-                      Arun Gopal Traders
+                    <SheetTitle className="text-lg font-black text-[#145A45] tracking-tight flex items-center gap-1.5">
+                      <span className="text-base">🌾</span> Arun Gopal Traders
                     </SheetTitle>
-                    <p className="text-[11px] text-[#676D68]">
+                    <p className="text-[11px] text-[#6B746F]">
                       Ramnagar, Adda Bazar Road, Maharajganj, UP
                     </p>
 
                     {/* Mobile Lang Selector Pill */}
-                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-full bg-white border border-[#EAE6DF] p-0.5 shadow-2xs">
+                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-full bg-white border border-[#E8E4DA] p-0.5 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => setLang("en")}
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "en" ? "bg-[#18483B] text-white shadow-2xs" : "text-[#676D68]"
+                          lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#6B746F]"
                         }`}
                       >
                         English
@@ -155,7 +154,7 @@ export function Header() {
                         type="button"
                         onClick={() => setLang("hi")}
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "hi" ? "bg-[#18483B] text-white shadow-2xs" : "text-[#676D68]"
+                          lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#6B746F]"
                         }`}
                       >
                         🇮🇳 हिन्दी
@@ -164,28 +163,28 @@ export function Header() {
                   </div>
                 </SheetHeader>
                 <div className="flex flex-col h-full overflow-y-auto">
-                  <nav className="flex flex-col gap-1 p-4 border-b border-[#EAE6DF]">
+                  <nav className="flex flex-col gap-1 p-4 border-b border-[#E8E4DA]">
                     {navLinks.map((n) => (
                       <Link
                         key={n.to}
                         to={n.to}
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F4F1EB]"
+                        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
                       >
                         <span>{n.label}</span>
-                        <ChevronRight className="size-4 text-[#676D68]" />
+                        <ChevronRight className="size-4 text-[#6B746F]" />
                       </Link>
                     ))}
                     <Link
                       to="/wishlist"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F4F1EB]"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
                     >
                       <span className="flex items-center gap-2">
-                        <Heart className="size-4 text-[#18483B]" /> {t.wishlist}
+                        <Heart className="size-4 text-[#145A45]" /> {t.wishlist}
                       </span>
                       {wishlistCount > 0 && (
-                        <span className="rounded-full bg-[#18483B] px-2 py-0.5 text-xs font-bold text-white">
+                        <span className="rounded-full bg-[#145A45] px-2 py-0.5 text-xs font-bold text-white">
                           {wishlistCount}
                         </span>
                       )}
@@ -193,10 +192,10 @@ export function Header() {
                     <Link
                       to="/account"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#F4F1EB]"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
                     >
                       <span className="flex items-center gap-2">
-                        <User className="size-4 text-[#18483B]" />{" "}
+                        <User className="size-4 text-[#145A45]" />{" "}
                         {profile?.full_name
                           ? `${t.myAccount} (${profile.full_name.split(" ")[0]})`
                           : t.login}
@@ -205,7 +204,7 @@ export function Header() {
                     <Link
                       to="/admin"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[#18483B] hover:bg-[#EBF4F0]"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-[#145A45] hover:bg-[#DCEBDD]/50"
                     >
                       <span className="flex items-center gap-2">
                         <LayoutDashboard className="size-4" /> {t.adminPortal}
@@ -215,7 +214,7 @@ export function Header() {
 
                   {/* All Categories Directory in Hamburger */}
                   <div className="p-4 flex-1">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#676D68] mb-2 px-1">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#6B746F] mb-2 px-1">
                       {lang === "hi" ? "सभी किराना श्रेणियां" : "All Categories"}
                     </p>
                     <div className="flex flex-col gap-1">
@@ -225,12 +224,12 @@ export function Header() {
                           to="/shop"
                           search={{ category: c.slug } as never}
                           onClick={() => setMenuOpen(false)}
-                          className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#191C1B] hover:bg-[#EBF4F0] hover:text-[#18483B] transition-colors"
+                          className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#1F2924] hover:bg-[#DCEBDD]/40 hover:text-[#145A45] transition-colors"
                         >
                           <img
                             src={getCategoryThumbnail(c)}
                             alt={c.name}
-                            className="size-6 rounded-lg object-cover border border-[#EAE6DF] shrink-0"
+                            className="size-6 rounded-lg object-cover border border-[#E8E4DA] shrink-0"
                           />
                           <span className="line-clamp-1">{getCategoryName(c.name, c.slug)}</span>
                         </Link>
@@ -238,10 +237,10 @@ export function Header() {
                     </div>
                   </div>
 
-                  <div className="p-4 border-t border-[#EAE6DF] bg-[#FAF8F5] mt-auto">
+                  <div className="p-4 border-t border-[#E8E4DA] bg-[#FAF8F2] mt-auto">
                     <a
                       href={telHref(cleanPhone)}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#18483B] py-2.5 text-xs font-bold text-white shadow-xs"
+                      className="flex items-center justify-center gap-2 rounded-xl bg-[#145A45] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-colors"
                     >
                       <Phone className="size-4" /> {t.callStore} ({storePhone})
                     </a>
@@ -252,13 +251,13 @@ export function Header() {
 
             {/* Brand Logo / Wordmark */}
             <Link to="/" className="flex flex-col group shrink-0">
-              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#18483B] flex items-center gap-1.5 whitespace-nowrap">
-                Arun Gopal Traders
+              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#145A45] flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-base sm:text-lg">🌾</span> Arun Gopal Traders
               </span>
-              <span className="hidden md:block text-[11px] font-medium text-[#676D68] group-hover:text-[#18483B] transition-colors whitespace-nowrap">
+              <span className="hidden md:block text-[11px] font-medium text-[#6B746F] group-hover:text-[#145A45] transition-colors whitespace-nowrap">
                 {lang === "hi"
-                  ? "महाराजगंज • शुद्ध एवं विश्वसनीय किराना"
-                  : "Maharajganj • Trusted Local Kirana"}
+                  ? "रामनगर, महाराजगंज • शुद्ध किराना एवं दैनिक राशन"
+                  : "Maharajganj • Trusted Local Kirana Store"}
               </span>
             </Link>
           </div>
@@ -269,12 +268,12 @@ export function Header() {
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="h-10 w-full rounded-full border border-[#EAE6DF] bg-[#FAF8F5] pr-10 pl-4 text-xs sm:text-sm text-[#191C1B] placeholder:text-[#676D68] focus-visible:border-[#18483B] focus-visible:ring-1 focus-visible:ring-[#18483B] transition-all shadow-2xs"
+              className="h-10 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
               aria-label="Search grocery items"
             />
             <button
               type="submit"
-              className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#676D68] hover:text-[#18483B]"
+              className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#6B746F] hover:text-[#145A45]"
               aria-label="Submit search"
             >
               <Search className="size-4" />
@@ -286,16 +285,16 @@ export function Header() {
             {/* Quick Call Store Button */}
             <a
               href={telHref(cleanPhone)}
-              className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#EAE6DF] bg-[#FAF8F5] px-3.5 py-1.5 text-xs font-semibold text-[#18483B] hover:bg-[#EBF4F0] hover:border-[#18483B] transition-colors shadow-2xs"
+              className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] px-3.5 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD] hover:border-[#145A45] transition-colors shadow-2xs"
             >
-              <Phone className="size-3.5 text-[#18483B]" />
+              <Phone className="size-3.5 text-[#145A45]" />
               <span>{storePhone}</span>
             </a>
 
             {/* My Account */}
             <Link
               to="/account"
-              className="hidden sm:flex items-center gap-1 rounded-full p-2 text-[#676D68] hover:bg-[#FAF8F5] hover:text-[#18483B] transition-colors"
+              className="hidden sm:flex items-center gap-1 rounded-full p-2 text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
               title={t.myAccount}
             >
               <User className="size-5" />
@@ -307,12 +306,12 @@ export function Header() {
             {/* Wishlist */}
             <Link
               to="/wishlist"
-              className="relative hidden sm:flex items-center justify-center rounded-full p-2 text-[#676D68] hover:bg-[#FAF8F5] hover:text-[#18483B] transition-colors"
+              className="relative hidden sm:flex items-center justify-center rounded-full p-2 text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
               title={t.wishlist}
             >
               <Heart className="size-5" />
               {wishlistCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-[#18483B] text-[10px] font-bold text-white">
+                <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-[#145A45] text-[10px] font-bold text-white">
                   {wishlistCount}
                 </span>
               )}
@@ -321,12 +320,12 @@ export function Header() {
             {/* Cart Button */}
             <Link
               to="/cart"
-              className="flex items-center gap-2 rounded-full bg-[#18483B] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#133A2F] active:scale-95 transition-all"
+              className="flex items-center gap-2 rounded-full bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] active:scale-95 transition-all"
             >
               <div className="relative flex items-center">
                 <ShoppingBag className="size-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[10px] font-extrabold text-white">
+                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#E3B341] text-[10px] font-extrabold text-[#1F2924]">
                     {cartCount}
                   </span>
                 )}
@@ -337,18 +336,18 @@ export function Header() {
         </div>
 
         {/* Mobile Search Bar Row */}
-        <div className="border-t border-[#EAE6DF] bg-white px-4 py-2.5 md:hidden">
+        <div className="border-t border-[#E8E4DA] bg-white px-4 py-2.5 md:hidden">
           <form onSubmit={submitSearch} className="relative w-full">
             <Input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder={t.searchPlaceholder}
-              className="h-9 w-full rounded-full border border-[#EAE6DF] bg-[#FAF8F5] pr-9 pl-3.5 text-xs text-[#191C1B] placeholder:text-[#676D68] focus-visible:border-[#18483B] focus-visible:ring-1 focus-visible:ring-[#18483B]"
+              className="h-9 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-9 pl-3.5 text-xs text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45]"
               aria-label="Mobile search"
             />
             <button
               type="submit"
-              className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center text-[#676D68]"
+              className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center text-[#6B746F]"
             >
               <Search className="size-4" />
             </button>

@@ -277,25 +277,25 @@ function AccountPage() {
   if (!isIdentified && !authLoading) {
     return (
       <div className="container-page py-12">
-        <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div className="mx-auto max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-sm sm:p-8">
           <div className="text-center">
-            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]">
               <User className="size-6" />
             </div>
-            <h1 className="mt-3 font-display text-2xl font-bold text-foreground">
+            <h1 className="mt-3 font-sans text-2xl font-bold text-[#1F2924]">
               Customer Account
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-[#6B746F]">
               Sign in with your mobile number to view past grocery orders, track deliveries, and
               reorder quickly.
             </p>
           </div>
 
-          <div className="mt-6 flex rounded-xl bg-muted p-1 text-xs font-semibold">
+          <div className="mt-6 flex rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 text-xs font-semibold">
             <button
               onClick={() => setAuthMode("phone")}
               className={`flex-1 rounded-lg py-2 transition-all ${
-                authMode === "phone" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground"
+                authMode === "phone" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
               }`}
             >
               Mobile Number (Instant)
@@ -303,7 +303,7 @@ function AccountPage() {
             <button
               onClick={() => setAuthMode("email")}
               className={`flex-1 rounded-lg py-2 transition-all ${
-                authMode === "email" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground"
+                authMode === "email" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
               }`}
             >
               Email / Password
@@ -313,11 +313,11 @@ function AccountPage() {
           {authMode === "phone" ? (
             <form onSubmit={handlePhoneIdentify} className="mt-6 space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="login-phone" className="text-xs font-semibold">
+                <Label htmlFor="login-phone" className="text-xs font-semibold text-[#1F2924]">
                   Enter 10-Digit Mobile Number
                 </Label>
-                <div className="flex rounded-xl border border-input focus-within:ring-2 focus-within:ring-primary/20">
-                  <span className="flex items-center bg-muted px-3 text-xs font-bold text-muted-foreground rounded-l-xl">
+                <div className="flex rounded-xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#6B746F] rounded-l-xl border-r border-[#E8E4DA]">
                     +91
                   </span>
                   <Input
@@ -334,27 +334,27 @@ function AccountPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="login-name" className="text-xs font-semibold">
+                <Label htmlFor="login-name" className="text-xs font-semibold text-[#1F2924]">
                   Your Full Name{" "}
-                  <span className="text-muted-foreground font-normal">(Optional)</span>
+                  <span className="text-[#6B746F] font-normal">(Optional)</span>
                 </Label>
                 <Input
                   id="login-name"
                   placeholder="e.g. Ramesh Kumar"
                   value={loginName}
                   onChange={(e) => setLoginName(e.target.value)}
-                  className="rounded-xl"
+                  className="rounded-xl border-[#E8E4DA] bg-white"
                 />
               </div>
 
-              <Button type="submit" className="w-full rounded-xl py-6 font-bold shadow-md">
+              <Button type="submit" className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]">
                 Continue to My Orders <ArrowRight className="ml-2 size-4" />
               </Button>
             </form>
           ) : (
             <form onSubmit={handleEmailSignIn} className="mt-6 space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="auth-email" className="text-xs font-semibold">
+                <Label htmlFor="auth-email" className="text-xs font-semibold text-[#1F2924]">
                   Email Address
                 </Label>
                 <Input
@@ -364,12 +364,12 @@ function AccountPage() {
                   placeholder="name@example.com"
                   value={authEmail}
                   onChange={(e) => setAuthEmail(e.target.value)}
-                  className="rounded-xl"
+                  className="rounded-xl border-[#E8E4DA] bg-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="auth-pwd" className="text-xs font-semibold">
+                <Label htmlFor="auth-pwd" className="text-xs font-semibold text-[#1F2924]">
                   Password
                 </Label>
                 <Input
@@ -379,23 +379,23 @@ function AccountPage() {
                   placeholder="••••••••"
                   value={authPassword}
                   onChange={(e) => setAuthPassword(e.target.value)}
-                  className="rounded-xl"
+                  className="rounded-xl border-[#E8E4DA] bg-white"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isSigningIn}
-                className="w-full rounded-xl py-6 font-bold shadow-md"
+                className="w-full rounded-full py-6 font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333]"
               >
                 <Lock className="mr-2 size-4" /> {isSigningIn ? "Signing In…" : "Sign In"}
               </Button>
             </form>
           )}
 
-          <div className="mt-6 border-t border-border pt-4 text-center text-xs text-muted-foreground">
+          <div className="mt-6 border-t border-[#E8E4DA] pt-4 text-center text-xs text-[#6B746F]">
             Want to track an existing order without logging in?{" "}
-            <Link to="/track" className="font-semibold text-primary hover:underline">
+            <Link to="/track" className="font-semibold text-[#145A45] hover:underline">
               Track Order here →
             </Link>
           </div>
@@ -410,22 +410,22 @@ function AccountPage() {
   return (
     <div className="container-page py-8">
       {/* Account Profile Header Bar */}
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-xs sm:p-8">
+      <div className="rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 font-display text-2xl font-bold text-primary-foreground shadow-sm">
+            <div className="grid size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-2xl font-bold text-white shadow-sm">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground sm:text-3xl">
+              <h1 className="font-sans text-2xl font-bold text-[#1F2924] sm:text-3xl">
                 {displayName}
               </h1>
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Phone className="size-3.5 text-primary" /> +91 {displayPhone}
+              <p className="flex items-center gap-2 text-xs text-[#6B746F]">
+                <Phone className="size-3.5 text-[#145A45]" /> +91 {displayPhone}
                 {profile?.email ? (
                   <>
                     <span>•</span>
-                    <Mail className="size-3.5" /> {profile.email}
+                    <Mail className="size-3.5 text-[#145A45]" /> {profile.email}
                   </>
                 ) : null}
               </p>
@@ -437,7 +437,7 @@ function AccountPage() {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="rounded-xl gap-1.5 text-xs"
+              className="rounded-full gap-1.5 text-xs border-[#E8E4DA] text-[#6B746F] hover:bg-[#FAF8F2]"
             >
               <LogOut className="size-3.5" /> Switch / Logout
             </Button>
@@ -448,17 +448,17 @@ function AccountPage() {
       {/* Account Tabs */}
       <div className="mt-8">
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid h-12 w-full grid-cols-4 rounded-2xl bg-muted p-1">
-            <TabsTrigger value="orders" className="rounded-xl text-xs font-semibold">
+          <TabsList className="grid h-12 w-full grid-cols-4 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
+            <TabsTrigger value="orders" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
               <Package className="mr-1.5 size-4" /> My Orders ({orders?.length ?? 0})
             </TabsTrigger>
-            <TabsTrigger value="addresses" className="rounded-xl text-xs font-semibold">
+            <TabsTrigger value="addresses" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
               <MapPin className="mr-1.5 size-4" /> Addresses
             </TabsTrigger>
-            <TabsTrigger value="wishlist" className="rounded-xl text-xs font-semibold">
+            <TabsTrigger value="wishlist" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
               <Heart className="mr-1.5 size-4" /> Wishlist ({wishlistItems.length})
             </TabsTrigger>
-            <TabsTrigger value="profile" className="rounded-xl text-xs font-semibold">
+            <TabsTrigger value="profile" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
               <User className="mr-1.5 size-4" /> Profile
             </TabsTrigger>
           </TabsList>
@@ -474,19 +474,19 @@ function AccountPage() {
               orders.map((order) => (
                 <div
                   key={order.id}
-                  className="rounded-2xl border border-border bg-card p-5 shadow-xs transition-all"
+                  className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs transition-all"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E4DA] pb-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-display font-bold text-foreground">
+                        <span className="font-sans font-bold text-[#1F2924]">
                           {order.order_no}
                         </span>
-                        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                        <span className="rounded-full bg-[#DCEBDD] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
                           {ORDER_STATUS_LABEL[order.status] ?? order.status}
                         </span>
                       </div>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[11px] text-[#6B746F]">
                         {formatDate(order.created_at)}
                       </span>
                     </div>
@@ -496,7 +496,7 @@ function AccountPage() {
                         onClick={() => handleReorder(order)}
                         size="sm"
                         variant="default"
-                        className="h-8 rounded-lg gap-1 text-xs font-bold shadow-xs"
+                        className="h-8 rounded-full gap-1 text-xs font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0E4333]"
                       >
                         <RotateCcw className="size-3.5" /> Buy Again
                       </Button>
@@ -504,7 +504,7 @@ function AccountPage() {
                         asChild
                         size="sm"
                         variant="outline"
-                        className="h-8 rounded-lg text-xs font-semibold"
+                        className="h-8 rounded-full text-xs font-semibold border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2]"
                       >
                         <Link
                           to="/track"
@@ -526,11 +526,11 @@ function AccountPage() {
                             image_url: item.image_url,
                           })}
                           alt={item.name}
-                          className="size-9 rounded-md object-cover bg-muted"
+                          className="size-9 rounded-md object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-foreground">{item.name}</p>
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="truncate font-medium text-[#1F2924]">{item.name}</p>
+                          <p className="text-[10px] text-[#6B746F]">
                             {item.variant_label} × {item.qty} ({inr(item.price * item.qty)})
                           </p>
                         </div>
@@ -538,27 +538,27 @@ function AccountPage() {
                     ))}
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-border/80 pt-2 text-xs">
-                    <span className="text-muted-foreground capitalize">
+                  <div className="mt-3 flex items-center justify-between border-t border-[#E8E4DA] pt-2 text-xs">
+                    <span className="text-[#6B746F] capitalize">
                       {order.order_type} in Maharajganj • {order.payment_method.toUpperCase()}
                     </span>
-                    <span className="font-bold text-foreground">
+                    <span className="font-bold text-[#1F2924]">
                       Total:{" "}
-                      <span className="text-primary font-display text-sm">{inr(order.total)}</span>
+                      <span className="text-[#145A45] font-sans text-sm">{inr(order.total)}</span>
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-                <ShoppingBag className="mx-auto size-12 text-muted-foreground" />
-                <h3 className="mt-3 font-display text-lg font-bold text-foreground">
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
+                <ShoppingBag className="mx-auto size-12 text-[#6B746F]" />
+                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
                   No orders yet
                 </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-[#6B746F]">
                   You haven't placed any orders with phone +91 {displayPhone} yet.
                 </p>
-                <Button asChild className="mt-4 rounded-xl font-semibold">
+                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
                   <Link to="/shop">Start Shopping</Link>
                 </Button>
               </div>
@@ -569,17 +569,17 @@ function AccountPage() {
           <TabsContent value="addresses" className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-display text-lg font-bold text-foreground">
+                <h3 className="font-sans text-lg font-bold text-[#1F2924]">
                   Saved Delivery Locations
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#6B746F]">
                   Manage your home, shop, or office addresses in Maharajganj.
                 </p>
               </div>
               <Button
                 onClick={() => setShowAddAddress(!showAddAddress)}
                 size="sm"
-                className="rounded-xl gap-1 text-xs font-semibold"
+                className="rounded-full gap-1 text-xs font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
               >
                 <Plus className="size-3.5" /> Add Address
               </Button>
@@ -588,39 +588,39 @@ function AccountPage() {
             {showAddAddress ? (
               <form
                 onSubmit={handleAddAddress}
-                className="rounded-2xl border border-border bg-card p-5 space-y-4"
+                className="rounded-2xl border border-[#E8E4DA] bg-white p-5 space-y-4"
               >
-                <h4 className="font-semibold text-sm">New Delivery Address</h4>
+                <h4 className="font-semibold text-sm text-[#1F2924]">New Delivery Address</h4>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     required
                     placeholder="House / Shop No."
                     value={newHouse}
                     onChange={(e) => setNewHouse(e.target.value)}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                   <Input
                     required
                     placeholder="Area / Mohalla / Road"
                     value={newArea}
                     onChange={(e) => setNewArea(e.target.value)}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                   <Input
                     placeholder="Nearby Landmark (Optional)"
                     value={newLandmark}
                     onChange={(e) => setNewLandmark(e.target.value)}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                   <Input
                     placeholder="PIN Code (273303)"
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value)}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button type="submit" size="sm" className="rounded-xl font-semibold">
+                  <Button type="submit" size="sm" className="rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
                     Save Address
                   </Button>
                   <Button
@@ -628,7 +628,7 @@ function AccountPage() {
                     onClick={() => setShowAddAddress(false)}
                     variant="outline"
                     size="sm"
-                    className="rounded-xl"
+                    className="rounded-full border-[#E8E4DA] text-[#6B746F]"
                   >
                     Cancel
                   </Button>
@@ -640,15 +640,15 @@ function AccountPage() {
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className="rounded-2xl border border-border bg-card p-4 shadow-xs"
+                  className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <MapPin className="size-4 text-primary" />
-                      <span className="font-bold text-xs">Home / Delivery</span>
+                      <MapPin className="size-4 text-[#145A45]" />
+                      <span className="font-bold text-xs text-[#1F2924]">Home / Delivery</span>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-foreground">
+                  <p className="mt-2 text-xs leading-relaxed text-[#1F2924]">
                     {addr.house}, {addr.area}
                     {addr.landmark ? `, Landmark: ${addr.landmark}` : ""}
                     <br />
@@ -668,15 +668,15 @@ function AccountPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-                <Heart className="mx-auto size-12 text-muted-foreground" />
-                <h3 className="mt-3 font-display text-lg font-bold text-foreground">
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
+                <Heart className="mx-auto size-12 text-[#6B746F]" />
+                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
                   Wishlist is empty
                 </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-[#6B746F]">
                   Tap the heart on any product to save it here.
                 </p>
-                <Button asChild className="mt-4 rounded-xl font-semibold">
+                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
                   <Link to="/shop">Browse Catalogue</Link>
                 </Button>
               </div>
@@ -685,17 +685,17 @@ function AccountPage() {
 
           {/* TAB 4: PROFILE SETTINGS */}
           <TabsContent value="profile">
-            <div className="max-w-xl rounded-2xl border border-border bg-card p-6 shadow-xs">
-              <h3 className="font-display text-lg font-bold text-foreground">
+            <div className="max-w-xl rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs">
+              <h3 className="font-sans text-lg font-bold text-[#1F2924]">
                 Personal Information
               </h3>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs text-[#6B746F]">
                 Update your name and primary phone number.
               </p>
 
               <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="prof-name" className="text-xs font-semibold">
+                  <Label htmlFor="prof-name" className="text-xs font-semibold text-[#1F2924]">
                     Full Name
                   </Label>
                   <Input
@@ -703,12 +703,12 @@ function AccountPage() {
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="prof-phone" className="text-xs font-semibold">
+                  <Label htmlFor="prof-phone" className="text-xs font-semibold text-[#1F2924]">
                     Mobile Number (10 digits)
                   </Label>
                   <Input
@@ -718,13 +718,13 @@ function AccountPage() {
                     maxLength={10}
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ""))}
-                    className="rounded-xl"
+                    className="rounded-xl border-[#E8E4DA] bg-white"
                   />
                 </div>
 
                 {user ? (
                   <div className="space-y-1.5">
-                    <Label htmlFor="prof-email" className="text-xs font-semibold">
+                    <Label htmlFor="prof-email" className="text-xs font-semibold text-[#1F2924]">
                       Email Address
                     </Label>
                     <Input
@@ -732,7 +732,7 @@ function AccountPage() {
                       type="email"
                       disabled
                       value={editEmail}
-                      className="rounded-xl bg-muted"
+                      className="rounded-xl bg-[#FAF8F2] border-[#E8E4DA]"
                     />
                   </div>
                 ) : null}
@@ -740,7 +740,7 @@ function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="rounded-xl font-semibold"
+                  className="rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
                 >
                   {isSavingProfile ? "Saving…" : "Save Changes"}
                 </Button>

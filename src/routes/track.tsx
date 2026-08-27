@@ -136,23 +136,23 @@ function TrackPage() {
     <div className="container-page py-8">
       {/* Title */}
       <div className="text-center">
-        <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+        <span className="inline-block rounded-full bg-[#DCEBDD] px-3 py-1 text-xs font-bold text-[#145A45]">
           Live Order Status
         </span>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        <h1 className="mt-2 font-sans text-3xl font-bold tracking-tight text-[#1F2924] sm:text-4xl">
           Track Your Grocery Order
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        <p className="mx-auto mt-2 max-w-md text-sm text-[#6B746F]">
           Enter your Order Number and Mobile Number below to see live preparation &amp; delivery
           updates.
         </p>
       </div>
 
       {/* Lookup Form */}
-      <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-border bg-card p-6 shadow-xs">
+      <div className="mx-auto mt-8 max-w-xl rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs">
         <form onSubmit={handleSearch} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="track-order-no" className="text-xs font-semibold">
+            <Label htmlFor="track-order-no" className="text-xs font-semibold text-[#1F2924]">
               Order ID / Number
             </Label>
             <Input
@@ -160,13 +160,13 @@ function TrackPage() {
               placeholder="e.g. AGT-1001"
               value={orderNoInput}
               onChange={(e) => setOrderNoInput(e.target.value.toUpperCase())}
-              className="rounded-xl font-mono text-sm"
+              className="rounded-xl font-mono text-sm border-[#E8E4DA] bg-white"
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="track-phone" className="text-xs font-semibold">
+            <Label htmlFor="track-phone" className="text-xs font-semibold text-[#1F2924]">
               Registered Mobile Number
             </Label>
             <Input
@@ -175,7 +175,7 @@ function TrackPage() {
               placeholder="10-digit mobile number"
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              className="rounded-xl text-sm"
+              className="rounded-xl text-sm border-[#E8E4DA] bg-white"
               required
             />
           </div>
@@ -183,14 +183,14 @@ function TrackPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="rounded-xl font-semibold sm:col-span-2"
+            className="rounded-full font-bold sm:col-span-2 bg-[#145A45] text-white hover:bg-[#0E4333]"
           >
             <Search className="mr-2 size-4" /> {loading ? "Searching…" : "Track Order Status"}
           </Button>
         </form>
 
         {errorMsg ? (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
             <AlertCircle className="mt-0.5 size-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -209,18 +209,18 @@ function TrackPage() {
       {searchedOrder && !loading ? (
         <div className="mx-auto mt-10 max-w-3xl space-y-6">
           {/* Order Header Card */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+          <div className="rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E4DA] pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-display text-2xl font-bold text-foreground">
+                  <h2 className="font-sans text-2xl font-bold text-[#1F2924]">
                     {searchedOrder.order_no}
                   </h2>
-                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  <span className="rounded-full bg-[#DCEBDD] px-3 py-1 text-xs font-bold text-[#145A45]">
                     {ORDER_STATUS_LABEL[searchedOrder.status] ?? searchedOrder.status}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-[#6B746F]">
                   Placed on {formatDate(searchedOrder.created_at)}
                 </p>
               </div>
@@ -230,7 +230,7 @@ function TrackPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => window.print()}
-                  className="rounded-xl gap-1.5 text-xs font-semibold"
+                  className="rounded-full gap-1.5 text-xs font-semibold border-[#E8E4DA] text-[#1F2924]"
                 >
                   <Printer className="size-3.5" /> Print Receipt
                 </Button>
@@ -241,7 +241,7 @@ function TrackPage() {
                   )}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success hover:bg-success/20"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#145A45]/30 bg-[#145A45] text-white px-3.5 py-2 text-xs font-bold shadow-xs hover:bg-[#0E4333]"
                 >
                   <MessageCircle className="size-3.5" /> WhatsApp Support
                 </a>
@@ -260,32 +260,32 @@ function TrackPage() {
           {/* Details 2-Column Grid */}
           <div className="grid gap-6 md:grid-cols-2">
             {/* Fulfillment & Address */}
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-              <h3 className="flex items-center gap-2 font-display text-base font-bold text-foreground">
-                <MapPin className="size-4 text-primary" /> Delivery &amp; Contact Info
+            <div className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs">
+              <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
+                <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
               </h3>
 
               <div className="mt-4 space-y-2 text-xs">
                 <div>
-                  <span className="text-muted-foreground">Customer Name:</span>
-                  <p className="font-semibold text-foreground">{searchedOrder.customer_name}</p>
+                  <span className="text-[#6B746F]">Customer Name:</span>
+                  <p className="font-semibold text-[#1F2924]">{searchedOrder.customer_name}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Contact Phone:</span>
-                  <p className="font-semibold text-foreground">
+                  <span className="text-[#6B746F]">Contact Phone:</span>
+                  <p className="font-semibold text-[#1F2924]">
                     +91 {searchedOrder.customer_phone}
                   </p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Order Type:</span>
-                  <p className="font-semibold capitalize text-foreground">
+                  <span className="text-[#6B746F]">Order Type:</span>
+                  <p className="font-semibold capitalize text-[#1F2924]">
                     {searchedOrder.order_type} in Maharajganj
                   </p>
                 </div>
                 {searchedOrder.order_type === "delivery" && searchedOrder.address ? (
                   <div>
-                    <span className="text-muted-foreground">Delivery Address:</span>
-                    <p className="font-medium text-foreground">
+                    <span className="text-[#6B746F]">Delivery Address:</span>
+                    <p className="font-medium text-[#1F2924]">
                       {[
                         searchedOrder.address.house,
                         searchedOrder.address.area,
@@ -301,16 +301,16 @@ function TrackPage() {
                   </div>
                 ) : (
                   <div>
-                    <span className="text-muted-foreground">Store Pickup Address:</span>
-                    <p className="font-medium text-foreground">
+                    <span className="text-[#6B746F]">Store Pickup Address:</span>
+                    <p className="font-medium text-[#1F2924]">
                       Arun Gopal Traders, Ramnagar, Adda Bazar Road, Maharajganj, UP
                     </p>
                   </div>
                 )}
                 {searchedOrder.notes ? (
                   <div className="pt-2">
-                    <span className="text-muted-foreground">Instructions:</span>
-                    <p className="rounded-lg bg-muted p-2 italic text-foreground">
+                    <span className="text-[#6B746F]">Instructions:</span>
+                    <p className="rounded-lg bg-[#FAF8F2] border border-[#E8E4DA] p-2 italic text-[#1F2924]">
                       {searchedOrder.notes}
                     </p>
                   </div>
@@ -319,24 +319,24 @@ function TrackPage() {
             </div>
 
             {/* Payment & Summary */}
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-              <h3 className="flex items-center gap-2 font-display text-base font-bold text-foreground">
-                <Package className="size-4 text-primary" /> Bill &amp; Payment Summary
+            <div className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs">
+              <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
+                <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
               </h3>
 
               <dl className="mt-4 space-y-2 text-xs">
-                <div className="flex justify-between text-muted-foreground">
+                <div className="flex justify-between text-[#6B746F]">
                   <dt>Payment Method:</dt>
-                  <dd className="font-semibold text-foreground">
+                  <dd className="font-semibold text-[#1F2924]">
                     {PAYMENT_LABEL[searchedOrder.payment_method] ?? searchedOrder.payment_method}
                   </dd>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
+                <div className="flex justify-between text-[#6B746F]">
                   <dt>Items Subtotal:</dt>
-                  <dd className="font-medium text-foreground">{inr(searchedOrder.subtotal)}</dd>
+                  <dd className="font-medium text-[#1F2924]">{inr(searchedOrder.subtotal)}</dd>
                 </div>
                 {searchedOrder.discount > 0 ? (
-                  <div className="flex justify-between text-success">
+                  <div className="flex justify-between text-[#15803D]">
                     <dt>
                       Coupon Discount{" "}
                       {searchedOrder.coupon_code ? `(${searchedOrder.coupon_code})` : ""}:
@@ -344,27 +344,27 @@ function TrackPage() {
                     <dd className="font-bold">-{inr(searchedOrder.discount)}</dd>
                   </div>
                 ) : null}
-                <div className="flex justify-between text-muted-foreground">
+                <div className="flex justify-between text-[#6B746F]">
                   <dt>Delivery Fee:</dt>
-                  <dd className="font-medium text-foreground">
+                  <dd className="font-medium text-[#1F2924]">
                     {searchedOrder.delivery_fee === 0 ? "FREE" : inr(searchedOrder.delivery_fee)}
                   </dd>
                 </div>
-                <div className="flex justify-between border-t border-border pt-2 text-base font-bold text-foreground">
+                <div className="flex justify-between border-t border-[#E8E4DA] pt-2 text-base font-bold text-[#1F2924]">
                   <dt>Total Amount Paid / Due:</dt>
-                  <dd className="font-display text-primary">{inr(searchedOrder.total)}</dd>
+                  <dd className="font-sans text-[#145A45]">{inr(searchedOrder.total)}</dd>
                 </div>
               </dl>
             </div>
           </div>
 
           {/* Ordered Items List */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-xs">
-            <h3 className="font-display text-base font-bold text-foreground">
+          <div className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs">
+            <h3 className="font-sans text-base font-bold text-[#1F2924]">
               Items Ordered ({searchedOrder.order_items?.length ?? 0})
             </h3>
 
-            <div className="mt-4 divide-y divide-border">
+            <div className="mt-4 divide-y divide-[#E8E4DA]">
               {(searchedOrder.order_items ?? []).map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-4 py-3 text-xs">
                   <div className="flex items-center gap-3">
@@ -374,18 +374,18 @@ function TrackPage() {
                         image_url: item.image_url,
                       })}
                       alt={item.name}
-                      className="size-12 rounded-lg object-cover bg-muted"
+                      className="size-12 rounded-lg object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1"
                     />
                     <div>
-                      <p className="font-semibold text-foreground">{item.name}</p>
-                      <p className="text-muted-foreground">
+                      <p className="font-semibold text-[#1F2924]">{item.name}</p>
+                      <p className="text-[#6B746F]">
                         {item.variant_label} × {item.qty}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-foreground">{inr(item.price * item.qty)}</p>
-                    <p className="text-[10px] text-muted-foreground">{inr(item.price)} each</p>
+                    <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
+                    <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
                   </div>
                 </div>
               ))}
@@ -393,16 +393,16 @@ function TrackPage() {
           </div>
 
           {/* Bottom Store Assistance Card */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center shadow-xs">
-            <h4 className="font-display text-lg font-bold text-foreground">
+          <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-6 text-center shadow-xs">
+            <h4 className="font-sans text-lg font-bold text-[#1F2924]">
               Have Questions or Need Quick Delivery?
             </h4>
-            <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
+            <p className="mx-auto mt-1 max-w-md text-xs text-[#6B746F]">
               Call Arun Gopal Traders directly or connect on WhatsApp for immediate grocery
               assistance in Maharajganj.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Button asChild className="rounded-xl font-bold">
+              <Button asChild className="rounded-full font-bold bg-[#145A45] text-white hover:bg-[#0E4333]">
                 <a href={telHref(storePhone)}>
                   <Phone className="mr-1.5 size-4" /> Call {storePhone}
                 </a>
@@ -410,7 +410,7 @@ function TrackPage() {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-xl border-primary/30 text-primary"
+                className="rounded-full border-[#145A45]/30 text-[#145A45] bg-white hover:bg-[#DCEBDD]"
               >
                 <Link to="/shop">
                   Continue Shopping <ArrowRight className="ml-1.5 size-4" />

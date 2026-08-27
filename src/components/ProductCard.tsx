@@ -36,18 +36,18 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div
       className={`card-base group relative flex flex-col justify-between overflow-hidden bg-white p-2.5 sm:p-3.5 transition-all duration-300 w-full max-w-full min-w-0 ${
-        inCart ? "border-[#18483B]/30 ring-1 ring-[#18483B]/10 shadow-xs" : ""
+        inCart ? "border-[#145A45]/40 ring-1 ring-[#145A45]/15 shadow-xs" : "border-[#E8E4DA]"
       }`}
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* Top Header: Floating Discount Tag & Wishlist */}
       <div className="flex items-center justify-between gap-1 w-full min-w-0">
         {off > 0 ? (
-          <span className="rounded-full bg-gradient-to-r from-[#18483B] to-[#15803D] px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-2xs shrink-0">
+          <span className="rounded-full bg-[#145A45] px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-2xs shrink-0">
             {off}% {t.off}
           </span>
         ) : (
-          <span className="rounded-full bg-[#FAF8F5] px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#676D68] shrink-0">
+          <span className="rounded-full bg-[#FAF8F2] border border-[#E8E4DA] px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#6B746F] shrink-0">
             {lang === "hi" ? "ताज़ा" : "Fresh"}
           </span>
         )}
@@ -60,7 +60,7 @@ export function ProductCard({ product }: { product: Product }) {
             toggleWishlist(product);
           }}
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#676D68] hover:bg-[#F4F1EB] hover:text-[#DC2626] transition-colors"
+          className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#DC2626] transition-colors"
         >
           <Heart
             className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""}`}
@@ -68,11 +68,11 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      {/* Product Image Box - Contained, clean supermarket showcase */}
+      {/* Product Image Box - Natural warm paper/cream background */}
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
-        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-xl bg-white border border-[#EFECE6] p-1.5 sm:p-2 transition-all duration-200 group-hover:border-[#18483B]/30 group-hover:shadow-xs shrink-0"
+        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 sm:p-2 transition-all duration-200 group-hover:border-[#145A45]/40 group-hover:shadow-xs shrink-0"
         style={{
           height: "130px",
           maxHeight: "130px",
@@ -82,7 +82,7 @@ export function ProductCard({ product }: { product: Product }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#ffffff",
+          background: "#FAF8F2",
           boxSizing: "border-box",
           overflow: "hidden",
         }}
@@ -107,7 +107,7 @@ export function ProductCard({ product }: { product: Product }) {
         />
         {stock <= 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs">
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-[#676D68] shadow-2xs">
+            <span className="rounded-full bg-[#FAF8F2] border border-[#E8E4DA] px-2 py-0.5 text-[10px] font-bold text-[#6B746F] shadow-2xs">
               {t.outOfStock}
             </span>
           </div>
@@ -116,14 +116,14 @@ export function ProductCard({ product }: { product: Product }) {
 
       {/* Content */}
       <div className="flex flex-1 flex-col min-w-0 w-full max-w-full">
-        <span className="text-[9px] sm:text-[10px] font-semibold text-[#676D68] tracking-wide uppercase truncate w-full">
+        <span className="text-[9px] sm:text-[10px] font-semibold text-[#6B746F] tracking-wide uppercase truncate w-full">
           {product.brand || (lang === "hi" ? "दैनिक राशन" : "Fresh Staples")}
         </span>
 
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 mt-0.5 min-h-[2.1rem] sm:min-h-[2.4rem] text-xs sm:text-sm font-bold text-[#191C1B] hover:text-[#18483B] transition-colors leading-snug break-words w-full"
+          className="line-clamp-2 mt-0.5 min-h-[2.1rem] sm:min-h-[2.4rem] text-xs sm:text-sm font-bold text-[#1F2924] hover:text-[#145A45] transition-colors leading-snug break-words w-full"
           title={localizedProductName}
         >
           {localizedProductName}
@@ -139,8 +139,8 @@ export function ProductCard({ product }: { product: Product }) {
                 onClick={() => setSelectedVariantId(v.id)}
                 className={`rounded-full border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate ${
                   v.id === activeVariant?.id
-                    ? "border-[#18483B] bg-[#18483B] text-white"
-                    : "border-[#EAE6DF] bg-[#FAF8F5] text-[#676D68] hover:border-[#18483B]"
+                    ? "border-[#145A45] bg-[#145A45] text-white"
+                    : "border-[#E8E4DA] bg-[#FAF8F2] text-[#6B746F] hover:border-[#145A45]"
                 }`}
               >
                 {getVariantLabel(v.label)}
@@ -148,7 +148,7 @@ export function ProductCard({ product }: { product: Product }) {
             ))}
           </div>
         ) : (
-          <div className="mt-1 text-[10px] sm:text-[11px] text-[#676D68] truncate w-full">
+          <div className="mt-1 text-[10px] sm:text-[11px] text-[#6B746F] truncate w-full">
             {activeVariant?.label
               ? getVariantLabel(activeVariant.label)
               : lang === "hi"
@@ -161,11 +161,11 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto pt-2 flex flex-col gap-1.5 w-full min-w-0">
           <div className="flex flex-wrap items-baseline justify-between gap-x-1.5 gap-y-0.5 w-full min-w-0">
             <div className="flex items-baseline gap-1 min-w-0">
-              <span className="text-xs sm:text-sm font-extrabold text-[#191C1B]">
+              <span className="text-xs sm:text-sm font-extrabold text-[#1F2924]">
                 {inr(activeVariant?.price ?? 0)}
               </span>
               {off > 0 && activeVariant?.mrp ? (
-                <span className="text-[10px] text-[#676D68] line-through font-medium">
+                <span className="text-[10px] text-[#6B746F] line-through font-medium">
                   {inr(activeVariant.mrp)}
                 </span>
               ) : null}
@@ -177,26 +177,26 @@ export function ProductCard({ product }: { product: Product }) {
             ) : null}
           </div>
 
-          {/* Wide 40-44px Touch-Friendly Add / Stepper Button */}
+          {/* Touch-Friendly Add / Stepper Button */}
           <div className="w-full min-w-0">
             {inCart ? (
-              <div className="flex h-9 sm:h-10 w-full min-w-0 items-center justify-between rounded-full border border-[#18483B] bg-[#EBF4F0] px-1 sm:px-1.5 shadow-2xs">
+              <div className="flex h-9 sm:h-10 w-full min-w-0 items-center justify-between rounded-full border border-[#145A45] bg-[#DCEBDD] px-1 sm:px-1.5 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#18483B] hover:bg-white active:scale-95 transition-all"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#145A45] hover:bg-white active:scale-95 transition-all"
                   aria-label="Decrease quantity"
                 >
                   <Minus className="size-3.5" />
                 </button>
-                <span className="text-[10px] sm:text-xs font-black text-[#18483B] truncate px-0.5 text-center flex-1">
+                <span className="text-[10px] sm:text-xs font-black text-[#145A45] truncate px-0.5 text-center flex-1">
                   {inCart.qty} {lang === "hi" ? "जोड़ा" : "in cart"}
                 </span>
                 <button
                   type="button"
                   disabled={inCart.qty >= stock}
                   onClick={() => setQty(inCart.variantId, inCart.qty + 1)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#18483B] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#145A45] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
                   aria-label="Increase quantity"
                 >
                   <Plus className="size-3.5" />
@@ -220,10 +220,10 @@ export function ProductCard({ product }: { product: Product }) {
                     stock: activeVariant.stock,
                   });
                   toast.success(`${localizedProductName} ${t.added.toLowerCase()}`, {
-                    icon: <Check className="size-4 text-[#18483B]" />,
+                    icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="flex h-9 sm:h-10 w-full min-w-0 items-center justify-center gap-1 rounded-full border border-[#18483B] bg-white px-2 text-xs font-extrabold text-[#18483B] hover:bg-[#18483B] hover:text-white active:scale-95 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden"
+                className="flex h-9 sm:h-10 w-full min-w-0 items-center justify-center gap-1 rounded-full border border-[#145A45] bg-white px-2 text-xs font-extrabold text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden"
               >
                 <Plus className="size-3.5 shrink-0" />
                 <span className="truncate">{t.add}</span>

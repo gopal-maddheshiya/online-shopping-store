@@ -34,49 +34,49 @@ export function Footer() {
   const address = s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh";
 
   return (
-    <footer className="mt-16 border-t border-[#EAE6DF] bg-white text-[#191C1B]">
+    <footer className="mt-16 border-t border-[#E8E4DA] bg-white text-[#1F2924]">
       {/* Top Value Proposition Bar */}
-      <div className="border-b border-[#EAE6DF] bg-[#FAF8F5] py-6">
+      <div className="border-b border-[#E8E4DA] bg-[#FAF8F2] py-6">
         <div className="container-page grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <Truck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#191C1B]">Fast Local Delivery</p>
-              <p className="text-[11px] text-[#676D68]">
+              <p className="text-xs font-bold sm:text-sm text-[#1F2924]">Fast Local Delivery</p>
+              <p className="text-[11px] text-[#6B746F]">
                 Free above ₹{s?.free_delivery_threshold ?? 499}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#191C1B]">100% Genuine Items</p>
-              <p className="text-[11px] text-[#676D68]">Original branded staples</p>
+              <p className="text-xs font-bold sm:text-sm text-[#1F2924]">100% Genuine Items</p>
+              <p className="text-[11px] text-[#6B746F]">Original branded staples</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <Phone className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#191C1B]">Phone &amp; WhatsApp</p>
-              <p className="text-[11px] text-[#676D68]">Easy ordering on call</p>
+              <p className="text-xs font-bold sm:text-sm text-[#1F2924]">Phone &amp; WhatsApp</p>
+              <p className="text-[11px] text-[#6B746F]">Easy ordering on call</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-full bg-[#EBF4F0] text-[#18483B]">
+            <div className="grid size-9 place-items-center rounded-full bg-[#DCEBDD] text-[#145A45]">
               <RotateCcw className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#191C1B]">Store Pickup</p>
-              <p className="text-[11px] text-[#676D68]">Ramnagar shop counter</p>
+              <p className="text-xs font-bold sm:text-sm text-[#1F2924]">Store Pickup</p>
+              <p className="text-[11px] text-[#6B746F]">Ramnagar shop counter</p>
             </div>
           </div>
         </div>
@@ -88,15 +88,15 @@ export function Footer() {
         <div className="space-y-3">
           <Link
             to="/"
-            className="inline-block font-sans text-xl font-bold tracking-tight text-[#18483B]"
+            className="inline-flex items-center gap-1.5 font-sans text-xl font-bold tracking-tight text-[#145A45]"
           >
-            Arun Gopal Traders
+            <span>🌾</span> Arun Gopal Traders
           </Link>
-          <p className="text-xs leading-relaxed text-[#676D68]">
+          <p className="text-xs leading-relaxed text-[#6B746F]">
             {s?.tagline ??
-              "Your Trusted Local Grocery Store in Maharajganj. Quality products, fair rates, and reliable doorstep delivery."}
+              "Your Trusted Local Grocery Store in Maharajganj. Fresh staples, honest rates, and reliable doorstep delivery."}
           </p>
-          <div className="space-y-1.5 text-xs text-[#676D68] pt-2">
+          <div className="space-y-1.5 text-xs text-[#6B746F] pt-2">
             <a
               href={
                 s?.maps_link ??
@@ -104,34 +104,34 @@ export function Footer() {
               }
               target="_blank"
               rel="noreferrer"
-              className="flex items-start gap-2 hover:text-[#18483B] transition-colors"
+              className="flex items-start gap-2 hover:text-[#145A45] transition-colors"
             >
-              <MapPin className="mt-0.5 size-3.5 shrink-0 text-[#18483B]" />
+              <MapPin className="mt-0.5 size-3.5 shrink-0 text-[#145A45]" />
               <span>{address}</span>
             </a>
             <a
               href={telHref(cleanPhone)}
-              className="flex items-center gap-2 font-semibold text-[#191C1B] hover:text-[#18483B] transition-colors"
+              className="flex items-center gap-2 font-semibold text-[#1F2924] hover:text-[#145A45] transition-colors"
             >
-              <Phone className="size-3.5 text-[#18483B]" /> {phone}
+              <Phone className="size-3.5 text-[#145A45]" /> {phone}
             </a>
             <a
               href={`mailto:${email}`}
-              className="flex items-center gap-2 hover:text-[#18483B] transition-colors"
+              className="flex items-center gap-2 hover:text-[#145A45] transition-colors"
             >
-              <Mail className="size-3.5 text-[#18483B]" /> {email}
+              <Mail className="size-3.5 text-[#145A45]" /> {email}
             </a>
           </div>
         </div>
 
         {/* Quick Links */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#191C1B]">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2924]">
             Shop Categories
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#676D68]">
+          <ul className="mt-3 space-y-2 text-xs text-[#6B746F]">
             <li>
-              <Link to="/shop" search={{ category: "flour-atta" }} className="hover:text-[#18483B]">
+              <Link to="/shop" search={{ category: "flour-atta" }} className="hover:text-[#145A45]">
                 Atta &amp; Flours
               </Link>
             </li>
@@ -139,18 +139,18 @@ export function Footer() {
               <Link
                 to="/shop"
                 search={{ category: "rice-grains" }}
-                className="hover:text-[#18483B]"
+                className="hover:text-[#145A45]"
               >
                 Basmati Rice &amp; Grains
               </Link>
             </li>
             <li>
-              <Link to="/shop" search={{ category: "pulses-dal" }} className="hover:text-[#18483B]">
+              <Link to="/shop" search={{ category: "pulses-dal" }} className="hover:text-[#145A45]">
                 Pulses &amp; Dal
               </Link>
             </li>
             <li>
-              <Link to="/shop" search={{ category: "oil-ghee" }} className="hover:text-[#18483B]">
+              <Link to="/shop" search={{ category: "oil-ghee" }} className="hover:text-[#145A45]">
                 Mustard Oil &amp; Ghee
               </Link>
             </li>
@@ -158,13 +158,13 @@ export function Footer() {
               <Link
                 to="/shop"
                 search={{ category: "spices-masala" }}
-                className="hover:text-[#18483B]"
+                className="hover:text-[#145A45]"
               >
                 Spices &amp; Whole Masalas
               </Link>
             </li>
             <li>
-              <Link to="/shop" className="hover:text-[#18483B] font-semibold">
+              <Link to="/shop" className="hover:text-[#145A45] font-semibold">
                 View All Groceries →
               </Link>
             </li>
@@ -173,34 +173,34 @@ export function Footer() {
 
         {/* Customer Care */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#191C1B]">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2924]">
             Customer Care
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#676D68]">
+          <ul className="mt-3 space-y-2 text-xs text-[#6B746F]">
             <li>
-              <Link to="/track" className="hover:text-[#18483B]">
+              <Link to="/track" className="hover:text-[#145A45]">
                 Track Order Status
               </Link>
             </li>
             <li>
-              <Link to="/account" className="hover:text-[#18483B]">
+              <Link to="/account" className="hover:text-[#145A45]">
                 My Account &amp; Orders
               </Link>
             </li>
             <li>
-              <Link to="/wishlist" className="hover:text-[#18483B]">
+              <Link to="/wishlist" className="hover:text-[#145A45]">
                 Saved Wishlist
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-[#18483B]">
+              <Link to="/contact" className="hover:text-[#145A45]">
                 Help &amp; Support
               </Link>
             </li>
             <li>
               <Link
                 to="/admin"
-                className="font-semibold text-[#18483B] hover:underline flex items-center gap-1 mt-2"
+                className="font-semibold text-[#145A45] hover:underline flex items-center gap-1 mt-2"
               >
                 <LayoutDashboard className="size-3.5" /> Owner / Admin Portal →
               </Link>
@@ -210,7 +210,7 @@ export function Footer() {
 
         {/* Store Timings */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#191C1B]">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#1F2924]">
             Store Timings
           </h4>
           <div className="mt-3 space-y-1 text-xs">
@@ -221,9 +221,9 @@ export function Footer() {
                 closed: false,
               };
               return (
-                <div key={key} className="flex justify-between text-[#676D68]">
+                <div key={key} className="flex justify-between text-[#6B746F]">
                   <span>{label}:</span>
-                  <span className="font-medium text-[#191C1B]">
+                  <span className="font-medium text-[#1F2924]">
                     {h.closed ? "Closed" : `${h.open} - ${h.close}`}
                   </span>
                 </div>
@@ -234,25 +234,25 @@ export function Footer() {
       </div>
 
       {/* Bottom Copyright Bar - with clearance for mobile bottom nav */}
-      <div className="border-t border-[#EAE6DF] py-4 pb-24 lg:pb-4 bg-[#FAF8F5]">
-        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#676D68] sm:flex-row">
+      <div className="border-t border-[#E8E4DA] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
+        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#6B746F] sm:flex-row">
           <p>© {new Date().getFullYear()} Arun Gopal Traders. Ramnagar, Maharajganj, UP.</p>
           <p className="flex items-center gap-1">
-            <span>Made with ❤️ for Maharajganj</span>
+            <span>आपकी अपनी लोकल किराना दुकान • 100% शुद्धता</span>
           </p>
         </div>
       </div>
 
-      {/* Desktop Floating WhatsApp Quick Order Button (Mobile uses MobileNav FAB) */}
+      {/* Desktop Floating WhatsApp Quick Order Button */}
       <div className="fixed bottom-6 right-6 z-40 hidden lg:flex">
         <a
           href={waHref(whatsapp, "Namaste! I want to order grocery items from Arun Gopal Traders.")}
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-xs font-bold text-white shadow-xl hover:bg-[#20ba59] transition-all hover:scale-105 active:scale-95 border border-white/30"
+          className="group flex items-center gap-2 rounded-full bg-[#145A45] px-4 py-2.5 text-xs font-bold text-white shadow-xl hover:bg-[#0E4333] transition-all hover:scale-105 active:scale-95 border border-white/20"
           aria-label="Order on WhatsApp"
         >
-          <MessageCircle className="size-4.5 fill-white text-[#25D366]" />
+          <MessageCircle className="size-4.5 fill-white text-[#145A45]" />
           <span>WhatsApp Quick Order</span>
         </a>
       </div>
