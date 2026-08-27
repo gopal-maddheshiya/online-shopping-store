@@ -22,22 +22,47 @@ import { productQuery, productsQuery, type Variant } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 
 export const Route = createFileRoute("/product/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug.replace(/-/g, " ")} — Arun Gopal Traders` },
-      {
-        name: "description",
-        content:
-          "Product details, pack sizes, live price and stock at Arun Gopal Traders, Maharajganj.",
-      },
-      { property: "og:title", content: `${params.slug.replace(/-/g, " ")} — Arun Gopal Traders` },
-      {
-        property: "og:description",
-        content: "Order this item for home delivery or store pickup in Maharajganj.",
-      },
-    ],
-  }),
-  component: ProductPage,
+  loader: async ({ params, context }) => {
+    const [product] = await Promise.all([
+      context.queryClient.ensureQueryData(productQuery(params.slug)),
+      context.queryClient.ensureQueryData(productsQuery()),
+    ]);
+    return { product };
+  },
+  head: ({ loaderData, params }) => {
+    const p = loaderData?.product;
+    const title = p ? `${p.name} — Arun Gopal Traders` : `${params.slug.replace(/-/g, " ")} — Arun Gopal Traders`;
+    const desc = p?.description || "Product details, pack sizes, live price and stock at Arun Gopal Traders, Maharajganj.";
+    const img = p?.image_url || "/images/packaged.jpg";
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:image", content: img },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+        { name: "twitter:image", content: img },
+      ],
+    };
+  },
+  errorComponent: ({ reset }) => (
+    <div className="container-page py-20 text-center">
+      <h1 className="font-sans text-2xl font-bold text-[#191C1B]">Unable to load product</h1>
+      <p className="mt-1 text-xs text-[#676D68]">Please try again or return to the shop.</p>
+      <div className="mt-6 flex justify-center gap-3">
+        <Button onClick={() => reset()} className="rounded-full bg-[#18483B] text-white">
+          Try Again
+        </Button>
+        <Button asChild variant="outline" className="rounded-full">
+          <Link to="/shop">Back to Shop</Link>
+        </Button>
+      </div>
+    </div>
+  ),
   notFoundComponent: () => (
     <div className="container-page py-20 text-center">
       <h1 className="font-sans text-2xl font-bold text-[#191C1B]">Product not found</h1>
@@ -49,6 +74,7 @@ export const Route = createFileRoute("/product/$slug")({
       </Button>
     </div>
   ),
+  component: ProductPage,
 });
 
 function ProductPage() {

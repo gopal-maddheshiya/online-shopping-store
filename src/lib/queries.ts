@@ -174,113 +174,164 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   social: {},
 };
 
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number = 2500,
+  fallback: T,
+): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timer = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timer);
+      return res;
+    }),
+    timeoutPromise,
+  ]).catch(() => {
+    clearTimeout(timer);
+    return fallback;
+  });
+}
+
+import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "./catalog-data";
+
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
   queryFn: async (): Promise<StoreSettings> => {
-    try {
-      const { data, error } = await supabase
-        .from("store_settings")
-        .select("*")
-        .eq("id", 1)
-        .single();
-      if (error || !data) return DEFAULT_STORE_SETTINGS;
+    return withTimeout(
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .from("store_settings")
+            .select("*")
+            .eq("id", 1)
+            .single();
+          if (error || !data) return DEFAULT_STORE_SETTINGS;
 
-      const raw = data as unknown as StoreSettings;
-      const isOldPhone = !raw.phone || raw.phone.includes("9621617360");
-      const isOldWhatsApp = !raw.whatsapp || raw.whatsapp.includes("9621617360");
-      const isOldEmail = !raw.email || raw.email.includes("ashokmaddheshiya51");
+          const raw = data as unknown as StoreSettings;
+          const isOldPhone = !raw.phone || raw.phone.includes("9621617360");
+          const isOldWhatsApp = !raw.whatsapp || raw.whatsapp.includes("9621617360");
+          const isOldEmail = !raw.email || raw.email.includes("ashokmaddheshiya51");
 
-      return {
-        ...raw,
-        phone: isOldPhone ? "+91 6388354988" : raw.phone,
-        whatsapp: isOldWhatsApp ? "916388354988" : raw.whatsapp,
-        email: isOldEmail ? "gopalmaddheshiya138@gmail.com" : raw.email,
-      };
-    } catch {
-      return DEFAULT_STORE_SETTINGS;
-    }
+          return {
+            ...raw,
+            phone: isOldPhone ? "+91 6388354988" : raw.phone,
+            whatsapp: isOldWhatsApp ? "916388354988" : raw.whatsapp,
+            email: isOldEmail ? "gopalmaddheshiya138@gmail.com" : raw.email,
+          };
+        } catch {
+          return DEFAULT_STORE_SETTINGS;
+        }
+      })(),
+      2500,
+      DEFAULT_STORE_SETTINGS,
+    );
   },
   staleTime: 60_000,
 });
 
-import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "./catalog-data";
-
 export const categoriesQuery = queryOptions({
   queryKey: ["categories"],
   queryFn: async (): Promise<Category[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("sort_order", { ascending: true });
-      if (error) throw error;
-      const remote = (data ?? []) as Category[];
-      const existingSlugs = new Set(remote.map((c) => c.slug));
-      const merged = [...remote];
-      for (const cat of ADDITIONAL_CATEGORIES) {
-        if (!existingSlugs.has(cat.slug)) {
-          merged.push(cat);
-          existingSlugs.add(cat.slug);
+    return withTimeout(
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .from("categories")
+            .select("*")
+            .order("sort_order", { ascending: true });
+          if (error) throw error;
+          const remote = (data ?? []) as Category[];
+          const existingSlugs = new Set(remote.map((c) => c.slug));
+          const merged = [...remote];
+          for (const cat of ADDITIONAL_CATEGORIES) {
+            if (!existingSlugs.has(cat.slug)) {
+              merged.push(cat);
+              existingSlugs.add(cat.slug);
+            }
+          }
+          return merged;
+        } catch {
+          return ADDITIONAL_CATEGORIES;
         }
-      }
-      return merged;
-    } catch {
-      return ADDITIONAL_CATEGORIES;
-    }
+      })(),
+      2500,
+      ADDITIONAL_CATEGORIES,
+    );
   },
   staleTime: 60_000,
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {
+  const fallback =
+    opts.activeOnly === false
+      ? ADDITIONAL_PRODUCTS
+      : ADDITIONAL_PRODUCTS.filter((p) => p.is_active);
+
   return queryOptions({
     queryKey: ["products", opts.activeOnly !== false],
     queryFn: async (): Promise<Product[]> => {
-      try {
-        let q = supabase
-          .from("products")
-          .select(PRODUCT_SELECT)
-          .order("created_at", { ascending: false });
-        if (opts.activeOnly !== false) q = q.eq("is_active", true);
-        const { data, error } = await q;
-        if (error) throw error;
-        const remote = (data ?? []) as unknown as Product[];
-        const existingSlugs = new Set(remote.map((p) => p.slug));
-        const merged = [...remote];
-        for (const p of ADDITIONAL_PRODUCTS) {
-          if (!existingSlugs.has(p.slug)) {
-            if (opts.activeOnly === false || p.is_active) {
-              merged.push(p);
-              existingSlugs.add(p.slug);
+      return withTimeout(
+        (async () => {
+          try {
+            let q = supabase
+              .from("products")
+              .select(PRODUCT_SELECT)
+              .order("created_at", { ascending: false });
+            if (opts.activeOnly !== false) q = q.eq("is_active", true);
+            const { data, error } = await q;
+            if (error) throw error;
+            const remote = (data ?? []) as unknown as Product[];
+            const existingSlugs = new Set(remote.map((p) => p.slug));
+            const merged = [...remote];
+            for (const p of ADDITIONAL_PRODUCTS) {
+              if (!existingSlugs.has(p.slug)) {
+                if (opts.activeOnly === false || p.is_active) {
+                  merged.push(p);
+                  existingSlugs.add(p.slug);
+                }
+              }
             }
+            return merged;
+          } catch {
+            return fallback;
           }
-        }
-        return merged;
-      } catch {
-        return opts.activeOnly === false
-          ? ADDITIONAL_PRODUCTS
-          : ADDITIONAL_PRODUCTS.filter((p) => p.is_active);
-      }
+        })(),
+        2500,
+        fallback,
+      );
     },
     staleTime: 30_000,
   });
 }
 
 export function productQuery(slug: string) {
+  const fallback = ADDITIONAL_PRODUCTS.find((p) => p.slug === slug) ?? null;
+
   return queryOptions({
     queryKey: ["product", slug],
     queryFn: async (): Promise<Product | null> => {
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select(PRODUCT_SELECT)
-          .eq("slug", slug)
-          .maybeSingle();
-        if (!error && data) return data as unknown as Product;
-      } catch {
-        // Fall back to additional products
-      }
-      return ADDITIONAL_PRODUCTS.find((p) => p.slug === slug) ?? null;
+      return withTimeout(
+        (async () => {
+          try {
+            const { data, error } = await supabase
+              .from("products")
+              .select(PRODUCT_SELECT)
+              .eq("slug", slug)
+              .maybeSingle();
+            if (!error && data) return data as unknown as Product;
+          } catch {
+            // Fall back to additional products
+          }
+          return fallback;
+        })(),
+        2500,
+        fallback,
+      );
     },
+    staleTime: 30_000,
   });
 }
 

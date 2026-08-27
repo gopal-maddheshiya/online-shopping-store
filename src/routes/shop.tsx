@@ -44,6 +44,12 @@ export const Route = createFileRoute("/shop")({
     max: typeof search["max"] === "number" ? search["max"] : undefined,
     instock: search["instock"] === true || search["instock"] === "true" ? true : undefined,
   }),
+  loader: async ({ context }) => {
+    await Promise.allSettled([
+      context.queryClient.ensureQueryData(categoriesQuery),
+      context.queryClient.ensureQueryData(productsQuery()),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: "Shop Groceries Online — Arun Gopal Traders" },
@@ -59,6 +65,19 @@ export const Route = createFileRoute("/shop")({
       },
     ],
   }),
+  errorComponent: ({ error, reset }) => (
+    <div className="container-page py-16 text-center">
+      <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-[#E8E4DA] bg-white p-8 shadow-xs">
+        <h2 className="font-sans text-xl font-bold text-[#1F2924]">Unable to load shop catalogue</h2>
+        <p className="text-xs text-[#6B746F]">
+          Please check your network connection and try again.
+        </p>
+        <Button onClick={() => reset()} className="rounded-full bg-[#145A45] text-white">
+          Retry Loading
+        </Button>
+      </div>
+    </div>
+  ),
   component: Shop,
 });
 

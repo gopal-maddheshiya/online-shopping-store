@@ -49,6 +49,13 @@ import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    await Promise.allSettled([
+      context.queryClient.ensureQueryData(settingsQuery),
+      context.queryClient.ensureQueryData(categoriesQuery),
+      context.queryClient.ensureQueryData(productsQuery()),
+    ]);
+  },
   head: () => ({
     meta: [
       { title: "Arun Gopal Traders — Trusted Grocery Store in Maharajganj, UP" },
@@ -67,6 +74,19 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  errorComponent: ({ error, reset }) => (
+    <div className="container-page py-16 text-center">
+      <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-[#E8E4DA] bg-white p-8 shadow-xs">
+        <h2 className="font-sans text-xl font-bold text-[#1F2924]">Unable to load homepage catalogue</h2>
+        <p className="text-xs text-[#6B746F]">
+          Please check your network connection and try again.
+        </p>
+        <Button onClick={() => reset()} className="rounded-full bg-[#145A45] text-white">
+          Retry Loading
+        </Button>
+      </div>
+    </div>
+  ),
   component: PremiumStoreHome,
 });
 
