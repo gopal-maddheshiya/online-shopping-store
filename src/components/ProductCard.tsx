@@ -67,11 +67,11 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      {/* Product Image Box - Contained, fixed height, no overflow */}
+      {/* Product Image Box - Contained, clean supermarket showcase */}
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
-        className="relative my-2 flex h-32 sm:h-36 w-full items-center justify-center overflow-hidden rounded-xl bg-white border border-[#EFECE6] p-2 transition-all duration-200 group-hover:border-[#D8D2C4] group-hover:shadow-xs shrink-0"
+        className="relative my-2 flex h-36 sm:h-44 w-full items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F5] border border-[#EFECE6] p-3 transition-all duration-200 group-hover:border-[#18483B]/30 group-hover:bg-white group-hover:shadow-xs shrink-0"
       >
         <img
           src={getProductImage(product)}
