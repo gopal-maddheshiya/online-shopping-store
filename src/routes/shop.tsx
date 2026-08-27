@@ -242,7 +242,7 @@ function Shop() {
   );
 
   return (
-    <div className="container-page py-6 sm:py-8 pb-28 overflow-x-hidden">
+    <div className="container-page py-6 sm:py-8 pb-36 overflow-x-hidden">
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#EAE6DF] pb-4">
         <div>
