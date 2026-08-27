@@ -62,12 +62,24 @@ function ProductPage() {
 
   if (isLoading) {
     return (
-      <div className="container-page grid gap-8 py-10 md:grid-cols-2">
-        <Skeleton className="aspect-square rounded-2xl" />
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-5 w-1/3" />
-          <Skeleton className="h-24 w-full" />
+      <div className="container-page grid gap-8 py-6 sm:py-10 md:grid-cols-2 items-start">
+        <div className="card-base aspect-square w-full max-w-[460px] mx-auto rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-6 sm:p-10 flex items-center justify-center">
+          <Skeleton className="size-48 rounded-2xl bg-[#E8E4DA]/60" />
+        </div>
+        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E8E4DA]">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24 bg-[#FAF8F2]" />
+            <Skeleton className="h-8 w-4/5 bg-[#FAF8F2]" />
+          </div>
+          <Skeleton className="h-12 w-full bg-[#FAF8F2]" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28 bg-[#FAF8F2]" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-24 rounded-full bg-[#FAF8F2]" />
+              <Skeleton className="h-8 w-24 rounded-full bg-[#FAF8F2]" />
+            </div>
+          </div>
+          <Skeleton className="h-11 w-full rounded-full bg-[#DCEBDD]/50" />
         </div>
       </div>
     );
@@ -88,7 +100,7 @@ function ProductPage() {
     .slice(0, 4);
 
   return (
-    <div className="container-page py-6 sm:py-10 space-y-10">
+    <div className="container-page py-6 sm:py-10 pb-28 md:pb-12 space-y-8 sm:space-y-10">
       {/* Breadcrumb Navigation */}
       <nav className="text-xs text-[#6B746F]">
         <Link to="/" className="hover:text-[#145A45]">
@@ -152,10 +164,10 @@ function ProductPage() {
                   key={v.id}
                   onClick={() => setVariantId(v.id)}
                   disabled={v.stock <= 0}
-                  className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all disabled:opacity-40 ${
+                  className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all disabled:opacity-40 cursor-pointer ${
                     v.id === variant?.id
-                      ? "border-[#145A45] bg-[#145A45] text-white"
-                      : "border-[#E8E4DA] bg-white text-[#1F2924] hover:border-[#145A45]"
+                      ? "border-[#145A45] bg-[#145A45] text-white shadow-2xs"
+                      : "border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] hover:border-[#145A45]"
                   }`}
                 >
                   {getVariantLabel(v.label)} · {inr(v.price)}
@@ -271,7 +283,7 @@ function ProductPage() {
           </div>
 
           {/* Trust Guarantees */}
-          <div className="grid grid-cols-2 gap-3 border-t border-[#E8E4DA] pt-5 text-xs text-[#6B746F]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border-t border-[#E8E4DA] pt-5 text-xs text-[#6B746F]">
             <div className="flex items-center gap-2">
               <Truck className="size-4 text-[#145A45]" />
               <span>{t.freeDeliveryTitle}</span>
@@ -306,6 +318,42 @@ function ProductPage() {
           </div>
         </section>
       )}
+
+      {/* Sticky Mobile Bottom Buy Bar */}
+      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[#E8E4DA] bg-white/95 backdrop-blur-md p-3 shadow-lg md:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] text-[#6B746F] truncate">
+              {getVariantLabel(variant?.label ?? "")}
+            </p>
+            <p className="text-sm font-black text-[#1F2924]">{inr(variant?.price ?? 0)}</p>
+          </div>
+          <Button
+            disabled={!variant || variant.stock <= 0}
+            onClick={() => {
+              if (!variant) return;
+              for (let i = 0; i < qty; i++) {
+                add({
+                  variantId: variant.id,
+                  productId: product.id,
+                  slug: product.slug,
+                  name: localizedName,
+                  variantLabel: getVariantLabel(variant.label),
+                  price: Number(variant.price),
+                  mrp: Number(variant.mrp),
+                  imageUrl: getProductImage(product),
+                  stock: variant.stock,
+                });
+              }
+              toast.success(`${qty}x ${localizedName} ${t.added.toLowerCase()}`);
+            }}
+            className="flex-1 max-w-[200px] h-10 rounded-full bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] active:scale-95"
+          >
+            <ShoppingBag className="mr-1.5 size-3.5" />
+            <span>{t.add}</span>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

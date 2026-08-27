@@ -89,7 +89,7 @@ function WishlistPage() {
   }
 
   return (
-    <div className="container-page py-8">
+    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E4DA] pb-4">
         <div>
           <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#1F2924]">
@@ -120,7 +120,7 @@ function WishlistPage() {
         </div>
       </div>
 
-      <div className="mt-6 home-shelf-grid">
+      <div className="mt-6 grocery-grid">
         {items.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}

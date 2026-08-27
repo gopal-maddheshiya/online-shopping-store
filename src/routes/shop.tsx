@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useLanguage } from "@/lib/i18n";
 import { getCategoryThumbnail } from "@/lib/product-images";
 import { categoriesQuery, cheapestVariant, productsQuery, totalStock } from "@/lib/queries";
@@ -379,7 +379,7 @@ function Shop() {
           {isLoading ? (
             <div className="grocery-grid">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-xl" />
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : results.length === 0 ? (

@@ -32,7 +32,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage, getCategoryThumbnail } from "@/lib/product-images";
@@ -548,8 +548,8 @@ function PremiumStoreHome() {
         <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2">
           {prodLoading
             ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="min-w-[155px] sm:min-w-0 shrink-0">
-                  <Skeleton className="h-64 rounded-2xl" />
+                <div key={i} className="min-w-[160px] sm:min-w-0 shrink-0">
+                  <ProductCardSkeleton />
                 </div>
               ))
             : flashDeals.map((product) => (

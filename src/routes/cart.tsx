@@ -76,7 +76,7 @@ function CartPage() {
   }
 
   return (
-    <div className="container-page py-6 sm:py-10">
+    <div className="container-page py-6 sm:py-10 pb-28 lg:pb-10">
       <div className="flex items-baseline justify-between border-b border-[#E8E4DA] pb-3">
         <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#1F2924]">{t.yourCart}</h1>
         <span className="text-xs font-semibold text-[#6B746F]">

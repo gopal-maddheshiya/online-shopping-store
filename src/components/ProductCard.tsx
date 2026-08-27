@@ -6,6 +6,7 @@ import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage } from "@/lib/product-images";
 import { type Product } from "@/lib/queries";
+import { Skeleton } from "@/components/ui/skeleton";
 import { discountPercent, inr } from "@/lib/format";
 import { useState } from "react";
 
@@ -230,6 +231,54 @@ export function ProductCard({ product }: { product: Product }) {
               </button>
             )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProductCardSkeleton() {
+  return (
+    <div
+      className="card-base flex flex-col justify-between overflow-hidden bg-white p-2.5 sm:p-3.5 border border-[#E8E4DA] w-full max-w-full min-w-0"
+      style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
+    >
+      {/* Top Header skeleton */}
+      <div className="flex items-center justify-between gap-1 w-full min-w-0">
+        <Skeleton className="h-4 w-12 rounded-full bg-[#FAF8F2]" />
+        <Skeleton className="size-7 rounded-full bg-[#FAF8F2]" />
+      </div>
+
+      {/* Image Skeleton Box */}
+      <div
+        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 sm:p-2 shrink-0"
+        style={{
+          height: "130px",
+          maxHeight: "130px",
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: 0,
+        }}
+      >
+        <Skeleton className="size-20 rounded-xl bg-[#E8E4DA]/60" />
+      </div>
+
+      {/* Content Skeleton */}
+      <div className="flex flex-1 flex-col min-w-0 w-full max-w-full space-y-1.5">
+        <Skeleton className="h-3 w-16 bg-[#FAF8F2]" />
+        <div className="min-h-[2.1rem] sm:min-h-[2.4rem] space-y-1">
+          <Skeleton className="h-3.5 w-full bg-[#FAF8F2]" />
+          <Skeleton className="h-3.5 w-3/4 bg-[#FAF8F2]" />
+        </div>
+        <Skeleton className="h-4 w-14 rounded-full bg-[#FAF8F2]" />
+
+        {/* Price & Button skeleton */}
+        <div className="mt-auto pt-2 flex flex-col gap-1.5 w-full min-w-0">
+          <div className="flex items-baseline justify-between gap-2">
+            <Skeleton className="h-4 w-16 bg-[#FAF8F2]" />
+            <Skeleton className="h-3 w-10 bg-[#FAF8F2]" />
+          </div>
+          <Skeleton className="h-9 sm:h-10 w-full rounded-full bg-[#DCEBDD]/50" />
         </div>
       </div>
     </div>

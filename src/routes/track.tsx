@@ -133,7 +133,7 @@ function TrackPage() {
   }
 
   return (
-    <div className="container-page py-8">
+    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Title */}
       <div className="text-center">
         <span className="inline-block rounded-full bg-[#DCEBDD] px-3 py-1 text-xs font-bold text-[#145A45]">

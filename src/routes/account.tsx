@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   User,
@@ -18,6 +18,7 @@ import {
   Trash2,
   Lock,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
+import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { customerOrdersQuery, type Order, type Product } from "@/lib/queries";
 import { inr, formatDate, ORDER_STATUS_LABEL, telHref } from "@/lib/format";
@@ -62,6 +64,7 @@ function AccountPage() {
   const { user, profile, refreshProfile, loading: authLoading } = useAuth();
   const { add } = useCart();
   const { items: wishlistItems } = useWishlist();
+  const { lang, t, getProductName, getVariantLabel } = useLanguage();
 
   // Guest / Phone identification state
   const [identifiedPhone, setIdentifiedPhone] = useState<string>("");
@@ -136,6 +139,39 @@ function AccountPage() {
     isLoading: ordersLoading,
     refetch: refetchOrders,
   } = useQuery(customerOrdersQuery(user?.id, effectivePhone));
+
+  // Extract unique purchased items across past orders for Buy Again tab
+  const uniquePurchasedItems = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        variantId: string;
+        productId: string;
+        name: string;
+        variantLabel: string;
+        price: number;
+        mrp: number;
+        imageUrl: string | null;
+      }
+    >();
+    (orders ?? []).forEach((order) => {
+      (order.order_items ?? []).forEach((item) => {
+        const key = item.variant_id || item.name;
+        if (!map.has(key)) {
+          map.set(key, {
+            variantId: item.variant_id || "",
+            productId: item.product_id || "",
+            name: item.name,
+            variantLabel: item.variant_label ?? "1 pack",
+            price: Number(item.price),
+            mrp: Number(item.mrp || item.price),
+            imageUrl: item.image_url ?? null,
+          });
+        }
+      });
+    });
+    return Array.from(map.values());
+  }, [orders]);
 
   // Handle Phone Identification (Fast Login for local customers)
   function handlePhoneIdentify(e: React.FormEvent) {
@@ -408,7 +444,7 @@ function AccountPage() {
   const displayPhone = profile?.phone || identifiedPhone;
 
   return (
-    <div className="container-page py-8">
+    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Account Profile Header Bar */}
       <div className="rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -448,18 +484,36 @@ function AccountPage() {
       {/* Account Tabs */}
       <div className="mt-8">
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid h-12 w-full grid-cols-4 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
-            <TabsTrigger value="orders" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
-              <Package className="mr-1.5 size-4" /> My Orders ({orders?.length ?? 0})
+          <TabsList className="grid h-12 w-full grid-cols-5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
+            <TabsTrigger
+              value="orders"
+              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+            >
+              <Package className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
             </TabsTrigger>
-            <TabsTrigger value="addresses" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
-              <MapPin className="mr-1.5 size-4" /> Addresses
+            <TabsTrigger
+              value="buy-again"
+              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+            >
+              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पुनः खरीदें" : "Buy Again"} ({uniquePurchasedItems.length})
             </TabsTrigger>
-            <TabsTrigger value="wishlist" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
-              <Heart className="mr-1.5 size-4" /> Wishlist ({wishlistItems.length})
+            <TabsTrigger
+              value="addresses"
+              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+            >
+              <MapPin className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पते" : "Addresses"}
             </TabsTrigger>
-            <TabsTrigger value="profile" className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white">
-              <User className="mr-1.5 size-4" /> Profile
+            <TabsTrigger
+              value="wishlist"
+              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+            >
+              <Heart className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="profile"
+              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+            >
+              <User className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
             </TabsTrigger>
           </TabsList>
 
@@ -565,7 +619,89 @@ function AccountPage() {
             )}
           </TabsContent>
 
-          {/* TAB 2: SAVED ADDRESSES */}
+          {/* TAB: BUY AGAIN (Previously Purchased Items) */}
+          <TabsContent value="buy-again" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-sans text-lg font-bold text-[#1F2924]">
+                  {lang === "hi" ? "आपने पहले ये सामान खरीदा था" : "Previously Purchased Items"}
+                </h3>
+                <p className="text-xs text-[#6B746F]">
+                  {lang === "hi"
+                    ? "अपने पसंदीदा दैनिक राशन को 1-क्लिक में दोबारा कार्ट में जोड़ें।"
+                    : "Easily reorder your daily grocery essentials with a single click."}
+                </p>
+              </div>
+            </div>
+
+            {uniquePurchasedItems.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {uniquePurchasedItems.map((item, idx) => (
+                  <div
+                    key={item.variantId || idx}
+                    className="card-base flex flex-col justify-between overflow-hidden bg-white p-3 border border-[#E8E4DA] rounded-2xl"
+                  >
+                    <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-[#FAF8F2] p-2 border border-[#E8E4DA]">
+                      <img
+                        src={getProductImage({
+                          name: item.name,
+                          image_url: item.imageUrl,
+                        })}
+                        alt={item.name}
+                        className="size-full max-h-[110px] object-contain"
+                      />
+                    </div>
+                    <div className="mt-2 flex flex-1 flex-col justify-between space-y-1">
+                      <div>
+                        <h4 className="line-clamp-2 text-xs font-bold text-[#1F2924]">{item.name}</h4>
+                        <p className="text-[11px] text-[#6B746F]">{item.variantLabel}</p>
+                      </div>
+                      <div className="pt-2 flex items-center justify-between">
+                        <span className="text-xs font-black text-[#1F2924]">{inr(item.price)}</span>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            add({
+                              variantId: item.variantId,
+                              productId: item.productId,
+                              slug: "",
+                              name: item.name,
+                              variantLabel: item.variantLabel,
+                              price: item.price,
+                              mrp: item.mrp,
+                              imageUrl: item.imageUrl ?? null,
+                              stock: 99,
+                            });
+                            toast.success(`${item.name} ${t.added.toLowerCase()}`);
+                          }}
+                          className="h-8 rounded-full bg-[#145A45] px-3 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0E4333] active:scale-95"
+                        >
+                          <Plus className="mr-1 size-3" /> {lang === "hi" ? "फिर से खरीदें" : "Buy Again"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
+                <RotateCcw className="mx-auto size-12 text-[#6B746F]" />
+                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
+                  {lang === "hi" ? "कोई पिछला ऑर्डर नहीं मिला" : "No purchase history yet"}
+                </h3>
+                <p className="mt-1 text-xs text-[#6B746F]">
+                  {lang === "hi"
+                    ? "जब आप राशन ऑर्डर करेंगे, तो वे सामान यहाँ तुरंत दिखाई देंगे।"
+                    : "Items you order in the future will automatically appear here for fast reordering."}
+                </p>
+                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
+                  <Link to="/shop">{lang === "hi" ? "सामान खरीदें" : "Start Shopping"}</Link>
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* TAB 3: SAVED ADDRESSES */}
           <TabsContent value="addresses" className="space-y-4">
             <div className="flex justify-between items-center">
               <div>

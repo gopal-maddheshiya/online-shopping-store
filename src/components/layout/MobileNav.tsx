@@ -4,12 +4,13 @@ import {
   LayoutGrid,
   ShoppingBag,
   Package,
-  Sparkles,
+  Heart,
   MessageCircle,
   PhoneCall,
   User,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { useState } from "react";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
@@ -25,6 +26,7 @@ type NavItem = {
 
 export function MobileNav() {
   const { count: cartCount } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const { lang, t } = useLanguage();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -40,13 +42,13 @@ export function MobileNav() {
   const links: NavItem[] = [
     { to: "/", label: lang === "hi" ? "होम" : "Home", icon: Home },
     { to: "/shop", label: lang === "hi" ? "कैटेगरी" : "Categories", icon: LayoutGrid },
-    {
-      to: "/shop",
-      search: { sort: "discount" },
-      label: lang === "hi" ? "ऑफ़र्स" : "Offers",
-      icon: Sparkles,
-    },
     { to: "/track", label: lang === "hi" ? "ऑर्डर्स" : "Orders", icon: Package },
+    {
+      to: "/wishlist",
+      label: lang === "hi" ? "पसंद" : "Wishlist",
+      icon: Heart,
+      badge: wishlistItems.length > 0 ? wishlistItems.length : undefined,
+    },
     { to: "/cart", label: lang === "hi" ? "कार्ट" : "Cart", icon: ShoppingBag, badge: cartCount },
   ];
 

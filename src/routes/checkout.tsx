@@ -301,7 +301,7 @@ function CheckoutPage() {
   }
 
   return (
-    <div className="container-page py-8">
+    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Top Header */}
       <div className="mb-6 flex items-center justify-between border-b border-[#E8E4DA] pb-4">
         <div>
