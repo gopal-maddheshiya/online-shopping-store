@@ -153,17 +153,19 @@ function Shop() {
   }, [products, categories, activeCategory, search]);
 
   const filters = (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Category List */}
       <div>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#6B746F]">
+        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
           {lang === "hi" ? "कैटेगरी" : "Categories"}
         </h3>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <button
             onClick={() => update({ category: undefined, subcategory: undefined })}
             className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-              !search.category ? "bg-[#145A45] text-white" : "text-[#1F2924] hover:bg-[#FAF8F2]"
+              !search.category
+                ? "bg-[#145A45] text-white shadow-2xs"
+                : "text-[#16201A] hover:bg-[#FAF8F2]"
             }`}
           >
             <span>{lang === "hi" ? "सभी सामान" : "All Categories"}</span>
@@ -174,8 +176,8 @@ function Shop() {
               onClick={() => update({ category: c.slug, subcategory: undefined })}
               className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
                 search.category === c.slug
-                  ? "bg-[#145A45] text-white"
-                  : "text-[#1F2924] hover:bg-[#FAF8F2]"
+                  ? "bg-[#145A45] text-white shadow-2xs"
+                  : "text-[#16201A] hover:bg-[#FAF8F2]"
               }`}
             >
               <span>{getCategoryName(c.name, c.slug)}</span>
@@ -187,11 +189,11 @@ function Shop() {
       {/* Subcategory if selected */}
       {subs.length ? (
         <div>
-          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#6B746F]">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
             {activeCategory ? getCategoryName(activeCategory.name, activeCategory.slug) : ""}{" "}
             {lang === "hi" ? "के प्रकार" : "Types"}
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {subs.map((c) => (
               <button
                 key={c.id}
@@ -200,8 +202,8 @@ function Shop() {
                 }
                 className={`block w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${
                   search.subcategory === c.slug
-                    ? "bg-[#DCEBDD] text-[#145A45] font-bold"
-                    : "text-[#6B746F] hover:bg-[#FAF8F2]"
+                    ? "bg-[#E6EFE8] text-[#0F4A38] font-bold"
+                    : "text-[#5A655F] hover:bg-[#FAF8F2]"
                 }`}
               >
                 {c.name}
@@ -213,7 +215,7 @@ function Shop() {
 
       {/* Price Range */}
       <div>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#6B746F]">
+        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
           {lang === "hi" ? "मूल्य सीमा (₹)" : "Price Range (₹)"}
         </h3>
         <div className="flex items-center gap-2">
@@ -223,16 +225,16 @@ function Shop() {
             placeholder={lang === "hi" ? "न्यूनतम" : "Min"}
             value={search.min ?? ""}
             onChange={(e) => update({ min: e.target.value ? Number(e.target.value) : undefined })}
-            className="rounded-lg text-xs border-[#E8E4DA] bg-white"
+            className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
           />
-          <span className="text-[#6B746F]">–</span>
+          <span className="text-[#5A655F]">–</span>
           <Input
             type="number"
             inputMode="numeric"
             placeholder={lang === "hi" ? "अधिकतम" : "Max"}
             value={search.max ?? ""}
             onChange={(e) => update({ max: e.target.value ? Number(e.target.value) : undefined })}
-            className="rounded-lg text-xs border-[#E8E4DA] bg-white"
+            className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
           />
         </div>
       </div>
@@ -244,7 +246,7 @@ function Shop() {
           checked={!!search.instock}
           onCheckedChange={(v) => update({ instock: v ? true : undefined })}
         />
-        <Label htmlFor="instock" className="text-xs font-semibold text-[#1F2924]">
+        <Label htmlFor="instock" className="text-xs font-semibold text-[#16201A]">
           {lang === "hi" ? "केवल उपलब्ध सामान" : "In stock only"}
         </Label>
       </div>
@@ -252,7 +254,7 @@ function Shop() {
       <Button
         variant="outline"
         size="sm"
-        className="w-full rounded-lg text-xs border-[#E8E4DA]"
+        className="w-full rounded-lg text-xs border-[#E5E0D5] hover:bg-[#FAF8F2]"
         onClick={() => void navigate({ search: {} })}
       >
         {lang === "hi" ? "सभी फिल्टर हटाएं" : "Clear All Filters"}
@@ -263,16 +265,16 @@ function Shop() {
   return (
     <div className="container-page py-6 sm:py-8 pb-36 overflow-x-hidden">
       {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E8E4DA] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E0D5] pb-4">
         <div>
-          <h1 className="font-sans text-2xl font-bold text-[#1F2924]">
+          <h1 className="font-sans text-2xl font-bold text-[#16201A]">
             {activeCategory
               ? getCategoryName(activeCategory.name, activeCategory.slug)
               : lang === "hi"
                 ? "सभी किराना सामान"
                 : "All Groceries"}
           </h1>
-          <p className="text-xs text-[#6B746F] mt-0.5">
+          <p className="text-xs text-[#5A655F] mt-0.5">
             {lang === "hi"
               ? `कुल ${results.length} उत्पाद उपलब्ध हैं`
               : `Showing ${results.length} items`}
@@ -286,14 +288,14 @@ function Shop() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full text-xs lg:hidden border-[#E8E4DA] text-[#145A45]"
+                className="rounded-lg text-xs lg:hidden border-[#E5E0D5] text-[#0F4A38] bg-white"
               >
                 <Filter className="mr-1.5 size-3.5 text-[#145A45]" /> {lang === "hi" ? "फिल्टर" : "Filter"}
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-5 bg-[#FAF8F2]">
               <SheetHeader className="mb-4 pr-10 text-left">
-                <SheetTitle className="text-base font-bold text-[#145A45]">
+                <SheetTitle className="text-base font-bold text-[#0F4A38]">
                   {lang === "hi" ? "किराना फिल्टर" : "Filter Catalogue"}
                 </SheetTitle>
               </SheetHeader>
@@ -305,7 +307,7 @@ function Shop() {
             value={search.sort ?? "relevance"}
             onValueChange={(v) => update({ sort: v as ShopSearch["sort"] })}
           >
-            <SelectTrigger className="h-9 w-44 rounded-full border-[#E8E4DA] bg-white text-xs text-[#1F2924]">
+            <SelectTrigger className="h-9 w-44 rounded-lg border-[#E5E0D5] bg-white text-xs text-[#16201A]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -330,9 +332,9 @@ function Shop() {
       </div>
 
       {/* Main Grid: Sidebar Filters + Products */}
-      <div className="mt-6 grid gap-8 lg:grid-cols-[14rem_1fr] items-start">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[14rem_1fr] items-start">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block card-base p-4 border border-[#E8E4DA] bg-white sticky top-20">
+        <aside className="hidden lg:block card-base p-4 border border-[#E5E0D5] bg-white sticky top-20">
           {filters}
         </aside>
 
@@ -345,10 +347,10 @@ function Shop() {
           >
             <button
               onClick={() => update({ category: undefined, subcategory: undefined })}
-              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all ${
+              className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
                 !search.category
                   ? "bg-[#145A45] text-white shadow-2xs"
-                  : "border border-[#E8E4DA] bg-white text-[#1F2924] hover:border-[#145A45]"
+                  : "border border-[#E5E0D5] bg-white text-[#16201A] hover:border-[#145A45]"
               }`}
             >
               <img
@@ -368,16 +370,16 @@ function Shop() {
                 <button
                   key={c.id}
                   onClick={() => update({ category: c.slug, subcategory: undefined })}
-                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
+                  className={`shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
                     search.category === c.slug
                       ? "bg-[#145A45] text-white shadow-2xs"
-                      : "border border-[#E8E4DA] bg-white text-[#1F2924] hover:border-[#145A45]"
+                      : "border border-[#E5E0D5] bg-white text-[#16201A] hover:border-[#145A45]"
                   }`}
                 >
                   <img
                     src={getCategoryThumbnail(c)}
                     alt={c.name}
-                    className="size-4 rounded-full object-cover shrink-0 border border-[#E8E4DA]"
+                    className="size-4 rounded-full object-cover shrink-0 border border-[#E5E0D5]"
                   />
                   <span>{getCategoryName(c.name, c.slug)}</span>
                   {count > 0 && (
@@ -385,7 +387,7 @@ function Shop() {
                       className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
                         search.category === c.slug
                           ? "bg-white/20 text-white font-bold"
-                          : "bg-[#FAF8F2] text-[#6B746F]"
+                          : "bg-[#FAF8F2] text-[#5A655F]"
                       }`}
                     >
                       {count}
@@ -402,11 +404,11 @@ function Shop() {
               ))}
             </div>
           ) : results.length === 0 ? (
-            <div className="card-base p-12 text-center bg-white border border-[#E8E4DA]">
-              <p className="font-sans text-base font-bold text-[#1F2924]">
+            <div className="card-base p-12 text-center bg-white border border-[#E5E0D5]">
+              <p className="font-sans text-base font-bold text-[#16201A]">
                 {lang === "hi" ? "कोई उत्पाद नहीं मिला" : "No products found"}
               </p>
-              <p className="text-xs text-[#6B746F] mt-1">
+              <p className="text-xs text-[#5A655F] mt-1">
                 {lang === "hi"
                   ? "कृपया अलग शब्द खोजें या फिल्टर साफ़ करें।"
                   : "Try adjusting your search terms or filters."}
@@ -414,7 +416,7 @@ function Shop() {
               <Button
                 variant="outline"
                 size="sm"
-                className="mt-4 rounded-full text-xs border-[#E8E4DA] text-[#145A45]"
+                className="mt-4 rounded-lg text-xs border-[#E5E0D5] text-[#0F4A38]"
                 onClick={() => void navigate({ search: {} })}
               >
                 {lang === "hi" ? "फिल्टर साफ़ करें" : "Reset Filters"}

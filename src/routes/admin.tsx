@@ -202,22 +202,22 @@ function AdminPage() {
   if (!isUnlocked && !isAdmin) {
     return (
       <div className="container-page min-h-screen flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-md sm:p-8">
+        <div className="w-full max-w-md rounded-2xl border border-[#E5E0D5] bg-white p-6 shadow-sm sm:p-8">
           <div className="text-center">
-            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA] shadow-xs">
-              <Lock className="size-7" />
+            <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#0F4A38] border border-[#E5E0D5] shadow-2xs">
+              <Lock className="size-7 text-[#145A45]" />
             </div>
-            <h1 className="mt-4 font-sans text-2xl font-bold text-[#1F2924]">
+            <h1 className="mt-4 font-sans text-2xl font-bold text-[#16201A]">
               Store Management Portal
             </h1>
-            <p className="mt-1 text-xs text-[#6B746F]">
+            <p className="mt-1 text-xs text-[#5A655F]">
               Restricted owner authentication for Arun Gopal Traders.
             </p>
           </div>
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#1F2924]">Store Passcode / PIN</label>
+              <label className="text-xs font-bold text-[#16201A]">Store Passcode / PIN</label>
               <Input
                 type="password"
                 required
@@ -225,13 +225,13 @@ function AdminPage() {
                 placeholder="••••"
                 value={adminPin}
                 onChange={(e) => setAdminPin(e.target.value)}
-                className="h-12 rounded-xl text-center font-mono text-xl tracking-widest border-[#E8E4DA] bg-white focus-visible:border-[#145A45]"
+                className="h-12 rounded-lg text-center font-mono text-xl tracking-widest border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
               />
             </div>
 
             <Button
               type="submit"
-              className="h-12 w-full rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-95 transition-all text-sm"
+              className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm"
             >
               Unlock Dashboard <ShieldCheck className="ml-2 size-4" />
             </Button>
@@ -257,7 +257,7 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-[#FAF8F2] overflow-x-hidden">
       {/* Top Admin Header Bar */}
-      <header className="sticky top-0 z-30 border-b border-[#E8E4DA] bg-white/95 backdrop-blur-md shadow-2xs">
+      <header className="sticky top-0 z-30 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md shadow-2xs">
         <div className="container-page flex h-16 items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3">
             {/* Mobile Drawer Trigger */}
@@ -265,19 +265,19 @@ function AdminPage() {
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
               aria-label="Open Admin Navigation"
-              className="flex size-11 items-center justify-center rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] lg:hidden active:scale-95 transition-all"
+              className="flex size-10 items-center justify-center rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#16201A] lg:hidden active:scale-95 transition-all"
             >
               <LayoutDashboard className="size-5 text-[#145A45]" />
             </button>
 
-            <span className="hidden sm:grid size-10 place-items-center rounded-xl bg-[#145A45] font-sans text-base font-bold text-white shadow-2xs">
+            <span className="hidden sm:grid size-9 place-items-center rounded-lg bg-[#145A45] font-sans text-base font-bold text-white shadow-2xs">
               🌾
             </span>
             <div>
-              <h2 className="font-sans font-bold text-sm sm:text-base leading-tight text-[#1F2924]">
+              <h2 className="font-sans font-bold text-sm sm:text-base leading-tight text-[#16201A]">
                 Arun Gopal Traders Admin
               </h2>
-              <span className="text-[11px] text-[#6B746F] hidden sm:inline">
+              <span className="text-[11px] text-[#5A655F] hidden sm:inline">
                 Store Control &amp; Inventory Center
               </span>
             </div>
@@ -288,7 +288,7 @@ function AdminPage() {
               type="button"
               onClick={refreshAllData}
               title="Refresh Data"
-              className="flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-full border border-[#E8E4DA] bg-white px-3.5 text-xs font-semibold text-[#1F2924] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs"
+              className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-white px-3 text-xs font-semibold text-[#16201A] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs"
             >
               <RefreshCw className="size-3.5 text-[#145A45]" />
               <span className="hidden sm:inline">Refresh Data</span>
@@ -296,7 +296,7 @@ function AdminPage() {
 
             <Link
               to="/"
-              className="hidden md:flex h-11 min-w-[44px] items-center justify-center rounded-full border border-[#E8E4DA] bg-white px-3.5 text-xs font-semibold text-[#145A45] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs gap-1"
+              className="hidden md:flex h-9 items-center justify-center rounded-lg border border-[#E5E0D5] bg-white px-3 text-xs font-semibold text-[#145A45] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs gap-1"
             >
               <Store className="size-3.5" /> <span>View Store</span> <ExternalLink className="size-3" />
             </Link>
@@ -305,7 +305,7 @@ function AdminPage() {
               type="button"
               onClick={handleLock}
               title="Lock Admin Portal"
-              className="flex h-11 min-w-[44px] items-center justify-center gap-1.5 rounded-full border border-red-200 bg-red-50/70 px-3.5 text-xs font-bold text-red-700 hover:bg-red-100 active:scale-95 transition-all shadow-2xs"
+              className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50/70 px-3 text-xs font-bold text-red-700 hover:bg-red-100 active:scale-95 transition-all shadow-2xs"
             >
               <LogOut className="size-3.5" />
               <span className="hidden sm:inline">Lock</span>
@@ -321,21 +321,21 @@ function AdminPage() {
             className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileDrawerOpen(false)}
           />
-          <div className="relative flex w-80 max-w-[85vw] flex-col bg-white border-r border-[#E8E4DA] p-5 shadow-2xl z-10">
-            <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-4">
+          <div className="relative flex w-80 max-w-[85vw] flex-col bg-white border-r border-[#E5E0D5] p-5 shadow-2xl z-10">
+            <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-4">
               <div className="flex items-center gap-2">
                 <span className="grid size-8 place-items-center rounded-lg bg-[#145A45] text-white font-bold text-sm">
                   🌾
                 </span>
                 <div>
-                  <h3 className="font-bold text-sm text-[#145A45]">Admin Portal</h3>
-                  <p className="text-[10px] text-[#6B746F]">Arun Gopal Traders</p>
+                  <h3 className="font-bold text-sm text-[#0F4A38]">Admin Portal</h3>
+                  <p className="text-[10px] text-[#5A655F]">Arun Gopal Traders</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
-                className="flex size-9 items-center justify-center rounded-lg border border-[#E8E4DA] text-[#6B746F]"
+                className="flex size-9 items-center justify-center rounded-lg border border-[#E5E0D5] text-[#5A655F]"
               >
                 ✕
               </button>
@@ -355,10 +355,10 @@ function AdminPage() {
                       if (tab.id !== "orders") setSelectedOrder(null);
                       setMobileDrawerOpen(false);
                     }}
-                    className={`flex w-full min-h-[44px] items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                    className={`flex w-full min-h-[40px] items-center justify-between rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
                       isActive
                         ? "bg-[#145A45] text-white shadow-xs font-bold"
-                        : "text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#1F2924]"
+                        : "text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#16201A]"
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
@@ -368,10 +368,10 @@ function AdminPage() {
 
                     {tab.id === "orders" && pendingOrdersCount > 0 ? (
                       <span
-                        className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
+                        className={`grid size-5 place-items-center rounded-md text-[10px] font-bold ${
                           isActive
-                            ? "bg-[#E3B341] text-[#1F2924]"
-                            : "bg-[#E3B341]/30 text-[#1F2924]"
+                            ? "bg-[#E3B341] text-[#16201A]"
+                            : "bg-[#E3B341]/30 text-[#16201A]"
                         }`}
                       >
                         {pendingOrdersCount}
@@ -382,18 +382,18 @@ function AdminPage() {
               })}
             </nav>
 
-            <div className="border-t border-[#E8E4DA] pt-4 space-y-2">
+            <div className="border-t border-[#E5E0D5] pt-4 space-y-2">
               <Link
                 to="/"
                 onClick={() => setMobileDrawerOpen(false)}
-                className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] px-3 text-xs font-bold text-[#145A45]"
+                className="flex w-full min-h-[40px] items-center justify-center gap-2 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-3 text-xs font-bold text-[#0F4A38]"
               >
                 <Store className="size-4" /> View Customer Store
               </Link>
               <button
                 type="button"
                 onClick={handleLock}
-                className="flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 text-xs font-bold text-red-700"
+                className="flex w-full min-h-[40px] items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 text-xs font-bold text-red-700"
               >
                 <LogOut className="size-4" /> Lock Admin Portal
               </button>
@@ -417,16 +417,16 @@ function AdminPage() {
                   setActiveTab(tab.id);
                   if (tab.id !== "orders") setSelectedOrder(null);
                 }}
-                className={`shrink-0 flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all shadow-2xs ${
+                className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all shadow-2xs ${
                   isActive
                     ? "bg-[#145A45] text-white"
-                    : "border border-[#E8E4DA] bg-white text-[#6B746F] hover:text-[#1F2924]"
+                    : "border border-[#E5E0D5] bg-white text-[#5A655F] hover:text-[#16201A]"
                 }`}
               >
                 <Icon className="size-3.5" />
                 <span>{tab.label.split(" ")[0]}</span>
                 {tab.id === "orders" && pendingOrdersCount > 0 ? (
-                  <span className="rounded-full bg-[#E3B341] px-1.5 py-0.2 text-[9px] font-black text-[#1F2924]">
+                  <span className="rounded-md bg-[#E3B341] px-1.5 py-0.2 text-[9px] font-black text-[#16201A]">
                     {pendingOrdersCount}
                   </span>
                 ) : null}
@@ -437,7 +437,7 @@ function AdminPage() {
 
         <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
           {/* Desktop Sidebar Navigation */}
-          <aside className="hidden lg:block rounded-3xl border border-[#E8E4DA] bg-white p-3 shadow-xs lg:sticky lg:top-24 h-fit">
+          <aside className="hidden lg:block rounded-2xl border border-[#E5E0D5] bg-white p-3 shadow-xs lg:sticky lg:top-24 h-fit">
             <nav className="space-y-1">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
@@ -450,10 +450,10 @@ function AdminPage() {
                       setActiveTab(tab.id);
                       if (tab.id !== "orders") setSelectedOrder(null);
                     }}
-                    className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all ${
+                    className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
                         ? "bg-[#145A45] text-white shadow-xs font-bold"
-                        : "text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#1F2924]"
+                        : "text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#16201A]"
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
@@ -463,10 +463,10 @@ function AdminPage() {
 
                     {tab.id === "orders" && pendingOrdersCount > 0 ? (
                       <span
-                        className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
+                        className={`grid size-5 place-items-center rounded-md text-[10px] font-bold ${
                           isActive
-                            ? "bg-[#E3B341] text-[#1F2924]"
-                            : "bg-[#E3B341]/30 text-[#1F2924]"
+                            ? "bg-[#E3B341] text-[#16201A]"
+                            : "bg-[#E3B341]/30 text-[#16201A]"
                         }`}
                       >
                         {pendingOrdersCount}
@@ -477,7 +477,7 @@ function AdminPage() {
               })}
             </nav>
 
-            <div className="mt-6 border-t border-[#E8E4DA] pt-4 px-2 text-[11px] text-[#6B746F]">
+            <div className="mt-6 border-t border-[#E5E0D5] pt-4 px-2 text-[11px] text-[#5A655F]">
               📍 Maharajganj, Uttar Pradesh
               <br />
               📞 +91 6388354988

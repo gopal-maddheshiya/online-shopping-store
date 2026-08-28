@@ -475,30 +475,30 @@ function AccountPage() {
       <div className="container-page py-6 sm:py-10 max-w-lg mx-auto space-y-5">
         {/* Header Title */}
         <div className="text-center space-y-1">
-          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#DCEBDD] text-[#145A45] border border-[#145A45]/20 shadow-2xs">
-            <User className="size-6" />
+          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/20 shadow-2xs">
+            <User className="size-6 text-[#0F4A38]" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#1F2924]">
+          <h1 className="text-xl sm:text-2xl font-black text-[#16201A]">
             {lang === "hi" ? "ग्राहक सेवा एवं खाता पोर्टल" : "Customer Account & Orders"}
           </h1>
-          <p className="text-xs text-[#6B746F]">
+          <p className="text-xs text-[#5A655F]">
             {lang === "hi"
               ? "लाइव डिलीवरी ट्रैक करें, पिछला राशन दोबारा मंगाएं और अपने ऑर्डर देखें"
               : "Track live delivery, reorder groceries and manage your account"}
           </p>
         </div>
 
-        {/* 1. ⭐ TOP PROMINENT CARD: Instant Guest Order Tracking (Above the Fold) */}
-        <div className="rounded-3xl border-2 border-[#145A45] bg-[#FAF8F2] p-5 sm:p-6 shadow-sm">
+        {/* 1. Instant Guest Order Tracking */}
+        <div className="rounded-2xl border border-[#145A45] bg-[#FAF8F2] p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2.5 mb-3">
-            <span className="grid size-8 place-items-center rounded-full bg-[#145A45] text-white shrink-0">
+            <span className="grid size-8 place-items-center rounded-lg bg-[#145A45] text-white shrink-0">
               <Package className="size-4" />
             </span>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-[#1F2924]">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#16201A]">
                 {lang === "hi" ? "📦 बिना लॉगिन लाइव ऑर्डर ट्रैक करें" : "📦 Instant Guest Order Tracking"}
               </h2>
-              <p className="text-[11px] text-[#6B746F]">
+              <p className="text-[11px] text-[#5A655F]">
                 {lang === "hi" ? "ऑर्डर नंबर या 10 अंकों का मोबाइल नंबर डालें" : "Enter Order # (e.g. AGT-1024) or 10-digit mobile"}
               </p>
             </div>
@@ -506,18 +506,18 @@ function AccountPage() {
 
           <form onSubmit={handleGuestTrack} className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#6B746F]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#5A655F]" />
               <Input
                 type="text"
                 placeholder={lang === "hi" ? "उदा. AGT-1024 या 9876543210" : "e.g. AGT-1024 or 9876543210"}
                 value={guestTrackInput}
                 onChange={(e) => setGuestTrackInput(e.target.value)}
-                className="h-11 sm:h-12 pl-10 rounded-2xl border-[#E8E4DA] bg-white font-medium text-xs sm:text-sm text-[#1F2924] shadow-2xs focus-visible:ring-[#145A45]"
+                className="h-11 pl-10 rounded-lg border-[#E5E0D5] bg-white font-medium text-xs sm:text-sm text-[#16201A] shadow-2xs focus-visible:ring-[#145A45]"
               />
             </div>
             <Button
               type="submit"
-              className="w-full h-11 sm:h-12 rounded-full bg-[#145A45] text-white font-bold text-xs sm:text-sm shadow-md hover:bg-[#0E4333] active:scale-98 transition-all flex items-center justify-center gap-2"
+              className="w-full h-11 rounded-lg bg-[#145A45] text-white font-bold text-xs sm:text-sm shadow-xs hover:bg-[#0A3628] active:scale-98 transition-all flex items-center justify-center gap-2"
             >
               <Search className="size-4 text-[#E3B341]" />
               <span>{lang === "hi" ? "ट्रैक लाइव स्टेटस (Track Order) →" : "Track Live Status →"}</span>
@@ -528,34 +528,34 @@ function AccountPage() {
         {/* Divider */}
         <div className="relative flex items-center justify-center py-1">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#E8E4DA]" />
+            <div className="w-full border-t border-[#E5E0D5]" />
           </div>
-          <span className="relative bg-[#FAF8F2] px-4 text-[11px] font-bold text-[#6B746F] uppercase tracking-wider rounded-full border border-[#E8E4DA]">
+          <span className="relative bg-[#FAF8F2] px-4 text-[11px] font-bold text-[#5A655F] uppercase tracking-wider rounded-md border border-[#E5E0D5]">
             {lang === "hi" ? "या पूरा ऑर्डर इतिहास देखें (Sign In)" : "OR SIGN IN FOR FULL HISTORY"}
           </span>
         </div>
 
         {/* 2. Full Account Login Card */}
-        <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold text-[#1F2924] flex items-center gap-1.5">
+            <h3 className="text-xs sm:text-sm font-bold text-[#16201A] flex items-center gap-1.5">
               <User className="size-4 text-[#145A45]" />
               <span>{lang === "hi" ? "अपना खाता खोलें" : "Sign In to Account"}</span>
             </h3>
-            <span className="text-[10px] font-semibold text-[#145A45] bg-[#DCEBDD] px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-[#0F4A38] bg-[#E6EFE8] px-2.5 py-0.5 rounded-md">
               {lang === "hi" ? "1-क्लिक रीऑर्डर" : "1-Click Reorder"}
             </span>
           </div>
 
-          <div className="flex rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 text-xs font-semibold">
+          <div className="flex rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-1 text-xs font-semibold">
             <button
               onClick={() => {
                 setAuthMode("phone");
                 setOtpSent(false);
                 setOtpCode("");
               }}
-              className={`flex-1 rounded-lg py-2 transition-all ${
-                authMode === "phone" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
+              className={`flex-1 rounded-md py-1.5 transition-all ${
+                authMode === "phone" ? "bg-white text-[#0F4A38] font-bold shadow-xs" : "text-[#5A655F]"
               }`}
             >
               {lang === "hi" ? "📱 मोबाइल OTP लॉगिन" : "📱 Mobile OTP Login"}
@@ -566,8 +566,8 @@ function AccountPage() {
                 setOtpSent(false);
                 setOtpCode("");
               }}
-              className={`flex-1 rounded-lg py-2 transition-all ${
-                authMode === "email" ? "bg-white text-[#145A45] font-bold shadow-xs" : "text-[#6B746F]"
+              className={`flex-1 rounded-md py-1.5 transition-all ${
+                authMode === "email" ? "bg-white text-[#0F4A38] font-bold shadow-xs" : "text-[#5A655F]"
               }`}
             >
               {lang === "hi" ? "✉️ ईमेल OTP / पासवर्ड" : "✉️ Email OTP / Password"}
@@ -577,8 +577,8 @@ function AccountPage() {
           {otpSent ? (
             /* STEP 2: VERIFY OTP SCREEN */
             <form onSubmit={handleVerifyOtp} className="space-y-4 animate-in fade-in duration-200">
-              <div className="rounded-2xl bg-[#DCEBDD]/40 border border-[#145A45]/20 p-3.5 text-center">
-                <p className="text-xs font-bold text-[#145A45]">
+              <div className="rounded-xl bg-[#E6EFE8]/50 border border-[#145A45]/20 p-3 text-center">
+                <p className="text-xs font-bold text-[#0F4A38]">
                   {authMode === "phone"
                     ? (lang === "hi" ? `+91 ${loginPhone} पर 6-अंकों का OTP भेजा गया` : `6-digit OTP sent to +91 ${loginPhone}`)
                     : (lang === "hi" ? `${authEmail} पर 6-अंकों का OTP भेजा गया` : `6-digit OTP sent to ${authEmail}`)}
@@ -586,14 +586,14 @@ function AccountPage() {
                 <button
                   type="button"
                   onClick={() => setOtpSent(false)}
-                  className="mt-1 text-[11px] font-semibold text-[#145A45] underline hover:text-[#0E4333]"
+                  className="mt-1 text-[11px] font-semibold text-[#145A45] underline hover:text-[#0A3628]"
                 >
                   {lang === "hi" ? "नंबर / ईमेल बदलें" : "Change Number / Email"}
                 </button>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="otp-input" className="text-xs font-semibold text-[#1F2924]">
+                <Label htmlFor="otp-input" className="text-xs font-semibold text-[#16201A]">
                   {lang === "hi" ? "6 अंकों का OTP दर्ज करें" : "Enter 6-Digit OTP"}
                 </Label>
                 <Input
@@ -605,14 +605,14 @@ function AccountPage() {
                   placeholder="••••••"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                  className="h-12 rounded-xl text-center font-mono text-xl tracking-widest border-[#E8E4DA] bg-white focus-visible:border-[#145A45]"
+                  className="h-11 rounded-lg text-center font-mono text-xl tracking-widest border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isVerifyingOtp || otpCode.length < 4}
-                className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all"
+                className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
               >
                 <CheckCircle2 className="mr-2 size-4" />
                 {isVerifyingOtp
@@ -622,7 +622,7 @@ function AccountPage() {
 
               <div className="text-center pt-1">
                 {countdown > 0 ? (
-                  <p className="text-xs text-[#6B746F] flex items-center justify-center gap-1">
+                  <p className="text-xs text-[#5A655F] flex items-center justify-center gap-1">
                     <Clock className="size-3" />
                     {lang === "hi" ? `दोबारा OTP भेजें (${countdown}s)` : `Resend OTP in ${countdown}s`}
                   </p>
@@ -644,11 +644,11 @@ function AccountPage() {
             /* STEP 1: PHONE INPUT SCREEN */
             <form onSubmit={handleSendOtp} className="space-y-3">
               <div className="space-y-1">
-                <Label htmlFor="login-phone" className="text-xs font-semibold text-[#1F2924]">
+                <Label htmlFor="login-phone" className="text-xs font-semibold text-[#16201A]">
                   {lang === "hi" ? "10 अंकों का मोबाइल नंबर डालें" : "Enter 10-Digit Mobile Number"}
                 </Label>
-                <div className="flex rounded-xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20 bg-white">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#6B746F] rounded-l-xl border-r border-[#E8E4DA]">
+                <div className="flex rounded-lg border border-[#E5E0D5] focus-within:ring-1 focus-within:ring-[#145A45] bg-white">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E5E0D5]">
                     +91
                   </span>
                   <Input
@@ -659,29 +659,29 @@ function AccountPage() {
                     placeholder="9876543210"
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-l-none rounded-r-xl focus-visible:ring-0 text-xs sm:text-sm font-semibold"
+                    className="border-0 rounded-l-none rounded-r-lg focus-visible:ring-0 text-xs sm:text-sm font-semibold"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="login-name" className="text-xs font-semibold text-[#1F2924]">
+                <Label htmlFor="login-name" className="text-xs font-semibold text-[#16201A]">
                   {lang === "hi" ? "आपका नाम" : "Your Name"}{" "}
-                  <span className="text-[#6B746F] font-normal">({lang === "hi" ? "वैकल्पिक" : "Optional"})</span>
+                  <span className="text-[#5A655F] font-normal">({lang === "hi" ? "वैकल्पिक" : "Optional"})</span>
                 </Label>
                 <Input
                   id="login-name"
                   placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                   value={loginName}
                   onChange={(e) => setLoginName(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
+                  className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isSendingOtp || loginPhone.length !== 10}
-                className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all"
+                className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
               >
                 {isSendingOtp
                   ? (lang === "hi" ? "OTP भेजा जा रहा है..." : "Sending OTP…")
@@ -694,7 +694,7 @@ function AccountPage() {
               {!usePasswordInstead ? (
                 <form onSubmit={handleSendOtp} className="space-y-3">
                   <div className="space-y-1">
-                    <Label htmlFor="auth-email" className="text-xs font-semibold text-[#1F2924]">
+                    <Label htmlFor="auth-email" className="text-xs font-semibold text-[#16201A]">
                       {lang === "hi" ? "ईमेल आईडी दर्ज करें" : "Enter Email Address"}
                     </Label>
                     <Input
@@ -704,14 +704,14 @@ function AccountPage() {
                       placeholder="name@example.com"
                       value={authEmail}
                       onChange={(e) => setAuthEmail(e.target.value)}
-                      className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
+                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
                     />
                   </div>
 
                   <Button
                     type="submit"
                     disabled={isSendingOtp || !authEmail.trim()}
-                    className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all"
+                    className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
                   >
                     {isSendingOtp
                       ? (lang === "hi" ? "OTP भेजा जा रहा है..." : "Sending OTP…")
@@ -731,7 +731,7 @@ function AccountPage() {
               ) : (
                 <form onSubmit={handleEmailSignIn} className="space-y-3">
                   <div className="space-y-1">
-                    <Label htmlFor="auth-email-pwd" className="text-xs font-semibold text-[#1F2924]">
+                    <Label htmlFor="auth-email-pwd" className="text-xs font-semibold text-[#16201A]">
                       {lang === "hi" ? "ईमेल आईडी" : "Email Address"}
                     </Label>
                     <Input
@@ -741,12 +741,12 @@ function AccountPage() {
                       placeholder="name@example.com"
                       value={authEmail}
                       onChange={(e) => setAuthEmail(e.target.value)}
-                      className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
+                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="auth-pwd" className="text-xs font-semibold text-[#1F2924]">
+                    <Label htmlFor="auth-pwd" className="text-xs font-semibold text-[#16201A]">
                       {lang === "hi" ? "पासवर्ड" : "Password"}
                     </Label>
                     <Input
@@ -756,7 +756,7 @@ function AccountPage() {
                       placeholder="••••••••"
                       value={authPassword}
                       onChange={(e) => setAuthPassword(e.target.value)}
-                      className="rounded-xl border-[#E8E4DA] bg-white text-xs sm:text-sm"
+                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
                     />
                   </div>
 

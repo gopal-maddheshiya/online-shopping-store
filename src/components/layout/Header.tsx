@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Languages,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,12 +84,12 @@ export function Header() {
 
   return (
     <>
-      {/* 1. Top Local Announcement Bar */}
-      <div className="border-b border-[#E8E4DA] bg-[#145A45] text-white">
+      {/* 1. Top Announcement Bar */}
+      <div className="border-b border-[#145A45]/30 bg-[#0F4A38] text-white">
         <div className="container-page flex items-center justify-between py-1.5 text-xs gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="flex size-2 shrink-0 rounded-full bg-[#E3B341] animate-pulse" />
-            <p className="font-medium tracking-wide text-white/95 text-[11px] sm:text-xs truncate">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex size-2 shrink-0 rounded-full bg-[#E3B341]" />
+            <p className="font-medium tracking-wide text-white/90 text-[11px] sm:text-xs truncate">
               <span className="hidden md:inline">
                 {lang === "hi"
                   ? "महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी • "
@@ -100,15 +101,15 @@ export function Header() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 text-xs font-medium shrink-0">
-            {/* Language Switcher Pill */}
-            <div className="flex items-center rounded-full bg-black/20 border border-white/20 p-0.5 shadow-2xs">
+          <div className="flex items-center gap-2.5 sm:gap-4 text-xs font-medium shrink-0">
+            {/* Language Switcher */}
+            <div className="flex items-center rounded-md bg-black/20 border border-white/20 p-0.5 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setLang("en")}
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-all ${
+                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${
                   lang === "en"
-                    ? "bg-white text-[#145A45] shadow-2xs"
+                    ? "bg-white text-[#0F4A38] shadow-2xs"
                     : "text-white/80 hover:text-white"
                 }`}
               >
@@ -117,56 +118,56 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setLang("hi")}
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold transition-all ${
+                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${
                   lang === "hi"
-                    ? "bg-white text-[#145A45] shadow-2xs"
+                    ? "bg-white text-[#0F4A38] shadow-2xs"
                     : "text-white/80 hover:text-white"
                 }`}
               >
-                🇮🇳 हिन्दी
+                हिन्दी
               </button>
             </div>
 
             <span className="hidden sm:inline opacity-30 text-white">|</span>
 
-            <span className="hidden sm:flex items-center gap-1.5 text-white/90">
+            <span className="hidden sm:flex items-center gap-1.5 text-white/90 text-[11px]">
               <Clock className="size-3 text-[#E3B341]" /> {formatStatus(status)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Compact Sticky Main Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E8E4DA] bg-[#FFFFFF]/95 backdrop-blur-md">
+      {/* 2. Main Sticky Header */}
+      <header className="sticky top-0 z-40 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md">
         <div className="container-page flex h-16 items-center justify-between gap-4 md:gap-8">
-          {/* Mobile Menu Trigger & Wordmark */}
+          {/* Mobile Menu & Brand */}
           <div className="flex items-center gap-3">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <button
                   aria-label="Open menu"
-                  className="flex size-9 items-center justify-center rounded-lg text-[#1F2924] hover:bg-[#FAF8F2] lg:hidden"
+                  className="flex size-9 items-center justify-center rounded-lg text-[#16201A] hover:bg-[#FAF8F2] lg:hidden transition-colors"
                 >
                   <Menu className="size-5" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0 text-[#1F2924]">
-                <SheetHeader className="border-b border-[#E8E4DA] bg-[#FAF8F2] p-4.5 pr-14 text-left">
+              <SheetContent side="left" className="w-80 p-0 text-[#16201A]">
+                <SheetHeader className="border-b border-[#E5E0D5] bg-[#FAF8F2] p-4.5 pr-14 text-left">
                   <div className="flex flex-col gap-1">
-                    <SheetTitle className="text-lg font-black text-[#145A45] tracking-tight flex items-center gap-1.5">
+                    <SheetTitle className="text-lg font-black text-[#0F4A38] tracking-tight flex items-center gap-1.5">
                       <span className="text-base">🌾</span> Arun Gopal Traders
                     </SheetTitle>
-                    <p className="text-[11px] text-[#6B746F]">
+                    <p className="text-[11px] text-[#5A655F]">
                       Ramnagar, Adda Bazar Road, Maharajganj, UP
                     </p>
 
-                    {/* Mobile Lang Selector Pill */}
-                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-full bg-white border border-[#E8E4DA] p-0.5 shadow-2xs">
+                    {/* Mobile Lang Selector */}
+                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-lg bg-white border border-[#E5E0D5] p-0.5 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => setLang("en")}
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#6B746F]"
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${
+                          lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
                         }`}
                       >
                         English
@@ -174,32 +175,32 @@ export function Header() {
                       <button
                         type="button"
                         onClick={() => setLang("hi")}
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#6B746F]"
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${
+                          lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
                         }`}
                       >
-                        🇮🇳 हिन्दी
+                        हिन्दी
                       </button>
                     </div>
                   </div>
                 </SheetHeader>
                 <div className="flex flex-col h-full overflow-y-auto">
-                  <nav className="flex flex-col gap-1 p-4 border-b border-[#E8E4DA]">
+                  <nav className="flex flex-col gap-0.5 p-3 border-b border-[#E5E0D5]">
                     {navLinks.map((n) => (
                       <Link
                         key={n.to}
                         to={n.to}
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
+                        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span>{n.label}</span>
-                        <ChevronRight className="size-4 text-[#6B746F]" />
+                        <ChevronRight className="size-4 text-[#5A655F]" />
                       </Link>
                     ))}
                     <Link
                       to="/wishlist"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2] transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <Heart className="size-4 text-[#145A45]" /> {t.wishlist}
@@ -213,7 +214,7 @@ export function Header() {
                     <Link
                       to="/account"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2]"
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold hover:bg-[#FAF8F2] transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <User className="size-4 text-[#145A45]" />{" "}
@@ -224,9 +225,9 @@ export function Header() {
                     </Link>
                   </nav>
 
-                  {/* All Categories Directory in Hamburger */}
-                  <div className="p-4 flex-1">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#6B746F] mb-2 px-1">
+                  {/* Categories in Hamburger */}
+                  <div className="p-3.5 flex-1">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#5A655F] mb-2 px-1">
                       {lang === "hi" ? "सभी किराना श्रेणियां" : "All Categories"}
                     </p>
                     <div className="flex flex-col gap-1">
@@ -236,12 +237,12 @@ export function Header() {
                           to="/shop"
                           search={{ category: c.slug } as never}
                           onClick={() => setMenuOpen(false)}
-                          className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#1F2924] hover:bg-[#DCEBDD]/40 hover:text-[#145A45] transition-colors"
+                          className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#16201A] hover:bg-[#E6EFE8] hover:text-[#0F4A38] transition-colors"
                         >
                           <img
                             src={getCategoryThumbnail(c)}
                             alt={c.name}
-                            className="size-6 rounded-lg object-cover border border-[#E8E4DA] shrink-0"
+                            className="size-6 rounded object-cover border border-[#E5E0D5] shrink-0"
                           />
                           <span className="line-clamp-1">{getCategoryName(c.name, c.slug)}</span>
                         </Link>
@@ -249,10 +250,10 @@ export function Header() {
                     </div>
                   </div>
 
-                  <div className="p-4 border-t border-[#E8E4DA] bg-[#FAF8F2] mt-auto">
+                  <div className="p-4 border-t border-[#E5E0D5] bg-[#FAF8F2] mt-auto">
                     <a
                       href={telHref(cleanPhone)}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-[#145A45] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-colors"
+                      className="flex items-center justify-center gap-2 rounded-lg bg-[#145A45] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] transition-colors"
                     >
                       <Phone className="size-4" /> {t.callStore} ({storePhone})
                     </a>
@@ -261,20 +262,20 @@ export function Header() {
               </SheetContent>
             </Sheet>
 
-            {/* Brand Logo / Wordmark */}
+            {/* Brand Logo */}
             <Link to="/" className="flex flex-col group shrink-0">
-              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#145A45] flex items-center gap-1.5 whitespace-nowrap">
+              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#0F4A38] flex items-center gap-1.5 whitespace-nowrap">
                 <span className="text-base sm:text-lg">🌾</span> Arun Gopal Traders
               </span>
-              <span className="hidden md:block text-[11px] font-medium text-[#6B746F] group-hover:text-[#145A45] transition-colors whitespace-nowrap">
+              <span className="hidden md:block text-[11px] font-medium text-[#5A655F] group-hover:text-[#145A45] transition-colors whitespace-nowrap">
                 {lang === "hi"
-                  ? "रामनगर, महाराजगंज • शुद्ध किराना एवं दैनिक राशन"
+                  ? "रामनगर, महाराजगंज • शुद्ध किराना एवं राशन"
                   : "Maharajganj • Trusted Local Kirana Store"}
               </span>
             </Link>
           </div>
 
-          {/* Desktop Center: Search Bar with Live Suggestions Dropdown */}
+          {/* Desktop Search Bar */}
           <div className="relative hidden w-full max-w-lg md:block">
             <form onSubmit={submitSearch} className="relative w-full">
               <Input
@@ -285,12 +286,22 @@ export function Header() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder={t.searchPlaceholder}
-                className="h-10 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
+                className="h-10 w-full rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#16201A] placeholder:text-[#5A655F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
                 aria-label="Search grocery items"
               />
+              {term.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setTerm("")}
+                  className="absolute top-0 right-8 flex h-10 w-6 items-center justify-center text-[#5A655F] hover:text-[#16201A]"
+                  aria-label="Clear search"
+                >
+                  <X className="size-3.5" />
+                </button>
+              ) : null}
               <button
                 type="submit"
-                className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#6B746F] hover:text-[#145A45]"
+                className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#5A655F] hover:text-[#145A45]"
                 aria-label="Submit search"
               >
                 <Search className="size-4" />
@@ -300,12 +311,12 @@ export function Header() {
             {/* Desktop Autocomplete Popover */}
             {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
               <div
-                className="absolute top-12 left-0 right-0 z-50 rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-xl space-y-3"
+                className="absolute top-12 left-0 right-0 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-3"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 {matchingCategories.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
                       {lang === "hi" ? "श्रेणियां" : "Categories"}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -318,7 +329,7 @@ export function Header() {
                             setTerm("");
                             void navigate({ to: "/shop", search: { category: c.slug } as never });
                           }}
-                          className="flex items-center gap-1.5 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] px-2.5 py-1 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD] transition-colors"
+                          className="flex items-center gap-1.5 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2.5 py-1 text-xs font-semibold text-[#0F4A38] hover:bg-[#E6EFE8] transition-colors"
                         >
                           <img
                             src={getCategoryThumbnail(c)}
@@ -334,10 +345,10 @@ export function Header() {
 
                 {matchingProducts.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
                       {lang === "hi" ? "उत्पाद" : "Products"}
                     </p>
-                    <div className="divide-y divide-[#E8E4DA]/60">
+                    <div className="divide-y divide-[#E5E0D5]/60">
                       {matchingProducts.map((p) => (
                         <button
                           key={p.id}
@@ -353,13 +364,13 @@ export function Header() {
                             <img
                               src={getProductImage(p)}
                               alt={p.name}
-                              className="size-7 rounded object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5 shrink-0"
+                              className="size-7 rounded object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-0.5 shrink-0"
                             />
-                            <span className="text-xs font-bold text-[#1F2924] truncate">
+                            <span className="text-xs font-bold text-[#16201A] truncate">
                               {getProductName(p.name, p.slug)}
                             </span>
                           </div>
-                          <span className="text-xs font-bold text-[#145A45] shrink-0">
+                          <span className="text-xs font-bold text-[#0F4A38] shrink-0">
                             {inr(p.product_variants?.[0]?.price ?? 0)}
                           </span>
                         </button>
@@ -368,7 +379,7 @@ export function Header() {
                   </div>
                 )}
 
-                <div className="border-t border-[#E8E4DA] pt-1.5 text-center">
+                <div className="border-t border-[#E5E0D5] pt-1.5 text-center">
                   <button
                     type="button"
                     onClick={(e) => submitSearch(e)}
@@ -383,36 +394,36 @@ export function Header() {
             )}
           </div>
 
-          {/* Desktop Right Actions: Call, Account, Wishlist, Cart */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Quick Call Store Button */}
+          {/* Desktop Right Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick Call Button */}
             <a
               href={telHref(cleanPhone)}
-              className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] px-3.5 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD] hover:border-[#145A45] transition-colors shadow-2xs"
+              className="hidden lg:flex items-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-3 py-1.5 text-xs font-semibold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-colors shadow-2xs"
             >
               <Phone className="size-3.5 text-[#145A45]" />
               <span>{storePhone}</span>
             </a>
 
-            {/* My Account */}
+            {/* Account Link */}
             <Link
               to="/account"
-              className="hidden sm:flex items-center gap-1 rounded-full p-2 text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
+              className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
               title={t.myAccount}
             >
-              <User className="size-5" />
-              <span className="text-xs font-medium">
+              <User className="size-4 text-[#145A45]" />
+              <span>
                 {profile?.full_name ? profile.full_name.split(" ")[0] : t.login.split(" / ")[0]}
               </span>
             </Link>
 
-            {/* Wishlist */}
+            {/* Wishlist Link */}
             <Link
               to="/wishlist"
-              className="relative hidden sm:flex items-center justify-center rounded-full p-2 text-[#6B746F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
+              className="relative hidden sm:flex items-center justify-center rounded-lg p-2 text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
               title={t.wishlist}
             >
-              <Heart className="size-5" />
+              <Heart className="size-4.5" />
               {wishlistCount > 0 && (
                 <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-[#145A45] text-[10px] font-bold text-white">
                   {wishlistCount}
@@ -423,23 +434,25 @@ export function Header() {
             {/* Cart Button */}
             <Link
               to="/cart"
-              className="flex items-center gap-2 rounded-full bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] active:scale-95 transition-all"
+              className="flex items-center gap-2 rounded-lg bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] active:scale-95 transition-all"
             >
               <div className="relative flex items-center">
                 <ShoppingBag className="size-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#E3B341] text-[10px] font-extrabold text-[#1F2924]">
+                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[10px] font-extrabold text-white shadow-2xs">
                     {cartCount}
                   </span>
                 )}
               </div>
-              <span className="hidden sm:inline">{cartCount > 0 ? inr(subtotal) : t.cart}</span>
+              <span className="hidden sm:inline font-black">
+                {cartCount > 0 ? inr(subtotal) : t.cart}
+              </span>
             </Link>
           </div>
         </div>
 
-        {/* Mobile Search Bar Row with Dropdown */}
-        <div className="border-t border-[#E8E4DA] bg-white px-4 py-2.5 md:hidden relative">
+        {/* Mobile Search Bar Row */}
+        <div className="border-t border-[#E5E0D5] bg-white px-3 py-2 md:hidden relative">
           <form onSubmit={submitSearch} className="relative w-full">
             <Input
               value={term}
@@ -449,26 +462,35 @@ export function Header() {
               }}
               onFocus={() => setShowSuggestions(true)}
               placeholder={t.searchPlaceholder}
-              className="h-9 w-full rounded-full border border-[#E8E4DA] bg-[#FAF8F2] pr-9 pl-3.5 text-xs text-[#1F2924] placeholder:text-[#6B746F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45]"
+              className="h-9 w-full rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] pr-8 pl-3 text-xs text-[#16201A] placeholder:text-[#5A655F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45]"
               aria-label="Mobile search"
             />
+            {term.trim() ? (
+              <button
+                type="button"
+                onClick={() => setTerm("")}
+                className="absolute top-0 right-7 flex h-9 w-5 items-center justify-center text-[#5A655F]"
+              >
+                <X className="size-3" />
+              </button>
+            ) : null}
             <button
               type="submit"
-              className="absolute top-0 right-0 flex h-9 w-9 items-center justify-center text-[#6B746F]"
+              className="absolute top-0 right-0 flex h-9 w-8 items-center justify-center text-[#5A655F]"
             >
-              <Search className="size-4" />
+              <Search className="size-3.5" />
             </button>
           </form>
 
           {/* Mobile Autocomplete Suggestions */}
           {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
             <div
-              className="absolute top-12 left-4 right-4 z-50 rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-xl space-y-2.5"
+              className="absolute top-12 left-3 right-3 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-2.5"
               onMouseDown={(e) => e.preventDefault()}
             >
               {matchingCategories.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B746F] px-1 mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
                     {lang === "hi" ? "श्रेणियां" : "Categories"}
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -481,7 +503,7 @@ export function Header() {
                           setTerm("");
                           void navigate({ to: "/shop", search: { category: c.slug } as never });
                         }}
-                        className="flex items-center gap-1 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#145A45]"
+                        className="flex items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#0F4A38]"
                       >
                         <span>{getCategoryName(c.name, c.slug)}</span>
                       </button>
@@ -491,7 +513,7 @@ export function Header() {
               )}
 
               {matchingProducts.length > 0 && (
-                <div className="divide-y divide-[#E8E4DA]/60">
+                <div className="divide-y divide-[#E5E0D5]/60">
                   {matchingProducts.map((p) => (
                     <button
                       key={p.id}
@@ -507,13 +529,13 @@ export function Header() {
                         <img
                           src={getProductImage(p)}
                           alt={p.name}
-                          className="size-6 rounded object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5 shrink-0"
+                          className="size-6 rounded object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-0.5 shrink-0"
                         />
-                        <span className="text-xs font-bold text-[#1F2924] truncate">
+                        <span className="text-xs font-bold text-[#16201A] truncate">
                           {getProductName(p.name, p.slug)}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-[#145A45] shrink-0">
+                      <span className="text-xs font-bold text-[#0F4A38] shrink-0">
                         {inr(p.product_variants?.[0]?.price ?? 0)}
                       </span>
                     </button>
@@ -521,7 +543,7 @@ export function Header() {
                 </div>
               )}
 
-              <div className="border-t border-[#E8E4DA] pt-1 text-center">
+              <div className="border-t border-[#E5E0D5] pt-1 text-center">
                 <button
                   type="button"
                   onClick={(e) => submitSearch(e)}

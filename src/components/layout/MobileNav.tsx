@@ -68,19 +68,19 @@ export function MobileNav() {
 
   return (
     <>
-      {/* 1. Mobile Floating Quick Action Buttons (Above Bottom Bar) */}
+      {/* 1. Mobile Floating Quick Action Buttons */}
       <div className="fixed right-3 bottom-16 z-40 flex items-center gap-2 lg:hidden pointer-events-auto">
         {/* Call Support Button */}
         <button
           onClick={() => setOrderModalOpen(true)}
           aria-label="Order on Phone"
-          className="flex items-center gap-1.5 rounded-full border border-[#E8E4DA] bg-[#FFFFFF]/95 backdrop-blur-md px-3 py-2 text-[11px] font-bold text-[#145A45] shadow-lg active:scale-95 transition-transform"
+          className="flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-white/95 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold text-[#0F4A38] shadow-md active:scale-95 transition-transform"
         >
-          <PhoneCall className="size-3.5 text-[#145A45]" />
+          <PhoneCall className="size-3.5 text-[#0F4A38]" />
           <span>{lang === "hi" ? "फोन ऑर्डर" : "Call Order"}</span>
         </button>
 
-        {/* WhatsApp Quick Order Floating Action Button (FAB) */}
+        {/* WhatsApp Quick Order FAB */}
         <a
           href={waHref(
             storeWhatsApp,
@@ -89,9 +89,9 @@ export function MobileNav() {
           target="_blank"
           rel="noreferrer"
           aria-label="Order on WhatsApp"
-          className="flex items-center gap-1.5 rounded-full bg-[#145A45] text-white px-3.5 py-2 text-[11px] font-extrabold shadow-xl hover:bg-[#0E4333] active:scale-95 transition-all border border-white/20 backdrop-blur-xs"
+          className="flex items-center gap-1.5 rounded-full bg-[#145A45] text-white px-3.5 py-1.5 text-[11px] font-bold shadow-lg hover:bg-[#0A3628] active:scale-95 transition-all border border-white/20 backdrop-blur-xs"
         >
-          <MessageCircle className="size-4 fill-white text-[#145A45]" />
+          <MessageCircle className="size-3.5 fill-white text-[#145A45]" />
           <span>{lang === "hi" ? "व्हाट्सएप लिस्ट" : "WhatsApp List"}</span>
         </a>
       </div>
@@ -99,7 +99,7 @@ export function MobileNav() {
       {/* 2. Mobile App Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed right-0 bottom-0 left-0 z-50 border-t border-[#E8E4DA] bg-white/95 backdrop-blur-lg lg:hidden pb-[calc(env(safe-area-inset-bottom)+0.25rem)] shadow-lg"
+        className="fixed right-0 bottom-0 left-0 z-50 border-t border-[#E5E0D5] bg-white/95 backdrop-blur-lg lg:hidden pb-[calc(env(safe-area-inset-bottom)+0.25rem)] shadow-lg"
       >
         <div className="grid grid-cols-5 items-center justify-around h-14">
           {links.map((link) => {
@@ -117,25 +117,25 @@ export function MobileNav() {
                 search={link.search as never}
                 className={`relative flex flex-col items-center justify-center gap-0.5 h-full text-[10px] transition-all min-h-[44px] ${
                   isActive
-                    ? "text-[#145A45] font-extrabold"
-                    : "text-[#6B746F] hover:text-[#1F2924] font-medium"
+                    ? "text-[#0F4A38] font-black"
+                    : "text-[#5A655F] hover:text-[#16201A] font-medium"
                 }`}
               >
                 <div className="relative flex items-center justify-center">
                   <div
-                    className={`rounded-full p-1 transition-all ${
-                      isActive ? "bg-[#DCEBDD]" : "bg-transparent"
+                    className={`rounded-lg p-1 transition-all ${
+                      isActive ? "bg-[#E6EFE8]" : "bg-transparent"
                     }`}
                   >
-                    <Icon className={`size-5 ${isActive ? "text-[#145A45]" : "text-[#6B746F]"}`} />
+                    <Icon className={`size-4.5 ${isActive ? "text-[#0F4A38]" : "text-[#5A655F]"}`} />
                   </div>
                   {link.badge && link.badge > 0 ? (
-                    <span className="absolute -top-1 -right-2 grid size-4 place-items-center rounded-full bg-[#E3B341] text-[9px] font-black text-[#1F2924] shadow-2xs">
+                    <span className="absolute -top-1 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[9px] font-black text-white shadow-2xs">
                       {link.badge > 9 ? "9+" : link.badge}
                     </span>
                   ) : null}
                 </div>
-                <span>{link.label}</span>
+                <span className="truncate max-w-[58px] text-center">{link.label}</span>
               </Link>
             );
           })}

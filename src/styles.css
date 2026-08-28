@@ -4,21 +4,22 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Arun Gopal Traders - Fresh Indian Kirana & Natural Local Grocery Design System
+ * Arun Gopal Traders - Premium Modern Grocery Retail Design System
  * 
- * Aesthetic: Clean neighbourhood grocery store, fresh grains, natural packaging, warm sunlight.
+ * Aesthetic: Established, authentic Indian grocery store with contemporary retail polish.
  * 
- * Color Palette:
- * - Primary (Deep Forest Green): #145A45 - Freshness, trust, authenticity
- * - Primary Hover: #0E4333
- * - Secondary (Sage Green): #DCEBDD - Natural, calm
- * - Background (Warm Rice/Cream): #FAF8F2 - Warm paper / grocery store feel
- * - White / Card Surface: #FFFFFF
- * - Border (Soft warm border): #E8E4DA
- * - Text Primary (Deep Charcoal): #1F2924
- * - Text Secondary / Muted: #6B746F
- * - Accent (Warm Haldi/Saffron - 5% max): #E3B341
- * - Success Green: #15803D
+ * Color Hierarchy:
+ * - Primary (Deep Forest Green): #0F4A38 / #145A45 - Trust, freshness, quality
+ * - Primary Hover: #0A3628
+ * - Primary Light (Sage): #E6EFE8 - Soft green surface/tint
+ * - Background (Warm Ivory/Off-white): #FAF8F2 - Warm, comforting retail backdrop
+ * - Surface / Card: #FFFFFF - Crisp product cards and panels
+ * - Border (Subtle Neutral): #E5E0D5 - Low contrast 1px structure
+ * - Text Primary: #16201A - Authoritative deep charcoal
+ * - Text Secondary: #5A655F - Clean readable muted text
+ * - Accent (Saffron / Gold - Restrained 5%): #D97706 / #E3B341 - Offers, ratings & badges
+ * - Success: #15803D
+ * - Destructive: #DC2626
  */
 
 @theme inline {
@@ -27,71 +28,72 @@
   --font-display:
     "Plus Jakarta Sans", "Noto Sans Devanagari", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
+  --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
-  --radius-2xl: 22px;
-  --radius-3xl: 28px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
   --radius-full: 9999px;
 
   --color-background: #faf8f2;
-  --color-foreground: #1f2924;
+  --color-foreground: #16201a;
   --color-card: #ffffff;
-  --color-card-foreground: #1f2924;
+  --color-card-foreground: #16201a;
   --color-popover: #ffffff;
-  --color-popover-foreground: #1f2924;
+  --color-popover-foreground: #16201a;
   --color-primary: #145a45;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #dcebdd;
-  --color-secondary-foreground: #145a45;
-  --color-muted: #f2eee5;
-  --color-muted-foreground: #6b746f;
-  --color-accent: #dcebdd;
-  --color-accent-foreground: #145a45;
-  --color-saffron: #e3b341;
-  --color-saffron-foreground: #1f2924;
+  --color-secondary: #e6efe8;
+  --color-secondary-foreground: #0f4a38;
+  --color-muted: #f3efe6;
+  --color-muted-foreground: #5a655f;
+  --color-accent: #e6efe8;
+  --color-accent-foreground: #0f4a38;
+  --color-saffron: #d97706;
+  --color-saffron-foreground: #ffffff;
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
   --color-success: #15803d;
   --color-success-foreground: #ffffff;
-  --color-warning: #e3b341;
-  --color-warning-foreground: #1f2924;
-  --color-border: #e8e4da;
-  --color-input: #e8e4da;
+  --color-warning: #d97706;
+  --color-warning-foreground: #ffffff;
+  --color-border: #e5e0d5;
+  --color-input: #e5e0d5;
   --color-ring: #145a45;
   --color-ring-offset-background: #faf8f2;
   --color-surface: #ffffff;
 
-  --shadow-card: 0 1px 3px 0 rgba(31, 41, 36, 0.03), 0 1px 2px -1px rgba(31, 41, 36, 0.02);
-  --shadow-hover: 0 8px 24px -4px rgba(20, 90, 69, 0.08), 0 2px 6px -1px rgba(20, 90, 69, 0.03);
+  --shadow-card: 0 1px 3px 0 rgba(22, 32, 26, 0.04), 0 1px 2px -1px rgba(22, 32, 26, 0.02);
+  --shadow-hover: 0 6px 18px -3px rgba(15, 74, 56, 0.08), 0 2px 6px -2px rgba(15, 74, 56, 0.04);
 }
 
 :root {
   --radius: 0.75rem;
   --background: #faf8f2;
-  --foreground: #1f2924;
+  --foreground: #16201a;
   --surface: #ffffff;
   --card: #ffffff;
-  --card-foreground: #1f2924;
+  --card-foreground: #16201a;
   --popover: #ffffff;
-  --popover-foreground: #1f2924;
+  --popover-foreground: #16201a;
   --primary: #145a45;
   --primary-foreground: #ffffff;
-  --secondary: #dcebdd;
-  --secondary-foreground: #145a45;
-  --muted: #f2eee5;
-  --muted-foreground: #6b746f;
-  --accent: #dcebdd;
-  --accent-foreground: #145a45;
+  --secondary: #e6efe8;
+  --secondary-foreground: #0f4a38;
+  --muted: #f3efe6;
+  --muted-foreground: #5a655f;
+  --accent: #e6efe8;
+  --accent-foreground: #0f4a38;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --success: #15803d;
   --success-foreground: #ffffff;
-  --warning: #e3b341;
-  --warning-foreground: #1f2924;
-  --border: #e8e4da;
-  --input: #e8e4da;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --border: #e5e0d5;
+  --input: #e5e0d5;
   --ring: #145a45;
 }
 
@@ -107,11 +109,12 @@
 
   body {
     background-color: #faf8f2;
-    color: #1f2924;
+    color: #16201a;
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1,
@@ -122,7 +125,7 @@
   h6 {
     font-family: var(--font-display);
     font-weight: 700;
-    color: #1f2924;
+    color: #16201a;
     letter-spacing: -0.02em;
   }
 }
@@ -143,67 +146,62 @@
   }
 }
 
+/* Premium Structured Cards */
 .card-base {
   background-color: #ffffff;
-  border: 1px solid #e8e4da;
-  border-radius: var(--radius-xl);
-  box-shadow:
-    0 1px 3px 0 rgba(31, 41, 36, 0.03),
-    0 1px 2px -1px rgba(31, 41, 36, 0.02);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e5e0d5;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .card-base:hover {
-  border-color: #d3cdc0;
-  box-shadow:
-    0 8px 20px -4px rgba(20, 90, 69, 0.07),
-    0 3px 8px -2px rgba(20, 90, 69, 0.03);
+  border-color: #d0c9bc;
+  box-shadow: var(--shadow-hover);
+}
+
+.card-interactive {
+  background-color: #ffffff;
+  border: 1px solid #e5e0d5;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-interactive:hover {
+  border-color: rgba(20, 90, 69, 0.3);
+  box-shadow: var(--shadow-hover);
   transform: translateY(-2px);
 }
 
-/* Glass & Header Classes */
-.glass-nav {
-  background: rgba(255, 255, 255, 0.92);
+/* Header & Navigation Utilities */
+.header-glass {
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid #e8e4da;
+  border-bottom: 1px solid #e5e0d5;
 }
 
-.glass-dark {
-  background: #145a45;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+/* Badge Utilities */
+.badge-offer {
+  background-color: #d97706;
+  color: #ffffff;
+  font-weight: 700;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid #e8e4da;
-}
-
-/* Natural Kirana Badges */
-.bg-saffron-badge {
-  background-color: #e3b341;
-  color: #1f2924;
-}
-
-.bg-forest-badge {
+.badge-forest {
   background-color: #145a45;
   color: #ffffff;
+  font-weight: 700;
 }
 
-.bg-sage-badge {
-  background-color: #dcebdd;
-  color: #145a45;
+.badge-sage {
+  background-color: #e6efe8;
+  color: #0f4a38;
+  font-weight: 600;
 }
 
-.text-gradient-emerald {
-  background: linear-gradient(135deg, #18483b 0%, #047857 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Clean category scrollbar hiding */
+/* Clean Category Scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -212,24 +210,7 @@
   scrollbar-width: none;
 }
 
-/* Shimmer / Pulse Effects */
-@keyframes pulse-subtle {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.03);
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2.5s infinite ease-in-out;
-}
-
-/* Core Grocery Grid System - Guaranteed Responsive Multi-Column */
+/* Grocery Catalog Grid Layout */
 .grocery-grid {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -242,14 +223,14 @@
 @media (min-width: 640px) {
   .grocery-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.875rem !important;
+    gap: 1rem !important;
   }
 }
 
 @media (min-width: 1024px) {
   .grocery-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 1rem !important;
+    gap: 1.125rem !important;
   }
 }
 

@@ -63,13 +63,13 @@ function WishlistPage() {
   if (items.length === 0) {
     return (
       <div className="container-page py-20 text-center">
-        <div className="mx-auto grid size-20 place-items-center rounded-full bg-[#FAF8F2] border border-[#E8E4DA] text-[#145A45]">
-          <Heart className="size-10" />
+        <div className="mx-auto grid size-20 place-items-center rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5] text-[#145A45]">
+          <Heart className="size-10 text-[#145A45]" />
         </div>
-        <h1 className="mt-4 font-sans text-2xl font-bold tracking-tight text-[#1F2924] sm:text-3xl">
+        <h1 className="mt-4 font-sans text-2xl font-bold tracking-tight text-[#16201A] sm:text-3xl">
           {lang === "hi" ? "आपकी पसंदीदा सूची खाली है" : "Your Wishlist is Empty"}
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-xs sm:text-sm text-[#6B746F]">
+        <p className="mx-auto mt-2 max-w-md text-xs sm:text-sm text-[#5A655F]">
           {lang === "hi"
             ? "सामानों पर दिल (Heart) के आइकन पर क्लिक करके अपने पसंदीदा सामान यहां सहेजें।"
             : "Save your favorite groceries, spices, and daily essentials by clicking the heart icon on any product."}
@@ -77,7 +77,7 @@ function WishlistPage() {
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button
             asChild
-            className="rounded-full bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
+            className="rounded-lg bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
           >
             <Link to="/shop">
               {lang === "hi" ? "किराना सामान देखें →" : "Browse Store Catalogue →"}
@@ -90,12 +90,12 @@ function WishlistPage() {
 
   return (
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E4DA] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E0D5] pb-4">
         <div>
-          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#1F2924]">
+          <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#16201A]">
             {lang === "hi" ? "मेरी पसंदीदा सूची" : "My Wishlist"}
           </h1>
-          <p className="mt-1 text-xs text-[#6B746F]">
+          <p className="mt-1 text-xs text-[#5A655F]">
             {items.length} {lang === "hi" ? "सहेजे गए सामान" : "saved items"}
           </p>
         </div>
@@ -103,7 +103,7 @@ function WishlistPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={handleMoveAllToCart}
-            className="rounded-full bg-[#145A45] gap-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333]"
+            className="rounded-lg bg-[#145A45] gap-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
           >
             <ShoppingBag className="size-4" />{" "}
             {lang === "hi" ? "सभी को कार्ट में जोड़ें" : "Move All to Cart"}
@@ -112,7 +112,7 @@ function WishlistPage() {
             onClick={clear}
             variant="outline"
             size="icon"
-            className="rounded-full border-[#E8E4DA] text-[#6B746F] hover:text-red-600 hover:bg-white"
+            className="rounded-lg border-[#E5E0D5] text-[#5A655F] hover:text-red-600 hover:bg-white"
             aria-label="Clear wishlist"
           >
             <Trash2 className="size-4" />
