@@ -1253,80 +1253,78 @@ function AccountPage() {
   const customerPhone = user.phone || profile?.phone || "";
 
   return (
-    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
+    <div className="container-page py-4 sm:py-6 pb-24 lg:pb-10">
       {/* Customer Header Card */}
-      <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-7 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
-            <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-xl sm:text-2xl font-bold text-white shadow-2xs shrink-0 mt-0.5 sm:mt-0">
+      <div className="rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-5 shadow-2xs">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-[#145A45] font-sans text-lg sm:text-xl font-black text-white shadow-2xs shrink-0">
               {customerName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-sans text-xl sm:text-2xl font-black text-[#16201A]">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <h1 className="font-sans text-base sm:text-lg font-black text-[#16201A] truncate">
                   {customerName}
                 </h1>
-                <span className="rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
+                <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#145A45] shrink-0">
                   {lang === "hi" ? "सत्यापित ग्राहक" : "Verified Customer"}
                 </span>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-[#5A655F] mt-1.5">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-[#5A655F] mt-0.5">
                 {customerPhone && (
-                  <span className="flex items-center gap-1.5 font-semibold text-[#16201A] shrink-0">
-                    <Phone className="size-3.5 text-[#145A45] shrink-0" /> {customerPhone}
+                  <span className="flex items-center gap-1 font-semibold text-[#16201A] shrink-0">
+                    <Phone className="size-3 text-[#145A45]" /> {customerPhone}
                   </span>
                 )}
                 {profile?.email && (
-                  <span className="flex items-center gap-1.5 text-[#5A655F]">
-                    <span className="hidden sm:inline text-[#A8B2AC]">•</span>
-                    <Mail className="size-3.5 text-[#145A45] shrink-0" />
-                    <span className="font-medium text-[#16201A] break-all">{profile.email}</span>
+                  <span className="flex items-center gap-1 text-[#5A655F] truncate max-w-full">
+                    <span className="text-[#A8B2AC]">•</span>
+                    <Mail className="size-3 text-[#145A45] shrink-0" />
+                    <span className="truncate">{profile.email}</span>
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              size="sm"
-              className="rounded-xl gap-1.5 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors cursor-pointer"
-            >
-              <LogOut className="size-3.5" />
-              <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
-            </Button>
-          </div>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="rounded-xl gap-1 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors cursor-pointer h-8 px-2.5 shrink-0"
+          >
+            <LogOut className="size-3.5" />
+            <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
+          </Button>
         </div>
       </div>
 
       {/* Customer Tabs */}
-      <div className="mt-6">
-        <Tabs defaultValue="orders" className="space-y-6">
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-none">
-            <TabsList className="inline-flex sm:grid sm:grid-cols-4 h-auto min-h-[48px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 gap-1.5 shadow-2xs">
+      <div className="mt-4">
+        <Tabs defaultValue="orders" className="space-y-4">
+          <div className="overflow-x-auto pb-1.5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-none">
+            <TabsList className="inline-flex sm:grid sm:grid-cols-4 h-auto min-h-[44px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 gap-1 shadow-2xs">
               <TabsTrigger
                 value="orders"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
               >
                 <Package className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
               </TabsTrigger>
               <TabsTrigger
                 value="buy-again"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
               >
                 <RotateCcw className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
               </TabsTrigger>
               <TabsTrigger
                 value="addresses"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
               >
                 <MapPin className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
               >
                 <User className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
               </TabsTrigger>
