@@ -272,3 +272,13 @@
   width: 100% !important;
   box-sizing: border-box !important;
 }
+
+/* Hide scrollbar for clean horizontal tabs */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

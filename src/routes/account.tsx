@@ -1182,38 +1182,37 @@ function AccountPage() {
       {/* Customer Header Card */}
       <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-7 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 sm:gap-4">
-            <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-xl sm:text-2xl font-bold text-white shadow-2xs">
+          <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
+            <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-xl sm:text-2xl font-bold text-white shadow-2xs shrink-0 mt-0.5 sm:mt-0">
               {customerName.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-sans text-xl sm:text-2xl font-black text-[#16201A]">
                   {customerName}
                 </h1>
-                <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#145A45]">
+                <span className="rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
                   {lang === "hi" ? "सत्यापित ग्राहक" : "Verified Customer"}
                 </span>
               </div>
-              <p className="flex items-center gap-2 text-xs text-[#5A655F] mt-0.5">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-[#5A655F] mt-1.5">
                 {customerPhone && (
-                  <span className="flex items-center gap-1 font-semibold text-[#16201A]">
-                    <Phone className="size-3 text-[#145A45]" /> {customerPhone}
+                  <span className="flex items-center gap-1.5 font-semibold text-[#16201A] shrink-0">
+                    <Phone className="size-3.5 text-[#145A45] shrink-0" /> {customerPhone}
                   </span>
                 )}
                 {profile?.email && (
-                  <>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Mail className="size-3 text-[#145A45]" /> {profile.email}
-                    </span>
-                  </>
+                  <span className="flex items-center gap-1.5 text-[#5A655F]">
+                    <span className="hidden sm:inline text-[#A8B2AC]">•</span>
+                    <Mail className="size-3.5 text-[#145A45] shrink-0" />
+                    <span className="font-medium text-[#16201A] break-all">{profile.email}</span>
+                  </span>
                 )}
-              </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
             <Button
               onClick={handleLogout}
               variant="outline"
@@ -1230,38 +1229,40 @@ function AccountPage() {
       {/* Customer Tabs */}
       <div className="mt-6">
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid h-11 w-full grid-cols-5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
-            <TabsTrigger
-              value="orders"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
-            >
-              <Package className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
-            </TabsTrigger>
-            <TabsTrigger
-              value="buy-again"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
-            >
-              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="addresses"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
-            >
-              <MapPin className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="wishlist"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
-            >
-              <Heart className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="profile"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
-            >
-              <User className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-none">
+            <TabsList className="inline-flex sm:grid sm:grid-cols-5 h-auto min-h-[48px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 gap-1.5 shadow-2xs">
+              <TabsTrigger
+                value="orders"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+              >
+                <Package className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
+              </TabsTrigger>
+              <TabsTrigger
+                value="buy-again"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+              >
+                <RotateCcw className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="addresses"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+              >
+                <MapPin className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="wishlist"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+              >
+                <Heart className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="profile"
+                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
+              >
+                <User className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* TAB 1: MY ORDERS (Isolated strictly by auth.uid()) */}
           <TabsContent value="orders" className="space-y-4">
