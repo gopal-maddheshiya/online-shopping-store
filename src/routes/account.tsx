@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Plus,
   Trash2,
+  Pencil,
   Lock,
   Eye,
   EyeOff,
@@ -123,6 +124,16 @@ function AccountPage() {
   const [newLandmark, setNewLandmark] = useState("");
   const [newPin, setNewPin] = useState("273303");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  // Edit Address State
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [editRecipientName, setEditRecipientName] = useState("");
+  const [editRecipientPhone, setEditRecipientPhone] = useState("");
+  const [editHouse, setEditHouse] = useState("");
+  const [editArea, setEditArea] = useState("");
+  const [editLandmark, setEditLandmark] = useState("");
+  const [editPin, setEditPin] = useState("273303");
+  const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
 
   // Sync profile details into form
   useEffect(() => {
@@ -673,6 +684,70 @@ function AccountPage() {
       toast.error(msg);
     } finally {
       setIsSavingAddress(false);
+    }
+  }
+
+  function startEditAddress(addr: CustomerAddress) {
+    setEditingAddressId(addr.id);
+    setEditRecipientName(addr.name || "");
+    setEditRecipientPhone(addr.phone || "");
+    setEditHouse(addr.house || "");
+    setEditArea(addr.area || "");
+    setEditLandmark(addr.landmark || "");
+    setEditPin(addr.pincode || "273303");
+    setShowAddAddress(false);
+  }
+
+  function cancelEditAddress() {
+    setEditingAddressId(null);
+  }
+
+  async function handleUpdateAddress(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !editingAddressId) return;
+
+    if (!editHouse.trim() || !editArea.trim()) {
+      toast.error(
+        lang === "hi"
+          ? "कृपया मकान/दुकान नंबर और मोहल्ला/सड़क दर्ज करें"
+          : "Please provide house/shop number and area",
+      );
+      return;
+    }
+
+    setIsUpdatingAddress(true);
+    try {
+      const recipientName = editRecipientName.trim() || profile?.full_name || "Self";
+      const recipientPhone = editRecipientPhone.trim() || user.phone || "";
+
+      const { error } = await supabase
+        .from("addresses")
+        .update({
+          name: recipientName,
+          phone: recipientPhone,
+          house: editHouse.trim(),
+          area: editArea.trim(),
+          landmark: editLandmark.trim() || null,
+          city: "Maharajganj",
+          pincode: editPin.trim() || "273303",
+        })
+        .eq("id", editingAddressId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      await loadAddresses(user.id);
+      setEditingAddressId(null);
+      toast.success(
+        lang === "hi"
+          ? "डिलीवरी पता सफलतापूर्वक अपडेट हो गया!"
+          : "Delivery address updated successfully!",
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to update address";
+      toast.error(msg);
+    } finally {
+      setIsUpdatingAddress(false);
     }
   }
 
@@ -1230,7 +1305,7 @@ function AccountPage() {
       <div className="mt-6">
         <Tabs defaultValue="orders" className="space-y-6">
           <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-none">
-            <TabsList className="inline-flex sm:grid sm:grid-cols-5 h-auto min-h-[48px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 gap-1.5 shadow-2xs">
+            <TabsList className="inline-flex sm:grid sm:grid-cols-4 h-auto min-h-[48px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1.5 gap-1.5 shadow-2xs">
               <TabsTrigger
                 value="orders"
                 className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
@@ -1248,12 +1323,6 @@ function AccountPage() {
                 className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
               >
                 <MapPin className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="wishlist"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-4 py-2.5 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
-              >
-                <Heart className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
@@ -1554,31 +1623,156 @@ function AccountPage() {
                 {addresses.map((addr) => (
                   <div
                     key={addr.id}
-                    className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs flex flex-col justify-between space-y-2"
+                    className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs flex flex-col justify-between space-y-3"
                   >
-                    <div>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
-                          <MapPin className="size-4 text-[#145A45]" />
-                          <span>{addr.name}</span>
-                          <span className="font-normal text-[#5A655F]">({addr.phone})</span>
+                    {editingAddressId === addr.id ? (
+                      <form onSubmit={handleUpdateAddress} className="space-y-3">
+                        <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-2">
+                          <span className="text-xs font-bold text-[#145A45] flex items-center gap-1.5">
+                            <Pencil className="size-3.5" />
+                            {lang === "hi" ? "पता एडिट करें" : "Edit Address"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={cancelEditAddress}
+                            className="text-xs text-[#5A655F] hover:text-[#16201A] cursor-pointer"
+                          >
+                            ✕
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteAddress(addr.id)}
-                          className="text-[#5A655F] hover:text-red-600 p-1 rounded-md transition-colors cursor-pointer"
-                          title="Delete address"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </div>
-                      <p className="mt-2 text-xs leading-relaxed text-[#16201A]">
-                        {addr.house}, {addr.area}
-                        {addr.landmark ? `, लैंडमार्क: ${addr.landmark}` : ""}
-                        <br />
-                        {addr.city}, UP - {addr.pincode || "273303"}
-                      </p>
-                    </div>
+                        <div className="grid gap-2.5 sm:grid-cols-2">
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Name"}
+                            </Label>
+                            <Input
+                              required
+                              placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "Full Name"}
+                              value={editRecipientName}
+                              onChange={(e) => setEditRecipientName(e.target.value)}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "मोबाइल नंबर" : "Mobile Number"}
+                            </Label>
+                            <Input
+                              required
+                              type="tel"
+                              maxLength={10}
+                              placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
+                              value={editRecipientPhone}
+                              onChange={(e) => setEditRecipientPhone(e.target.value.replace(/\D/g, ""))}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "मकान / दुकान नं." : "House / Shop No."}
+                            </Label>
+                            <Input
+                              required
+                              placeholder={lang === "hi" ? "मकान नं." : "House/Shop No."}
+                              value={editHouse}
+                              onChange={(e) => setEditHouse(e.target.value)}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "मोहल्ला / गली / सड़क" : "Area / Road"}
+                            </Label>
+                            <Input
+                              required
+                              placeholder={lang === "hi" ? "मोहल्ला / सड़क" : "Area / Road"}
+                              value={editArea}
+                              onChange={(e) => setEditArea(e.target.value)}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "लैंडमार्क (वैकल्पिक)" : "Landmark (Optional)"}
+                            </Label>
+                            <Input
+                              placeholder={lang === "hi" ? "लैंडमार्क" : "Landmark"}
+                              value={editLandmark}
+                              onChange={(e) => setEditLandmark(e.target.value)}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
+                              {lang === "hi" ? "पिन कोड" : "Pincode"}
+                            </Label>
+                            <Input
+                              placeholder="273303"
+                              value={editPin}
+                              onChange={(e) => setEditPin(e.target.value)}
+                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <Button
+                            type="submit"
+                            disabled={isUpdatingAddress}
+                            size="sm"
+                            className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] text-xs h-8 cursor-pointer"
+                          >
+                            {isUpdatingAddress
+                              ? (lang === "hi" ? "सहेज रहा है..." : "Saving...")
+                              : (lang === "hi" ? "बदलाव सहेजें (Save)" : "Save Changes")}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={cancelEditAddress}
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl border-[#E5E0D5] text-[#5A655F] text-xs h-8 cursor-pointer"
+                          >
+                            {lang === "hi" ? "रद्द करें" : "Cancel"}
+                          </Button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
+                              <MapPin className="size-4 text-[#145A45]" />
+                              <span>{addr.name}</span>
+                              <span className="font-normal text-[#5A655F]">({addr.phone})</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => startEditAddress(addr)}
+                                className="text-[#5A655F] hover:text-[#145A45] hover:bg-[#E6EFE8] p-1.5 rounded-lg transition-colors cursor-pointer"
+                                title="Edit address"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAddress(addr.id)}
+                                className="text-[#5A655F] hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                                title="Delete address"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-xs leading-relaxed text-[#16201A]">
+                            {addr.house}, {addr.area}
+                            {addr.landmark ? `, लैंडमार्क: ${addr.landmark}` : ""}
+                            <br />
+                            {addr.city}, UP - {addr.pincode || "273303"}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1590,32 +1784,6 @@ function AccountPage() {
                     ? "कोई सहेजा गया पता नहीं मिला। ऊपर दिए बटन से नया पता जोड़ें।"
                     : "No saved addresses. Click Add Address to save your location."}
                 </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 4: WISHLIST */}
-          <TabsContent value="wishlist">
-            {wishlistItems.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {wishlistItems.map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
-                <Heart className="mx-auto size-12 text-[#5A655F]" />
-                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
-                  {lang === "hi" ? "विशलिस्ट खाली है" : "Wishlist is empty"}
-                </h3>
-                <p className="mt-1 text-xs text-[#5A655F]">
-                  {lang === "hi"
-                    ? "किसी भी उत्पाद पर दिल (Heart) आइकन दबाकर उसे यहाँ सहेजें।"
-                    : "Tap the heart on any product to save it here for later."}
-                </p>
-                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
-                  <Link to="/shop">{lang === "hi" ? "कैटलॉग देखें" : "Browse Catalogue"}</Link>
-                </Button>
               </div>
             )}
           </TabsContent>
