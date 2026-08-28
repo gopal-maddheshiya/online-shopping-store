@@ -1270,16 +1270,15 @@ function AccountPage() {
                   {lang === "hi" ? "सत्यापित ग्राहक" : "Verified Customer"}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-[#5A655F] mt-0.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5A655F] mt-1">
                 {customerPhone && (
                   <span className="flex items-center gap-1 font-semibold text-[#16201A] shrink-0">
-                    <Phone className="size-3 text-[#145A45]" /> {customerPhone}
+                    <Phone className="size-3.5 text-[#145A45]" /> {customerPhone}
                   </span>
                 )}
                 {profile?.email && (
-                  <span className="flex items-center gap-1 text-[#5A655F] truncate max-w-full">
-                    <span className="text-[#A8B2AC]">•</span>
-                    <Mail className="size-3 text-[#145A45] shrink-0" />
+                  <span className="flex items-center gap-1 font-medium text-[#16201A] truncate max-w-full">
+                    <Mail className="size-3.5 text-[#145A45] shrink-0" />
                     <span className="truncate">{profile.email}</span>
                   </span>
                 )}
