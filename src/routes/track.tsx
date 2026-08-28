@@ -111,13 +111,24 @@ function TrackPage() {
         return { ...prev, ...partial };
       });
 
-      // Refetch full order with updated timeline events
+      // Refetch full order while preserving the latest realtime status
       if (orderNoInput && phoneInput) {
         void fetchOrderForTracking(orderNoInput, phoneInput).then(({ order }) => {
-          if (order) setSearchedOrder(order);
+          if (order) {
+            setSearchedOrder((curr) => {
+              if (!curr) return order;
+              return {
+                ...order,
+                status: partial.status || curr.status || order.status,
+                notes: partial.notes !== undefined ? partial.notes : (curr.notes ?? order.notes),
+                payment_status: partial.payment_status || curr.payment_status || order.payment_status,
+              };
+            });
+          }
         });
       }
     });
+
 
     return unsub;
   }, [searchedOrder?.id, language, orderNoInput, phoneInput]);

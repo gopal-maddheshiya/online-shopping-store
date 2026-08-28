@@ -78,6 +78,27 @@ export async function updateOrderStatus(
   // Always record status in persistent local overrides
   saveLocalStatusOverride(orderId, newStatus, note);
 
+  // Broadcast to all connected customer devices in realtime
+  try {
+    const broadcastChannel = supabase.channel("store-status-broadcast");
+    broadcastChannel.subscribe((subStatus) => {
+      if (subStatus === "SUBSCRIBED") {
+        void broadcastChannel.send({
+          type: "broadcast",
+          event: "STATUS_UPDATE",
+          payload: {
+            orderId,
+            newStatus,
+            note: note || undefined,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+    });
+  } catch {
+    // Non-blocking
+  }
+
   try {
     // 1. Primary: Try secure database procedure
     const { data: rpcData, error: rpcError } = await supabase.rpc(
@@ -143,6 +164,30 @@ export async function updatePaymentStatus(
   saveLocalStatusOverride(orderId, undefined, undefined, paymentStatus);
 
   try {
+    const broadcastChannel = supabase.channel("store-status-broadcast");
+    broadcastChannel.subscribe((subStatus) => {
+      if (subStatus === "SUBSCRIBED") {
+        void broadcastChannel.send({
+          type: "broadcast",
+          event: "PAYMENT_UPDATE",
+          payload: {
+            orderId,
+            paymentStatus,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+    });
+  } catch {
+    // Non-blocking
+  }
+
+  try {
+    await supabase.rpc("admin_update_payment_status" as never, {
+      _order_id: orderId,
+      _payment_status: paymentStatus,
+    } as never);
+
     await supabase
       .from("orders")
       .update({
@@ -158,6 +203,80 @@ export async function updatePaymentStatus(
   }
 }
 
+
+
+/**
+ * Private Realtime Subscription for a specific Order ID
+ * Strictly scoped to that specific order with automatic teardown on unmount
+ */
+export function subscribeToOrderRealtime(
+  orderId: string,
+  onUpdate: (updatedOrder: Partial<Order>) => void
+) {
+  if (!orderId) return () => {};
+
+  // 1. Multi-device realtime broadcast listener
+  const broadcastChannel = supabase
+    .channel("store-status-broadcast")
+    .on("broadcast", { event: "STATUS_UPDATE" }, (payload) => {
+      const data = payload?.payload as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
+      if (data && (data.orderId === orderId || !data.orderId)) {
+        onUpdate({
+          id: orderId,
+          status: data.newStatus,
+          notes: data.note,
+          updated_at: data.updatedAt || new Date().toISOString(),
+        });
+      }
+    })
+    .on("broadcast", { event: "PAYMENT_UPDATE" }, (payload) => {
+      const data = payload?.payload as { orderId?: string; paymentStatus?: string; updatedAt?: string } | undefined;
+      if (data && data.orderId === orderId) {
+        onUpdate({
+          id: orderId,
+          payment_status: data.paymentStatus as never,
+          updated_at: data.updatedAt || new Date().toISOString(),
+        });
+      }
+    })
+    .subscribe();
+
+  // 2. Direct postgres database changes
+  const dbChannel = supabase
+    .channel(`private-order-${orderId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "orders",
+        filter: `id=eq.${orderId}`,
+      },
+      (payload) => {
+        if (payload.new) {
+          onUpdate(payload.new as unknown as Partial<Order>);
+        }
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "order_events",
+        filter: `order_id=eq.${orderId}`,
+      },
+      () => {
+        onUpdate({ id: orderId });
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(broadcastChannel);
+    supabase.removeChannel(dbChannel);
+  };
+}
 
 
 /**
@@ -363,49 +482,4 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
   }
 }
 
-
-/**
- * Private Realtime Subscription for a specific Order ID
- * Strictly scoped to that specific order with automatic teardown on unmount
- */
-export function subscribeToOrderRealtime(
-  orderId: string,
-  onUpdate: (updatedOrder: Partial<Order>) => void
-) {
-  if (!orderId) return () => {};
-
-  const channel = supabase
-    .channel(`private-order-${orderId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "orders",
-        filter: `id=eq.${orderId}`,
-      },
-      (payload) => {
-        if (payload.new) {
-          onUpdate(payload.new as unknown as Partial<Order>);
-        }
-      }
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "order_events",
-        filter: `order_id=eq.${orderId}`,
-      },
-      () => {
-        onUpdate({ id: orderId });
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}
 
