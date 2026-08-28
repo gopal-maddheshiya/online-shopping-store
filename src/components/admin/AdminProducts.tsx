@@ -162,14 +162,14 @@ export function AdminProducts({
       parsedImages.length > 0
         ? parsedImages
         : [
-            {
-              id: `img-${Date.now()}`,
-              url: prod.image_url || "/images/packaged.jpg",
-              type: "front",
-              label: "Front View",
-              sort_order: 0,
-            },
-          ],
+          {
+            id: `img-${Date.now()}`,
+            url: prod.image_url || "/images/packaged.jpg",
+            type: "front",
+            label: "Front View",
+            sort_order: 0,
+          },
+        ],
     );
 
     const existingVars = (prod.product_variants ?? []).map((v) => ({
@@ -569,13 +569,12 @@ export function AdminProducts({
                           {p.brand || "Arun Gopal"}
                         </span>
                         <span
-                          className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${
-                            totalStock === 0
+                          className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${totalStock === 0
                               ? "bg-red-100 text-red-700"
                               : totalStock <= 10
                                 ? "bg-amber-100 text-amber-800"
                                 : "bg-emerald-100 text-emerald-800"
-                          }`}
+                            }`}
                         >
                           {totalStock === 0 ? "Out of Stock" : `${totalStock} in stock`}
                         </span>
@@ -605,11 +604,10 @@ export function AdminProducts({
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#E8E4DA]">
                     <button
                       onClick={() => handleToggleActive(p)}
-                      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 min-h-[36px] text-xs font-bold transition-colors ${
-                        p.is_active
+                      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 min-h-[36px] text-xs font-bold transition-colors ${p.is_active
                           ? "bg-emerald-100 text-emerald-800"
                           : "bg-stone-100 text-stone-600"
-                      }`}
+                        }`}
                     >
                       {p.is_active ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                       {p.is_active ? "Active" : "Hidden"}
@@ -712,13 +710,12 @@ export function AdminProducts({
 
                         <td className="py-3 px-4">
                           <span
-                            className={`rounded-md px-2 py-0.5 font-bold ${
-                              totalStock === 0
+                            className={`rounded-md px-2 py-0.5 font-bold ${totalStock === 0
                                 ? "bg-red-100 text-red-700"
                                 : totalStock <= 10
                                   ? "bg-amber-100 text-amber-800"
                                   : "bg-emerald-100 text-emerald-800"
-                            }`}
+                              }`}
                           >
                             {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
                           </span>
@@ -727,11 +724,10 @@ export function AdminProducts({
                         <td className="py-3 px-4">
                           <button
                             onClick={() => handleToggleActive(p)}
-                            className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${
-                              p.is_active
+                            className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${p.is_active
                                 ? "bg-emerald-100 text-emerald-800"
                                 : "bg-stone-100 text-stone-600"
-                            }`}
+                              }`}
                           >
                             {p.is_active ? (
                               <Eye className="size-3" />
@@ -1009,11 +1005,10 @@ export function AdminProducts({
                   return (
                     <div
                       key={img.id}
-                      className={`rounded-xl bg-white p-3 border transition-all shadow-2xs space-y-2.5 ${
-                        isPrimary
+                      className={`rounded-xl bg-white p-3 border transition-all shadow-2xs space-y-2.5 ${isPrimary
                           ? "border-[#145A45]/50 ring-1 ring-[#145A45]/30 bg-white"
                           : "border-[#E5E0D5]"
-                      }`}
+                        }`}
                     >
                       {/* Image Header: Type, Primary Badge, Actions */}
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E0D5]/60 pb-2">

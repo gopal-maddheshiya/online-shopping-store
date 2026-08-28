@@ -313,4 +313,44 @@
   animation: blinkitSlideUpExit 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Subtle Floating Animations for Hero Grocery Composition */
+@keyframes heroFloatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes heroFloatReverse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.animate-hero-float-1 {
+  animation: heroFloatSlow 5s ease-in-out infinite;
+}
+
+.animate-hero-float-2 {
+  animation: heroFloatReverse 6s ease-in-out infinite;
+}
+
+.animate-hero-float-3 {
+  animation: heroFloatSlow 7s ease-in-out infinite 1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-float-1,
+  .animate-hero-float-2,
+  .animate-hero-float-3 {
+    animation: none !important;
+  }
+}
+
+
 

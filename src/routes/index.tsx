@@ -48,6 +48,7 @@ import {
 import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "@/lib/catalog-data";
 import { telHref, waHref, inr, discountPercent } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
+import { HeroGroceryVisual } from "@/components/home/HeroGroceryVisual";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -61,19 +62,19 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Arun Gopal Traders | Online Grocery Store" },
+      { title: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
       {
         name: "description",
         content:
-          "Buy Chakki Atta, Basmati Rice, Mustard Oil, Spices, Pulses & daily Kirana essentials online or by phone (+91 6388354988) with fast delivery in Maharajganj, UP.",
+          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का सामान।",
       },
       {
         property: "og:title",
-        content: "Arun Gopal Traders | Online Grocery Store",
+        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
       },
       {
         property: "og:description",
-        content: "Pure grocery essentials at genuine prices with doorstep delivery in Maharajganj.",
+        content: "रामनगर, अड्डा बाजार रोड, महाराजगंज की विश्वसनीय स्थानीय किराना दुकान — 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
       },
     ],
   }),
@@ -275,31 +276,31 @@ function PremiumStoreHome() {
           <div className="no-scrollbar flex items-center gap-2.5 sm:gap-3.5 overflow-x-auto px-1 py-1">
             {catLoading
               ? Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 min-w-[5.2rem]">
-                    <Skeleton className="size-14 sm:size-16 rounded-xl" />
-                    <Skeleton className="h-3 w-14" />
-                  </div>
-                ))
+                <div key={i} className="flex flex-col items-center gap-2 min-w-[5.2rem]">
+                  <Skeleton className="size-14 sm:size-16 rounded-xl" />
+                  <Skeleton className="h-3 w-14" />
+                </div>
+              ))
               : parentCategories.map((c) => (
-                  <Link
-                    key={c.id}
-                    to="/shop"
-                    search={{ category: c.slug }}
-                    className="group flex flex-col items-center gap-1.5 min-w-[5.2rem] sm:min-w-[6.2rem] shrink-0 text-center transition-all hover:-translate-y-0.5"
-                  >
-                    <div className="relative flex size-14 sm:size-16 items-center justify-center overflow-hidden rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] p-1 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-sm transition-all">
-                      <img
-                        src={getCategoryThumbnail(c)}
-                        alt={c.name}
-                        loading="lazy"
-                        className="size-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
-                      />
-                    </div>
-                    <span className="text-[11px] sm:text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-1 max-w-[5.8rem]">
-                      {getCategoryName(c.name, c.slug)}
-                    </span>
-                  </Link>
-                ))}
+                <Link
+                  key={c.id}
+                  to="/shop"
+                  search={{ category: c.slug }}
+                  className="group flex flex-col items-center gap-1.5 min-w-[5.2rem] sm:min-w-[6.2rem] shrink-0 text-center transition-all hover:-translate-y-0.5"
+                >
+                  <div className="relative flex size-14 sm:size-16 items-center justify-center overflow-hidden rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] p-1 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-sm transition-all">
+                    <img
+                      src={getCategoryThumbnail(c)}
+                      alt={c.name}
+                      loading="lazy"
+                      className="size-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
+                    />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-1 max-w-[5.8rem]">
+                    {getCategoryName(c.name, c.slug)}
+                  </span>
+                </Link>
+              ))}
           </div>
         </div>
       </section>
@@ -312,21 +313,21 @@ function PremiumStoreHome() {
           <div className="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-[#D97706]/10 blur-3xl" />
 
           {/* Hero Content Grid */}
-          <div className="relative z-10 p-5 sm:p-8 md:p-10 grid gap-6 lg:grid-cols-[1.15fr_1fr] items-center">
+          <div className="relative z-10 p-5 sm:p-8 md:p-10 lg:p-12 grid gap-6 lg:grid-cols-[1fr_1.15fr] items-center">
             {/* Left Column */}
-            <div className="flex flex-col items-start justify-center space-y-3 sm:space-y-4 max-w-xl">
+            <div className="flex flex-col items-start justify-center space-y-3.5 sm:space-y-4.5 max-w-xl">
               {/* Trust Badge */}
-              <div className="inline-flex items-center gap-1.5 rounded-md bg-white/10 border border-white/20 px-3 py-1 text-[11px] sm:text-xs font-bold text-white backdrop-blur-xs">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-white backdrop-blur-xs shadow-2xs">
                 <Sparkles className="size-3.5 text-[#E3B341]" />
                 <span>
                   {lang === "hi"
                     ? "🌿 आपकी भरोसेमंद किराना दुकान"
-                    : "🌿 Your Trusted Neighbourhood Kirana"}
+                    : "🌿 Your Trusted Grocery Store"}
                 </span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl lg:text-[46px] font-extrabold tracking-tight text-white leading-[1.18]">
                 {lang === "hi" ? (
                   <>
                     हर दिन की जरूरत,<br />
@@ -340,29 +341,19 @@ function PremiumStoreHome() {
                 )}
               </h1>
 
-              {/* Supporting Text */}
-              <p className="text-xs sm:text-sm md:text-base text-white/90 leading-relaxed max-w-lg">
+              {/* Supporting Subtext */}
+              <p className="text-xs sm:text-sm md:text-[15px] text-white/90 leading-relaxed max-w-lg">
                 {lang === "hi"
-                  ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का जरूरी सामान — आसान ऑनलाइन ऑर्डर व तेज़ डिलीवरी।"
-                  : "Fresh chakki atta, pulses, mustard oil, spices & household staples with quick doorstep delivery in Maharajganj."}
+                  ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का जरूरी सामान — आसान ऑनलाइन ऑर्डर और तेज़ लोकल डिलीवरी।"
+                  : "Fresh atta, rice, dal, mustard oil, spices & daily essentials — easy online ordering and fast local delivery."}
               </p>
 
-              {/* Free Delivery Offer Pill */}
-              <div className="inline-flex items-center gap-2 rounded-lg bg-black/30 border border-[#E3B341]/40 px-3.5 py-1.5 text-xs font-bold text-[#E3B341] backdrop-blur-xs shadow-2xs">
-                <Truck className="size-4 text-[#E3B341]" />
-                <span>
-                  {lang === "hi"
-                    ? "₹499+ के ऑर्डर पर FREE LOCAL DELIVERY"
-                    : "FREE Home Delivery on Orders ₹499+"}
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-1 flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+              {/* Action Buttons: Primary & Secondary */}
+              <div className="pt-1 flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <Button
                   asChild
                   size="lg"
-                  className="rounded-lg bg-white px-6 sm:px-8 py-3 text-xs sm:text-sm font-black text-[#0F4A38] shadow-md hover:bg-[#FAF8F2] active:scale-95 transition-all"
+                  className="rounded-xl bg-white px-7 sm:px-8 py-3.5 text-xs sm:text-sm font-black text-[#0F4A38] shadow-lg hover:bg-[#FAF8F2] active:scale-95 transition-all cursor-pointer"
                 >
                   <Link to="/shop">
                     <ShoppingBag className="mr-2 size-4 text-[#0F4A38]" />
@@ -373,15 +364,25 @@ function PremiumStoreHome() {
                 <button
                   type="button"
                   onClick={() => setOrderModalOpen(true)}
-                  className="rounded-lg border border-white/40 bg-white/10 px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="rounded-xl border border-white/35 bg-white/10 px-4.5 sm:px-6 py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <PhoneCall className="size-3.5 sm:size-4 text-[#E3B341]" />
-                  <span>{lang === "hi" ? "फोन पर ऑर्डर करें" : "Order by Phone"}</span>
+                  <span>{lang === "hi" ? "☎ फोन पर ऑर्डर करें" : "☎ Order by Phone"}</span>
                 </button>
               </div>
 
+              {/* Delivery USP Pill */}
+              <div className="inline-flex items-center gap-2 rounded-lg bg-black/25 border border-[#E3B341]/35 px-3.5 py-1.5 text-xs font-bold text-[#E3B341] backdrop-blur-xs shadow-2xs">
+                <Truck className="size-3.5 text-[#E3B341]" />
+                <span>
+                  {lang === "hi"
+                    ? "🚚 ₹499+ के ऑर्डर पर FREE LOCAL DELIVERY"
+                    : "🚚 FREE Home Delivery on Orders ₹499+"}
+                </span>
+              </div>
+
               {/* Desktop Micro-Row */}
-              <div className="hidden lg:flex items-center gap-3 pt-2.5 border-t border-white/15 text-[11px] text-white/80 font-medium">
+              <div className="hidden lg:flex items-center gap-3 pt-2 border-t border-white/15 text-[11px] text-white/80 font-medium">
                 <span className="flex items-center gap-1">
                   <Truck className="size-3.5 text-[#E6EFE8]" />{" "}
                   {lang === "hi" ? "30 मिनट होम डिलीवरी" : "30-Min Fast Delivery"}
@@ -399,83 +400,9 @@ function PremiumStoreHome() {
               </div>
             </div>
 
-            {/* Right Column: Product Showcase Composition */}
-            <div className="relative flex items-center justify-center pt-2 lg:pt-0">
-              <div className="relative w-full max-w-sm lg:max-w-md rounded-2xl bg-black/25 backdrop-blur-md p-4 sm:p-5 border border-white/20 shadow-xl flex flex-col items-center">
-                {/* Top Label */}
-                <div className="relative z-10 mb-3 flex items-center gap-1.5 rounded-md bg-white/15 px-3 py-1 text-[10px] sm:text-[11px] font-bold text-white backdrop-blur-md border border-white/20">
-                  <Sparkles className="size-3 text-[#E3B341]" />
-                  <span>
-                    {lang === "hi"
-                      ? "100% शुद्ध ताज़ा किराना राशन"
-                      : "100% Pure Fresh Grocery Staples"}
-                  </span>
-                </div>
-
-                {/* 3-Item Product Showcase Stage */}
-                <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3 items-end w-full pt-1 pb-2">
-                  {/* Fortune Mustard Oil */}
-                  <Link
-                    to="/shop"
-                    search={{ category: "oil-ghee" }}
-                    className="group flex flex-col items-center text-center transition-transform hover:scale-105"
-                  >
-                    <div className="w-full aspect-[3/4] rounded-xl bg-white p-2 shadow-md border border-white/60 flex items-center justify-center">
-                      <img
-                        src="/images/products/fortune-mustard-oil.jpg"
-                        alt="Fortune Mustard Oil"
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-bold text-white mt-1.5 line-clamp-1">
-                      {lang === "hi" ? "सरसों तेल" : "Mustard Oil"}
-                    </span>
-                  </Link>
-
-                  {/* Aashirvaad Chakki Atta */}
-                  <Link
-                    to="/shop"
-                    search={{ category: "flour-atta" }}
-                    className="group flex flex-col items-center text-center z-10 -mx-0.5 transition-transform hover:scale-105"
-                  >
-                    <div className="w-full aspect-[3/4] rounded-xl bg-white p-2 shadow-xl border-2 border-[#E3B341] flex items-center justify-center relative">
-                      <span className="absolute -top-2 rounded-md bg-[#D97706] px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-wider shadow-xs">
-                        {lang === "hi" ? "बेस्ट सेलर" : "Bestseller"}
-                      </span>
-                      <img
-                        src="/images/products/aashirvaad-atta.jpg"
-                        alt="Aashirvaad Chakki Atta"
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <span className="text-[11px] sm:text-xs font-bold text-[#E3B341] mt-1.5 line-clamp-1">
-                      {lang === "hi" ? "चक्की आटा" : "Chakki Atta"}
-                    </span>
-                  </Link>
-
-                  {/* Amul Desi Ghee */}
-                  <Link
-                    to="/shop"
-                    search={{ category: "oil-ghee" }}
-                    className="group flex flex-col items-center text-center transition-transform hover:scale-105"
-                  >
-                    <div className="w-full aspect-[3/4] rounded-xl bg-white p-2 shadow-md border border-white/60 flex items-center justify-center">
-                      <img
-                        src="/images/products/amul-desi-ghee.jpg"
-                        alt="Amul Pure Desi Ghee"
-                        className="size-full object-contain"
-                      />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-bold text-white mt-1.5 line-clamp-1">
-                      {lang === "hi" ? "शुद्ध देसी घी" : "Pure Ghee"}
-                    </span>
-                  </Link>
-                </div>
-
-                <div className="mt-2 text-[10px] text-white/75 font-medium text-center">
-                  {lang === "hi" ? "📍 रामनगर, अड्डा बाजार रोड, महाराजगंज" : "📍 Ramnagar, Adda Bazar Road, Maharajganj"}
-                </div>
-              </div>
+            {/* Right Column: Premium Curated Grocery Art Composition */}
+            <div className="relative flex items-center justify-center pt-2 lg:pt-0 w-full min-w-0">
+              <HeroGroceryVisual />
             </div>
           </div>
         </div>
@@ -596,11 +523,11 @@ function PremiumStoreHome() {
         <div className="grocery-grid">
           {featLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))
+              <ProductCardSkeleton key={i} />
+            ))
             : featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       </section>
 
@@ -633,15 +560,15 @@ function PremiumStoreHome() {
         <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2">
           {prodLoading
             ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="min-w-[160px] sm:min-w-0 shrink-0">
-                  <ProductCardSkeleton />
-                </div>
-              ))
+              <div key={i} className="min-w-[160px] sm:min-w-0 shrink-0">
+                <ProductCardSkeleton />
+              </div>
+            ))
             : flashDeals.map((product) => (
-                <div key={product.id} className="min-w-[160px] sm:min-w-0 shrink-0 snap-start">
-                  <ProductCard product={product} />
-                </div>
-              ))}
+              <div key={product.id} className="min-w-[160px] sm:min-w-0 shrink-0 snap-start">
+                <ProductCard product={product} />
+              </div>
+            ))}
         </div>
       </section>
 

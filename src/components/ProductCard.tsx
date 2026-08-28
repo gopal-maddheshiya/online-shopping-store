@@ -36,9 +36,8 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className={`card-interactive group relative flex flex-col justify-between overflow-hidden bg-white p-3 sm:p-3.5 w-full max-w-full min-w-0 transition-all duration-200 ${
-        inCart ? "border-[#145A45] ring-1 ring-[#145A45]/20 shadow-xs" : "border-[#E5E0D5]"
-      }`}
+      className={`card-interactive group relative flex flex-col justify-between overflow-hidden bg-white p-3 sm:p-3.5 w-full max-w-full min-w-0 transition-all duration-200 ${inCart ? "border-[#145A45] ring-1 ring-[#145A45]/20 shadow-xs" : "border-[#E5E0D5]"
+        }`}
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* Top Bar: Compact Discount Tag & Aligned Wishlist */}
@@ -64,9 +63,8 @@ export function ProductCard({ product }: { product: Product }) {
           className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#DC2626] transition-colors"
         >
           <Heart
-            className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${
-              isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
-            }`}
+            className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
+              }`}
           />
         </button>
       </div>
@@ -141,11 +139,10 @@ export function ProductCard({ product }: { product: Product }) {
                 key={v.id}
                 type="button"
                 onClick={() => setSelectedVariantId(v.id)}
-                className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate ${
-                  v.id === activeVariant?.id
+                className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate ${v.id === activeVariant?.id
                     ? "border-[#145A45] bg-[#145A45] text-white shadow-2xs"
                     : "border-[#E5E0D5] bg-[#FAF8F2] text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
-                }`}
+                  }`}
               >
                 {getVariantLabel(v.label)}
               </button>

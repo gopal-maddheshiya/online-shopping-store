@@ -1,7 +1,7 @@
 {
-  "name": "Arun Gopal Traders",
+  "name": "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
   "short_name": "Arun Gopal Traders",
-  "description": "Trusted local grocery store in Ramnagar, Maharajganj.",
+  "description": "रामनगर, महाराजगंज की विश्वसनीय स्थानीय किराना दुकान — 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF8F2",
@@ -12,6 +12,22 @@
       "sizes": "128x128 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/agt-icon.png",
+      "sizes": "512x512 192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32 48x48 64x64",
+      "type": "image/png"
     },
     {
       "src": "/favicon.ico",

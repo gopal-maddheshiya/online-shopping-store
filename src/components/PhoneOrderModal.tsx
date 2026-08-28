@@ -1,5 +1,4 @@
-import { Phone, MessageCircle, ShoppingBag } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Phone, MessageCircle, ShoppingBag, MapPin, Clock, Sparkles, Send, PhoneCall } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,8 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
   const { data: settings } = useQuery(settingsQuery);
   const { t, lang } = useLanguage();
 
-  const phone = settings?.phone ?? "+916388354988";
+  const phone = settings?.phone ?? "+91 6388354988";
+  const cleanPhone = phone.replace(/\s+/g, "");
   const whatsapp = settings?.whatsapp ?? "916388354988";
 
   let waMessage =
@@ -53,78 +53,120 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-display text-xl">
+      <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl border border-[#E5E0D5] bg-white shadow-2xl">
+        <DialogHeader className="space-y-2 text-left">
+          {/* Top Cute Badge */}
+          <div className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[11px] font-bold text-[#0F4A38]">
+            <Sparkles className="size-3 text-[#145A45]" />
+            <span>
+              {lang === "hi" ? "त्वरित सहायता व आसान ऑर्डर" : "Direct Store Ordering & Support"}
+            </span>
+          </div>
+
+          <DialogTitle className="font-sans text-xl sm:text-2xl font-black tracking-tight text-[#16201A]">
             {t.quickOrderTitle}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs leading-relaxed text-[#5A655F]">
             {t.quickOrderDesc}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-3.5 pt-2">
+          {/* Cart Basket Preview (if items present) */}
           {items.length > 0 ? (
-            <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs">
-              <div className="flex items-center justify-between font-semibold">
-                <span className="flex items-center gap-1.5">
-                  <ShoppingBag className="size-4 text-primary" /> {t.currentBasketLabel} ({items.length}{" "}
-                  {lang === "hi" ? "सामान" : "items"})
+            <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-3.5 text-xs text-[#16201A] space-y-1 shadow-2xs">
+              <div className="flex items-center justify-between font-bold">
+                <span className="flex items-center gap-1.5 text-[#0F4A38]">
+                  <ShoppingBag className="size-4 text-[#145A45]" /> {t.currentBasketLabel} (
+                  {items.length} {lang === "hi" ? "सामान" : "items"})
                 </span>
-                <span>{inr(subtotal)}</span>
+                <span className="font-black text-[#0F4A38] text-sm">{inr(subtotal)}</span>
               </div>
-              <p className="mt-1 text-muted-foreground">
+              <p className="text-[11px] text-[#5A655F]">
                 {t.cartAutoFormatNote}
               </p>
             </div>
           ) : null}
 
-          <div className="grid gap-3">
+          {/* Action Cards */}
+          <div className="grid gap-2.5">
+            {/* 1. Direct Phone Call Card */}
             <a
-              href={telHref(phone)}
-              className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-4 transition-colors hover:bg-primary/10"
+              href={telHref(cleanPhone)}
+              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#145A45]/20 bg-linear-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/40 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#145A45]/50 hover:shadow-md active:scale-[0.99] cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#145A45] text-white shadow-md shadow-[#145A45]/20 group-hover:scale-105 transition-transform">
                   <Phone className="size-5" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-foreground">{t.callStoreDirectly}</h4>
-                  <p className="text-xs text-muted-foreground">{phone}</p>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-sm text-[#16201A] group-hover:text-[#145A45] transition-colors truncate">
+                    {t.callStoreDirectly}
+                  </h4>
+                  <p className="text-xs font-bold text-[#145A45] mt-0.5 tracking-wide">
+                    {phone}
+                  </p>
+                  <p className="text-[10px] text-[#5A655F] mt-0.5">
+                    {lang === "hi" ? "दुकानदार से सीधे बात करें" : "Speak directly with store owner"}
+                  </p>
                 </div>
               </div>
-              <Button size="sm">{t.callNow}</Button>
+              <div className="shrink-0 ml-2">
+                <span className="inline-flex items-center gap-1 rounded-xl bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs group-hover:bg-[#0A3628] transition-colors">
+                  <span>{t.callNow}</span>
+                  <PhoneCall className="size-3.5" />
+                </span>
+              </div>
             </a>
 
+            {/* 2. WhatsApp List / Chat Card */}
             <a
               href={waHref(whatsapp, waMessage)}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-between rounded-xl border border-success/30 bg-success/5 p-4 transition-colors hover:bg-success/10"
+              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#25D366]/30 bg-linear-to-br from-white via-[#FAF8F2] to-[#25D366]/10 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#25D366]/60 hover:shadow-md active:scale-[0.99] cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="grid size-10 place-items-center rounded-full bg-success text-success-foreground">
-                  <MessageCircle className="size-5" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#25D366] text-white shadow-md shadow-[#25D366]/25 group-hover:scale-105 transition-transform">
+                  <MessageCircle className="size-5 fill-white text-[#25D366]" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-foreground">{t.orderOnWhatsapp}</h4>
-                  <p className="text-xs text-muted-foreground">{t.instantChatList}</p>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-sm text-[#16201A] group-hover:text-[#15803D] transition-colors truncate">
+                    {t.orderOnWhatsapp}
+                  </h4>
+                  <p className="text-xs text-[#5A655F] mt-0.5 truncate">
+                    {t.instantChatList}
+                  </p>
+                  <p className="text-[10px] text-[#15803D] font-semibold mt-0.5">
+                    {lang === "hi" ? "फोटो या लिस्ट भेजकर ऑर्डर करें" : "Share list, photo or voice note"}
+                  </p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-success/40 text-success hover:bg-success/10"
-              >
-                {t.sendList}
-              </Button>
+              <div className="shrink-0 ml-2">
+                <span className="inline-flex items-center gap-1 rounded-xl bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow-xs group-hover:bg-[#1EBE5D] transition-colors">
+                  <span>{t.sendList}</span>
+                  <Send className="size-3.5" />
+                </span>
+              </div>
             </a>
           </div>
 
-          <div className="rounded-lg bg-muted p-3 text-[11px] text-muted-foreground">
-            📍 <strong>{t.storeLocationLabel}:</strong> {t.storeAddressShort}
-            <br />
-            🕒 <strong>{t.storeHoursLabel}:</strong> {t.storeHoursValue}
+          {/* Location & Hours Strip */}
+          <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF8F2] p-3.5 space-y-2 text-xs text-[#16201A] shadow-2xs">
+            <div className="flex items-start gap-2.5">
+              <MapPin className="size-4 shrink-0 text-[#145A45] mt-0.5" />
+              <div className="leading-tight">
+                <span className="font-bold text-[#16201A]">{t.storeLocationLabel}: </span>
+                <span className="text-[#5A655F]">{t.storeAddressShort}</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5 border-t border-[#E5E0D5]/70 pt-2">
+              <Clock className="size-4 shrink-0 text-[#145A45] mt-0.5" />
+              <div className="leading-tight">
+                <span className="font-bold text-[#16201A]">{t.storeHoursLabel}: </span>
+                <span className="text-[#5A655F]">{t.storeHoursValue}</span>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>

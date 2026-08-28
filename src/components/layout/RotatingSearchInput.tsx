@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n";
@@ -47,7 +47,7 @@ export function RotatingSearchInput({
     return () => cancelAnimationFrame(r);
   }, [lang]);
 
-  // Interval ticker (2.5s per suggestion, 550ms continuous smooth roll)
+  // Interval ticker (3.8s display per suggestion, very gentle and slow 1200ms glide)
   useEffect(() => {
     if (isFocused || term.length > 0) return;
 
@@ -56,7 +56,7 @@ export function RotatingSearchInput({
         const next = prev + 1;
         // If we reached the cloned item at the end of the extended list
         if (next >= suggestions.length) {
-          // After the 550ms transition to the clone completes, seamlessly snap back to index 0
+          // After the 1200ms transition to the clone completes, seamlessly snap back to index 0
           setTimeout(() => {
             setIsResetting(true);
             setCurrentIndex(0);
@@ -65,17 +65,18 @@ export function RotatingSearchInput({
                 setIsResetting(false);
               });
             });
-          }, 550);
+          }, 1200);
         }
         return next;
       });
-    }, 2500);
+    }, 3800);
 
     return () => clearInterval(interval);
   }, [isFocused, term.length, suggestions.length]);
 
   const isDesktop = variant === "desktop";
-  const itemHeight = isDesktop ? 22 : 20; // exact pixel height for text line
+  // Full height of input box: h-11 = 44px on desktop, h-10 = 40px on mobile
+  const itemHeight = isDesktop ? 44 : 40;
 
   return (
     <form onSubmit={onSubmit} className="relative w-full">
@@ -112,7 +113,7 @@ export function RotatingSearchInput({
           )}
         />
 
-        {/* Animated Sliding Placeholder Overlay */}
+        {/* Animated Sliding Placeholder Overlay (spans full edge-to-edge height of search box) */}
         {!isFocused && term.length === 0 && (
           <div
             className={cn(
@@ -121,7 +122,7 @@ export function RotatingSearchInput({
             )}
           >
             <div
-              className="relative w-full overflow-hidden"
+              className="relative w-full h-full overflow-hidden"
               style={{ height: `${itemHeight}px` }}
             >
               <div
@@ -130,7 +131,7 @@ export function RotatingSearchInput({
                   transform: `translateY(-${currentIndex * itemHeight}px)`,
                   transition: isResetting
                     ? "none"
-                    : "transform 550ms cubic-bezier(0.65, 0, 0.35, 1)",
+                    : "transform 1200ms cubic-bezier(0.2, 0.9, 0.3, 1)",
                 }}
               >
                 {extendedList.map((text, idx) => (

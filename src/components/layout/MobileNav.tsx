@@ -101,7 +101,7 @@ export function MobileNav() {
         aria-label="Mobile Navigation"
         className="fixed right-0 bottom-0 left-0 z-50 border-t border-[#E5E0D5] bg-white/95 backdrop-blur-lg lg:hidden pb-[calc(env(safe-area-inset-bottom)+0.25rem)] shadow-lg"
       >
-        <div className="grid grid-cols-5 items-center justify-around h-14">
+        <div className="grid grid-cols-5 items-center justify-around h-14.5">
           {links.map((link) => {
             const Icon = link.icon;
             const isActive =
@@ -115,27 +115,33 @@ export function MobileNav() {
                 key={link.label}
                 to={link.to}
                 search={link.search as never}
-                className={`relative flex flex-col items-center justify-center gap-0.5 h-full text-[10px] transition-all min-h-[44px] ${
+                className={`relative flex flex-col items-center justify-center gap-1 h-full text-[10.5px] transition-all min-h-[48px] ${
                   isActive
-                    ? "text-[#0F4A38] font-black"
+                    ? "text-[#0F4A38] font-bold"
                     : "text-[#5A655F] hover:text-[#16201A] font-medium"
                 }`}
               >
                 <div className="relative flex items-center justify-center">
                   <div
-                    className={`rounded-lg p-1 transition-all ${
+                    className={`rounded-xl px-2.5 py-0.5 transition-all ${
                       isActive ? "bg-[#E6EFE8]" : "bg-transparent"
                     }`}
                   >
-                    <Icon className={`size-4.5 ${isActive ? "text-[#0F4A38]" : "text-[#5A655F]"}`} />
+                    <Icon
+                      className={`size-5.5 transition-transform ${
+                        isActive
+                          ? "text-[#0F4A38] stroke-[2.2] scale-105"
+                          : "text-[#5A655F] stroke-[1.85]"
+                      }`}
+                    />
                   </div>
                   {link.badge && link.badge > 0 ? (
-                    <span className="absolute -top-1 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[9px] font-black text-white shadow-2xs">
+                    <span className="absolute -top-1 -right-1.5 grid size-4.5 place-items-center rounded-full bg-[#D97706] text-[9.5px] font-black text-white shadow-xs border-1.5 border-white">
                       {link.badge > 9 ? "9+" : link.badge}
                     </span>
                   ) : null}
                 </div>
-                <span className="truncate max-w-[58px] text-center">{link.label}</span>
+                <span className="truncate max-w-[62px] text-center leading-none">{link.label}</span>
               </Link>
             );
           })}

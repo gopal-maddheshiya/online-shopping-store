@@ -49,20 +49,20 @@ export function Header() {
 
   const matchingCategories = term.trim().length >= 2
     ? categories.filter((c) =>
-        c.name.toLowerCase().includes(term.toLowerCase()) ||
-        c.slug.toLowerCase().includes(term.toLowerCase())
-      ).slice(0, 3)
+      c.name.toLowerCase().includes(term.toLowerCase()) ||
+      c.slug.toLowerCase().includes(term.toLowerCase())
+    ).slice(0, 3)
     : [];
 
   const matchingProducts = term.trim().length >= 2
     ? products.filter((p) => {
-        const hName = getProductName(p.name, p.slug);
-        return (
-          p.name.toLowerCase().includes(term.toLowerCase()) ||
-          hName.toLowerCase().includes(term.toLowerCase()) ||
-          (p.brand && p.brand.toLowerCase().includes(term.toLowerCase()))
-        );
-      }).slice(0, 5)
+      const hName = getProductName(p.name, p.slug);
+      return (
+        p.name.toLowerCase().includes(term.toLowerCase()) ||
+        hName.toLowerCase().includes(term.toLowerCase()) ||
+        (p.brand && p.brand.toLowerCase().includes(term.toLowerCase()))
+      );
+    }).slice(0, 5)
     : [];
 
   function submitSearch(e: React.FormEvent) {
@@ -108,22 +108,20 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setLang("en")}
-                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${
-                  lang === "en"
+                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${lang === "en"
                     ? "bg-white text-[#0F4A38] shadow-2xs"
                     : "text-white/80 hover:text-white"
-                }`}
+                  }`}
               >
                 EN
               </button>
               <button
                 type="button"
                 onClick={() => setLang("hi")}
-                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${
-                  lang === "hi"
+                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${lang === "hi"
                     ? "bg-white text-[#0F4A38] shadow-2xs"
                     : "text-white/80 hover:text-white"
-                }`}
+                  }`}
               >
                 हिन्दी
               </button>
@@ -167,18 +165,16 @@ export function Header() {
                       <button
                         type="button"
                         onClick={() => setLang("en")}
-                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
-                        }`}
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
+                          }`}
                       >
                         English
                       </button>
                       <button
                         type="button"
                         onClick={() => setLang("hi")}
-                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                          lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
-                        }`}
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
+                          }`}
                       >
                         हिन्दी
                       </button>

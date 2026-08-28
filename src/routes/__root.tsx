@@ -90,16 +90,16 @@ export const Route = createRootRouteWithContext<{
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Arun Gopal Traders | Online Grocery Store",
+        title: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
       },
       {
         name: "description",
         content:
-          "Arun Gopal Traders — your trusted local grocery store in Ramnagar, Adda Bazar Road, Maharajganj. Shop groceries online or order by phone.",
+          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का सामान।",
       },
       {
         property: "og:site_name",
-        content: "Arun Gopal Traders",
+        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
       },
       {
         property: "og:type",
@@ -107,12 +107,12 @@ export const Route = createRootRouteWithContext<{
       },
       {
         property: "og:title",
-        content: "Arun Gopal Traders | Online Grocery Store",
+        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
       },
       {
         property: "og:description",
         content:
-          "Arun Gopal Traders — your trusted local grocery store in Ramnagar, Adda Bazar Road, Maharajganj. Shop groceries online or order by phone.",
+          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
       },
       {
         property: "og:image",
@@ -124,12 +124,12 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: "twitter:title",
-        content: "Arun Gopal Traders | Online Grocery Store",
+        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
       },
       {
         name: "twitter:description",
         content:
-          "Arun Gopal Traders — your trusted local grocery store in Ramnagar, Adda Bazar Road, Maharajganj. Shop groceries online or order by phone.",
+          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
       },
       {
         name: "theme-color",
@@ -143,12 +143,19 @@ export const Route = createRootRouteWithContext<{
         href: "/agt-favicon.svg",
       },
       {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/favicon.png",
+      },
+      {
         rel: "alternate icon",
         href: "/favicon.ico",
       },
       {
         rel: "apple-touch-icon",
-        href: "/agt-icon.png",
+        sizes: "180x180",
+        href: "/apple-touch-icon.png",
       },
       {
         rel: "manifest",
