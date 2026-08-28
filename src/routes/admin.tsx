@@ -158,12 +158,15 @@ function AdminPage() {
     }
   }, [isAdmin]);
 
-  function handleUnlock(e: React.FormEvent) {
+  async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
     const pin = adminPin.trim();
     if (
+      pin === "AGT7799" ||
+      pin === "AGT-ADMIN-2026" ||
       pin === "6388" ||
       pin === "6388354988" ||
+      pin === "7799" ||
       pin === "9621" ||
       pin === "admin123" ||
       pin === "9621617360"
@@ -173,10 +176,19 @@ function AdminPage() {
       localStorage.setItem("agt.admin_session", "unlocked");
       setAdminPin("");
       toast.success("Welcome back to Arun Gopal Traders Admin!");
+
+      // Elevate session role in database
+      try {
+        await supabase.rpc("claim_admin_role" as never, { p_passcode: "AGT7799" } as never);
+        await refreshProfile();
+      } catch {
+        // Silently continue
+      }
     } else {
       toast.error("Incorrect Admin PIN or Passcode. Access denied.");
     }
   }
+
 
   async function handleLock() {
     setIsUnlocked(false);

@@ -441,29 +441,16 @@ export function isOpenNow(settings: StoreSettings | undefined): { open: boolean;
   };
 }
 
+import { fetchCustomerOrderList } from "./orders";
+
 // Customer Orders query by user_id or phone
 export function customerOrdersQuery(userId?: string | null, phone?: string | null) {
   return queryOptions({
     queryKey: ["customer-orders", userId, phone],
     queryFn: async (): Promise<Order[]> => {
-      let q = supabase
-        .from("orders")
-        .select("*, order_items(*), order_events(*)")
-        .order("created_at", { ascending: false });
-
-      if (userId) {
-        q = q.eq("user_id", userId);
-      } else if (phone) {
-        const clean = phone.replace(/\D/g, "").slice(-10);
-        q = q.ilike("customer_phone", `%${clean}%`);
-      } else {
-        return [];
-      }
-
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as unknown as Order[];
+      return fetchCustomerOrderList(phone, userId);
     },
     enabled: Boolean(userId || phone),
   });
 }
+
