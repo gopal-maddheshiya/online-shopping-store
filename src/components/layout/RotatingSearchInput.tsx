@@ -63,6 +63,16 @@ export function RotatingSearchInput({
   return (
     <form onSubmit={onSubmit} className="relative w-full">
       <div className="relative flex items-center w-full">
+        {/* Front Search Icon */}
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-y-0 flex items-center text-[#145A45] z-10",
+            isDesktop ? "left-3.5" : "left-3"
+          )}
+        >
+          <Search className={isDesktop ? "size-4 text-[#145A45]" : "size-3.5 text-[#145A45]"} />
+        </div>
+
         <Input
           type="text"
           value={term}
@@ -78,19 +88,19 @@ export function RotatingSearchInput({
           placeholder=""
           aria-label={ariaLabel || (isDesktop ? "Search grocery items" : "Mobile search")}
           className={cn(
-            "w-full rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#16201A] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs",
+            "w-full rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] text-[#16201A] placeholder:text-transparent focus-visible:border-[#145A45] focus-visible:ring-1.5 focus-visible:ring-[#145A45]/30 transition-all shadow-2xs font-medium",
             isDesktop
-              ? "h-10 pr-10 pl-4 text-xs sm:text-sm"
-              : "h-9 pr-8 pl-3 text-xs"
+              ? "h-10 pl-10 pr-9 text-xs sm:text-sm"
+              : "h-9 pl-9 pr-8 text-xs"
           )}
         />
 
-        {/* Animated Sliding Placeholder Overlay */}
+        {/* Animated Sliding Placeholder Overlay (starts cleanly after the front icon) */}
         {!isFocused && term.length === 0 && (
           <div
             className={cn(
               "pointer-events-none absolute inset-y-0 flex items-center overflow-hidden select-none",
-              isDesktop ? "left-4 right-10 text-xs sm:text-sm" : "left-3 right-8 text-xs"
+              isDesktop ? "left-10 right-4 text-xs sm:text-sm" : "left-9 right-3 text-xs"
             )}
           >
             <div className="relative h-5 w-full overflow-hidden text-[#5A655F]">
@@ -118,32 +128,20 @@ export function RotatingSearchInput({
           </div>
         )}
 
-        {/* Clear Button */}
+        {/* Clear Button on the Right */}
         {term.trim() ? (
           <button
             type="button"
             onClick={() => setTerm("")}
             className={cn(
-              "absolute top-0 flex items-center justify-center text-[#5A655F] hover:text-[#16201A] transition-colors cursor-pointer",
-              isDesktop ? "right-8 h-10 w-6" : "right-7 h-9 w-5"
+              "absolute inset-y-0 flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-md transition-all cursor-pointer",
+              isDesktop ? "right-2 size-6 my-auto" : "right-1.5 size-5 my-auto"
             )}
             aria-label="Clear search"
           >
             <X className={isDesktop ? "size-3.5" : "size-3"} />
           </button>
         ) : null}
-
-        {/* Submit Search Button */}
-        <button
-          type="submit"
-          className={cn(
-            "absolute top-0 right-0 flex items-center justify-center text-[#5A655F] hover:text-[#145A45] transition-colors cursor-pointer",
-            isDesktop ? "h-10 w-10" : "h-9 w-8"
-          )}
-          aria-label="Submit search"
-        >
-          <Search className={isDesktop ? "size-4" : "size-3.5"} />
-        </button>
       </div>
     </form>
   );
