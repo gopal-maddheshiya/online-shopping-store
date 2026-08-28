@@ -11,6 +11,7 @@ export type Translations = {
 
   // Header
   searchPlaceholder: string;
+  searchSuggestions: string[];
   searchBtn: string;
   login: string;
   myAccount: string;
@@ -103,6 +104,18 @@ export const translations: Record<Language, Translations> = {
     closedOpensAt: "Closed • Opens at {time}",
     closedToday: "Closed today",
     searchPlaceholder: "Search atta, basmati rice, mustard oil, spices...",
+    searchSuggestions: [
+      "Search flour...",
+      "Search milk...",
+      "Search chocolate...",
+      "Search basmati rice...",
+      "Search mustard oil...",
+      "Search spices & masala...",
+      "Search tea & coffee...",
+      "Search dry fruits...",
+      "Search biscuits & cookies...",
+      "Search pulses & dal...",
+    ],
     searchBtn: "Search",
     login: "Login / Account",
     myAccount: "My Account",
@@ -177,6 +190,18 @@ export const translations: Record<Language, Translations> = {
     closedOpensAt: "दुकान बंद है • सुबह {time} खुलेगी",
     closedToday: "आज दुकान बंद है",
     searchPlaceholder: "आटा, बासमती चावल, सरसों तेल, मसाले खोजें...",
+    searchSuggestions: [
+      "आटा खोजें...",
+      "दूध खोजें...",
+      "चॉकलेट खोजें...",
+      "बासमती चावल खोजें...",
+      "सरसों तेल खोजें...",
+      "मसाले खोजें...",
+      "चाय और कॉफी खोजें...",
+      "काजू बादाम खोजें...",
+      "बिस्कुट खोजें...",
+      "दालें खोजें...",
+    ],
     searchBtn: "खोजें",
     login: "लॉगिन / खाता",
     myAccount: "मेरा खाता",

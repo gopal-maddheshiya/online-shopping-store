@@ -282,3 +282,35 @@
   scrollbar-width: none;
 }
 
+/* Blinkit-Style Vertical Sliding Suggestion Animation */
+@keyframes blinkitSlideUpEnter {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes blinkitSlideUpExit {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-blinkit-enter {
+  animation: blinkitSlideUpEnter 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-blinkit-exit {
+  animation: blinkitSlideUpExit 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+

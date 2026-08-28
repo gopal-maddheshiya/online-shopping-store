@@ -29,6 +29,7 @@ import { settingsQuery, categoriesQuery, productsQuery, isOpenNow } from "@/lib/
 import { getCategoryThumbnail, getProductImage } from "@/lib/product-images";
 import { telHref, inr } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
+import { RotatingSearchInput } from "@/components/layout/RotatingSearchInput";
 
 export function Header() {
   const { data: settings } = useQuery(settingsQuery);
@@ -277,36 +278,17 @@ export function Header() {
 
           {/* Desktop Search Bar */}
           <div className="relative hidden w-full max-w-lg md:block">
-            <form onSubmit={submitSearch} className="relative w-full">
-              <Input
-                value={term}
-                onChange={(e) => {
-                  setTerm(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                placeholder={t.searchPlaceholder}
-                className="h-10 w-full rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] pr-10 pl-4 text-xs sm:text-sm text-[#16201A] placeholder:text-[#5A655F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45] transition-all shadow-2xs"
-                aria-label="Search grocery items"
-              />
-              {term.trim() ? (
-                <button
-                  type="button"
-                  onClick={() => setTerm("")}
-                  className="absolute top-0 right-8 flex h-10 w-6 items-center justify-center text-[#5A655F] hover:text-[#16201A]"
-                  aria-label="Clear search"
-                >
-                  <X className="size-3.5" />
-                </button>
-              ) : null}
-              <button
-                type="submit"
-                className="absolute top-0 right-0 flex h-10 w-10 items-center justify-center text-[#5A655F] hover:text-[#145A45]"
-                aria-label="Submit search"
-              >
-                <Search className="size-4" />
-              </button>
-            </form>
+            <RotatingSearchInput
+              term={term}
+              setTerm={(val) => {
+                setTerm(val);
+                setShowSuggestions(true);
+              }}
+              onSubmit={submitSearch}
+              onFocus={() => setShowSuggestions(true)}
+              variant="desktop"
+              ariaLabel="Search grocery items"
+            />
 
             {/* Desktop Autocomplete Popover */}
             {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
@@ -457,34 +439,17 @@ export function Header() {
 
         {/* Mobile Search Bar Row */}
         <div className="border-t border-[#E5E0D5] bg-white px-3 py-2 md:hidden relative">
-          <form onSubmit={submitSearch} className="relative w-full">
-            <Input
-              value={term}
-              onChange={(e) => {
-                setTerm(e.target.value);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              placeholder={t.searchPlaceholder}
-              className="h-9 w-full rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] pr-8 pl-3 text-xs text-[#16201A] placeholder:text-[#5A655F] focus-visible:border-[#145A45] focus-visible:ring-1 focus-visible:ring-[#145A45]"
-              aria-label="Mobile search"
-            />
-            {term.trim() ? (
-              <button
-                type="button"
-                onClick={() => setTerm("")}
-                className="absolute top-0 right-7 flex h-9 w-5 items-center justify-center text-[#5A655F]"
-              >
-                <X className="size-3" />
-              </button>
-            ) : null}
-            <button
-              type="submit"
-              className="absolute top-0 right-0 flex h-9 w-8 items-center justify-center text-[#5A655F]"
-            >
-              <Search className="size-3.5" />
-            </button>
-          </form>
+          <RotatingSearchInput
+            term={term}
+            setTerm={(val) => {
+              setTerm(val);
+              setShowSuggestions(true);
+            }}
+            onSubmit={submitSearch}
+            onFocus={() => setShowSuggestions(true)}
+            variant="mobile"
+            ariaLabel="Mobile search"
+          />
 
           {/* Mobile Autocomplete Suggestions */}
           {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
