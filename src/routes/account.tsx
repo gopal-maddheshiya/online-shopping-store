@@ -1302,34 +1302,36 @@ function AccountPage() {
       {/* Customer Tabs */}
       <div className="mt-4">
         <Tabs defaultValue="orders" className="space-y-4">
-          <div className="overflow-x-auto pb-1.5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-none">
-            <TabsList className="inline-flex sm:grid sm:grid-cols-4 h-auto min-h-[44px] w-max sm:w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 gap-1 shadow-2xs">
-              <TabsTrigger
-                value="orders"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
-              >
-                <Package className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
-              </TabsTrigger>
-              <TabsTrigger
-                value="buy-again"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
-              >
-                <RotateCcw className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="addresses"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
-              >
-                <MapPin className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="profile"
-                className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white whitespace-nowrap px-3.5 py-2 cursor-pointer transition-all shrink-0 data-[state=active]:shadow-xs"
-              >
-                <User className="mr-1.5 size-3.5 inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList className="grid grid-cols-4 h-11 w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 gap-1 shadow-2xs">
+            <TabsTrigger
+              value="orders"
+              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+            >
+              <Package className="mr-1 size-3.5 hidden sm:inline" />
+              {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
+            </TabsTrigger>
+            <TabsTrigger
+              value="buy-again"
+              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+            >
+              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" />
+              {lang === "hi" ? "रीऑर्डर" : "Reorder"} ({uniquePurchasedItems.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="addresses"
+              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+            >
+              <MapPin className="mr-1 size-3.5 hidden sm:inline" />
+              {lang === "hi" ? "पते" : "Address"} ({addresses.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="profile"
+              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+            >
+              <User className="mr-1 size-3.5 hidden sm:inline" />
+              {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
+            </TabsTrigger>
+          </TabsList>
 
           {/* TAB 1: MY ORDERS (Isolated strictly by auth.uid()) */}
           <TabsContent value="orders" className="space-y-4">
