@@ -714,10 +714,10 @@ function AccountPage() {
                     inputMode="numeric"
                     autoComplete="tel"
                     maxLength={10}
-                    placeholder="9876543210"
+                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
                     value={signInPhone}
                     onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-11"
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-11 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
                   />
                 </div>
               </div>
@@ -745,10 +745,10 @@ function AccountPage() {
                     required
                     type={showSignInPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder={lang === "hi" ? "अपना पासवर्ड दर्ज करें" : "Enter your password"}
                     value={signInPassword}
                     onChange={(e) => setSignInPassword(e.target.value)}
-                    className="h-11 rounded-xl border-[#E5E0D5] pr-10 text-sm font-medium focus-visible:border-[#145A45]"
+                    className="h-11 rounded-xl border-[#E5E0D5] pr-10 text-sm font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
                   />
                   <button
                     type="button"
@@ -799,7 +799,7 @@ function AccountPage() {
                   placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                   value={signUpName}
                   onChange={(e) => setSignUpName(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium"
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium placeholder:text-[#A8B2AC] placeholder:font-normal"
                 />
               </div>
 
@@ -818,10 +818,10 @@ function AccountPage() {
                     inputMode="numeric"
                     autoComplete="tel"
                     maxLength={10}
-                    placeholder="9876543210"
+                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
                     value={signUpPhone}
                     onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10"
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
                   />
                 </div>
               </div>
@@ -836,10 +836,10 @@ function AccountPage() {
                     required
                     type={showSignUpPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="••••••••"
+                    placeholder={lang === "hi" ? "नया पासवर्ड बनाएं (कम से कम 6)" : "Create a password (min. 6)"}
                     value={signUpPassword}
                     onChange={(e) => setSignUpPassword(e.target.value)}
-                    className="h-10 rounded-xl border-[#E5E0D5] pr-10 text-xs font-medium focus-visible:border-[#145A45]"
+                    className="h-10 rounded-xl border-[#E5E0D5] pr-10 text-xs font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal"
                   />
                   <button
                     type="button"
@@ -860,10 +860,10 @@ function AccountPage() {
                   required
                   type="password"
                   autoComplete="new-password"
-                  placeholder="••••••••"
+                  placeholder={lang === "hi" ? "पासवर्ड दोबारा दर्ज करें" : "Re-enter password"}
                   value={signUpConfirmPassword}
                   onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium focus-visible:border-[#145A45]"
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal"
                 />
               </div>
 
@@ -921,10 +921,10 @@ function AccountPage() {
                     required
                     type="tel"
                     maxLength={10}
-                    placeholder="9876543210"
+                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
                     value={forgotPhone}
                     onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10"
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
                   />
                 </div>
               </div>
@@ -936,10 +936,10 @@ function AccountPage() {
                 <Input
                   id="recovery-code"
                   required
-                  placeholder="AGT7799"
+                  placeholder="उदा. AGT7799"
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] font-mono text-xs font-bold"
+                  className="h-10 rounded-xl border-[#E5E0D5] font-mono text-xs font-bold placeholder:text-[#A8B2AC] placeholder:font-normal"
                 />
               </div>
 
@@ -951,10 +951,10 @@ function AccountPage() {
                   id="new-password"
                   required
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={lang === "hi" ? "नया पासवर्ड दर्ज करें" : "Enter new password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs"
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs placeholder:text-[#A8B2AC] placeholder:font-normal"
                 />
               </div>
 
@@ -966,10 +966,10 @@ function AccountPage() {
                   id="confirm-new-password"
                   required
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={lang === "hi" ? "पासवर्ड दोबारा दर्ज करें" : "Re-enter password"}
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs"
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs placeholder:text-[#A8B2AC] placeholder:font-normal"
                 />
               </div>
 
