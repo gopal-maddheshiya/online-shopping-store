@@ -70,7 +70,7 @@ export function RotatingSearchInput({
             isDesktop ? "left-3.5" : "left-3"
           )}
         >
-          <Search className={isDesktop ? "size-4 text-[#145A45]" : "size-3.5 text-[#145A45]"} />
+          <Search className={isDesktop ? "size-4.5 text-[#145A45]" : "size-4 text-[#145A45]"} />
         </div>
 
         <Input
@@ -88,10 +88,10 @@ export function RotatingSearchInput({
           placeholder=""
           aria-label={ariaLabel || (isDesktop ? "Search grocery items" : "Mobile search")}
           className={cn(
-            "w-full rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] text-[#16201A] placeholder:text-transparent focus-visible:border-[#145A45] focus-visible:ring-1.5 focus-visible:ring-[#145A45]/30 transition-all shadow-2xs font-medium",
+            "w-full rounded-xl border border-[#E0DCD2] bg-[#FAF8F2] text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/40 focus-visible:border-[#145A45] focus-visible:ring-2 focus-visible:ring-[#145A45]/20 transition-all shadow-2xs font-medium",
             isDesktop
-              ? "h-10 pl-10 pr-9 text-xs sm:text-sm"
-              : "h-9 pl-9 pr-8 text-xs"
+              ? "h-11 pl-10.5 pr-9 text-[13px] sm:text-sm"
+              : "h-10 pl-9.5 pr-8 text-[13px]"
           )}
         />
 
@@ -100,10 +100,10 @@ export function RotatingSearchInput({
           <div
             className={cn(
               "pointer-events-none absolute inset-y-0 flex items-center overflow-hidden select-none",
-              isDesktop ? "left-10 right-4 text-xs sm:text-sm" : "left-9 right-3 text-xs"
+              isDesktop ? "left-10.5 right-4 text-[13px] sm:text-sm" : "left-9.5 right-3 text-[13px]"
             )}
           >
-            <div className="relative h-5 w-full overflow-hidden text-[#5A655F]">
+            <div className="relative h-5.5 w-full overflow-hidden text-[#5A655F]">
               {/* Exiting item */}
               <div
                 key={`curr-${currentIndex}`}
@@ -134,8 +134,8 @@ export function RotatingSearchInput({
             type="button"
             onClick={() => setTerm("")}
             className={cn(
-              "absolute inset-y-0 flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-md transition-all cursor-pointer",
-              isDesktop ? "right-2 size-6 my-auto" : "right-1.5 size-5 my-auto"
+              "absolute inset-y-0 flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-lg transition-all cursor-pointer",
+              isDesktop ? "right-2.5 size-7 my-auto" : "right-2 size-6 my-auto"
             )}
             aria-label="Clear search"
           >

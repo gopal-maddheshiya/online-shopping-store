@@ -293,7 +293,7 @@ export function Header() {
             {/* Desktop Autocomplete Popover */}
             {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
               <div
-                className="absolute top-12 left-0 right-0 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-3"
+                className="absolute top-13 left-0 right-0 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-3"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 {matchingCategories.length > 0 && (
@@ -454,7 +454,7 @@ export function Header() {
           {/* Mobile Autocomplete Suggestions */}
           {showSuggestions && (matchingCategories.length > 0 || matchingProducts.length > 0) && (
             <div
-              className="absolute top-12 left-3 right-3 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-2.5"
+              className="absolute top-13 left-3 right-3 z-50 rounded-xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-2.5"
               onMouseDown={(e) => e.preventDefault()}
             >
               {matchingCategories.length > 0 && (
