@@ -150,7 +150,7 @@ export function ProductImageGallery({
       <div className="relative w-full max-w-[480px] mx-auto">
         {/* Strict 1:1 Aspect Ratio Canvas */}
         <div
-          className="group relative w-full aspect-square rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] shadow-2xs overflow-hidden flex items-center justify-center"
+          className="group relative w-full aspect-square rounded-2xl bg-white border border-[#E8E4DA] shadow-2xs overflow-hidden flex items-center justify-center"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -236,9 +236,9 @@ export function ProductImageGallery({
               loading={activeIndex === 0 ? "eager" : "lazy"}
               decoding="async"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                (e.target as HTMLImageElement).src = "/images/products/aashirvaad-atta.svg";
               }}
-              className={`max-h-full max-w-full w-auto h-auto object-contain object-center drop-shadow-xs transition-opacity duration-150 ease-out ${
+              className={`max-h-full max-w-full w-auto h-auto object-contain object-center transition-opacity duration-150 ease-out select-none ${
                 isTransitioning ? "opacity-30" : "opacity-100"
               }`}
             />
@@ -265,10 +265,10 @@ export function ProductImageGallery({
                 >
                   {/* Thumbnail Box - Strict 1:1 Square */}
                   <div
-                    className={`relative size-14 sm:size-16 rounded-xl overflow-hidden bg-[#FAF8F2] p-1.5 flex items-center justify-center transition-all duration-150 ${
+                    className={`relative size-14 sm:size-16 rounded-xl overflow-hidden bg-white p-1.5 flex items-center justify-center transition-all duration-150 ${
                       isSelected
-                        ? "bg-white border-2 border-[#145A45] ring-2 ring-[#145A45]/30 shadow-2xs scale-102"
-                        : "border border-[#E8E4DA] opacity-75 hover:opacity-100 hover:border-[#145A45]/50 bg-[#FAF8F2]"
+                        ? "border-2 border-[#145A45] ring-2 ring-[#145A45]/30 shadow-2xs scale-102"
+                        : "border border-[#E8E4DA] opacity-75 hover:opacity-100 hover:border-[#145A45]/50"
                     }`}
                   >
                     <img
@@ -276,7 +276,7 @@ export function ProductImageGallery({
                       alt=""
                       loading="lazy"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                        (e.target as HTMLImageElement).src = "/images/products/aashirvaad-atta.svg";
                       }}
                       className="max-h-full max-w-full w-auto h-auto object-contain object-center"
                     />

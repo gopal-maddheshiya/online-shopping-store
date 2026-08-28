@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 75 290 375" width="500" height="500">
+  <defs>
+    <linearGradient id="attaBag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C2410C" />
+      <stop offset="35%" stop-color="#B45309" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+    <linearGradient id="attaGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="packShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1E293B" flood-opacity="0.16" />
+    </filter>
+  </defs>
+  <!-- Contact Shadow -->
+  <ellipse cx="250" cy="438" rx="145" ry="14" fill="#0F172A" opacity="0.14" />
+  <ellipse cx="250" cy="434" rx="105" ry="9" fill="#0F172A" opacity="0.22" />
+  <!-- Main Pack -->
+  <g filter="url(#packShadow)">
+    <path d="M 120 110 Q 250 90 380 110 L 365 418 Q 250 435 135 418 Z" fill="url(#attaBag)" />
+    <!-- Top Gusset & Stitch Seal -->
+    <path d="M 125 110 L 140 85 L 360 85 L 375 110 Z" fill="#9A3412" />
+    <rect x="140" y="80" width="220" height="10" rx="3" fill="#D97706" />
+    <line x1="145" y1="85" x2="355" y2="85" stroke="#FFFFFF" stroke-dasharray="4,3" stroke-width="2" />
+    <!-- Center Label Area -->
+    <rect x="145" y="130" width="210" height="270" rx="16" fill="#FFFBEB" opacity="0.96" />
+    <!-- Brand Plate -->
+    <rect x="160" y="145" width="180" height="32" rx="8" fill="#B91C1C" />
+    <text x="250" y="167" text-anchor="middle" fill="#FEF08A" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="14" letter-spacing="2">AASHIRVAAD</text>
+    <text x="250" y="194" text-anchor="middle" fill="#B45309" font-family="system-ui, sans-serif" font-weight="800" font-size="10" letter-spacing="1">★ 100% PURE CHAKKI ATTA ★</text>
+    <text x="250" y="224" text-anchor="middle" fill="#1F2937" font-family="system-ui, sans-serif" font-weight="900" font-size="18">Superior MP Atta</text>
+    <text x="250" y="248" text-anchor="middle" fill="#92400E" font-family="system-ui, sans-serif" font-weight="700" font-size="13">आशीर्वाद शुध्द चक्की आटा</text>
+    <line x1="170" y1="260" x2="330" y2="260" stroke="#FDE68A" stroke-width="2" />
+    <!-- Wheat Sheaf Icon -->
+    <circle cx="250" cy="308" r="36" fill="#FEF3C7" />
+    <path d="M 242 328 Q 248 298 250 282 Q 252 298 258 328 Z" fill="#D97706" />
+    <path d="M 232 318 Q 240 300 248 290 Q 242 308 238 322 Z" fill="#B45309" />
+    <path d="M 268 318 Q 260 300 252 290 Q 258 308 262 322 Z" fill="#B45309" />
+    <text x="250" y="362" text-anchor="middle" fill="#78350F" font-family="system-ui, sans-serif" font-weight="700" font-size="11">Whole Wheat Flour • 0% Maida</text>
+    <!-- Weight Badge -->
+    <rect x="175" y="374" width="150" height="20" rx="6" fill="#FEF3C7" />
+    <rect x="183" y="378" width="12" height="12" fill="#FFFFFF" stroke="#16A34A" stroke-width="1.5" />
+    <circle cx="189" cy="384" r="3" fill="#16A34A" />
+    <text x="255" y="388" text-anchor="middle" fill="#92400E" font-family="system-ui, sans-serif" font-weight="900" font-size="11">NET WEIGHT 5 KG</text>
+  </g>
+</svg>

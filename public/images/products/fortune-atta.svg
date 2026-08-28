@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 75 290 375" width="500" height="500">
+  <defs>
+    <linearGradient id="fortuneAttaBag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EA580C" />
+      <stop offset="40%" stop-color="#C2410C" />
+      <stop offset="100%" stop-color="#9A3412" />
+    </linearGradient>
+    <filter id="fShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1E293B" flood-opacity="0.16" />
+    </filter>
+  </defs>
+  <ellipse cx="250" cy="438" rx="145" ry="14" fill="#0F172A" opacity="0.14" />
+  <ellipse cx="250" cy="434" rx="105" ry="9" fill="#0F172A" opacity="0.22" />
+  <g filter="url(#fShadow)">
+    <path d="M 120 110 Q 250 90 380 110 L 365 418 Q 250 435 135 418 Z" fill="url(#fortuneAttaBag)" />
+    <rect x="140" y="80" width="220" height="12" rx="4" fill="#C2410C" />
+    <rect x="145" y="130" width="210" height="270" rx="16" fill="#FFFFFF" opacity="0.96" />
+    <rect x="160" y="145" width="180" height="32" rx="8" fill="#15803D" />
+    <text x="250" y="167" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="14" letter-spacing="2">FORTUNE</text>
+    <text x="250" y="194" text-anchor="middle" fill="#EA580C" font-family="system-ui, sans-serif" font-weight="800" font-size="10" letter-spacing="1">★ CHAKKI FRESH ATTA ★</text>
+    <text x="250" y="224" text-anchor="middle" fill="#1F2937" font-family="system-ui, sans-serif" font-weight="900" font-size="18">Chakki Fresh Atta</text>
+    <text x="250" y="248" text-anchor="middle" fill="#C2410C" font-family="system-ui, sans-serif" font-weight="700" font-size="13">फॉर्च्यून चक्की फ्रेश आटा</text>
+    <line x1="170" y1="260" x2="330" y2="260" stroke="#FED7AA" stroke-width="2" />
+    <circle cx="250" cy="308" r="36" fill="#FFEDD5" />
+    <path d="M 242 328 Q 248 298 250 282 Q 252 298 258 328 Z" fill="#EA580C" />
+    <text x="250" y="362" text-anchor="middle" fill="#9A3412" font-family="system-ui, sans-serif" font-weight="700" font-size="11">Traditional Stone Ground</text>
+    <rect x="175" y="374" width="150" height="20" rx="6" fill="#FFEDD5" />
+    <rect x="183" y="378" width="12" height="12" fill="#FFFFFF" stroke="#16A34A" stroke-width="1.5" />
+    <circle cx="189" cy="384" r="3" fill="#16A34A" />
+    <text x="255" y="388" text-anchor="middle" fill="#C2410C" font-family="system-ui, sans-serif" font-weight="900" font-size="11">NET WEIGHT 5 KG</text>
+  </g>
+</svg>

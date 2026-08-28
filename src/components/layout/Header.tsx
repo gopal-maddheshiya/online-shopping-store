@@ -364,7 +364,7 @@ export function Header() {
                             <img
                               src={getProductImage(p)}
                               alt={p.name}
-                              className="size-7 rounded object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-0.5 shrink-0"
+                              className="size-7 object-contain shrink-0"
                             />
                             <span className="text-xs font-bold text-[#16201A] truncate">
                               {getProductName(p.name, p.slug)}
@@ -529,7 +529,7 @@ export function Header() {
                         <img
                           src={getProductImage(p)}
                           alt={p.name}
-                          className="size-6 rounded object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-0.5 shrink-0"
+                          className="size-6 object-contain shrink-0"
                         />
                         <span className="text-xs font-bold text-[#16201A] truncate">
                           {getProductName(p.name, p.slug)}

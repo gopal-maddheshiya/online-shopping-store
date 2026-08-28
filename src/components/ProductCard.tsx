@@ -71,23 +71,24 @@ export function ProductCard({ product }: { product: Product }) {
         </button>
       </div>
 
-      {/* Product Image Box - Clean warm frame */}
+      {/* Product Image Canvas - Native transparent PNG/WebP/SVG cutout support with prominent scale */}
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
-        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-lg bg-[#FAF8F2] border border-[#EBE6DC] p-2 transition-all duration-200 group-hover:border-[#145A45]/30 shrink-0"
+        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-2xl bg-transparent p-1 transition-all duration-200 shrink-0 select-none"
         style={{
-          height: "135px",
-          maxHeight: "135px",
+          height: "152px",
+          maxHeight: "152px",
           width: "100%",
           maxWidth: "100%",
           minWidth: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#FAF8F2",
+          background: "transparent",
           boxSizing: "border-box",
           overflow: "hidden",
+          borderRadius: "16px",
         }}
       >
         <img
@@ -95,11 +96,11 @@ export function ProductCard({ product }: { product: Product }) {
           alt={localizedProductName}
           loading="lazy"
           onError={(e) => {
-            e.currentTarget.src = "/images/products/aashirvaad-atta.jpg";
+            e.currentTarget.src = "/images/products/aashirvaad-atta.svg";
           }}
-          className="max-h-[120px] max-w-full w-auto h-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
+          className="h-[140px] sm:h-[146px] max-h-full max-w-full w-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-105 select-none"
           style={{
-            maxHeight: "120px",
+            maxHeight: "146px",
             maxWidth: "100%",
             width: "auto",
             height: "auto",
@@ -109,7 +110,7 @@ export function ProductCard({ product }: { product: Product }) {
           }}
         />
         {stock <= 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-2xs">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-2xs rounded-2xl">
             <span className="rounded-md bg-[#FAF8F2] border border-[#E5E0D5] px-2 py-0.5 text-[10px] font-bold text-[#5A655F]">
               {t.outOfStock}
             </span>
@@ -253,16 +254,16 @@ export function ProductCardSkeleton() {
 
       {/* Image Skeleton Box */}
       <div
-        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-2 shrink-0"
+        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden p-1 shrink-0"
         style={{
-          height: "135px",
-          maxHeight: "135px",
+          height: "152px",
+          maxHeight: "152px",
           width: "100%",
           maxWidth: "100%",
           minWidth: 0,
         }}
       >
-        <Skeleton className="size-20 rounded-lg bg-[#E5E0D5]/60" />
+        <Skeleton className="size-24 rounded-2xl bg-[#FAF8F2]" />
       </div>
 
       {/* Content Skeleton */}

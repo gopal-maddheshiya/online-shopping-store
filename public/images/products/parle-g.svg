@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 135 290 320" width="500" height="500">
+  <defs>
+    <linearGradient id="parleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="pShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1E293B" flood-opacity="0.16" />
+    </filter>
+  </defs>
+  <ellipse cx="250" cy="438" rx="145" ry="14" fill="#0F172A" opacity="0.14" />
+  <ellipse cx="250" cy="434" rx="105" ry="9" fill="#0F172A" opacity="0.22" />
+  <g filter="url(#pShadow)">
+    <rect x="120" y="150" width="260" height="260" rx="16" fill="url(#parleGrad)" />
+    <rect x="135" y="175" width="230" height="210" rx="12" fill="#FFFFFF" opacity="0.96" />
+    <rect x="150" y="195" width="200" height="36" rx="8" fill="#DC2626" />
+    <text x="250" y="220" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="18" letter-spacing="1">Parle-G</text>
+    <text x="250" y="255" text-anchor="middle" fill="#D97706" font-family="system-ui, sans-serif" font-weight="800" font-size="10">ORIGINAL GLUCOSE BISCUITS</text>
+    <text x="250" y="285" text-anchor="middle" fill="#1F2937" font-family="system-ui, sans-serif" font-weight="900" font-size="16">Gold Glucose Biscuits</text>
+    <text x="250" y="308" text-anchor="middle" fill="#D97706" font-family="system-ui, sans-serif" font-weight="700" font-size="13">पारले-जी बिस्कुट</text>
+    <circle cx="250" cy="350" r="22" fill="#FEF3C7" />
+    <text x="250" y="357" text-anchor="middle" font-size="18">🍪</text>
+  </g>
+</svg>

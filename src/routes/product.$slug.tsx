@@ -90,8 +90,8 @@ function ProductPage() {
   if (isLoading) {
     return (
       <div className="container-page grid gap-8 py-6 sm:py-10 md:grid-cols-2 items-start">
-        <div className="card-base aspect-square w-full max-w-[460px] mx-auto rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5] p-6 sm:p-10 flex items-center justify-center">
-          <Skeleton className="size-48 rounded-2xl bg-[#E5E0D5]/60" />
+        <div className="card-base aspect-square w-full max-w-[460px] mx-auto rounded-2xl bg-white p-6 sm:p-10 flex items-center justify-center shadow-2xs">
+          <Skeleton className="size-48 rounded-2xl bg-[#FAF8F2]" />
         </div>
         <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E5E0D5]">
           <div className="space-y-2">

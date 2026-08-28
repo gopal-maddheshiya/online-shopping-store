@@ -389,7 +389,7 @@ function TrackPage() {
                             image_url: item.image_url,
                           })}
                           alt={item.name}
-                          className="size-12 rounded-lg object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-1"
+                          className="size-12 rounded-lg object-contain bg-white p-0.5"
                         />
                         <div>
                           <p className="font-semibold text-[#16201A]">{item.name}</p>

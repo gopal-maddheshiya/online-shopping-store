@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="105 105 290 350" width="500" height="500">
+  <defs>
+    <linearGradient id="maggiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="maggiShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1E293B" flood-opacity="0.16" />
+    </filter>
+  </defs>
+  <ellipse cx="250" cy="438" rx="145" ry="14" fill="#0F172A" opacity="0.14" />
+  <ellipse cx="250" cy="434" rx="105" ry="9" fill="#0F172A" opacity="0.22" />
+  <g filter="url(#maggiShadow)">
+    <rect x="120" y="120" width="260" height="290" rx="20" fill="url(#maggiGrad)" />
+    <rect x="135" y="150" width="230" height="235" rx="14" fill="#FFFFFF" opacity="0.96" />
+    <rect x="150" y="170" width="200" height="36" rx="8" fill="#DC2626" />
+    <text x="250" y="195" text-anchor="middle" fill="#FEF08A" font-family="system-ui, sans-serif" font-weight="900" font-size="18" letter-spacing="1">Maggi</text>
+    <text x="250" y="230" text-anchor="middle" fill="#DC2626" font-family="system-ui, sans-serif" font-weight="800" font-size="10">2-MINUTE NOODLES</text>
+    <text x="250" y="260" text-anchor="middle" fill="#1F2937" font-family="system-ui, sans-serif" font-weight="900" font-size="16">Masala Instant Noodles</text>
+    <text x="250" y="284" text-anchor="middle" fill="#D97706" font-family="system-ui, sans-serif" font-weight="700" font-size="13">मैगी मसाला नूडल्स</text>
+    <circle cx="250" cy="330" r="26" fill="#FEF3C7" />
+    <text x="250" y="338" text-anchor="middle" font-size="20">🍜</text>
+    <text x="250" y="372" text-anchor="middle" fill="#DC2626" font-family="system-ui, sans-serif" font-weight="900" font-size="11">PACK OF 4 (280G)</text>
+  </g>
+</svg>

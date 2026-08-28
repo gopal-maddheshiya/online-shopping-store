@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="115 95 270 360" width="500" height="500">
+  <defs>
+    <linearGradient id="turmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAB308" />
+      <stop offset="50%" stop-color="#CA8A04" />
+      <stop offset="100%" stop-color="#A16207" />
+    </linearGradient>
+    <filter id="turmShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#1E293B" flood-opacity="0.16" />
+    </filter>
+  </defs>
+  <ellipse cx="250" cy="438" rx="140" ry="14" fill="#0F172A" opacity="0.14" />
+  <ellipse cx="250" cy="434" rx="100" ry="9" fill="#0F172A" opacity="0.22" />
+  <g filter="url(#turmShadow)">
+    <rect x="130" y="110" width="240" height="310" rx="20" fill="url(#turmGrad)" />
+    <rect x="145" y="145" width="210" height="245" rx="14" fill="#FEF9C3" opacity="0.96" />
+    <rect x="160" y="165" width="180" height="30" rx="8" fill="#DC2626" />
+    <text x="250" y="186" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="900" font-size="14" letter-spacing="1.5">EVEREST</text>
+    <text x="250" y="215" text-anchor="middle" fill="#A16207" font-family="system-ui, sans-serif" font-weight="800" font-size="10">PURE HALDI POWDER</text>
+    <text x="250" y="245" text-anchor="middle" fill="#1F2937" font-family="system-ui, sans-serif" font-weight="900" font-size="16">Turmeric Powder</text>
+    <text x="250" y="268" text-anchor="middle" fill="#A16207" font-family="system-ui, sans-serif" font-weight="700" font-size="13">एवरेस्ट हल्दी पाउडर</text>
+    <circle cx="250" cy="315" r="30" fill="#FEF08A" />
+    <text x="250" y="324" text-anchor="middle" font-size="20">✨</text>
+    <text x="250" y="375" text-anchor="middle" fill="#A16207" font-family="system-ui, sans-serif" font-weight="900" font-size="11">NET WEIGHT 200G</text>
+  </g>
+</svg>

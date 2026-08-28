@@ -929,7 +929,7 @@ function AccountPage() {
                             image_url: item.image_url,
                           })}
                           alt={item.name}
-                          className="size-9 rounded-md object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5"
+                          className="size-9 rounded-md object-contain bg-white p-0.5"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium text-[#1F2924]">{item.name}</p>
@@ -990,7 +990,7 @@ function AccountPage() {
                     key={item.variantId || idx}
                     className="card-base flex flex-col justify-between overflow-hidden bg-white p-3 border border-[#E8E4DA] rounded-2xl"
                   >
-                    <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-[#FAF8F2] p-2 border border-[#E8E4DA]">
+                    <div className="flex aspect-square w-full items-center justify-center p-2">
                       <img
                         src={getProductImage({
                           name: item.name,

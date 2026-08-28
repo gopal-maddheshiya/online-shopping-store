@@ -120,7 +120,8 @@ function CartPage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: i.slug }}
-                    className="size-20 shrink-0 overflow-hidden rounded-xl bg-[#FAF8F2] p-2 border border-[#E5E0D5] flex items-center justify-center shadow-2xs"
+                    className="size-20 shrink-0 overflow-hidden rounded-xl bg-white p-1 border border-[#E5E0D5] flex items-center justify-center shadow-2xs"
+                    style={{ isolation: "isolate" }}
                   >
                     <img
                       src={getProductImage({ slug: i.slug, name: i.name, image_url: i.imageUrl })}
@@ -209,7 +210,7 @@ function CartPage() {
                     <img
                       src={getProductImage({ slug: i.slug, name: i.name, image_url: i.imageUrl })}
                       alt={i.name}
-                      className="size-12 rounded-lg object-contain bg-[#FAF8F2] border border-[#E5E0D5] p-1 shadow-2xs"
+                      className="size-12 rounded-lg object-contain bg-white p-0.5"
                     />
                     <div>
                       <p className="text-xs font-semibold text-[#16201A]">

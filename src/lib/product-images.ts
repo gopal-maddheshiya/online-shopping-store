@@ -185,42 +185,42 @@ export function getCategoryThumbnail(category: {
 
 export const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {
   // Atta, Flour & Grains
-  "fortune-chakki-fresh-atta": "/images/products/aashirvaad-atta.jpg",
-  "aashirvaad-shudh-chakki-atta": "/images/products/aashirvaad-atta.jpg",
+  "fortune-chakki-fresh-atta": "/images/products/fortune-atta.svg",
+  "aashirvaad-shudh-chakki-atta": "/images/products/aashirvaad-atta.svg",
   "rajdhani-besan": "/images/products/rajdhani-besan.svg",
   "bansi-suji-rava": "/images/products/bansi-suji.svg",
   "shakti-bhog-maida": "/images/products/shakti-bhog-maida.svg",
 
   // Rice
-  "india-gate-classic-basmati-rice": "/images/products/india-gate-basmati-rice.jpg",
+  "india-gate-classic-basmati-rice": "/images/products/india-gate-basmati-rice.svg",
   "daawat-rozana-gold-basmati": "/images/products/daawat-basmati-rice.svg",
   "sona-masoori-rice-local": "/images/products/sona-masoori-rice.svg",
 
   // Pulses & Dal
-  "tata-sampann-toor-dal": "/images/products/tata-toor-dal.jpg",
+  "tata-sampann-toor-dal": "/images/products/tata-toor-dal.svg",
   "moong-dal-dhuli": "/images/products/moong-dal.svg",
   "masoor-dal": "/images/products/masoor-dal.svg",
   "rajma-chitra": "/images/products/rajma-chitra.svg",
   "kabuli-chana": "/images/products/kabuli-chana.svg",
 
   // Mustard Oil, Refined Oil & Ghee
-  "fortune-kachi-ghani-mustard-oil": "/images/products/fortune-mustard-oil.jpg",
+  "fortune-kachi-ghani-mustard-oil": "/images/products/fortune-mustard-oil.svg",
   "patanjali-kachi-ghani-sarson-tel": "/images/products/patanjali-mustard-oil.svg",
   "fortune-sunlite-refined-sunflower-oil": "/images/products/fortune-sunflower-oil.svg",
-  "amul-pure-desi-ghee": "/images/products/amul-desi-ghee.jpg",
+  "amul-pure-desi-ghee": "/images/products/amul-desi-ghee.svg",
 
   // Spices & Masala
-  "everest-turmeric-powder-haldi": "/images/products/everest-turmeric.jpg",
+  "everest-turmeric-powder-haldi": "/images/products/everest-turmeric.svg",
   "mdh-deggi-mirch": "/images/products/mdh-deggi-mirch.svg",
   "everest-garam-masala": "/images/products/everest-garam-masala.svg",
   "catch-jeera-whole": "/images/products/catch-jeera.svg",
   "everest-dhaniya-powder": "/images/products/everest-dhaniya.svg",
 
   // Salt, Sugar & Sweeteners
-  "tata-salt-iodised": "/images/products/tata-salt.jpg",
+  "tata-salt-iodised": "/images/products/tata-salt.svg",
   "madhur-pure-sugar": "/images/products/madhur-sugar.svg",
   "organic-gud-jaggery-block": "/images/products/organic-gud.svg",
-  "dabur-honey": "/images/products/dabur-honey.jpg",
+  "dabur-honey": "/images/products/dabur-honey.svg",
 
   // Dry Fruits & Nuts
   "california-almonds-badam": "/images/products/california-almonds.svg",
@@ -233,18 +233,18 @@ export const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {
   "nescafe-classic-instant-coffee": "/images/products/nescafe-coffee.svg",
 
   // Biscuits & Cookies
-  "parle-g-original-glucose-biscuits": "/images/products/parle-g.jpg",
+  "parle-g-original-glucose-biscuits": "/images/products/parle-g.svg",
   "britannia-good-day-cashew-cookies": "/images/products/britannia-good-day.svg",
   "sunfeast-marie-light": "/images/products/sunfeast-marie-light.svg",
 
   // Snacks & Namkeen
-  "haldiram-s-aloo-bhujia": "/images/products/haldirams-aloo-bhujia.jpg",
+  "haldiram-s-aloo-bhujia": "/images/products/haldirams-aloo-bhujia.svg",
   "bikaji-bikaneri-bhujia": "/images/products/bikaji-bhujia.svg",
   "lay-s-india-s-magic-masala": "/images/products/lays-magic-masala.svg",
-  "cadbury-dairy-milk": "/images/products/cadbury-dairy-milk.jpg",
+  "cadbury-dairy-milk": "/images/products/cadbury-dairy-milk.svg",
 
   // Instant Foods & Sauces
-  "maggi-2-minute-masala-noodles": "/images/products/maggi-noodles.jpg",
+  "maggi-2-minute-masala-noodles": "/images/products/maggi-noodles.svg",
   "sunfeast-yippee-pasta-masala": "/images/products/sunfeast-yippee.svg",
   "kissan-fresh-tomato-ketchup": "/images/products/kissan-ketchup.svg",
   "mother-s-recipe-mango-pickle": "/images/products/mothers-pickle.svg",
@@ -277,7 +277,7 @@ export const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {
   "lizol-disinfectant-floor-cleaner": "/images/products/lizol-cleaner.svg",
   "harpic-power-plus-toilet-cleaner": "/images/products/harpic-cleaner.svg",
   "vim-dishwash-bar": "/images/products/vim-bar.svg",
-  "surf-excel-easy-wash-detergent-powder": "/images/products/surf-excel.jpg",
+  "surf-excel-easy-wash-detergent-powder": "/images/products/surf-excel.svg",
   "rin-detergent-bar": "/images/products/rin-bar.svg",
   "comfort-fabric-conditioner": "/images/products/comfort-fabric.svg",
   "scotch-brite-scrub-pad": "/images/products/scotch-brite.svg",
@@ -433,31 +433,31 @@ export function getProductImage(product?: {
     if (lower.includes("moong") || lower.includes("mung")) return "/images/products/moong-dal.svg";
     if (lower.includes("masoor")) return "/images/products/masoor-dal.svg";
     if (lower.includes("toor") || lower.includes("arhar") || lower.includes("tur"))
-      return "/images/products/tata-toor-dal.jpg";
+      return "/images/products/tata-toor-dal.svg";
     if (lower.includes("chana") || lower.includes("chole") || lower.includes("kabuli"))
       return "/images/products/kabuli-chana.svg";
     if (lower.includes("dal") || lower.includes("pulse") || lower.includes("lentil"))
-      return "/images/products/tata-toor-dal.jpg";
+      return "/images/products/tata-toor-dal.svg";
 
     if (lower.includes("besan")) return "/images/products/rajdhani-besan.svg";
     if (lower.includes("suji") || lower.includes("rava") || lower.includes("sooji"))
       return "/images/products/bansi-suji.svg";
     if (lower.includes("maida")) return "/images/products/shakti-bhog-maida.svg";
     if (lower.includes("atta") || lower.includes("flour") || lower.includes("wheat"))
-      return "/images/products/aashirvaad-atta.jpg";
+      return "/images/products/aashirvaad-atta.svg";
 
     if (lower.includes("basmati") || lower.includes("rice") || lower.includes("chawal"))
-      return "/images/products/india-gate-basmati-rice.jpg";
+      return "/images/products/india-gate-basmati-rice.svg";
 
     if (lower.includes("mustard") || lower.includes("sarson"))
-      return "/images/products/fortune-mustard-oil.jpg";
+      return "/images/products/fortune-mustard-oil.svg";
     if (lower.includes("sunflower")) return "/images/products/fortune-sunflower-oil.svg";
-    if (lower.includes("ghee")) return "/images/products/amul-desi-ghee.jpg";
+    if (lower.includes("ghee")) return "/images/products/amul-desi-ghee.svg";
     if (lower.includes("oil") || lower.includes("tel"))
-      return "/images/products/fortune-mustard-oil.jpg";
+      return "/images/products/fortune-mustard-oil.svg";
 
     if (lower.includes("turmeric") || lower.includes("haldi"))
-      return "/images/products/everest-turmeric.jpg";
+      return "/images/products/everest-turmeric.svg";
     if (lower.includes("mirch") || lower.includes("chilli"))
       return "/images/products/mdh-deggi-mirch.svg";
     if (lower.includes("garam masala")) return "/images/products/everest-garam-masala.svg";
@@ -466,13 +466,13 @@ export function getProductImage(product?: {
     if (lower.includes("dhaniya") || lower.includes("coriander"))
       return "/images/products/everest-dhaniya.svg";
 
-    if (lower.includes("salt") || lower.includes("namak")) return "/images/products/tata-salt.jpg";
+    if (lower.includes("salt") || lower.includes("namak")) return "/images/products/tata-salt.svg";
     if (lower.includes("sugar") || lower.includes("chini"))
       return "/images/products/madhur-sugar.svg";
     if (lower.includes("gud") || lower.includes("jaggery") || lower.includes("gur"))
       return "/images/products/organic-gud.svg";
     if (lower.includes("honey") || lower.includes("shahad"))
-      return "/images/products/dabur-honey.jpg";
+      return "/images/products/dabur-honey.svg";
 
     if (lower.includes("almond") || lower.includes("badam"))
       return "/images/products/california-almonds.svg";
@@ -485,21 +485,21 @@ export function getProductImage(product?: {
       return "/images/products/tata-tea-premium.svg";
     if (lower.includes("coffee")) return "/images/products/nescafe-coffee.svg";
 
-    if (lower.includes("parle") || lower.includes("glucose")) return "/images/products/parle-g.jpg";
+    if (lower.includes("parle") || lower.includes("glucose")) return "/images/products/parle-g.svg";
     if (lower.includes("good day") || lower.includes("cookie"))
       return "/images/products/britannia-good-day.svg";
     if (lower.includes("marie")) return "/images/products/sunfeast-marie-light.svg";
-    if (lower.includes("biscuit")) return "/images/products/parle-g.jpg";
+    if (lower.includes("biscuit")) return "/images/products/parle-g.svg";
 
     if (lower.includes("bhujia") || lower.includes("namkeen") || lower.includes("sev"))
-      return "/images/products/haldirams-aloo-bhujia.jpg";
+      return "/images/products/haldirams-aloo-bhujia.svg";
     if (lower.includes("chips") || lower.includes("lays"))
       return "/images/products/lays-magic-masala.svg";
     if (lower.includes("dairy milk") || lower.includes("cadbury") || lower.includes("chocolate"))
-      return "/images/products/cadbury-dairy-milk.jpg";
+      return "/images/products/cadbury-dairy-milk.svg";
 
     if (lower.includes("maggi") || lower.includes("noodle"))
-      return "/images/products/maggi-noodles.jpg";
+      return "/images/products/maggi-noodles.svg";
     if (lower.includes("pasta") || lower.includes("yippee"))
       return "/images/products/sunfeast-yippee.svg";
     if (lower.includes("ketchup") || lower.includes("sauce"))
