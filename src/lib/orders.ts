@@ -90,17 +90,6 @@ export async function updateOrderStatus(
       }
     }
 
-    // Also log order event / history
-    try {
-      await supabase.from("order_events").insert({
-        order_id: orderId,
-        status: newStatus as never,
-        note: note || `Status updated to ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`,
-      });
-    } catch {
-      // Non-blocking if table trigger already logged it
-    }
-
     return {
       success: true,
       order: {
@@ -115,6 +104,8 @@ export async function updateOrderStatus(
     return { success: false, error: message };
   }
 }
+
+
 
 /**
  * Update Payment Status

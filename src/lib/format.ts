@@ -42,6 +42,27 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
   returned: "Returned",
 };
 
+export const ORDER_STATUS_LABEL_HI: Record<string, string> = {
+  placed: "ऑर्डर प्राप्त हुआ",
+  confirmed: "ऑर्डर स्वीकृत",
+  preparing: "सामान पैक हो रहा है",
+  ready: "डिलीवरी के लिए तैयार",
+  out_for_delivery: "रास्ते में (डिलीवरी जारी)",
+  delivered: "सफलतापूर्वक डिलीवर हुआ",
+  cancelled: "ऑर्डर रद्द हुआ",
+  rejected: "अस्वीकृत",
+  returned: "वापस हुआ",
+};
+
+export function getOrderStatusLabel(status: string | null | undefined, lang: "hi" | "en" = "en"): string {
+  if (!status) return "";
+  if (lang === "hi") {
+    return ORDER_STATUS_LABEL_HI[status] ?? ORDER_STATUS_LABEL[status] ?? status;
+  }
+  return ORDER_STATUS_LABEL[status] ?? status;
+}
+
+
 export const PAYMENT_LABEL: Record<string, string> = {
   cod: "Cash on Delivery",
   pay_at_store: "Pay at Store",

@@ -1,5 +1,6 @@
 import { CheckCircle2, Clock, Package, Truck, Check, XCircle } from "lucide-react";
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABEL } from "@/lib/format";
+import { ORDER_STATUS_FLOW, getOrderStatusLabel } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n";
 
 export type OrderTimelineProps = {
   currentStatus: string;
@@ -17,6 +18,7 @@ const STEP_ICONS: Record<string, typeof Package> = {
 };
 
 export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
+  const { language } = useLanguage();
   const isCancelled = currentStatus === "cancelled" || currentStatus === "rejected";
   const isReturned = currentStatus === "returned";
 
@@ -25,15 +27,17 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
       <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center">
         <XCircle className="mx-auto size-8 text-destructive" />
         <h4 className="mt-2 font-semibold text-destructive">
-          Order {ORDER_STATUS_LABEL[currentStatus] ?? currentStatus}
+          {language === "hi" ? "ऑर्डर" : "Order"} {getOrderStatusLabel(currentStatus, language)}
         </h4>
         <p className="mt-1 text-xs text-muted-foreground">
-          If you have questions regarding this cancellation, please contact Arun Gopal Traders at
-          +91 6388354988.
+          {language === "hi"
+            ? "यदि इस रद्दीकरण के संबंध में आपका कोई प्रश्न है, तो कृपया अरुण गोपाल ट्रेडर्स से +91 6388354988 पर संपर्क करें।"
+            : "If you have questions regarding this cancellation, please contact Arun Gopal Traders at +91 6388354988."}
         </p>
       </div>
     );
   }
+
 
   const currentIndex = ORDER_STATUS_FLOW.indexOf(
     currentStatus as (typeof ORDER_STATUS_FLOW)[number],
@@ -81,7 +85,7 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
                   isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
                 }`}
               >
-                {ORDER_STATUS_LABEL[status]}
+                {getOrderStatusLabel(status, language)}
               </p>
               {event?.created_at ? (
                 <span className="mt-0.5 text-[10px] text-muted-foreground">
@@ -132,7 +136,7 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
                         : "text-muted-foreground"
                   }`}
                 >
-                  {ORDER_STATUS_LABEL[status]}
+                  {getOrderStatusLabel(status, language)}
                 </p>
                 {event?.created_at ? (
                   <span className="text-xs text-muted-foreground">
@@ -149,6 +153,7 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
           );
         })}
       </div>
+
     </div>
   );
 }
