@@ -40,7 +40,8 @@ import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminCoupons } from "@/components/admin/AdminCoupons";
 import { AdminHelpRequests } from "@/components/admin/AdminHelpRequests";
 import { AdminSettings } from "@/components/admin/AdminSettings";
-import { mergeOrderWithOverrides } from "@/lib/orders";
+import { mergeOrderWithOverrides, fetchAllAdminOrders } from "@/lib/orders";
+
 
 
 export const Route = createFileRoute("/admin")({
@@ -113,20 +114,15 @@ function AdminPage() {
     if (!isAuthorizedAdmin) return;
     setOrdersLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, order_items(*), order_events(*)")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      const merged = ((data ?? []) as unknown as Order[]).map(mergeOrderWithOverrides);
-      setOrders(merged);
+      const allOrders = await fetchAllAdminOrders();
+      setOrders(allOrders);
     } catch (err: unknown) {
       console.error("Failed to load admin orders:", err);
     } finally {
       setOrdersLoading(false);
     }
   }
+
 
 
   useEffect(() => {

@@ -27,6 +27,8 @@ import { useLanguage } from "@/lib/i18n";
 import { settingsQuery, couponsQuery, type Coupon } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, telHref } from "@/lib/format";
+import { registerPlacedOrder } from "@/lib/orders";
+
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -258,6 +260,10 @@ function CheckoutPage() {
           await supabase.from("order_items").insert(itemsWithOrderId as never);
         }
       }
+
+      // Register order for admin manifest
+      registerPlacedOrder({ order_no: orderNo, phone: cleanPhone });
+
 
       // Save customer info locally for instant future checkout
       localStorage.setItem("agt.last_phone", cleanPhone);
