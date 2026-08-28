@@ -34,7 +34,7 @@ export function Header() {
   const { data: settings } = useQuery(settingsQuery);
   const { count: cartCount, subtotal } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
@@ -218,8 +218,8 @@ export function Header() {
                     >
                       <span className="flex items-center gap-2">
                         <User className="size-4 text-[#145A45]" />{" "}
-                        {profile?.full_name
-                          ? `${t.myAccount} (${profile.full_name.split(" ")[0]})`
+                        {user
+                          ? `${t.myAccount} (${profile?.full_name ? profile.full_name.split(" ")[0] : user.phone ? user.phone.slice(-4) : ""})`
                           : t.login}
                       </span>
                     </Link>
@@ -409,11 +409,15 @@ export function Header() {
             <Link
               to="/account"
               className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
-              title={t.myAccount}
+              title={user ? t.myAccount : t.login}
             >
               <User className="size-4 text-[#145A45]" />
               <span>
-                {profile?.full_name ? profile.full_name.split(" ")[0] : t.login.split(" / ")[0]}
+                {profile?.full_name
+                  ? profile.full_name.split(" ")[0]
+                  : user?.phone
+                    ? user.phone.slice(-4)
+                    : t.login.split(" / ")[0]}
               </span>
             </Link>
 

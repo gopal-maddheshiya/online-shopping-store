@@ -1,10 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   User,
   Package,
-  Search,
   MapPin,
   Heart,
   Phone,
@@ -14,12 +13,12 @@ import {
   RotateCcw,
   CheckCircle2,
   Clock,
-  Truck,
   Plus,
   Trash2,
-  Lock,
   ArrowRight,
-  Sparkles,
+  ShieldCheck,
+  Smartphone,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,19 +31,19 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { customerOrdersQuery, type Order, type Product } from "@/lib/queries";
-import { inr, formatDate, ORDER_STATUS_LABEL, telHref } from "@/lib/format";
+import { customerOrdersQuery, type Order } from "@/lib/queries";
+import { inr, formatDate, ORDER_STATUS_LABEL } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "Arun Gopal Traders | Account" },
+      { title: "Arun Gopal Traders | Customer Account & Orders" },
       {
         name: "description",
         content:
-          "View order history, reorder past grocery items, manage addresses, and update profile.",
+          "Manage your grocery orders, 1-click reorder staples, saved delivery addresses, and customer profile at Arun Gopal Traders.",
       },
     ],
   }),
@@ -53,96 +52,104 @@ export const Route = createFileRoute("/account")({
 
 type CustomerAddress = {
   id: string;
-  house: string;
-  area: string;
-  landmark?: string | undefined;
+  user_id: string;
+  name: string;
+  phone: string;
+  house: string | null;
+  area: string | null;
+  landmark: string | null;
   city: string;
-  pincode: string;
+  pincode: string | null;
+  is_default: boolean;
+  created_at: string;
 };
 
 function AccountPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, profile, refreshProfile, loading: authLoading } = useAuth();
   const { add } = useCart();
   const { items: wishlistItems } = useWishlist();
-  const { lang, t, getProductName, getVariantLabel } = useLanguage();
+  const { lang, t } = useLanguage();
 
-  // Guest / Phone identification state
-  const [identifiedPhone, setIdentifiedPhone] = useState<string>("");
-  const [identifiedName, setIdentifiedName] = useState<string>("");
-  const [guestTrackInput, setGuestTrackInput] = useState("");
-
-  // Login form state
+  // Login Flow State
   const [loginPhone, setLoginPhone] = useState("");
-  const [loginName, setLoginName] = useState("");
-  const [authEmail, setAuthEmail] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [authMode, setAuthMode] = useState<"phone" | "email">("phone");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // Profile edit form state
+  // Profile Edit State
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editPhone, setEditPhone] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Address state
+  // Address State
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [showAddAddress, setShowAddAddress] = useState(false);
+  const [newRecipientName, setNewRecipientName] = useState("");
+  const [newRecipientPhone, setNewRecipientPhone] = useState("");
   const [newHouse, setNewHouse] = useState("");
   const [newArea, setNewArea] = useState("");
   const [newLandmark, setNewLandmark] = useState("");
   const [newPin, setNewPin] = useState("273303");
-  const [showAddAddress, setShowAddAddress] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
 
+  // Countdown timer for Resend OTP
   useEffect(() => {
-    const savedPhone = localStorage.getItem("agt.last_phone");
-    const savedName = localStorage.getItem("agt.last_name");
-    const savedAddress = localStorage.getItem("agt.last_address");
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
 
-    if (savedPhone) setIdentifiedPhone(savedPhone);
-    if (savedName) setIdentifiedName(savedName);
-
-    if (savedAddress) {
-      try {
-        const parsed = JSON.parse(savedAddress);
-        setAddresses([
-          {
-            id: "addr-local",
-            house: parsed.house ?? "Primary Location",
-            area: parsed.area ?? "Adda Bazar Road",
-            landmark: parsed.landmark,
-            city: "Maharajganj",
-            pincode: parsed.pincode ?? "273303",
-          },
-        ]);
-      } catch {
-        // Ignore JSON parse failure for legacy address
-      }
-    }
-  }, []);
-
+  // Sync profile details into form
   useEffect(() => {
     if (profile) {
       setEditName(profile.full_name ?? "");
-      setEditEmail(profile.email ?? "");
-      setEditPhone(profile.phone ?? identifiedPhone);
-      if (profile.phone) setIdentifiedPhone(profile.phone);
-      if (profile.full_name) setIdentifiedName(profile.full_name);
-    } else {
-      setEditName(identifiedName);
-      setEditPhone(identifiedPhone);
+      setEditEmail(profile.email ?? user?.email ?? "");
     }
-  }, [profile, identifiedPhone, identifiedName]);
+  }, [profile, user]);
 
-  // Query customer orders
-  const effectivePhone = user?.phone || profile?.phone || identifiedPhone;
+  // Fetch customer saved addresses from Supabase
+  const loadAddresses = async (userId: string) => {
+    setAddressesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setAddresses((data as unknown as CustomerAddress[]) ?? []);
+    } catch (err) {
+      console.warn("Could not load addresses from Supabase:", err);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      void loadAddresses(user.id);
+    } else {
+      setAddresses([]);
+    }
+  }, [user?.id]);
+
+  // Customer Orders Query
+  const effectivePhone = user?.phone || profile?.phone;
   const {
     data: orders,
     isLoading: ordersLoading,
-    refetch: refetchOrders,
   } = useQuery(customerOrdersQuery(user?.id, effectivePhone));
 
-  // Extract unique purchased items across past orders for Buy Again tab
+  // Extract unique purchased items for Buy Again tab
   const uniquePurchasedItems = useMemo(() => {
     const map = new Map<
       string,
@@ -175,200 +182,227 @@ function AccountPage() {
     return Array.from(map.values());
   }, [orders]);
 
-  // OTP Login state
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [countdown, setCountdown] = useState(0);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [usePasswordInstead, setUsePasswordInstead] = useState(false);
-
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
-  // Handle Quick Guest Order Tracking (Above the Fold)
-  function handleGuestTrack(e: React.FormEvent) {
+  // Step 1: Send Mobile OTP via Supabase Auth
+  async function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
-    const clean = guestTrackInput.trim();
-    if (!clean) {
-      toast.error(
+    setAuthError(null);
+
+    const clean = loginPhone.replace(/\D/g, "").slice(-10);
+    if (clean.length !== 10) {
+      setAuthError(
         lang === "hi"
-          ? "कृपया ऑर्डर नंबर या 10 अंकों का मोबाइल नंबर डालें"
-          : "Please enter an order number or mobile number",
+          ? "कृपया 10 अंकों का वैध भारतीय मोबाइल नंबर दर्ज करें"
+          : "Please enter a valid 10-digit Indian mobile number",
       );
       return;
     }
-    const cleanDigits = clean.replace(/\D/g, "");
-    if (cleanDigits.length === 10) {
-      void navigate({ to: "/track", search: { phone: cleanDigits } as never });
-    } else {
-      void navigate({ to: "/track", search: { orderNo: clean.toUpperCase() } as never });
-    }
-  }
 
-  // Handle Send OTP (Phone SMS or Email)
-  async function handleSendOtp(e: React.FormEvent) {
-    e.preventDefault();
     setIsSendingOtp(true);
-
     try {
-      if (authMode === "phone") {
-        const clean = loginPhone.replace(/\D/g, "").slice(-10);
-        if (clean.length !== 10) {
-          toast.error(
-            lang === "hi"
-              ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
-              : "Please enter a valid 10-digit mobile number",
-          );
-          setIsSendingOtp(false);
-          return;
-        }
+      const fullPhone = `+91${clean}`;
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: fullPhone,
+      });
 
-        const fullPhone = `+91${clean}`;
-        const { error } = await supabase.auth.signInWithOtp({
-          phone: fullPhone,
-        });
-
-        if (error) {
-          // If SMS provider not yet configured in Supabase, fall back to seamless customer identification
-          console.warn("Supabase Phone OTP Provider Notice:", error.message);
-          setIdentifiedPhone(clean);
-          if (loginName.trim()) setIdentifiedName(loginName.trim());
-          localStorage.setItem("agt.last_phone", clean);
-          if (loginName.trim()) localStorage.setItem("agt.last_name", loginName.trim());
-          toast.success(
-            lang === "hi"
-              ? `लॉगिन सफल! +91 ${clean} का खाता खुल गया`
-              : `Logged in with +91 ${clean}!`,
-          );
-          setIsSendingOtp(false);
-          return;
-        }
-
-        setOtpSent(true);
-        setCountdown(45);
-        toast.success(
-          lang === "hi"
-            ? `+91 ${clean} पर 6 अंकों का ओटीपी भेज दिया गया है!`
-            : `OTP sent to +91 ${clean}!`,
-        );
-      } else {
-        const cleanEmail = authEmail.trim();
-        if (!cleanEmail) {
-          toast.error(
-            lang === "hi"
-              ? "कृपया अपनी ईमेल आईडी दर्ज करें"
-              : "Please enter your email address",
-          );
-          setIsSendingOtp(false);
-          return;
-        }
-
-        const { error } = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-        });
-
-        if (error) throw error;
-
-        setOtpSent(true);
-        setCountdown(45);
-        toast.success(
-          lang === "hi"
-            ? `${cleanEmail} पर 6 अंकों का लॉगिन ओटीपी भेज दिया गया है!`
-            : `Login OTP sent to ${cleanEmail}!`,
-        );
+      if (error) {
+        setAuthError(error.message);
+        toast.error(error.message);
+        return;
       }
+
+      setOtpSent(true);
+      setCountdown(45);
+      toast.success(
+        lang === "hi"
+          ? `+91 ${clean} पर 6 अंकों का OTP भेज दिया गया है!`
+          : `OTP sent to +91 ${clean}!`,
+      );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to send OTP";
+      setAuthError(msg);
       toast.error(msg);
     } finally {
       setIsSendingOtp(false);
     }
   }
 
-  // Handle Verify OTP
+  // Step 2: Verify 6-Digit OTP via Supabase Auth
   async function handleVerifyOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!otpCode.trim() || otpCode.trim().length < 4) {
-      toast.error(
+    setAuthError(null);
+
+    const cleanOtp = otpCode.trim();
+    if (cleanOtp.length < 4) {
+      setAuthError(
         lang === "hi"
-          ? "कृपया 6 अंकों का ओटीपी दर्ज करें"
-          : "Please enter the 6-digit OTP",
+          ? "कृपया 6 अंकों का सही OTP दर्ज करें"
+          : "Please enter the 6-digit OTP received via SMS",
       );
       return;
     }
 
     setIsVerifyingOtp(true);
     try {
-      if (authMode === "phone") {
-        const clean = loginPhone.replace(/\D/g, "").slice(-10);
-        const fullPhone = `+91${clean}`;
-        const { error } = await supabase.auth.verifyOtp({
-          phone: fullPhone,
-          token: otpCode.trim(),
-          type: "sms",
-        });
+      const clean = loginPhone.replace(/\D/g, "").slice(-10);
+      const fullPhone = `+91${clean}`;
 
-        if (error) throw error;
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: fullPhone,
+        token: cleanOtp,
+        type: "sms",
+      });
 
-        setIdentifiedPhone(clean);
-        if (loginName.trim()) setIdentifiedName(loginName.trim());
-        localStorage.setItem("agt.last_phone", clean);
-        if (loginName.trim()) localStorage.setItem("agt.last_name", loginName.trim());
+      if (error) {
+        setAuthError(error.message);
+        toast.error(error.message);
+        return;
+      }
+
+      if (data.user) {
+        // Ensure profile row exists in public.profiles linked to auth.uid()
+        try {
+          await supabase.from("profiles").upsert(
+            {
+              id: data.user.id,
+              phone: data.user.phone ?? fullPhone,
+              email: data.user.email ?? null,
+            },
+            { onConflict: "id" },
+          );
+        } catch (profileErr) {
+          console.warn("Profile sync warning:", profileErr);
+        }
+
+        await refreshProfile();
+        void queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+        void queryClient.invalidateQueries({ queryKey: ["user-addresses"] });
 
         toast.success(
-          lang === "hi" ? "ओटीपी सत्यापित! लॉगिन सफल।" : "OTP Verified! Signed In Successfully.",
+          lang === "hi"
+            ? "लॉगिन सफल! आपके खाते में स्वागत है।"
+            : "Signed in successfully! Welcome back.",
         );
-        void refreshProfile();
-      } else {
-        const cleanEmail = authEmail.trim();
-        const { error } = await supabase.auth.verifyOtp({
-          email: cleanEmail,
-          token: otpCode.trim(),
-          type: "email",
-        });
-
-        if (error) throw error;
-
-        toast.success(
-          lang === "hi" ? "ओटीपी सत्यापित! लॉगिन सफल।" : "OTP Verified! Signed In Successfully.",
-        );
-        void refreshProfile();
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Invalid or expired OTP";
+      setAuthError(msg);
       toast.error(msg);
     } finally {
       setIsVerifyingOtp(false);
     }
   }
 
-  // Handle Supabase Auth (Email / Password)
-  async function handleEmailSignIn(e: React.FormEvent) {
-    e.preventDefault();
-    if (!authEmail.trim() || !authPassword.trim()) {
-      toast.error("Please enter your email and password");
-      return;
-    }
-    setIsSigningIn(true);
+  // Handle Logout via Supabase Auth
+  async function handleLogout() {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: authEmail.trim(),
-        password: authPassword.trim(),
-      });
-      if (error) throw error;
-      toast.success("Signed in successfully!");
-      void refreshProfile();
+      await supabase.auth.signOut();
+      setOtpSent(false);
+      setOtpCode("");
+      setLoginPhone("");
+      setAuthError(null);
+      void queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+      toast.info(lang === "hi" ? "आप सफलतापूर्वक लॉगआउट हो गए हैं।" : "Logged out successfully.");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Sign in failed";
+      const msg = err instanceof Error ? err.message : "Logout failed";
+      toast.error(msg);
+    }
+  }
+
+  // Handle Profile Update in public.profiles
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+
+    setIsSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: editName.trim() || null,
+          email: editEmail.trim() || null,
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      await refreshProfile();
+      toast.success(
+        lang === "hi" ? "प्रोफ़ाइल विवरण अपडेट हो गया!" : "Profile updated successfully!",
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to update profile";
       toast.error(msg);
     } finally {
-      setIsSigningIn(false);
+      setIsSavingProfile(false);
+    }
+  }
+
+  // Handle Add Address in public.addresses
+  async function handleAddAddress(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+
+    if (!newHouse.trim() || !newArea.trim()) {
+      toast.error(
+        lang === "hi"
+          ? "कृपया मकान/दुकान नंबर और मोहल्ला/सड़क दर्ज करें"
+          : "Please provide house/shop number and area",
+      );
+      return;
+    }
+
+    setIsSavingAddress(true);
+    try {
+      const recipientName = newRecipientName.trim() || profile?.full_name || "Self";
+      const recipientPhone = newRecipientPhone.trim() || user.phone || "";
+
+      const { error } = await supabase.from("addresses").insert({
+        user_id: user.id,
+        name: recipientName,
+        phone: recipientPhone,
+        house: newHouse.trim(),
+        area: newArea.trim(),
+        landmark: newLandmark.trim() || null,
+        city: "Maharajganj",
+        pincode: newPin.trim() || "273303",
+        is_default: addresses.length === 0,
+      });
+
+      if (error) throw error;
+
+      await loadAddresses(user.id);
+      setNewHouse("");
+      setNewArea("");
+      setNewLandmark("");
+      setNewRecipientName("");
+      setNewRecipientPhone("");
+      setShowAddAddress(false);
+      toast.success(
+        lang === "hi" ? "नया पता सफलतापूर्वक सहेजा गया!" : "Delivery address saved successfully!",
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save address";
+      toast.error(msg);
+    } finally {
+      setIsSavingAddress(false);
+    }
+  }
+
+  // Handle Delete Address
+  async function handleDeleteAddress(addressId: string) {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("addresses")
+        .delete()
+        .eq("id", addressId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      setAddresses((prev) => prev.filter((a) => a.id !== addressId));
+      toast.success(lang === "hi" ? "पता हटा दिया गया" : "Address removed");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to delete address";
+      toast.error(msg);
     }
   }
 
@@ -387,7 +421,7 @@ function AccountPage() {
           productId: item.product_id ?? item.id,
           slug: item.name.toLowerCase().replace(/\s+/g, "-"),
           name: item.name,
-          variantLabel: item.variant_label ?? "Standard",
+          variantLabel: item.variant_label ?? "1 pack",
           price: Number(item.price),
           mrp: Number(item.mrp || item.price),
           imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
@@ -398,233 +432,108 @@ function AccountPage() {
       addedCount++;
     });
 
-    toast.success(`Added ${addedCount} items from Order ${order.order_no} to your cart!`);
+    toast.success(`Added ${addedCount} items from Order ${order.order_no} to basket!`);
     void navigate({ to: "/cart" });
   }
 
-  // Handle Profile Update
-  async function handleSaveProfile(e: React.FormEvent) {
-    e.preventDefault();
-    setIsSavingProfile(true);
-    try {
-      if (user) {
-        const { error } = await supabase
-          .from("profiles")
-          .update({
-            full_name: editName.trim(),
-            phone: editPhone.trim(),
-          })
-          .eq("id", user.id);
-        if (error) throw error;
-        await refreshProfile();
-      }
-
-      setIdentifiedName(editName.trim());
-      setIdentifiedPhone(editPhone.trim());
-      localStorage.setItem("agt.last_name", editName.trim());
-      localStorage.setItem("agt.last_phone", editPhone.trim());
-      toast.success("Profile details updated successfully!");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to update profile";
-      toast.error(msg);
-    } finally {
-      setIsSavingProfile(false);
-    }
-  }
-
-  // Handle Add Address
-  function handleAddAddress(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newHouse.trim() || !newArea.trim()) {
-      toast.error("Please fill house number and area");
-      return;
-    }
-
-    const newAddr = {
-      id: `addr-${Date.now()}`,
-      house: newHouse.trim(),
-      area: newArea.trim(),
-      landmark: newLandmark.trim() || undefined,
-      city: "Maharajganj",
-      pincode: newPin.trim() || "273303",
-    };
-
-    setAddresses((prev) => [...prev, newAddr]);
-    localStorage.setItem("agt.last_address", JSON.stringify(newAddr));
-    setNewHouse("");
-    setNewArea("");
-    setNewLandmark("");
-    setShowAddAddress(false);
-    toast.success("Delivery address saved!");
-  }
-
-  function handleLogout() {
-    if (user) void supabase.auth.signOut();
-    setIdentifiedPhone("");
-    setIdentifiedName("");
-    localStorage.removeItem("agt.last_phone");
-    localStorage.removeItem("agt.last_name");
-    toast.info("Logged out successfully");
-  }
-
-  const isIdentified = Boolean(user || identifiedPhone);
-
-  // If not logged in & no stored phone -> Show Customer Identification / Login Screen
-  if (!isIdentified && !authLoading) {
+  // 1. LOADING STATE
+  if (authLoading) {
     return (
-      <div className="container-page py-6 sm:py-10 max-w-lg mx-auto space-y-5">
-        {/* Header Title */}
-        <div className="text-center space-y-1">
-          <div className="mx-auto grid size-12 place-items-center rounded-xl bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/20 shadow-2xs">
-            <User className="size-6 text-[#0F4A38]" />
+      <div className="container-page py-12 max-w-lg mx-auto space-y-4">
+        <Skeleton className="h-12 w-full rounded-2xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  // 2. UNAUTHENTICATED GUEST LOGIN SCREEN
+  if (!user) {
+    return (
+      <div className="container-page py-8 sm:py-12 max-w-md mx-auto space-y-6">
+        {/* Header Branding */}
+        <div className="text-center space-y-1.5">
+          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/20 shadow-2xs">
+            <Smartphone className="size-6 text-[#0F4A38]" />
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-[#16201A]">
-            {lang === "hi" ? "ग्राहक सेवा एवं खाता पोर्टल" : "Customer Account & Orders"}
+            {lang === "hi" ? "मोबाइल नंबर से लॉगिन करें" : "Sign In with Mobile Number"}
           </h1>
-          <p className="text-xs text-[#5A655F]">
+          <p className="text-xs text-[#5A655F] max-w-xs mx-auto">
             {lang === "hi"
-              ? "लाइव डिलीवरी ट्रैक करें, पिछला राशन दोबारा मंगाएं और अपने ऑर्डर देखें"
-              : "Track live delivery, reorder groceries and manage your account"}
+              ? "अपने ऑर्डर, 1-क्लिक राशन रीऑर्डर और सेव्ड पते देखने के लिए जारी रखें"
+              : "Access your order history, instant grocery reordering, and saved addresses"}
           </p>
         </div>
 
-        {/* 1. Instant Guest Order Tracking */}
-        <div className="rounded-2xl border border-[#145A45] bg-[#FAF8F2] p-5 sm:p-6 shadow-xs">
-          <div className="flex items-center gap-2.5 mb-3">
-            <span className="grid size-8 place-items-center rounded-lg bg-[#145A45] text-white shrink-0">
-              <Package className="size-4" />
-            </span>
-            <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-[#16201A]">
-                {lang === "hi" ? "📦 बिना लॉगिन लाइव ऑर्डर ट्रैक करें" : "📦 Instant Guest Order Tracking"}
-              </h2>
-              <p className="text-[11px] text-[#5A655F]">
-                {lang === "hi" ? "ऑर्डर नंबर या 10 अंकों का मोबाइल नंबर डालें" : "Enter Order # (e.g. AGT-1024) or 10-digit mobile"}
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleGuestTrack} className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#5A655F]" />
-              <Input
-                type="text"
-                placeholder={lang === "hi" ? "उदा. AGT-1024 या 9876543210" : "e.g. AGT-1024 or 9876543210"}
-                value={guestTrackInput}
-                onChange={(e) => setGuestTrackInput(e.target.value)}
-                className="h-11 pl-10 rounded-lg border-[#E5E0D5] bg-white font-medium text-xs sm:text-sm text-[#16201A] shadow-2xs focus-visible:ring-[#145A45]"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full h-11 rounded-lg bg-[#145A45] text-white font-bold text-xs sm:text-sm shadow-xs hover:bg-[#0A3628] active:scale-98 transition-all flex items-center justify-center gap-2"
-            >
-              <Search className="size-4 text-[#E3B341]" />
-              <span>{lang === "hi" ? "ट्रैक लाइव स्टेटस (Track Order) →" : "Track Live Status →"}</span>
-            </Button>
-          </form>
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center py-1">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#E5E0D5]" />
-          </div>
-          <span className="relative bg-[#FAF8F2] px-4 text-[11px] font-bold text-[#5A655F] uppercase tracking-wider rounded-md border border-[#E5E0D5]">
-            {lang === "hi" ? "या पूरा ऑर्डर इतिहास देखें (Sign In)" : "OR SIGN IN FOR FULL HISTORY"}
-          </span>
-        </div>
-
-        {/* 2. Full Account Login Card */}
+        {/* Main Authentication Card */}
         <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 sm:p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs sm:text-sm font-bold text-[#16201A] flex items-center gap-1.5">
-              <User className="size-4 text-[#145A45]" />
-              <span>{lang === "hi" ? "अपना खाता खोलें" : "Sign In to Account"}</span>
-            </h3>
-            <span className="text-[10px] font-semibold text-[#0F4A38] bg-[#E6EFE8] px-2.5 py-0.5 rounded-md">
-              {lang === "hi" ? "1-क्लिक रीऑर्डर" : "1-Click Reorder"}
-            </span>
-          </div>
-
-          <div className="flex rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-1 text-xs font-semibold">
-            <button
-              onClick={() => {
-                setAuthMode("phone");
-                setOtpSent(false);
-                setOtpCode("");
-              }}
-              className={`flex-1 rounded-md py-1.5 transition-all ${
-                authMode === "phone" ? "bg-white text-[#0F4A38] font-bold shadow-xs" : "text-[#5A655F]"
-              }`}
-            >
-              {lang === "hi" ? "📱 मोबाइल OTP लॉगिन" : "📱 Mobile OTP Login"}
-            </button>
-            <button
-              onClick={() => {
-                setAuthMode("email");
-                setOtpSent(false);
-                setOtpCode("");
-              }}
-              className={`flex-1 rounded-md py-1.5 transition-all ${
-                authMode === "email" ? "bg-white text-[#0F4A38] font-bold shadow-xs" : "text-[#5A655F]"
-              }`}
-            >
-              {lang === "hi" ? "✉️ ईमेल OTP / पासवर्ड" : "✉️ Email OTP / Password"}
-            </button>
-          </div>
+          {authError && (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2">
+              <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
+              <div>
+                <p className="font-bold">{lang === "hi" ? "लॉगिन त्रुटि" : "Authentication Notice"}</p>
+                <p className="text-[11px] leading-relaxed mt-0.5">{authError}</p>
+              </div>
+            </div>
+          )}
 
           {otpSent ? (
-            /* STEP 2: VERIFY OTP SCREEN */
+            /* STEP 2: 6-DIGIT OTP INPUT SCREEN */
             <form onSubmit={handleVerifyOtp} className="space-y-4 animate-in fade-in duration-200">
-              <div className="rounded-xl bg-[#E6EFE8]/50 border border-[#145A45]/20 p-3 text-center">
+              <div className="rounded-xl bg-[#E6EFE8]/70 border border-[#145A45]/20 p-3 text-center">
                 <p className="text-xs font-bold text-[#0F4A38]">
-                  {authMode === "phone"
-                    ? (lang === "hi" ? `+91 ${loginPhone} पर 6-अंकों का OTP भेजा गया` : `6-digit OTP sent to +91 ${loginPhone}`)
-                    : (lang === "hi" ? `${authEmail} पर 6-अंकों का OTP भेजा गया` : `6-digit OTP sent to ${authEmail}`)}
+                  {lang === "hi"
+                    ? `+91 ${loginPhone.slice(-10)} पर 6 अंकों का OTP भेजा गया`
+                    : `6-digit OTP sent to +91 ${loginPhone.slice(-10)}`}
                 </p>
                 <button
                   type="button"
-                  onClick={() => setOtpSent(false)}
+                  onClick={() => {
+                    setOtpSent(false);
+                    setOtpCode("");
+                    setAuthError(null);
+                  }}
                   className="mt-1 text-[11px] font-semibold text-[#145A45] underline hover:text-[#0A3628]"
                 >
-                  {lang === "hi" ? "नंबर / ईमेल बदलें" : "Change Number / Email"}
+                  {lang === "hi" ? "मोबाइल नंबर बदलें" : "Change Mobile Number"}
                 </button>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="otp-input" className="text-xs font-semibold text-[#16201A]">
+                <Label htmlFor="otp-input" className="text-xs font-bold text-[#16201A]">
                   {lang === "hi" ? "6 अंकों का OTP दर्ज करें" : "Enter 6-Digit OTP"}
                 </Label>
                 <Input
                   id="otp-input"
                   required
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   maxLength={6}
                   autoFocus
                   placeholder="••••••"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                  className="h-11 rounded-lg text-center font-mono text-xl tracking-widest border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
+                  className="h-12 rounded-xl text-center font-mono text-2xl tracking-[0.4em] border-[#E5E0D5] bg-white focus-visible:border-[#145A45] shadow-2xs font-black text-[#145A45]"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isVerifyingOtp || otpCode.length < 4}
-                className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
+                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
               >
                 <CheckCircle2 className="mr-2 size-4" />
                 {isVerifyingOtp
-                  ? (lang === "hi" ? "सत्यापित हो रहा है..." : "Verifying…")
-                  : (lang === "hi" ? "OTP सत्यापित करें व लॉगिन करें" : "Verify OTP & Sign In")}
+                  ? (lang === "hi" ? "सत्यापित हो रहा है..." : "Verifying OTP…")
+                  : (lang === "hi" ? "सत्यापित करें व लॉगिन करें" : "Verify & Sign In")}
               </Button>
 
               <div className="text-center pt-1">
                 {countdown > 0 ? (
                   <p className="text-xs text-[#5A655F] flex items-center justify-center gap-1">
-                    <Clock className="size-3" />
-                    {lang === "hi" ? `दोबारा OTP भेजें (${countdown}s)` : `Resend OTP in ${countdown}s`}
+                    <Clock className="size-3.5 text-[#145A45]" />
+                    {lang === "hi" ? `OTP दोबारा भेजें (${countdown}s)` : `Resend OTP in ${countdown}s`}
                   </p>
                 ) : (
                   <button
@@ -634,185 +543,124 @@ function AccountPage() {
                     className="text-xs font-bold text-[#145A45] hover:underline"
                   >
                     {isSendingOtp
-                      ? (lang === "hi" ? "भेज रहा है..." : "Sending…")
+                      ? (lang === "hi" ? "भेज रहा है..." : "Sending OTP…")
                       : (lang === "hi" ? "OTP दोबारा भेजें (Resend OTP)" : "Resend OTP")}
                   </button>
                 )}
               </div>
             </form>
-          ) : authMode === "phone" ? (
-            /* STEP 1: PHONE INPUT SCREEN */
-            <form onSubmit={handleSendOtp} className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="login-phone" className="text-xs font-semibold text-[#16201A]">
-                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर डालें" : "Enter 10-Digit Mobile Number"}
+          ) : (
+            /* STEP 1: MOBILE NUMBER INPUT SCREEN */
+            <form onSubmit={handleSendOtp} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="login-phone" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-Digit Mobile Number"}
                 </Label>
-                <div className="flex rounded-lg border border-[#E5E0D5] focus-within:ring-1 focus-within:ring-[#145A45] bg-white">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E5E0D5]">
+                <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
+                  <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
                     +91
                   </span>
                   <Input
                     id="login-phone"
                     required
                     type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
                     maxLength={10}
                     placeholder="9876543210"
                     value={loginPhone}
                     onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-l-none rounded-r-lg focus-visible:ring-0 text-xs sm:text-sm font-semibold"
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-11"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="login-name" className="text-xs font-semibold text-[#16201A]">
-                  {lang === "hi" ? "आपका नाम" : "Your Name"}{" "}
-                  <span className="text-[#5A655F] font-normal">({lang === "hi" ? "वैकल्पिक" : "Optional"})</span>
-                </Label>
-                <Input
-                  id="login-name"
-                  placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
-                  value={loginName}
-                  onChange={(e) => setLoginName(e.target.value)}
-                  className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
-                />
-              </div>
-
               <Button
                 type="submit"
-                disabled={isSendingOtp || loginPhone.length !== 10}
-                className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
+                disabled={isSendingOtp || loginPhone.replace(/\D/g, "").length !== 10}
+                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
               >
                 {isSendingOtp
                   ? (lang === "hi" ? "OTP भेजा जा रहा है..." : "Sending OTP…")
-                  : (lang === "hi" ? "ओटीपी भेजें (Get Login OTP) →" : "Send Login OTP →")}
+                  : (lang === "hi" ? "OTP भेजें (Get OTP) →" : "Send OTP →")}
               </Button>
+
+              <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A655F]">
+                <ShieldCheck className="size-3.5 text-[#145A45]" />
+                <span>
+                  {lang === "hi"
+                    ? "सुरक्षित व केवल Supabase प्रमाणित लॉगिन"
+                    : "Secure 100% verified Supabase login"}
+                </span>
+              </div>
             </form>
-          ) : (
-            /* STEP 1: EMAIL OTP / PASSWORD SCREEN */
-            <div className="space-y-3">
-              {!usePasswordInstead ? (
-                <form onSubmit={handleSendOtp} className="space-y-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="auth-email" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "ईमेल आईडी दर्ज करें" : "Enter Email Address"}
-                    </Label>
-                    <Input
-                      id="auth-email"
-                      type="email"
-                      required
-                      placeholder="name@example.com"
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={isSendingOtp || !authEmail.trim()}
-                    className="w-full h-11 rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
-                  >
-                    {isSendingOtp
-                      ? (lang === "hi" ? "OTP भेजा जा रहा है..." : "Sending OTP…")
-                      : (lang === "hi" ? "ईमेल OTP भेजें (Send OTP) →" : "Send Email OTP →")}
-                  </Button>
-
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setUsePasswordInstead(true)}
-                      className="text-xs font-semibold text-[#145A45] hover:underline"
-                    >
-                      {lang === "hi" ? "पासवर्ड से लॉगिन करें" : "Login with Password instead"}
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleEmailSignIn} className="space-y-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="auth-email-pwd" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "ईमेल आईडी" : "Email Address"}
-                    </Label>
-                    <Input
-                      id="auth-email-pwd"
-                      type="email"
-                      required
-                      placeholder="name@example.com"
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="auth-pwd" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "पासवर्ड" : "Password"}
-                    </Label>
-                    <Input
-                      id="auth-pwd"
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white text-xs sm:text-sm"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={isSigningIn}
-                    className="w-full h-11 sm:h-12 rounded-full font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-98 transition-all"
-                  >
-                    <Lock className="mr-2 size-4" />{" "}
-                    {isSigningIn
-                      ? (lang === "hi" ? "लॉगिन हो रहा है..." : "Signing In…")
-                      : (lang === "hi" ? "पासवर्ड से लॉगिन करें" : "Sign In with Password")}
-                  </Button>
-
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setUsePasswordInstead(false)}
-                      className="text-xs font-semibold text-[#145A45] hover:underline"
-                    >
-                      {lang === "hi" ? "← OTP से लॉगिन करें" : "← Login with OTP instead"}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
           )}
+        </div>
+
+        {/* Guest Order Tracking Independent Option */}
+        <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 text-center space-y-1.5">
+          <p className="text-xs font-bold text-[#16201A] flex items-center justify-center gap-1.5">
+            <Package className="size-4 text-[#145A45]" />
+            <span>{lang === "hi" ? "क्या आपको केवल ऑर्डर ट्रैक करना है?" : "Looking to track an order?"}</span>
+          </p>
+          <p className="text-[11px] text-[#5A655F]">
+            {lang === "hi"
+              ? "बिना लॉगिन केवल ऑर्डर नंबर व मोबाइल नंबर डालकर लाइव स्टेटस देखें।"
+              : "Guest order tracking is available without needing to sign in."}
+          </p>
+          <div className="pt-1">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-[#145A45] text-[#145A45] font-bold text-xs hover:bg-[#E6EFE8]"
+            >
+              <Link to="/track">
+                {lang === "hi" ? "📦 बिना लॉगिन ऑर्डर ट्रैक करें →" : "Track Order as Guest →"}
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const displayName = profile?.full_name || identifiedName || "Valued Customer";
-  const displayPhone = profile?.phone || identifiedPhone;
+  // 3. AUTHENTICATED CUSTOMER ACCOUNT SCREEN
+  const customerName = profile?.full_name || (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
+  const customerPhone = user.phone || profile?.phone || "";
 
   return (
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
-      {/* Account Profile Header Bar */}
-      <div className="rounded-3xl border border-[#E8E4DA] bg-white p-6 shadow-xs sm:p-8">
+      {/* Customer Header Card */}
+      <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-7 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="grid size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-2xl font-bold text-white shadow-sm">
-              {displayName.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-[#145A45] font-sans text-xl sm:text-2xl font-bold text-white shadow-2xs">
+              {customerName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="font-sans text-2xl font-bold text-[#1F2924] sm:text-3xl">
-                {displayName}
-              </h1>
-              <p className="flex items-center gap-2 text-xs text-[#6B746F]">
-                <Phone className="size-3.5 text-[#145A45]" /> +91 {displayPhone}
-                {profile?.email ? (
+              <div className="flex items-center gap-2">
+                <h1 className="font-sans text-xl sm:text-2xl font-black text-[#16201A]">
+                  {customerName}
+                </h1>
+                <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#145A45]">
+                  {lang === "hi" ? "सत्यापित ग्राहक" : "Verified Customer"}
+                </span>
+              </div>
+              <p className="flex items-center gap-2 text-xs text-[#5A655F] mt-0.5">
+                {customerPhone && (
+                  <span className="flex items-center gap-1 font-semibold text-[#16201A]">
+                    <Phone className="size-3 text-[#145A45]" /> {customerPhone}
+                  </span>
+                )}
+                {profile?.email && (
                   <>
                     <span>•</span>
-                    <Mail className="size-3.5 text-[#145A45]" /> {profile.email}
+                    <span className="flex items-center gap-1">
+                      <Mail className="size-3 text-[#145A45]" /> {profile.email}
+                    </span>
                   </>
-                ) : null}
+                )}
               </p>
             </div>
           </div>
@@ -822,45 +670,46 @@ function AccountPage() {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="rounded-full gap-1.5 text-xs border-[#E8E4DA] text-[#6B746F] hover:bg-[#FAF8F2]"
+              className="rounded-xl gap-1.5 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
             >
-              <LogOut className="size-3.5" /> Switch / Logout
+              <LogOut className="size-3.5" />
+              <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Account Tabs */}
-      <div className="mt-8">
+      {/* Customer Tabs */}
+      <div className="mt-6">
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid h-12 w-full grid-cols-5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
+          <TabsList className="grid h-11 w-full grid-cols-5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
             <TabsTrigger
               value="orders"
-              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
             >
               <Package className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
             </TabsTrigger>
             <TabsTrigger
               value="buy-again"
-              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
             >
-              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पुनः खरीदें" : "Buy Again"} ({uniquePurchasedItems.length})
+              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
             </TabsTrigger>
             <TabsTrigger
               value="addresses"
-              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
             >
-              <MapPin className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पते" : "Addresses"}
+              <MapPin className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
             </TabsTrigger>
             <TabsTrigger
               value="wishlist"
-              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
             >
               <Heart className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
             </TabsTrigger>
             <TabsTrigger
               value="profile"
-              className="rounded-xl text-xs font-semibold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
             >
               <User className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
             </TabsTrigger>
@@ -870,26 +719,26 @@ function AccountPage() {
           <TabsContent value="orders" className="space-y-4">
             {ordersLoading ? (
               <div className="space-y-3">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-28 w-full rounded-2xl" />
+                <Skeleton className="h-28 w-full rounded-2xl" />
               </div>
             ) : orders && orders.length > 0 ? (
               orders.map((order) => (
                 <div
                   key={order.id}
-                  className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs transition-all"
+                  className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs transition-all space-y-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E4DA] pb-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-sans font-bold text-[#1F2924]">
-                          {order.order_no}
+                        <span className="font-sans font-black text-sm text-[#16201A]">
+                          #{order.order_no}
                         </span>
-                        <span className="rounded-full bg-[#DCEBDD] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
+                        <span className="rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
                           {ORDER_STATUS_LABEL[order.status] ?? order.status}
                         </span>
                       </div>
-                      <span className="text-[11px] text-[#6B746F]">
+                      <span className="text-[11px] text-[#5A655F]">
                         {formatDate(order.created_at)}
                       </span>
                     </div>
@@ -898,29 +747,28 @@ function AccountPage() {
                       <Button
                         onClick={() => handleReorder(order)}
                         size="sm"
-                        variant="default"
-                        className="h-8 rounded-full gap-1 text-xs font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0E4333]"
+                        className="h-8 rounded-xl gap-1 text-xs font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628]"
                       >
-                        <RotateCcw className="size-3.5" /> Buy Again
+                        <RotateCcw className="size-3.5" /> {lang === "hi" ? "पुनः खरीदें" : "Buy Again"}
                       </Button>
                       <Button
                         asChild
                         size="sm"
                         variant="outline"
-                        className="h-8 rounded-full text-xs font-semibold border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2]"
+                        className="h-8 rounded-xl text-xs font-semibold border-[#E5E0D5] text-[#16201A] hover:bg-[#FAF8F2]"
                       >
                         <Link
                           to="/track"
                           search={{ orderNo: order.order_no, phone: order.customer_phone } as never}
                         >
-                          Track Live
+                          {lang === "hi" ? "ट्रैक करें" : "Track Live"}
                         </Link>
                       </Button>
                     </div>
                   </div>
 
                   {/* Order items preview */}
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                  <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
                     {(order.order_items ?? []).map((item) => (
                       <div key={item.id} className="flex items-center gap-2 text-xs">
                         <img
@@ -929,11 +777,11 @@ function AccountPage() {
                             image_url: item.image_url,
                           })}
                           alt={item.name}
-                          className="size-9 rounded-md object-contain bg-white p-0.5"
+                          className="size-9 rounded-md object-contain bg-transparent p-0.5"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-[#1F2924]">{item.name}</p>
-                          <p className="text-[10px] text-[#6B746F]">
+                          <p className="truncate font-medium text-[#16201A]">{item.name}</p>
+                          <p className="text-[10px] text-[#5A655F]">
                             {item.variant_label} × {item.qty} ({inr(item.price * item.qty)})
                           </p>
                         </div>
@@ -941,46 +789,46 @@ function AccountPage() {
                     ))}
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[#E8E4DA] pt-2 text-xs">
-                    <span className="text-[#6B746F] capitalize">
-                      {order.order_type} in Maharajganj • {order.payment_method.toUpperCase()}
+                  <div className="flex items-center justify-between border-t border-[#E8E4DA] pt-2 text-xs">
+                    <span className="text-[#5A655F] capitalize">
+                      {order.order_type === "delivery" ? "होम डिलीवरी" : "दुकान से पिकअप"} • {order.payment_method?.toUpperCase()}
                     </span>
-                    <span className="font-bold text-[#1F2924]">
-                      Total:{" "}
-                      <span className="text-[#145A45] font-sans text-sm">{inr(order.total)}</span>
+                    <span className="font-bold text-[#16201A]">
+                      {lang === "hi" ? "कुल राशि: " : "Total: "}
+                      <span className="text-[#145A45] font-black text-sm">{inr(order.total)}</span>
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
-                <ShoppingBag className="mx-auto size-12 text-[#6B746F]" />
-                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
-                  No orders yet
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
+                <ShoppingBag className="mx-auto size-12 text-[#5A655F]" />
+                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
+                  {lang === "hi" ? "अभी तक कोई ऑर्डर नहीं" : "No orders found"}
                 </h3>
-                <p className="mt-1 text-xs text-[#6B746F]">
-                  You haven't placed any orders with phone +91 {displayPhone} yet.
+                <p className="mt-1 text-xs text-[#5A655F]">
+                  {lang === "hi"
+                    ? "आपके खाते में अभी कोई पुराना ऑर्डर दर्ज नहीं है।"
+                    : "You haven't placed any orders with this account yet."}
                 </p>
-                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
-                  <Link to="/shop">Start Shopping</Link>
+                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
+                  <Link to="/shop">{lang === "hi" ? "दुकान देखें" : "Start Shopping"}</Link>
                 </Button>
               </div>
             )}
           </TabsContent>
 
-          {/* TAB: BUY AGAIN (Previously Purchased Items) */}
+          {/* TAB 2: BUY AGAIN (Previously Purchased Items) */}
           <TabsContent value="buy-again" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-sans text-lg font-bold text-[#1F2924]">
-                  {lang === "hi" ? "आपने पहले ये सामान खरीदा था" : "Previously Purchased Items"}
-                </h3>
-                <p className="text-xs text-[#6B746F]">
-                  {lang === "hi"
-                    ? "अपने पसंदीदा दैनिक राशन को 1-क्लिक में दोबारा कार्ट में जोड़ें।"
-                    : "Easily reorder your daily grocery essentials with a single click."}
-                </p>
-              </div>
+            <div>
+              <h3 className="font-sans text-base font-bold text-[#16201A]">
+                {lang === "hi" ? "आपने पहले ये सामान मंगाया था" : "Previously Purchased Staples"}
+              </h3>
+              <p className="text-xs text-[#5A655F]">
+                {lang === "hi"
+                  ? "अपने पसंदीदा दैनिक राशन को 1-क्लिक में दोबारा कार्ट में जोड़ें।"
+                  : "Easily reorder your daily grocery essentials with a single click."}
+              </p>
             </div>
 
             {uniquePurchasedItems.length > 0 ? (
@@ -1002,18 +850,18 @@ function AccountPage() {
                     </div>
                     <div className="mt-2 flex flex-1 flex-col justify-between space-y-1">
                       <div>
-                        <h4 className="line-clamp-2 text-xs font-bold text-[#1F2924]">{item.name}</h4>
-                        <p className="text-[11px] text-[#6B746F]">{item.variantLabel}</p>
+                        <h4 className="line-clamp-2 text-xs font-bold text-[#16201A]">{item.name}</h4>
+                        <p className="text-[11px] text-[#5A655F]">{item.variantLabel}</p>
                       </div>
                       <div className="pt-2 flex items-center justify-between">
-                        <span className="text-xs font-black text-[#1F2924]">{inr(item.price)}</span>
+                        <span className="text-xs font-black text-[#16201A]">{inr(item.price)}</span>
                         <Button
                           size="sm"
                           onClick={() => {
                             add({
                               variantId: item.variantId,
                               productId: item.productId,
-                              slug: "",
+                              slug: item.name.toLowerCase().replace(/\s+/g, "-"),
                               name: item.name,
                               variantLabel: item.variantLabel,
                               price: item.price,
@@ -1023,9 +871,9 @@ function AccountPage() {
                             });
                             toast.success(`${item.name} ${t.added.toLowerCase()}`);
                           }}
-                          className="h-8 rounded-full bg-[#145A45] px-3 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0E4333] active:scale-95"
+                          className="h-8 rounded-xl bg-[#145A45] px-3 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0A3628] active:scale-95"
                         >
-                          <Plus className="mr-1 size-3" /> {lang === "hi" ? "फिर से खरीदें" : "Buy Again"}
+                          <Plus className="mr-1 size-3" /> {lang === "hi" ? "खरीदें" : "Buy"}
                         </Button>
                       </div>
                     </div>
@@ -1033,17 +881,17 @@ function AccountPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
-                <RotateCcw className="mx-auto size-12 text-[#6B746F]" />
-                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
+                <RotateCcw className="mx-auto size-12 text-[#5A655F]" />
+                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
                   {lang === "hi" ? "कोई पिछला ऑर्डर नहीं मिला" : "No purchase history yet"}
                 </h3>
-                <p className="mt-1 text-xs text-[#6B746F]">
+                <p className="mt-1 text-xs text-[#5A655F]">
                   {lang === "hi"
                     ? "जब आप राशन ऑर्डर करेंगे, तो वे सामान यहाँ तुरंत दिखाई देंगे।"
                     : "Items you order in the future will automatically appear here for fast reordering."}
                 </p>
-                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
+                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
                   <Link to="/shop">{lang === "hi" ? "सामान खरीदें" : "Start Shopping"}</Link>
                 </Button>
               </div>
@@ -1054,97 +902,150 @@ function AccountPage() {
           <TabsContent value="addresses" className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-sans text-lg font-bold text-[#1F2924]">
-                  Saved Delivery Locations
+                <h3 className="font-sans text-base font-bold text-[#16201A]">
+                  {lang === "hi" ? "डिलीवरी पते" : "Saved Delivery Addresses"}
                 </h3>
-                <p className="text-xs text-[#6B746F]">
-                  Manage your home, shop, or office addresses in Maharajganj.
+                <p className="text-xs text-[#5A655F]">
+                  {lang === "hi"
+                    ? "महाराजगंज में अपने घर, दुकान या दफ्तर का पता प्रबंधित करें।"
+                    : "Manage your delivery addresses in Maharajganj, UP."}
                 </p>
               </div>
               <Button
                 onClick={() => setShowAddAddress(!showAddAddress)}
                 size="sm"
-                className="rounded-full gap-1 text-xs font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
+                className="rounded-xl gap-1 text-xs font-bold bg-[#145A45] text-white hover:bg-[#0A3628]"
               >
-                <Plus className="size-3.5" /> Add Address
+                <Plus className="size-3.5" /> {lang === "hi" ? "नया पता जोड़ें" : "Add Address"}
               </Button>
             </div>
 
-            {showAddAddress ? (
+            {showAddAddress && (
               <form
                 onSubmit={handleAddAddress}
-                className="rounded-2xl border border-[#E8E4DA] bg-white p-5 space-y-4"
+                className="rounded-2xl border border-[#145A45]/30 bg-[#FAF8F2] p-5 space-y-3.5 animate-in fade-in duration-150"
               >
-                <h4 className="font-semibold text-sm text-[#1F2924]">New Delivery Address</h4>
+                <h4 className="font-bold text-xs sm:text-sm text-[#0F4A38] flex items-center gap-1.5">
+                  <MapPin className="size-4 text-[#145A45]" />
+                  <span>{lang === "hi" ? "नया डिलीवरी पता दर्ज करें" : "Enter New Delivery Address"}</span>
+                </h4>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Input
                     required
-                    placeholder="House / Shop No."
-                    value={newHouse}
-                    onChange={(e) => setNewHouse(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    placeholder={lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Full Name"}
+                    value={newRecipientName}
+                    onChange={(e) => setNewRecipientName(e.target.value)}
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
                   />
                   <Input
                     required
-                    placeholder="Area / Mohalla / Road"
+                    type="tel"
+                    maxLength={10}
+                    placeholder={lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"}
+                    value={newRecipientPhone}
+                    onChange={(e) => setNewRecipientPhone(e.target.value.replace(/\D/g, ""))}
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
+                  />
+                  <Input
+                    required
+                    placeholder={lang === "hi" ? "मकान / दुकान नं." : "House / Shop / Flat No."}
+                    value={newHouse}
+                    onChange={(e) => setNewHouse(e.target.value)}
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
+                  />
+                  <Input
+                    required
+                    placeholder={lang === "hi" ? "मोहल्ला / गली / सड़क" : "Area / Mohalla / Road Name"}
                     value={newArea}
                     onChange={(e) => setNewArea(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
                   />
                   <Input
-                    placeholder="Nearby Landmark (Optional)"
+                    placeholder={lang === "hi" ? "नजदीकी लैंडमार्क (वैकल्पिक)" : "Nearby Landmark (Optional)"}
                     value={newLandmark}
                     onChange={(e) => setNewLandmark(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
                   />
                   <Input
-                    placeholder="PIN Code (273303)"
+                    placeholder="पिन कोड (273303)"
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" className="rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
-                    Save Address
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="submit"
+                    disabled={isSavingAddress}
+                    size="sm"
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]"
+                  >
+                    {isSavingAddress ? "सहेज रहा है..." : "पता सहेजें (Save Address)"}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setShowAddAddress(false)}
                     variant="outline"
                     size="sm"
-                    className="rounded-full border-[#E8E4DA] text-[#6B746F]"
+                    className="rounded-xl border-[#E5E0D5] text-[#5A655F]"
                   >
-                    Cancel
+                    रद्द करें (Cancel)
                   </Button>
                 </div>
               </form>
-            ) : null}
+            )}
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {addresses.map((addr) => (
-                <div
-                  key={addr.id}
-                  className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="size-4 text-[#145A45]" />
-                      <span className="font-bold text-xs text-[#1F2924]">Home / Delivery</span>
+            {addressesLoading ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+              </div>
+            ) : addresses.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {addresses.map((addr) => (
+                  <div
+                    key={addr.id}
+                    className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs flex flex-col justify-between space-y-2"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
+                          <MapPin className="size-4 text-[#145A45]" />
+                          <span>{addr.name}</span>
+                          <span className="font-normal text-[#5A655F]">({addr.phone})</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAddress(addr.id)}
+                          className="text-[#5A655F] hover:text-red-600 p-1 rounded-md transition-colors"
+                          title="Delete address"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-[#16201A]">
+                        {addr.house}, {addr.area}
+                        {addr.landmark ? `, लैंडमार्क: ${addr.landmark}` : ""}
+                        <br />
+                        {addr.city}, UP - {addr.pincode || "273303"}
+                      </p>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-[#1F2924]">
-                    {addr.house}, {addr.area}
-                    {addr.landmark ? `, Landmark: ${addr.landmark}` : ""}
-                    <br />
-                    {addr.city}, UP - {addr.pincode}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-8 text-center bg-white">
+                <MapPin className="mx-auto size-10 text-[#5A655F]" />
+                <p className="mt-2 text-xs text-[#5A655F]">
+                  {lang === "hi"
+                    ? "कोई सहेजा गया पता नहीं मिला। ऊपर दिए बटन से नया पता जोड़ें।"
+                    : "No saved addresses. Click Add Address to save your location."}
+                </p>
+              </div>
+            )}
           </TabsContent>
 
-          {/* TAB 3: WISHLIST */}
+          {/* TAB 4: WISHLIST */}
           <TabsContent value="wishlist">
             {wishlistItems.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -1153,81 +1054,89 @@ function AccountPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-12 text-center bg-white">
-                <Heart className="mx-auto size-12 text-[#6B746F]" />
-                <h3 className="mt-3 font-sans text-lg font-bold text-[#1F2924]">
-                  Wishlist is empty
+              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
+                <Heart className="mx-auto size-12 text-[#5A655F]" />
+                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
+                  {lang === "hi" ? "विशलिस्ट खाली है" : "Wishlist is empty"}
                 </h3>
-                <p className="mt-1 text-xs text-[#6B746F]">
-                  Tap the heart on any product to save it here.
+                <p className="mt-1 text-xs text-[#5A655F]">
+                  {lang === "hi"
+                    ? "किसी भी उत्पाद पर दिल (Heart) आइकन दबाकर उसे यहाँ सहेजें।"
+                    : "Tap the heart on any product to save it here for later."}
                 </p>
-                <Button asChild className="mt-4 rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]">
-                  <Link to="/shop">Browse Catalogue</Link>
+                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
+                  <Link to="/shop">{lang === "hi" ? "कैटलॉग देखें" : "Browse Catalogue"}</Link>
                 </Button>
               </div>
             )}
           </TabsContent>
 
-          {/* TAB 4: PROFILE SETTINGS */}
+          {/* TAB 5: PROFILE SETTINGS */}
           <TabsContent value="profile">
-            <div className="max-w-xl rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs">
-              <h3 className="font-sans text-lg font-bold text-[#1F2924]">
-                Personal Information
-              </h3>
-              <p className="mt-0.5 text-xs text-[#6B746F]">
-                Update your name and primary phone number.
-              </p>
+            <div className="max-w-xl rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs space-y-4">
+              <div>
+                <h3 className="font-sans text-base font-bold text-[#16201A]">
+                  {lang === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
+                </h3>
+                <p className="text-xs text-[#5A655F]">
+                  {lang === "hi"
+                    ? "अपना नाम और संपर्क ईमेल अपडेट करें।"
+                    : "Update your customer name and contact email."}
+                </p>
+              </div>
 
-              <form onSubmit={handleSaveProfile} className="mt-6 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="prof-name" className="text-xs font-semibold text-[#1F2924]">
-                    Full Name
+              <form onSubmit={handleSaveProfile} className="space-y-3.5">
+                <div className="space-y-1">
+                  <Label htmlFor="prof-name" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "पूरा नाम" : "Full Name"}
                   </Label>
                   <Input
                     id="prof-name"
                     required
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    placeholder="उदा. रमेश कुमार"
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs font-medium"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="prof-phone" className="text-xs font-semibold text-[#1F2924]">
-                    Mobile Number (10 digits)
+                <div className="space-y-1">
+                  <Label htmlFor="prof-phone" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "सत्यापित मोबाइल नंबर" : "Verified Mobile Number"}
                   </Label>
                   <Input
                     id="prof-phone"
-                    required
-                    type="tel"
-                    maxLength={10}
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ""))}
-                    className="rounded-xl border-[#E8E4DA] bg-white"
+                    disabled
+                    value={user.phone || profile?.phone || ""}
+                    className="rounded-xl border-[#E5E0D5] bg-[#FAF8F2] text-xs font-bold text-[#145A45]"
                   />
+                  <p className="text-[10px] text-[#5A655F]">
+                    {lang === "hi"
+                      ? "मोबाइल नंबर केवल OTP लॉगिन द्वारा सुरक्षित रूप से लिंक रहता है।"
+                      : "Mobile number is verified and authenticated via Supabase OTP."}
+                  </p>
                 </div>
 
-                {user ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="prof-email" className="text-xs font-semibold text-[#1F2924]">
-                      Email Address
-                    </Label>
-                    <Input
-                      id="prof-email"
-                      type="email"
-                      disabled
-                      value={editEmail}
-                      className="rounded-xl bg-[#FAF8F2] border-[#E8E4DA]"
-                    />
-                  </div>
-                ) : null}
+                <div className="space-y-1">
+                  <Label htmlFor="prof-email" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "ईमेल आईडी (वैकल्पिक)" : "Email Address (Optional)"}
+                  </Label>
+                  <Input
+                    id="prof-email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
+                  />
+                </div>
 
                 <Button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="rounded-full font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
+                  className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] shadow-xs"
                 >
-                  {isSavingProfile ? "Saving…" : "Save Changes"}
+                  {isSavingProfile ? "सहेज रहा है..." : "बदलाव सहेजें (Save Changes)"}
                 </Button>
               </form>
             </div>

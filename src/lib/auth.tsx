@@ -41,7 +41,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
     ]);
-    setProfile((prof as Profile) ?? null);
+    let userProfile = (prof as Profile) ?? null;
+    if (!userProfile && userId) {
+      try {
+        const { data: createdProf } = await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: userId,
+              phone: session?.user?.phone ?? null,
+              email: session?.user?.email ?? null,
+              full_name: (session?.user?.user_metadata?.["full_name"] as string) ?? null,
+            },
+            { onConflict: "id" },
+          )
+          .select("id, full_name, phone, email")
+          .maybeSingle();
+        if (createdProf) {
+          userProfile = createdProf as Profile;
+        }
+      } catch {
+        // Silently continue if upsert is restricted by RLS or handled by DB trigger
+      }
+    }
+
+    setProfile(userProfile);
     setIsAdmin(Boolean(roles?.some((r) => r.role === "admin")));
   }
 
