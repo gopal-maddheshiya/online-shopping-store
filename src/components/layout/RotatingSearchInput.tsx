@@ -47,7 +47,7 @@ export function RotatingSearchInput({
     return () => cancelAnimationFrame(r);
   }, [lang]);
 
-  // Interval ticker (3.8s display per suggestion, very gentle and slow 1200ms glide)
+  // Interval ticker: 2.0s stationary reading pause + 1200ms gentle gliding transition = 3200ms cycle
   useEffect(() => {
     if (isFocused || term.length > 0) return;
 
@@ -69,7 +69,7 @@ export function RotatingSearchInput({
         }
         return next;
       });
-    }, 3800);
+    }, 3200);
 
     return () => clearInterval(interval);
   }, [isFocused, term.length, suggestions.length]);

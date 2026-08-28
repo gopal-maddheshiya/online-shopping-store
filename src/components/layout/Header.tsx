@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -10,13 +10,13 @@ import {
   User,
   MapPin,
   Clock,
-  Sparkles,
   PhoneCall,
   Store,
   ChevronRight,
   ShieldCheck,
   Languages,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,21 @@ export function Header() {
   const { user, profile } = useAuth();
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const isOnCart = currentPath === "/cart";
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    if (isOnCart) {
+      e.preventDefault();
+      if (typeof window !== "undefined" && window.history.length > 1) {
+        window.history.back();
+      } else {
+        void navigate({ to: "/" });
+      }
+    }
+  };
+
   const [term, setTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -416,7 +431,13 @@ export function Header() {
             {/* Cart Button */}
             <Link
               to="/cart"
-              className="flex items-center gap-2 rounded-lg bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] active:scale-95 transition-all"
+              onClick={handleCartClick}
+              title={t.cart}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer ${
+                isOnCart
+                  ? "bg-[#0A3628] text-white ring-2 ring-[#145A45]/40"
+                  : "bg-[#145A45] text-white hover:bg-[#0A3628]"
+              }`}
             >
               <div className="relative flex items-center">
                 <ShoppingBag className="size-4" />

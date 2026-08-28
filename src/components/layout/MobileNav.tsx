@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home,
   LayoutGrid,
@@ -8,6 +8,7 @@ import {
   MessageCircle,
   PhoneCall,
   User,
+  X,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
@@ -30,6 +31,7 @@ export function MobileNav() {
   const { items: wishlistItems } = useWishlist();
   const { user } = useAuth();
   const { lang, t } = useLanguage();
+  const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -104,18 +106,31 @@ export function MobileNav() {
         <div className="grid grid-cols-5 items-center justify-around h-14.5">
           {links.map((link) => {
             const Icon = link.icon;
+            const isCart = link.to === "/cart";
             const isActive =
               (currentPath === link.to ||
                 (link.to === "/account" && (currentPath === "/account" || currentPath === "/track"))) &&
               (!link.search ||
                 JSON.stringify(routerState.location.search) === JSON.stringify(link.search));
 
+            const handleClick = (e: React.MouseEvent) => {
+              if (isCart && currentPath === "/cart") {
+                e.preventDefault();
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  void navigate({ to: "/" });
+                }
+              }
+            };
+
             return (
               <Link
                 key={link.label}
                 to={link.to}
                 search={link.search as never}
-                className={`relative flex flex-col items-center justify-center gap-1 h-full text-[10.5px] transition-all min-h-[48px] ${
+                onClick={handleClick}
+                className={`relative flex flex-col items-center justify-center gap-1 h-full text-[10.5px] transition-all min-h-[48px] cursor-pointer ${
                   isActive
                     ? "text-[#0F4A38] font-bold"
                     : "text-[#5A655F] hover:text-[#16201A] font-medium"
@@ -141,7 +156,9 @@ export function MobileNav() {
                     </span>
                   ) : null}
                 </div>
-                <span className="truncate max-w-[62px] text-center leading-none">{link.label}</span>
+                <span className="truncate max-w-[62px] text-center leading-none">
+                  {link.label}
+                </span>
               </Link>
             );
           })}

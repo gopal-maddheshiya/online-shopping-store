@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Minus,
@@ -7,6 +7,7 @@ import {
   Heart,
   ShoppingBag,
   ArrowRight,
+  ArrowLeft,
   Truck,
   ShieldCheck,
 } from "lucide-react";
@@ -20,12 +21,12 @@ import { inr } from "@/lib/format";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Arun Gopal Traders | Cart" },
+      { title: "अरुण गोपाल ट्रेडर्स | कार्ट — Arun Gopal Traders" },
       {
         name: "description",
         content: "Review your grocery basket before checkout at Arun Gopal Traders, Maharajganj.",
       },
-      { property: "og:title", content: "Arun Gopal Traders | Cart" },
+      { property: "og:title", content: "अरुण गोपाल ट्रेडर्स | कार्ट" },
       {
         property: "og:description",
         content: "Review items, quantities and totals before placing your order.",
@@ -50,6 +51,15 @@ function CartPage() {
   } = useCart();
   const { data: s } = useQuery(settingsQuery);
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+    } else {
+      void navigate({ to: "/shop" });
+    }
+  };
 
   const freeAt = Number(s?.free_delivery_threshold ?? 499);
   const fee = subtotal >= freeAt || subtotal === 0 ? 0 : Number(s?.delivery_fee ?? 30);
@@ -57,31 +67,66 @@ function CartPage() {
 
   if (hydrated && items.length === 0 && savedItems.length === 0) {
     return (
-      <div className="container-page py-20 text-center">
+      <div className="container-page py-16 sm:py-20 text-center max-w-md mx-auto">
         <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#0F4A38] border border-[#E5E0D5]">
           <ShoppingBag className="size-8 text-[#145A45]" />
         </div>
         <h1 className="mt-4 font-sans text-2xl font-bold text-[#16201A]">{t.emptyCartTitle}</h1>
         <p className="mt-1 text-xs sm:text-sm text-[#5A655F]">{t.emptyCartSub}</p>
-        <Button
-          asChild
-          className="mt-6 rounded-lg bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
-        >
-          <Link to="/shop">
-            {lang === "hi" ? "किराना खरीदारी शुरू करें →" : "Start Shopping →"}
-          </Link>
-        </Button>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            aria-label="Go back"
+            title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
+            className="flex size-10 items-center justify-center rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-2xs cursor-pointer active:scale-95"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+          <Button
+            asChild
+            className="rounded-xl bg-[#145A45] px-6 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] cursor-pointer"
+          >
+            <Link to="/shop">
+              {lang === "hi" ? "किराना सामान देखें →" : "Browse Groceries →"}
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container-page py-6 sm:py-10 pb-28 lg:pb-10">
-      <div className="flex items-baseline justify-between border-b border-[#E5E0D5] pb-3">
-        <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#16201A]">{t.yourCart}</h1>
-        <span className="text-xs font-semibold text-[#5A655F]">
-          {items.length} {lang === "hi" ? "सामान" : "item(s)"}
-        </span>
+    <div className="container-page py-4 sm:py-8 pb-28 lg:pb-10">
+      {/* Top Header Bar with Clean Back Icon */}
+      <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            aria-label="Go back"
+            title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
+            className="flex size-9 items-center justify-center rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-2xs cursor-pointer active:scale-95"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+
+          <h1 className="font-sans text-xl sm:text-2xl md:text-3xl font-bold text-[#16201A]">
+            {t.yourCart}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Link
+            to="/shop"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:underline"
+          >
+            {lang === "hi" ? "खरीदारी जारी रखें →" : "Continue Shopping →"}
+          </Link>
+          <span className="text-xs font-semibold text-[#5A655F] bg-[#FAF8F2] px-2.5 py-1 rounded-full border border-[#E5E0D5]">
+            {items.length} {lang === "hi" ? "सामान" : "item(s)"}
+          </span>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">

@@ -305,38 +305,38 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      {/* 2. PREMIUM HERO: Clean Established Retail Showcase */}
-      <section className="container-page pt-1">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0F4A38] via-[#145A45] to-[#0A3326] border border-[#145A45]/30 shadow-md text-white">
-          {/* Subtle Ambient Light */}
-          <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-[#E6EFE8]/10 blur-3xl" />
-          <div className="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-[#D97706]/10 blur-3xl" />
+      {/* 2. FLAGSHIP HERO: Clean Premium Grocery Showcase */}
+      <section className="container-page pt-1 sm:pt-2">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#072F22] via-[#0E4937] to-[#052118] border border-[#1E6B50]/30 shadow-xl text-white">
+          {/* Subtle Ambient Sunlight Glow */}
+          <div className="pointer-events-none absolute -right-16 -top-16 size-80 sm:size-96 rounded-full bg-radial from-[#F59E0B]/18 via-[#145A45]/25 to-transparent blur-3xl" />
+          <div className="pointer-events-none absolute -left-20 -bottom-20 size-80 sm:size-96 rounded-full bg-radial from-[#145A45]/35 via-transparent to-transparent blur-3xl" />
 
           {/* Hero Content Grid */}
-          <div className="relative z-10 p-5 sm:p-8 md:p-10 lg:p-12 grid gap-6 lg:grid-cols-[1fr_1.15fr] items-center">
-            {/* Left Column */}
+          <div className="relative z-10 p-5 sm:p-8 md:p-10 lg:p-12 grid gap-6 sm:gap-8 lg:grid-cols-[1fr_1.1fr] items-center">
+            {/* Left Column: Clean High-Trust Narrative */}
             <div className="flex flex-col items-start justify-center space-y-3.5 sm:space-y-4.5 max-w-xl">
               {/* Trust Badge */}
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3.5 py-1 text-[11px] sm:text-xs font-bold text-white backdrop-blur-xs shadow-2xs">
-                <Sparkles className="size-3.5 text-[#E3B341]" />
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-[11px] sm:text-xs font-semibold text-white/90 backdrop-blur-xs">
+                <span className="size-1.5 rounded-full bg-[#4ADE80]" />
                 <span>
                   {lang === "hi"
-                    ? "🌿 आपकी भरोसेमंद किराना दुकान"
-                    : "🌿 Your Trusted Grocery Store"}
+                    ? "आपकी भरोसेमंद किराना दुकान • महाराजगंज"
+                    : "Your Trusted Grocery Store • Maharajganj"}
                 </span>
               </div>
 
-              {/* Main Headline */}
+              {/* Dominant Clean Headline */}
               <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl lg:text-[46px] font-extrabold tracking-tight text-white leading-[1.18]">
                 {lang === "hi" ? (
                   <>
                     हर दिन की जरूरत,<br />
-                    <span className="text-[#E3B341]">अब आपके घर तक।</span>
+                    <span className="text-[#E3B341]">अब आपके घर तक!</span>
                   </>
                 ) : (
                   <>
                     Everyday Grocery Essentials,<br />
-                    <span className="text-[#E3B341]">Delivered to Your Doorstep.</span>
+                    <span className="text-[#E3B341]">Delivered to Your Doorstep!</span>
                   </>
                 )}
               </h1>
@@ -344,8 +344,8 @@ function PremiumStoreHome() {
               {/* Supporting Subtext */}
               <p className="text-xs sm:text-sm md:text-[15px] text-white/90 leading-relaxed max-w-lg">
                 {lang === "hi"
-                  ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का जरूरी सामान — आसान ऑनलाइन ऑर्डर और तेज़ लोकल डिलीवरी।"
-                  : "Fresh atta, rice, dal, mustard oil, spices & daily essentials — easy online ordering and fast local delivery."}
+                  ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का ज़रूरी सामान — आसान ऑनलाइन ऑर्डर और तेज़ लोकल डिलीवरी।"
+                  : "Fresh chakki atta, basmati rice, pulses, mustard oil, spices & daily essentials with quick local delivery."}
               </p>
 
               {/* Action Buttons: Primary & Secondary */}
@@ -364,43 +364,25 @@ function PremiumStoreHome() {
                 <button
                   type="button"
                   onClick={() => setOrderModalOpen(true)}
-                  className="rounded-xl border border-white/35 bg-white/10 px-4.5 sm:px-6 py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-xs hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="rounded-xl border border-white/30 bg-white/10 hover:bg-white/20 px-4.5 sm:px-6 py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-xs active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <PhoneCall className="size-3.5 sm:size-4 text-[#E3B341]" />
-                  <span>{lang === "hi" ? "☎ फोन पर ऑर्डर करें" : "☎ Order by Phone"}</span>
+                  <Phone className="size-3.5 sm:size-4 text-[#E3B341]" />
+                  <span>{lang === "hi" ? "फोन पर ऑर्डर करें" : "Order by Phone"}</span>
                 </button>
               </div>
 
-              {/* Delivery USP Pill */}
-              <div className="inline-flex items-center gap-2 rounded-lg bg-black/25 border border-[#E3B341]/35 px-3.5 py-1.5 text-xs font-bold text-[#E3B341] backdrop-blur-xs shadow-2xs">
+              {/* Delivery USP Strip */}
+              <div className="inline-flex items-center gap-2 rounded-lg bg-black/20 border border-white/10 px-3.5 py-1.5 text-xs font-semibold text-[#E3B341]">
                 <Truck className="size-3.5 text-[#E3B341]" />
                 <span>
                   {lang === "hi"
-                    ? "🚚 ₹499+ के ऑर्डर पर FREE LOCAL DELIVERY"
-                    : "🚚 FREE Home Delivery on Orders ₹499+"}
-                </span>
-              </div>
-
-              {/* Desktop Micro-Row */}
-              <div className="hidden lg:flex items-center gap-3 pt-2 border-t border-white/15 text-[11px] text-white/80 font-medium">
-                <span className="flex items-center gap-1">
-                  <Truck className="size-3.5 text-[#E6EFE8]" />{" "}
-                  {lang === "hi" ? "30 मिनट होम डिलीवरी" : "30-Min Fast Delivery"}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="size-3.5 text-[#E6EFE8]" />{" "}
-                  {lang === "hi" ? "100% शुद्ध व असली" : "100% Pure & Authentic"}
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Phone className="size-3.5 text-[#E3B341]" />{" "}
-                  {lang === "hi" ? "फोन / WhatsApp ऑर्डर" : "Call & WhatsApp Support"}
+                    ? "₹499+ के ऑर्डर पर FREE LOCAL DELIVERY"
+                    : "FREE Home Delivery on Orders ₹499+"}
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Premium Curated Grocery Art Composition */}
+            {/* Right Column: Clean 3D Grocery Visual Showcase */}
             <div className="relative flex items-center justify-center pt-2 lg:pt-0 w-full min-w-0">
               <HeroGroceryVisual />
             </div>
