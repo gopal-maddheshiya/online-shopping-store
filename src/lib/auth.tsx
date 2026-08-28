@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  async function loadUserData(userId: string | undefined) {
+  async function loadUserData(userId: string | undefined, currentUser?: User | null) {
     if (!userId) {
       setProfile(null);
       setIsAdmin(false);
@@ -44,14 +44,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let userProfile = (prof as Profile) ?? null;
     if (!userProfile && userId) {
       try {
+        const u = currentUser ?? session?.user;
         const { data: createdProf } = await supabase
           .from("profiles")
           .upsert(
             {
               id: userId,
-              phone: session?.user?.phone ?? null,
-              email: session?.user?.email ?? null,
-              full_name: (session?.user?.user_metadata?.["full_name"] as string) ?? null,
+              phone: u?.phone ?? null,
+              email: u?.email ?? null,
+              full_name: (u?.user_metadata?.["full_name"] as string) ?? null,
             },
             { onConflict: "id" },
           )
@@ -72,14 +73,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
-      setTimeout(() => {
-        void loadUserData(newSession?.user?.id);
-      }, 0);
+      void loadUserData(newSession?.user?.id, newSession?.user);
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      void loadUserData(data.session?.user?.id).finally(() => setLoading(false));
+      void loadUserData(data.session?.user?.id, data.session?.user).finally(() => setLoading(false));
     });
 
     return () => sub.subscription.unsubscribe();

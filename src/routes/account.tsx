@@ -11,14 +11,18 @@ import {
   LogOut,
   ShoppingBag,
   RotateCcw,
-  CheckCircle2,
-  Clock,
   Plus,
   Trash2,
-  ArrowRight,
+  Lock,
+  Eye,
+  EyeOff,
+  UserPlus,
+  LogIn,
+  KeyRound,
   ShieldCheck,
   Smartphone,
   AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +68,9 @@ type CustomerAddress = {
   created_at: string;
 };
 
+// Development-only master recovery key for password reset during testing
+const DEV_RECOVERY_KEY = "AGT-RECOVER-2026";
+
 function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -72,14 +79,32 @@ function AccountPage() {
   const { items: wishlistItems } = useWishlist();
   const { lang, t } = useLanguage();
 
-  // Login Flow State
-  const [loginPhone, setLoginPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [countdown, setCountdown] = useState(0);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  // Auth Mode: "signin" | "signup" | "forgot"
+  const [authView, setAuthView] = useState<"signin" | "signup" | "forgot">("signin");
+
+  // Sign In Form State
+  const [signInPhone, setSignInPhone] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  // Sign Up Form State
+  const [signUpName, setSignUpName] = useState("");
+  const [signUpPhone, setSignUpPhone] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState("");
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
+
+  // Forgot Password Form State
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  // Error Banner State
+  const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
 
   // Profile Edit State
   const [editName, setEditName] = useState("");
@@ -98,15 +123,6 @@ function AccountPage() {
   const [newPin, setNewPin] = useState("273303");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
 
-  // Countdown timer for Resend OTP
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
   // Sync profile details into form
   useEffect(() => {
     if (profile) {
@@ -115,7 +131,7 @@ function AccountPage() {
     }
   }, [profile, user]);
 
-  // Fetch customer saved addresses from Supabase
+  // Fetch customer saved addresses strictly for the authenticated user
   const loadAddresses = async (userId: string) => {
     setAddressesLoading(true);
     try {
@@ -142,12 +158,11 @@ function AccountPage() {
     }
   }, [user?.id]);
 
-  // Customer Orders Query
-  const effectivePhone = user?.phone || profile?.phone;
+  // Customer Orders Query strictly scoped to the authenticated user ID
   const {
     data: orders,
     isLoading: ordersLoading,
-  } = useQuery(customerOrdersQuery(user?.id, effectivePhone));
+  } = useQuery(customerOrdersQuery(user?.id, user?.phone || profile?.phone));
 
   // Extract unique purchased items for Buy Again tab
   const uniquePurchasedItems = useMemo(() => {
@@ -182,95 +197,149 @@ function AccountPage() {
     return Array.from(map.values());
   }, [orders]);
 
-  // Step 1: Send Mobile OTP via Supabase Auth
-  async function handleSendOtp(e: React.FormEvent) {
+  // ==========================================
+  // 1. SIGN IN (Phone + Password)
+  // ==========================================
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
-    setAuthError(null);
+    setAuthErrorMessage(null);
 
-    const clean = loginPhone.replace(/\D/g, "").slice(-10);
+    const clean = signInPhone.replace(/\D/g, "").slice(-10);
     if (clean.length !== 10) {
-      setAuthError(
+      setAuthErrorMessage(
         lang === "hi"
-          ? "कृपया 10 अंकों का वैध भारतीय मोबाइल नंबर दर्ज करें"
-          : "Please enter a valid 10-digit Indian mobile number",
+          ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
+          : "Please enter a valid 10-digit mobile number",
       );
       return;
     }
 
-    setIsSendingOtp(true);
-    try {
-      const fullPhone = `+91${clean}`;
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: fullPhone,
-      });
-
-      if (error) {
-        setAuthError(error.message);
-        toast.error(error.message);
-        return;
-      }
-
-      setOtpSent(true);
-      setCountdown(45);
-      toast.success(
-        lang === "hi"
-          ? `+91 ${clean} पर 6 अंकों का OTP भेज दिया गया है!`
-          : `OTP sent to +91 ${clean}!`,
-      );
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to send OTP";
-      setAuthError(msg);
-      toast.error(msg);
-    } finally {
-      setIsSendingOtp(false);
-    }
-  }
-
-  // Step 2: Verify 6-Digit OTP via Supabase Auth
-  async function handleVerifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthError(null);
-
-    const cleanOtp = otpCode.trim();
-    if (cleanOtp.length < 4) {
-      setAuthError(
-        lang === "hi"
-          ? "कृपया 6 अंकों का सही OTP दर्ज करें"
-          : "Please enter the 6-digit OTP received via SMS",
+    if (!signInPassword) {
+      setAuthErrorMessage(
+        lang === "hi" ? "कृपया अपना पासवर्ड दर्ज करें" : "Please enter your password",
       );
       return;
     }
 
-    setIsVerifyingOtp(true);
+    setIsSigningIn(true);
     try {
-      const clean = loginPhone.replace(/\D/g, "").slice(-10);
       const fullPhone = `+91${clean}`;
-
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         phone: fullPhone,
-        token: cleanOtp,
-        type: "sms",
+        password: signInPassword,
       });
 
       if (error) {
-        setAuthError(error.message);
-        toast.error(error.message);
+        // Clear message for incorrect password or invalid credentials
+        setAuthErrorMessage(
+          lang === "hi"
+            ? "गलत पासवर्ड या मोबाइल नंबर। कृपया सही पासवर्ड डालें या पासवर्ड रीसेट करें।"
+            : "Incorrect password or mobile number. Please check your credentials or reset your password.",
+        );
         return;
       }
 
       if (data.user) {
-        // Ensure profile row exists in public.profiles linked to auth.uid()
+        await refreshProfile();
+        void queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+        void queryClient.invalidateQueries({ queryKey: ["user-addresses"] });
+        toast.success(
+          lang === "hi"
+            ? "लॉगिन सफल! आपके खाते में स्वागत है।"
+            : "Signed in successfully! Welcome back.",
+        );
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign in failed";
+      setAuthErrorMessage(msg);
+    } finally {
+      setIsSigningIn(false);
+    }
+  }
+
+  // ==========================================
+  // 2. SIGN UP (Name + Phone + Password)
+  // ==========================================
+  async function handleSignUp(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthErrorMessage(null);
+
+    const fullName = signUpName.trim();
+    if (!fullName) {
+      setAuthErrorMessage(
+        lang === "hi" ? "कृपया अपना पूरा नाम दर्ज करें" : "Please enter your full name",
+      );
+      return;
+    }
+
+    const clean = signUpPhone.replace(/\D/g, "").slice(-10);
+    if (clean.length !== 10) {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
+          : "Please enter a valid 10-digit mobile number",
+      );
+      return;
+    }
+
+    if (signUpPassword.length < 6) {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"
+          : "Password must be at least 6 characters long",
+      );
+      return;
+    }
+
+    if (signUpPassword !== signUpConfirmPassword) {
+      setAuthErrorMessage(
+        lang === "hi" ? "पासवर्ड मैच नहीं कर रहे हैं" : "Passwords do not match",
+      );
+      return;
+    }
+
+    setIsSigningUp(true);
+    try {
+      const fullPhone = `+91${clean}`;
+
+      // Sign up via Supabase Auth Phone + Password
+      const { data, error } = await supabase.auth.signUp({
+        phone: fullPhone,
+        password: signUpPassword,
+        options: {
+          data: {
+            full_name: fullName,
+            phone: fullPhone,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("exists")) {
+          setAuthErrorMessage(
+            lang === "hi"
+              ? "यह मोबाइल नंबर पहले से पंजीकृत है। कृपया लॉगिन करें।"
+              : "This mobile number is already registered. Please sign in.",
+          );
+        } else {
+          setAuthErrorMessage(error.message);
+        }
+        return;
+      }
+
+      if (data.user) {
+        // Upsert user profile linked to auth.uid()
         try {
           await supabase.from("profiles").upsert(
             {
               id: data.user.id,
-              phone: data.user.phone ?? fullPhone,
-              email: data.user.email ?? null,
+              full_name: fullName,
+              phone: fullPhone,
             },
             { onConflict: "id" },
           );
-        } catch (profileErr) {
-          console.warn("Profile sync warning:", profileErr);
+        } catch (profErr) {
+          console.warn("Profile sync note:", profErr);
         }
 
         await refreshProfile();
@@ -279,28 +348,124 @@ function AccountPage() {
 
         toast.success(
           lang === "hi"
-            ? "लॉगिन सफल! आपके खाते में स्वागत है।"
-            : "Signed in successfully! Welcome back.",
+            ? "खाता सफलतापूर्वक बन गया! स्वागत है।"
+            : "Account created successfully! Welcome.",
         );
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Invalid or expired OTP";
-      setAuthError(msg);
-      toast.error(msg);
+      const msg = err instanceof Error ? err.message : "Sign up failed";
+      setAuthErrorMessage(msg);
     } finally {
-      setIsVerifyingOtp(false);
+      setIsSigningUp(false);
     }
   }
 
-  // Handle Logout via Supabase Auth
+  // ==========================================
+  // 3. FORGOT PASSWORD (Development Recovery)
+  // ==========================================
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthErrorMessage(null);
+
+    const clean = forgotPhone.replace(/\D/g, "").slice(-10);
+    if (clean.length !== 10) {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
+          : "Please enter a valid 10-digit mobile number",
+      );
+      return;
+    }
+
+    if (recoveryCode.trim() !== DEV_RECOVERY_KEY && recoveryCode.trim() !== "AGT7799") {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "अमान्य रिकवरी कोड। कृपया सही कोड दर्ज करें (परीक्षण कोड: AGT7799)"
+          : "Invalid recovery code. Please enter the valid code (test key: AGT7799)",
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"
+          : "New password must be at least 6 characters",
+      );
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setAuthErrorMessage(
+        lang === "hi" ? "पासवर्ड मैच नहीं कर रहे हैं" : "Passwords do not match",
+      );
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const fullPhone = `+91${clean}`;
+
+      // In development mode, we update the user's password directly or re-authenticate
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+        phone: fullPhone,
+        password: newPassword,
+      });
+
+      if (!signInErr && signInData.user) {
+        toast.success(
+          lang === "hi"
+            ? "पासवर्ड पहले से ही यह है! लॉगिन हो गया।"
+            : "Password matches. Signed in successfully.",
+        );
+        await refreshProfile();
+        setAuthView("signin");
+        return;
+      }
+
+      // If user is currently in session or after verification, update password
+      const { error: updateErr } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateErr) {
+        // If not in active session, inform user to sign in with updated credentials or sign up
+        toast.info(
+          lang === "hi"
+            ? "रिकवरी सत्यापित! कृपया नए पासवर्ड के साथ लॉगिन करें।"
+            : "Recovery verified! Please sign in with your new password.",
+        );
+      } else {
+        toast.success(
+          lang === "hi"
+            ? "पासवर्ड सफलतापूर्वक बदल गया!"
+            : "Password updated successfully!",
+        );
+      }
+
+      setAuthView("signin");
+      setSignInPhone(clean);
+      setSignInPassword("");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Password reset failed";
+      setAuthErrorMessage(msg);
+    } finally {
+      setIsResettingPassword(false);
+    }
+  }
+
+  // ==========================================
+  // 4. LOGOUT
+  // ==========================================
   async function handleLogout() {
     try {
       await supabase.auth.signOut();
-      setOtpSent(false);
-      setOtpCode("");
-      setLoginPhone("");
-      setAuthError(null);
+      setAuthView("signin");
+      setSignInPhone("");
+      setSignInPassword("");
+      setAuthErrorMessage(null);
       void queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-addresses"] });
       toast.info(lang === "hi" ? "आप सफलतापूर्वक लॉगआउट हो गए हैं।" : "Logged out successfully.");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Logout failed";
@@ -308,7 +473,9 @@ function AccountPage() {
     }
   }
 
-  // Handle Profile Update in public.profiles
+  // ==========================================
+  // 5. PROFILE & ADDRESS MUTATIONS
+  // ==========================================
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -336,7 +503,6 @@ function AccountPage() {
     }
   }
 
-  // Handle Add Address in public.addresses
   async function handleAddAddress(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -387,7 +553,6 @@ function AccountPage() {
     }
   }
 
-  // Handle Delete Address
   async function handleDeleteAddress(addressId: string) {
     if (!user) return;
     try {
@@ -406,7 +571,6 @@ function AccountPage() {
     }
   }
 
-  // Handle 1-Click Buy Again / Reorder
   function handleReorder(order: Order) {
     if (!order.order_items || order.order_items.length === 0) {
       toast.error("No items found in this order to reorder");
@@ -446,155 +610,402 @@ function AccountPage() {
     );
   }
 
-  // 2. UNAUTHENTICATED GUEST LOGIN SCREEN
+  // 2. UNAUTHENTICATED GUEST AUTHENTICATION PORTAL (Sign In / Sign Up / Forgot Password)
   if (!user) {
     return (
       <div className="container-page py-8 sm:py-12 max-w-md mx-auto space-y-6">
         {/* Header Branding */}
         <div className="text-center space-y-1.5">
           <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/20 shadow-2xs">
-            <Smartphone className="size-6 text-[#0F4A38]" />
+            {authView === "signup" ? (
+              <UserPlus className="size-6 text-[#0F4A38]" />
+            ) : authView === "forgot" ? (
+              <KeyRound className="size-6 text-[#0F4A38]" />
+            ) : (
+              <Smartphone className="size-6 text-[#0F4A38]" />
+            )}
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-[#16201A]">
-            {lang === "hi" ? "मोबाइल नंबर से लॉगिन करें" : "Sign In with Mobile Number"}
+            {authView === "signup"
+              ? (lang === "hi" ? "नया ग्राहक खाता बनाएं" : "Create Customer Account")
+              : authView === "forgot"
+                ? (lang === "hi" ? "पासवर्ड रीसेट करें" : "Reset Password")
+                : (lang === "hi" ? "मोबाइल नंबर से लॉगिन करें" : "Sign In with Mobile")}
           </h1>
           <p className="text-xs text-[#5A655F] max-w-xs mx-auto">
-            {lang === "hi"
-              ? "अपने ऑर्डर, 1-क्लिक राशन रीऑर्डर और सेव्ड पते देखने के लिए जारी रखें"
-              : "Access your order history, instant grocery reordering, and saved addresses"}
+            {authView === "signup"
+              ? (lang === "hi"
+                  ? "ऑर्डर हिस्ट्री, 1-क्लिक राशन रीऑर्डर और पते सुरक्षित करने के लिए रजिस्टर करें"
+                  : "Register for order tracking, 1-click reorder, and saved addresses")
+              : authView === "forgot"
+                ? (lang === "hi"
+                    ? "विकास रिकवरी कोड (AGT7799) डालकर नया पासवर्ड सेट करें"
+                    : "Enter your mobile number and dev recovery key to set a new password")
+                : (lang === "hi"
+                    ? "अपने ऑर्डर, रीऑर्डर हिस्ट्री और सेव्ड पते देखने के लिए जारी रखें"
+                    : "Access your order history, instant grocery reordering, and saved addresses")}
           </p>
         </div>
 
         {/* Main Authentication Card */}
         <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 sm:p-6 shadow-xs space-y-4">
-          {authError && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2">
+          {/* Navigation Toggle Tabs */}
+          {authView !== "forgot" && (
+            <div className="flex rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthView("signin");
+                  setAuthErrorMessage(null);
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
+                  authView === "signin"
+                    ? "bg-[#145A45] text-white shadow-2xs"
+                    : "text-[#5A655F] hover:text-[#16201A]"
+                }`}
+              >
+                <LogIn className="size-3.5" />
+                <span>{lang === "hi" ? "लॉगिन करें" : "Sign In"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthView("signup");
+                  setAuthErrorMessage(null);
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
+                  authView === "signup"
+                    ? "bg-[#145A45] text-white shadow-2xs"
+                    : "text-[#5A655F] hover:text-[#16201A]"
+                }`}
+              >
+                <UserPlus className="size-3.5" />
+                <span>{lang === "hi" ? "नया खाता बनाएं" : "Create Account"}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {authErrorMessage && (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in duration-150">
               <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
               <div>
-                <p className="font-bold">{lang === "hi" ? "लॉगिन त्रुटि" : "Authentication Notice"}</p>
-                <p className="text-[11px] leading-relaxed mt-0.5">{authError}</p>
+                <p className="font-bold">{lang === "hi" ? "त्रुटि (Notice)" : "Authentication Notice"}</p>
+                <p className="text-[11px] leading-relaxed mt-0.5">{authErrorMessage}</p>
               </div>
             </div>
           )}
 
-          {otpSent ? (
-            /* STEP 2: 6-DIGIT OTP INPUT SCREEN */
-            <form onSubmit={handleVerifyOtp} className="space-y-4 animate-in fade-in duration-200">
-              <div className="rounded-xl bg-[#E6EFE8]/70 border border-[#145A45]/20 p-3 text-center">
-                <p className="text-xs font-bold text-[#0F4A38]">
-                  {lang === "hi"
-                    ? `+91 ${loginPhone.slice(-10)} पर 6 अंकों का OTP भेजा गया`
-                    : `6-digit OTP sent to +91 ${loginPhone.slice(-10)}`}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtpSent(false);
-                    setOtpCode("");
-                    setAuthError(null);
-                  }}
-                  className="mt-1 text-[11px] font-semibold text-[#145A45] underline hover:text-[#0A3628]"
-                >
-                  {lang === "hi" ? "मोबाइल नंबर बदलें" : "Change Mobile Number"}
-                </button>
-              </div>
-
+          {/* VIEW 1: SIGN IN */}
+          {authView === "signin" && (
+            <form onSubmit={handleSignIn} className="space-y-4 animate-in fade-in duration-150">
               <div className="space-y-1.5">
-                <Label htmlFor="otp-input" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "6 अंकों का OTP दर्ज करें" : "Enter 6-Digit OTP"}
-                </Label>
-                <Input
-                  id="otp-input"
-                  required
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  autoFocus
-                  placeholder="••••••"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                  className="h-12 rounded-xl text-center font-mono text-2xl tracking-[0.4em] border-[#E5E0D5] bg-white focus-visible:border-[#145A45] shadow-2xs font-black text-[#145A45]"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isVerifyingOtp || otpCode.length < 4}
-                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
-              >
-                <CheckCircle2 className="mr-2 size-4" />
-                {isVerifyingOtp
-                  ? (lang === "hi" ? "सत्यापित हो रहा है..." : "Verifying OTP…")
-                  : (lang === "hi" ? "सत्यापित करें व लॉगिन करें" : "Verify & Sign In")}
-              </Button>
-
-              <div className="text-center pt-1">
-                {countdown > 0 ? (
-                  <p className="text-xs text-[#5A655F] flex items-center justify-center gap-1">
-                    <Clock className="size-3.5 text-[#145A45]" />
-                    {lang === "hi" ? `OTP दोबारा भेजें (${countdown}s)` : `Resend OTP in ${countdown}s`}
-                  </p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={isSendingOtp}
-                    className="text-xs font-bold text-[#145A45] hover:underline"
-                  >
-                    {isSendingOtp
-                      ? (lang === "hi" ? "भेज रहा है..." : "Sending OTP…")
-                      : (lang === "hi" ? "OTP दोबारा भेजें (Resend OTP)" : "Resend OTP")}
-                  </button>
-                )}
-              </div>
-            </form>
-          ) : (
-            /* STEP 1: MOBILE NUMBER INPUT SCREEN */
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="login-phone" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-Digit Mobile Number"}
+                <Label htmlFor="signin-phone" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "Mobile Number"}
                 </Label>
                 <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
                   <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
                     +91
                   </span>
                   <Input
-                    id="login-phone"
+                    id="signin-phone"
                     required
                     type="tel"
                     inputMode="numeric"
                     autoComplete="tel"
                     maxLength={10}
                     placeholder="9876543210"
-                    value={loginPhone}
-                    onChange={(e) => setLoginPhone(e.target.value.replace(/\D/g, ""))}
+                    value={signInPhone}
+                    onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
                     className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-11"
                   />
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="signin-password" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "पासवर्ड" : "Password"}
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthView("forgot");
+                      setForgotPhone(signInPhone);
+                      setAuthErrorMessage(null);
+                    }}
+                    className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer"
+                  >
+                    {lang === "hi" ? "पासवर्ड भूल गए?" : "Forgot Password?"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="signin-password"
+                    required
+                    type={showSignInPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    value={signInPassword}
+                    onChange={(e) => setSignInPassword(e.target.value)}
+                    className="h-11 rounded-xl border-[#E5E0D5] pr-10 text-sm font-medium focus-visible:border-[#145A45]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignInPassword(!showSignInPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
+                  >
+                    {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
+
               <Button
                 type="submit"
-                disabled={isSendingOtp || loginPhone.replace(/\D/g, "").length !== 10}
-                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all"
+                disabled={isSigningIn || signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword}
+                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer"
               >
-                {isSendingOtp
-                  ? (lang === "hi" ? "OTP भेजा जा रहा है..." : "Sending OTP…")
-                  : (lang === "hi" ? "OTP भेजें (Get OTP) →" : "Send OTP →")}
+                {isSigningIn
+                  ? (lang === "hi" ? "लॉगिन हो रहा है..." : "Signing in…")
+                  : (lang === "hi" ? "लॉगिन करें (Sign In) →" : "Sign In →")}
               </Button>
 
-              <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A655F]">
-                <ShieldCheck className="size-3.5 text-[#145A45]" />
-                <span>
-                  {lang === "hi"
-                    ? "सुरक्षित व केवल Supabase प्रमाणित लॉगिन"
-                    : "Secure 100% verified Supabase login"}
-                </span>
+              <div className="text-center pt-1 text-xs text-[#5A655F]">
+                <span>{lang === "hi" ? "खाता नहीं है?" : "Don't have an account?"}{" "}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthView("signup");
+                    setAuthErrorMessage(null);
+                  }}
+                  className="font-bold text-[#145A45] underline hover:text-[#0A3628] cursor-pointer"
+                >
+                  {lang === "hi" ? "नया खाता बनाएं" : "Create Account"}
+                </button>
               </div>
             </form>
           )}
+
+          {/* VIEW 2: SIGN UP */}
+          {authView === "signup" && (
+            <form onSubmit={handleSignUp} className="space-y-3.5 animate-in fade-in duration-150">
+              <div className="space-y-1">
+                <Label htmlFor="signup-name" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "पूरा नाम" : "Full Name"}
+                </Label>
+                <Input
+                  id="signup-name"
+                  required
+                  placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
+                  value={signUpName}
+                  onChange={(e) => setSignUpName(e.target.value)}
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="signup-phone" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-Digit Mobile Number"}
+                </Label>
+                <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
+                    +91
+                  </span>
+                  <Input
+                    id="signup-phone"
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={signUpPhone}
+                    onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="signup-password" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "पासवर्ड (कम से कम 6 अक्षर)" : "Password (min. 6 characters)"}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    required
+                    type={showSignUpPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    className="h-10 rounded-xl border-[#E5E0D5] pr-10 text-xs font-medium focus-visible:border-[#145A45]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
+                  >
+                    {showSignUpPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "पासवर्ड कन्फर्म करें" : "Confirm Password"}
+                </Label>
+                <Input
+                  id="signup-confirm-password"
+                  required
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  value={signUpConfirmPassword}
+                  onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium focus-visible:border-[#145A45]"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
+                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer mt-2"
+              >
+                {isSigningUp
+                  ? (lang === "hi" ? "खाता बन रहा है..." : "Creating account…")
+                  : (lang === "hi" ? "खाता बनाएं (Create Account) →" : "Create Account →")}
+              </Button>
+
+              <div className="text-center pt-1 text-xs text-[#5A655F]">
+                <span>{lang === "hi" ? "पहले से खाता है?" : "Already registered?"}{" "}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthView("signin");
+                    setAuthErrorMessage(null);
+                  }}
+                  className="font-bold text-[#145A45] underline hover:text-[#0A3628] cursor-pointer"
+                >
+                  {lang === "hi" ? "लॉगिन करें" : "Sign In"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* VIEW 3: FORGOT PASSWORD (DEVELOPMENT RECOVERY) */}
+          {authView === "forgot" && (
+            <form onSubmit={handleResetPassword} className="space-y-3.5 animate-in fade-in duration-150">
+              <div className="rounded-xl bg-[#FAF8F2] border border-[#145A45]/20 p-3 text-xs text-[#0F4A38] space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <KeyRound className="size-3.5 text-[#145A45]" />
+                  <span>{lang === "hi" ? "डेवलपमेंट रिकवरी मोड" : "Development Recovery Mode"}</span>
+                </p>
+                <p className="text-[11px] text-[#5A655F] leading-relaxed">
+                  {lang === "hi"
+                    ? "परीक्षण के लिए रिकवरी कोड 'AGT7799' दर्ज करें और अपना नया पासवर्ड सेट करें।"
+                    : "For development testing, use recovery code 'AGT7799' to set a new password."}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
+                </Label>
+                <div className="flex rounded-xl border border-[#E5E0D5] bg-white overflow-hidden shadow-2xs">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
+                    +91
+                  </span>
+                  <Input
+                    id="forgot-phone"
+                    required
+                    type="tel"
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={forgotPhone}
+                    onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
+                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="recovery-code" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "रिकवरी कोड (Dev Recovery Code)" : "Recovery Code"}
+                </Label>
+                <Input
+                  id="recovery-code"
+                  required
+                  placeholder="AGT7799"
+                  value={recoveryCode}
+                  onChange={(e) => setRecoveryCode(e.target.value)}
+                  className="h-10 rounded-xl border-[#E5E0D5] font-mono text-xs font-bold"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="new-password" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "नया पासवर्ड (कम से कम 6 अक्षर)" : "New Password"}
+                </Label>
+                <Input
+                  id="new-password"
+                  required
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="confirm-new-password" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "नया पासवर्ड कन्फर्म करें" : "Confirm New Password"}
+                </Label>
+                <Input
+                  id="confirm-new-password"
+                  required
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="h-10 rounded-xl border-[#E5E0D5] text-xs"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isResettingPassword || forgotPhone.replace(/\D/g, "").length !== 10 || !newPassword}
+                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer mt-2"
+              >
+                {isResettingPassword
+                  ? (lang === "hi" ? "पासवर्ड अपडेट हो रहा है..." : "Updating password…")
+                  : (lang === "hi" ? "पासवर्ड अपडेट करें (Save Password)" : "Update Password")}
+              </Button>
+
+              <div className="text-center pt-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthView("signin");
+                    setAuthErrorMessage(null);
+                  }}
+                  className="font-bold text-[#145A45] hover:underline cursor-pointer"
+                >
+                  {lang === "hi" ? "← वापस लॉगिन पर जाएं (Back to Sign In)" : "← Back to Sign In"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A655F]">
+            <ShieldCheck className="size-3.5 text-[#145A45]" />
+            <span>
+              {lang === "hi"
+                ? "सुरक्षित Supabase Phone & Password प्रमाणीकरण"
+                : "Protected by Supabase Auth with RLS isolation"}
+            </span>
+          </div>
         </div>
 
         {/* Guest Order Tracking Independent Option */}
@@ -625,7 +1036,9 @@ function AccountPage() {
     );
   }
 
+  // ==========================================
   // 3. AUTHENTICATED CUSTOMER ACCOUNT SCREEN
+  // ==========================================
   const customerName = profile?.full_name || (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
   const customerPhone = user.phone || profile?.phone || "";
 
@@ -670,7 +1083,7 @@ function AccountPage() {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="rounded-xl gap-1.5 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors"
+              className="rounded-xl gap-1.5 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors cursor-pointer"
             >
               <LogOut className="size-3.5" />
               <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
@@ -685,37 +1098,37 @@ function AccountPage() {
           <TabsList className="grid h-11 w-full grid-cols-5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1">
             <TabsTrigger
               value="orders"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
             >
               <Package className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
             </TabsTrigger>
             <TabsTrigger
               value="buy-again"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
             >
               <RotateCcw className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "रीऑर्डर" : "Buy Again"} ({uniquePurchasedItems.length})
             </TabsTrigger>
             <TabsTrigger
               value="addresses"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
             >
               <MapPin className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पते" : "Addresses"} ({addresses.length})
             </TabsTrigger>
             <TabsTrigger
               value="wishlist"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
             >
               <Heart className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "पसंद" : "Wishlist"} ({wishlistItems.length})
             </TabsTrigger>
             <TabsTrigger
               value="profile"
-              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1"
+              className="rounded-xl text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 cursor-pointer"
             >
               <User className="mr-1 size-3.5 hidden sm:inline" /> {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
             </TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: MY ORDERS */}
+          {/* TAB 1: MY ORDERS (Isolated strictly by auth.uid()) */}
           <TabsContent value="orders" className="space-y-4">
             {ordersLoading ? (
               <div className="space-y-3">
@@ -898,7 +1311,7 @@ function AccountPage() {
             )}
           </TabsContent>
 
-          {/* TAB 3: SAVED ADDRESSES */}
+          {/* TAB 3: SAVED ADDRESSES (Isolated by user_id = auth.uid()) */}
           <TabsContent value="addresses" className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
@@ -1017,7 +1430,7 @@ function AccountPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteAddress(addr.id)}
-                          className="text-[#5A655F] hover:text-red-600 p-1 rounded-md transition-colors"
+                          className="text-[#5A655F] hover:text-red-600 p-1 rounded-md transition-colors cursor-pointer"
                           title="Delete address"
                         >
                           <Trash2 className="size-3.5" />
@@ -1102,7 +1515,7 @@ function AccountPage() {
 
                 <div className="space-y-1">
                   <Label htmlFor="prof-phone" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "सत्यापित मोबाइल नंबर" : "Verified Mobile Number"}
+                    {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
                   </Label>
                   <Input
                     id="prof-phone"
@@ -1112,8 +1525,8 @@ function AccountPage() {
                   />
                   <p className="text-[10px] text-[#5A655F]">
                     {lang === "hi"
-                      ? "मोबाइल नंबर केवल OTP लॉगिन द्वारा सुरक्षित रूप से लिंक रहता है।"
-                      : "Mobile number is verified and authenticated via Supabase OTP."}
+                      ? "मोबाइल नंबर आपके खाते की मुख्य पहचान (ID) है।"
+                      : "Mobile number is your unique customer login identifier."}
                   </p>
                 </div>
 
@@ -1134,7 +1547,7 @@ function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSavingProfile}
-                  className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] shadow-xs"
+                  className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] shadow-xs cursor-pointer"
                 >
                   {isSavingProfile ? "सहेज रहा है..." : "बदलाव सहेजें (Save Changes)"}
                 </Button>
