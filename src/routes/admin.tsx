@@ -77,14 +77,15 @@ const TABS = [
 function AdminPage() {
   const { user, isAdmin, profile, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [adminPin, setAdminPin] = useState("");
+  const [adminPhone, setAdminPhone] = useState("6388354988");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  const isAuthorizedAdmin = isUnlocked || isAdmin;
+  const isAuthorizedAdmin = isAdmin;
 
-  // Queries - only execute when authenticated/unlocked
+  // Queries - only execute when authenticated as admin
   const { data: products = [], refetch: refetchProducts } = useQuery({
     ...productsQuery({ activeOnly: false }),
     enabled: isAuthorizedAdmin,
@@ -149,45 +150,46 @@ function AdminPage() {
     };
   }, [isAuthorizedAdmin]);
 
-  // Check stored admin session
-  useEffect(() => {
-    const sessionToken =
-      sessionStorage.getItem("agt.admin_session") || localStorage.getItem("agt.admin_session");
-    if (sessionToken === "unlocked" || isAdmin) {
-      setIsUnlocked(true);
-    }
-  }, [isAdmin]);
-
   async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
-    const pin = adminPin.trim();
-    if (
-      pin === "6388" ||
-      pin === "6388354988" ||
-      pin === "9621" ||
-      pin === "9621617360"
-    ) {
-      setIsUnlocked(true);
-      sessionStorage.setItem("agt.admin_session", "unlocked");
-      localStorage.setItem("agt.admin_session", "unlocked");
-      setAdminPin("");
-      toast.success("Welcome back to Arun Gopal Traders Admin!");
+    const clean = adminPhone.replace(/\D/g, "").slice(-10);
+    if (clean.length !== 10) {
+      toast.error("कृपया 10 अंकों का एडमिन मोबाइल नंबर दर्ज करें");
+      return;
+    }
+
+    if (!adminPassword.trim()) {
+      toast.error("कृपया एडमिन पासवर्ड दर्ज करें");
+      return;
+    }
+
+    setIsAuthenticating(true);
+    try {
+      const fullPhone = `+91${clean}`;
+      const { data, error } = await supabase.auth.signInWithPassword({
+        phone: fullPhone,
+        password: adminPassword.trim(),
+      });
+
+      if (error || !data.session) {
+        toast.error("अमान्य एडमिन क्रेडेंशियल्स। कृपया सही पासवर्ड दर्ज करें।");
+        return;
+      }
+
       await refreshProfile();
-    } else {
-      toast.error("Incorrect Admin PIN or Passcode. Access denied.");
+      setAdminPassword("");
+      toast.success("Welcome back to Arun Gopal Traders Admin!");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "लॉगिन विफल रहा");
+    } finally {
+      setIsAuthenticating(false);
     }
   }
 
-
-
   async function handleLock() {
-    setIsUnlocked(false);
-    sessionStorage.removeItem("agt.admin_session");
-    localStorage.removeItem("agt.admin_session");
     setMobileDrawerOpen(false);
-    if (user) {
-      await supabase.auth.signOut();
-    }
+    await supabase.auth.signOut();
+    await refreshProfile();
     toast.info("Admin portal locked successfully");
   }
 
@@ -200,8 +202,8 @@ function AdminPage() {
     toast.success("Catalogue and orders refreshed!");
   }
 
-  // If not unlocked -> show clean Admin Security Gate
-  if (!isUnlocked && !isAdmin) {
+  // If not authenticated as admin -> show clean Admin Security Gate
+  if (!isAdmin) {
     return (
       <div className="container-page min-h-screen flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md rounded-2xl border border-[#E5E0D5] bg-white p-6 shadow-sm sm:p-8">
@@ -219,23 +221,36 @@ function AdminPage() {
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#16201A]">Store Passcode / PIN</label>
+              <label className="text-xs font-bold text-[#16201A]">Admin Mobile Number</label>
+              <Input
+                type="tel"
+                required
+                placeholder="6388354988"
+                value={adminPhone}
+                onChange={(e) => setAdminPhone(e.target.value)}
+                className="h-11 rounded-lg border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#16201A]">Admin Password</label>
               <Input
                 type="password"
                 required
                 autoFocus
-                placeholder="••••"
-                value={adminPin}
-                onChange={(e) => setAdminPin(e.target.value)}
-                className="h-12 rounded-lg text-center font-mono text-xl tracking-widest border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
+                placeholder="••••••••"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="h-11 rounded-lg border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
               />
             </div>
 
             <Button
               type="submit"
-              className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm"
+              disabled={isAuthenticating}
+              className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm disabled:opacity-50"
             >
-              Unlock Dashboard <ShieldCheck className="ml-2 size-4" />
+              {isAuthenticating ? "Authenticating..." : "Login to Admin Dashboard"} <ShieldCheck className="ml-2 size-4" />
             </Button>
           </form>
 
@@ -251,6 +266,7 @@ function AdminPage() {
       </div>
     );
   }
+
 
   const pendingOrdersCount = orders.filter((o) =>
     ["placed", "confirmed", "preparing", "ready", "out_for_delivery"].includes(o.status),
