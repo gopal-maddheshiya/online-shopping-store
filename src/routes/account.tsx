@@ -465,14 +465,11 @@ function AccountPage() {
     try {
       const fullPhone = `+91${clean}`;
 
-      // Method A: Direct Development Master Code RPC (AGT7799 / AGT-RECOVER-2026)
-      if (
-        code.toUpperCase() === "AGT7799" ||
-        code.toUpperCase() === "AGT-RECOVER-2026"
-      ) {
+      // Method A: Check if dev_reset_password RPC is available with user input code
+      if (code && code.trim().length >= 4) {
         const { data: rpcRes, error: rpcErr } = await supabase.rpc("dev_reset_password" as never, {
           p_phone: fullPhone,
-          p_code: code.toUpperCase(),
+          p_code: code.trim(),
           p_new_password: newPassword,
         } as never);
 
@@ -501,6 +498,7 @@ function AccountPage() {
 
       // Method B: Supabase Auth verifyOtp + updateUser
       let authSessionActive = false;
+
       const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
         phone: fullPhone,
         token: code,
@@ -521,12 +519,13 @@ function AccountPage() {
           console.error("Supabase verifyOtp failed:", verifyErr || recErr);
           setAuthErrorMessage(
             lang === "hi"
-              ? "अमान्य या समाप्त रिकवरी कोड। कृपया सही कोड (AGT7799) दर्ज करें।"
-              : "Invalid or expired recovery code. Please check and try again.",
+              ? "अमान्य या समाप्त सत्यापन कोड। कृपया सही कोड दर्ज करें।"
+              : "Invalid or expired verification code. Please check and try again.",
           );
           return;
         }
       }
+
 
       if (!authSessionActive) {
         setAuthErrorMessage(
@@ -837,9 +836,10 @@ function AccountPage() {
                   : "Register for order tracking, 1-click reorder, and saved addresses")
               : authView === "forgot"
                 ? (lang === "hi"
-                    ? "विकास रिकवरी कोड (AGT7799) डालकर नया पासवर्ड सेट करें"
-                    : "Enter your mobile number and dev recovery key to set a new password")
+                    ? "सत्यापन कोड डालकर नया पासवर्ड सेट करें"
+                    : "Enter your mobile number and verification code to set a new password")
                 : (lang === "hi"
+
                     ? "अपने ऑर्डर, रीऑर्डर हिस्ट्री और सेव्ड पते देखने के लिए जारी रखें"
                     : "Access your order history, instant grocery reordering, and saved addresses")}
           </p>
@@ -1091,20 +1091,21 @@ function AccountPage() {
             </form>
           )}
 
-          {/* VIEW 3: FORGOT PASSWORD (DEVELOPMENT RECOVERY) */}
+          {/* VIEW 3: FORGOT PASSWORD */}
           {authView === "forgot" && (
             <form onSubmit={handleResetPassword} className="space-y-3.5 animate-in fade-in duration-150">
               <div className="rounded-xl bg-[#FAF8F2] border border-[#145A45]/20 p-3 text-xs text-[#0F4A38] space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <KeyRound className="size-3.5 text-[#145A45]" />
-                  <span>{lang === "hi" ? "डेवलपमेंट रिकवरी मोड" : "Development Recovery Mode"}</span>
+                  <span>{lang === "hi" ? "पासवर्ड रीसेट" : "Password Recovery"}</span>
                 </p>
                 <p className="text-[11px] text-[#5A655F] leading-relaxed">
                   {lang === "hi"
-                    ? "परीक्षण के लिए रिकवरी कोड 'AGT7799' दर्ज करें और अपना नया पासवर्ड सेट करें।"
-                    : "For development testing, use recovery code 'AGT7799' to set a new password."}
+                    ? "अपना 10 अंकों का मोबाइल नंबर और प्राप्त सत्यापन कोड दर्ज करके नया पासवर्ड सेट करें।"
+                    : "Enter your 10-digit mobile number and verification code to set a new password."}
                 </p>
               </div>
+
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">

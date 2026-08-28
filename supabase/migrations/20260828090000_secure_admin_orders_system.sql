@@ -248,17 +248,16 @@ END;
 $$;
 GRANT EXECUTE ON FUNCTION public.place_order(jsonb, jsonb) TO anon, authenticated;
 
--- 5. Admin Update Order Status Stored Procedure (Role / Passcode Protected)
+-- 5. Admin Update Order Status Stored Procedure (RBAC Protected)
 CREATE OR REPLACE FUNCTION public.admin_update_order_status(
   _order_id uuid,
   _new_status text,
-  _note text DEFAULT NULL,
-  _admin_passcode text DEFAULT NULL
+  _note text DEFAULT NULL
 )
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $$
 DECLARE
   _is_admin boolean := false;
@@ -267,17 +266,15 @@ DECLARE
   _valid_status public.order_status;
   _actor text := 'Store Admin';
 BEGIN
-  -- Verify Admin authorization
+  -- Verify Admin authorization via PostgreSQL RBAC
   IF auth.uid() IS NOT NULL AND public.has_role(auth.uid(), 'admin') THEN
-    _is_admin := true;
-  ELSIF _admin_passcode IS NOT NULL AND trim(_admin_passcode) IN ('AGT7799', 'AGT-ADMIN-2026', '6388354988', '7799', 'admin') THEN
     _is_admin := true;
   END IF;
 
   IF NOT _is_admin THEN
     RETURN jsonb_build_object(
       'success', false,
-      'error', 'Unauthorized: Admin privileges or valid passcode required.'
+      'error', 'Unauthorized: Admin role privileges required.'
     );
   END IF;
 
@@ -319,7 +316,9 @@ BEGIN
   );
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.admin_update_order_status(uuid, text, text, text) TO anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.admin_update_order_status(uuid, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_update_order_status(uuid, text, text) TO authenticated;
+
 
 -- 6. Secure Customer Order Lookup RPC (Matches Order No + 10-digit Phone)
 CREATE OR REPLACE FUNCTION public.lookup_order(
@@ -498,13 +497,11 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_customer_orders(text, uuid) TO anon, authenticated;
 
 -- 8. Get Admin Dashboard Real Analytics RPC
-CREATE OR REPLACE FUNCTION public.get_admin_dashboard_stats(
-  _admin_passcode text DEFAULT NULL
-)
+CREATE OR REPLACE FUNCTION public.get_admin_dashboard_stats()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, extensions, pg_temp
 AS $$
 DECLARE
   _is_admin boolean := false;
@@ -521,13 +518,12 @@ DECLARE
   _total_sales numeric(10,2) := 0;
   _total_customers int := 0;
 BEGIN
-  IF (auth.uid() IS NOT NULL AND public.has_role(auth.uid(), 'admin'))
-     OR (_admin_passcode IS NOT NULL AND trim(_admin_passcode) IN ('AGT7799', 'AGT-ADMIN-2026', '6388354988', '7799', 'admin')) THEN
+  IF auth.uid() IS NOT NULL AND public.has_role(auth.uid(), 'admin') THEN
     _is_admin := true;
   END IF;
 
   IF NOT _is_admin THEN
-    RETURN jsonb_build_object('success', false, 'error', 'Unauthorized');
+    RETURN jsonb_build_object('success', false, 'error', 'Unauthorized: Admin privileges required.');
   END IF;
 
   SELECT COUNT(*) INTO _total_orders FROM public.orders;
@@ -565,31 +561,23 @@ BEGIN
   );
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_stats(text) TO anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_admin_dashboard_stats() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_admin_dashboard_stats() TO authenticated;
 
--- 9. Claim Admin Role Procedure (Store Owner RBAC Promotion)
-CREATE OR REPLACE FUNCTION public.claim_admin_role(
-  p_passcode text
-)
+-- 9. Promote Store Owner Account to Admin Role
+CREATE OR REPLACE FUNCTION public.promote_owner_account()
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, pg_temp
 AS $$
 DECLARE
   v_user_id uuid;
 BEGIN
-  IF p_passcode IS NULL OR trim(p_passcode) NOT IN ('AGT7799', 'AGT-ADMIN-2026', '6388354988', '7799') THEN
-    RETURN jsonb_build_object('success', false, 'error', 'Invalid Admin Passcode.');
-  END IF;
-
-  v_user_id := auth.uid();
-  IF v_user_id IS NULL THEN
-    -- If called by unauthenticated client with correct passcode, find store owner account
-    SELECT id INTO v_user_id FROM auth.users
-    WHERE phone LIKE '%6388354988%' OR email = 'gopalmaddheshiya138@gmail.com'
-    LIMIT 1;
-  END IF;
+  -- Restrict to store owner's verified phone/email
+  SELECT id INTO v_user_id FROM auth.users
+  WHERE phone LIKE '%6388354988%' OR email = 'gopalmaddheshiya138@gmail.com'
+  LIMIT 1;
 
   IF v_user_id IS NOT NULL THEN
     INSERT INTO public.user_roles(user_id, role)
@@ -599,13 +587,15 @@ BEGIN
     RETURN jsonb_build_object('success', true, 'user_id', v_user_id, 'role', 'admin');
   END IF;
 
-  RETURN jsonb_build_object('success', false, 'error', 'User session not found.');
+  RETURN jsonb_build_object('success', false, 'error', 'Store owner user account not found.');
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.claim_admin_role(text) TO anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.promote_owner_account() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.promote_owner_account() TO authenticated;
 
 -- 10. Realtime Publication Enablement
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.order_status_history;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.order_events;
+
 

@@ -1,8 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Order, OrderItem, OrderEvent } from "@/lib/queries";
-import { ORDER_STATUS_LABEL } from "@/lib/format";
-
-export const ADMIN_PASSCODE = "AGT7799";
+import type { Order } from "@/lib/queries";
 
 export const ORDER_LIFECYCLE_STEPS = [
   "placed",
@@ -27,13 +24,12 @@ export interface StatusHistoryItem {
 
 /**
  * Robust, server-authorized Order Status Update function
- * Calls stored procedure or direct update with verified fallback
+ * Enforces PostgreSQL role-based security using the authenticated admin session
  */
 export async function updateOrderStatus(
   orderId: string,
   newStatus: string,
-  note?: string,
-  adminPasscode: string = ADMIN_PASSCODE
+  note?: string
 ): Promise<{ success: boolean; order?: Partial<Order>; error?: string }> {
   try {
     // 1. Primary: Try secure database procedure
@@ -43,7 +39,6 @@ export async function updateOrderStatus(
         _order_id: orderId,
         _new_status: newStatus,
         _note: note ?? null,
-        _admin_passcode: adminPasscode,
       } as never
     );
 
@@ -59,7 +54,7 @@ export async function updateOrderStatus(
       };
     }
 
-    // 2. Secondary: Direct table update
+    // 2. Secondary: Direct table update with authenticated session RLS
     const { data: updatedRows, error: directError } = await supabase
       .from("orders")
       .update({
@@ -73,21 +68,7 @@ export async function updateOrderStatus(
     if (directError) throw directError;
 
     if (!updatedRows || updatedRows.length === 0) {
-      // If direct update updated 0 rows due to RLS, try claiming admin role and retry
-      await supabase.rpc("claim_admin_role" as never, { p_passcode: adminPasscode } as never);
-      const { data: retryRows, error: retryErr } = await supabase
-        .from("orders")
-        .update({
-          status: newStatus as never,
-          notes: note || undefined,
-          updated_at: new Date().toISOString() as never,
-        })
-        .eq("id", orderId)
-        .select("id, order_no, status, updated_at");
-
-      if (retryErr || !retryRows || retryRows.length === 0) {
-        throw new Error(retryErr?.message || "Failed to update order status in database. Permission check failed.");
-      }
+      throw new Error("Permission denied: You must be an authorized admin to update order status.");
     }
 
     return {
@@ -105,27 +86,28 @@ export async function updateOrderStatus(
   }
 }
 
-
-
 /**
- * Update Payment Status
+ * Update Payment Status (Admin Only)
  */
 export async function updatePaymentStatus(
   orderId: string,
-  paymentStatus: "pending" | "paid" | "failed" | "refunded",
-  adminPasscode: string = ADMIN_PASSCODE
+  paymentStatus: "pending" | "paid" | "failed" | "refunded"
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase
+    const { data: updatedRows, error } = await supabase
       .from("orders")
       .update({
         payment_status: paymentStatus,
         paid_at: paymentStatus === "paid" ? new Date().toISOString() : null,
         updated_at: new Date().toISOString(),
       } as never)
-      .eq("id", orderId);
+      .eq("id", orderId)
+      .select("id, payment_status");
 
     if (error) throw error;
+    if (!updatedRows || updatedRows.length === 0) {
+      throw new Error("Permission denied: You must be an authorized admin to update payment status.");
+    }
     return { success: true };
   } catch (err: unknown) {
     return { success: false, error: err instanceof Error ? err.message : "Failed to update payment" };
@@ -134,6 +116,7 @@ export async function updatePaymentStatus(
 
 /**
  * Secure lookup of order for customer tracking
+ * Requires matching both Order Number and 10-digit customer Phone Number
  */
 export async function fetchOrderForTracking(
   orderNo: string,
@@ -203,7 +186,7 @@ export async function fetchCustomerOrderList(
       }
     }
 
-    // 2. Direct query fallback
+    // 2. Direct query fallback with authenticated session RLS
     let q = supabase
       .from("orders")
       .select("*, order_items(*), order_events(*)")
@@ -226,7 +209,8 @@ export async function fetchCustomerOrderList(
 }
 
 /**
- * Subscribe to realtime updates for a specific order
+ * Private Realtime Subscription for a specific Order ID
+ * Strictly scoped to that specific order with automatic teardown on unmount
  */
 export function subscribeToOrderRealtime(
   orderId: string,
@@ -235,7 +219,7 @@ export function subscribeToOrderRealtime(
   if (!orderId) return () => {};
 
   const channel = supabase
-    .channel(`order-live-${orderId}-${Date.now()}`)
+    .channel(`private-order-${orderId}`)
     .on(
       "postgres_changes",
       {
@@ -259,7 +243,6 @@ export function subscribeToOrderRealtime(
         filter: `order_id=eq.${orderId}`,
       },
       () => {
-        // Trigger parent refetch on new event
         onUpdate({ id: orderId });
       }
     )
