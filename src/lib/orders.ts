@@ -314,7 +314,13 @@ export function getRegisteredOrders(): RegisteredOrderMeta[] {
  */
 export async function fetchAllAdminOrders(): Promise<Order[]> {
   try {
-    // 1. Direct query with active admin token
+    // 1. Try get_all_orders_for_admin RPC procedure first
+    const { data: rpcOrders, error: rpcErr } = await supabase.rpc("get_all_orders_for_admin" as never);
+    if (!rpcErr && Array.isArray(rpcOrders) && rpcOrders.length > 0) {
+      return (rpcOrders as unknown as Order[]).map(mergeOrderWithOverrides);
+    }
+
+    // 2. Direct query with active admin token
     const { data: directOrders } = await supabase
       .from("orders")
       .select("*, order_items(*), order_events(*)")
@@ -329,7 +335,7 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
       }
     }
 
-    // 2. Fetch all registered orders via SECURITY DEFINER procedure lookup_order
+    // 3. Fetch all registered orders via SECURITY DEFINER procedure lookup_order
     const registeredList = getRegisteredOrders();
     for (const reg of registeredList) {
       if (!reg.order_no || !reg.phone) continue;
@@ -356,6 +362,7 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
     return [];
   }
 }
+
 
 /**
  * Private Realtime Subscription for a specific Order ID
