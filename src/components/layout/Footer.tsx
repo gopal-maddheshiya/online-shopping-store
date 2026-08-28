@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { settingsQuery } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n";
 
 const DAYS: [string, string][] = [
   ["mon", "Monday"],
@@ -25,6 +26,7 @@ const DAYS: [string, string][] = [
 
 export function Footer() {
   const { data: s } = useQuery(settingsQuery);
+  const { t, lang } = useLanguage();
 
   const phone = s?.phone ?? "+91 6388354988";
   const cleanPhone = phone.replace(/\s+/g, "");
@@ -74,8 +76,12 @@ export function Footer() {
               <RotateCcw className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">Store Pickup</p>
-              <p className="text-[11px] text-[#5A655F]">Ramnagar shop counter</p>
+              <p className="text-xs font-bold sm:text-sm text-[#16201A]">
+                {t.storePickupTitle}
+              </p>
+              <p className="text-[11px] text-[#5A655F]">
+                {lang === "hi" ? "रामनगर दुकान काउंटर" : "Ramnagar shop counter"}
+              </p>
             </div>
           </div>
         </div>
@@ -89,11 +95,13 @@ export function Footer() {
             to="/"
             className="inline-flex items-center gap-1.5 font-sans text-xl font-bold tracking-tight text-[#0F4A38]"
           >
-            <span>🌾</span> Arun Gopal Traders
+            <span>🌾</span> {t.storeName}
           </Link>
           <p className="text-xs leading-relaxed text-[#5A655F]">
-            {s?.tagline ??
-              "Your Trusted Local Grocery Store in Maharajganj. Fresh staples, honest rates, and reliable doorstep delivery."}
+            {lang === "hi"
+              ? "महाराजगंज में आपकी अपनी विश्वसनीय किराना दुकान। शुद्ध सामान, सही दाम और भरोसेमंद होम डिलीवरी।"
+              : (s?.tagline ??
+                "Your Trusted Local Grocery Store in Maharajganj. Fresh staples, honest rates, and reliable doorstep delivery.")}
           </p>
           <div className="space-y-1.5 text-xs text-[#5A655F] pt-2">
             <a
@@ -106,7 +114,7 @@ export function Footer() {
               className="flex items-start gap-2 hover:text-[#145A45] transition-colors"
             >
               <MapPin className="mt-0.5 size-3.5 shrink-0 text-[#145A45]" />
-              <span>{address}</span>
+              <span>{lang === "hi" ? t.storeAddress : (s?.address ?? t.storeAddress)}</span>
             </a>
             <a
               href={telHref(cleanPhone)}
@@ -227,9 +235,9 @@ export function Footer() {
       {/* Bottom Copyright Bar */}
       <div className="border-t border-[#E5E0D5] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
         <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#5A655F] sm:flex-row">
-          <p>© {new Date().getFullYear()} Arun Gopal Traders. Ramnagar, Maharajganj, UP.</p>
+          <p>© {new Date().getFullYear()} {t.storeName}. {t.storeAddressShort}.</p>
           <p className="flex items-center gap-1 font-medium">
-            <span>आपकी अपनी लोकल किराना दुकान • 100% शुद्धता</span>
+            <span>{lang === "hi" ? "आपकी अपनी लोकल किराना दुकान • 100% शुद्धता" : "Your Trusted Local Kirana Store • 100% Purity"}</span>
           </p>
         </div>
       </div>

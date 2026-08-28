@@ -574,8 +574,7 @@ function CheckoutPage() {
               </div>
             ) : (
               <div className="mt-4 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-4 text-xs text-[#5A655F]">
-                📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> Arun Gopal Traders, Ramnagar, Adda Bazar Road,
-                Maharajganj, UP.
+                📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> {t.storeName}, {t.storeAddressShort}.
                 <br />
                 {lang === "hi"
                   ? "आपका ऑर्डर 30-45 मिनट में पैक करके तैयार रखा जाएगा।"

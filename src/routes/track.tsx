@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, type Order } from "@/lib/queries";
 import { inr, telHref, waHref, ORDER_STATUS_LABEL, PAYMENT_LABEL, formatDate } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
+import { useLanguage } from "@/lib/i18n";
 
 type TrackSearch = {
   orderNo?: string | undefined;
@@ -49,6 +50,7 @@ export const Route = createFileRoute("/track")({
 });
 
 function TrackPage() {
+  const { t, lang } = useLanguage();
   const search = Route.useSearch();
   const { data: settings } = useQuery(settingsQuery);
 
@@ -303,7 +305,7 @@ function TrackPage() {
                   <div>
                     <span className="text-[#5A655F]">Store Pickup Address:</span>
                     <p className="font-medium text-[#16201A]">
-                      Arun Gopal Traders, Ramnagar, Adda Bazar Road, Maharajganj, UP
+                      {t.storeName}, Ramnagar, Adda Bazar Road, Maharajganj, UP
                     </p>
                   </div>
                 )}
@@ -415,7 +417,7 @@ function TrackPage() {
               Have Questions or Need Quick Delivery?
             </h4>
             <p className="mx-auto mt-1 max-w-md text-xs text-[#5A655F]">
-              Call Arun Gopal Traders directly or connect on WhatsApp for immediate grocery
+              Call {t.storeName} directly or connect on WhatsApp for immediate grocery
               assistance in Maharajganj.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">

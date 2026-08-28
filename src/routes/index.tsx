@@ -473,7 +473,7 @@ function PremiumStoreHome() {
                 </div>
 
                 <div className="mt-2 text-[10px] text-white/75 font-medium text-center">
-                  📍 Ramnagar, Adda Bazar Road, Maharajganj
+                  {lang === "hi" ? "📍 रामनगर, अड्डा बाजार रोड, महाराजगंज" : "📍 Ramnagar, Adda Bazar Road, Maharajganj"}
                 </div>
               </div>
             </div>
@@ -720,7 +720,9 @@ function PremiumStoreHome() {
             </div>
             <div>
               <p className="text-xs font-bold text-[#16201A]">{t.quickLocation}</p>
-              <p className="text-[10px] text-[#5A655F]">Ramnagar, Adda Bazar</p>
+              <p className="text-[10px] text-[#5A655F]">
+                {lang === "hi" ? "रामनगर, अड्डा बाजार" : "Ramnagar, Adda Bazar"}
+              </p>
             </div>
           </a>
         </div>
@@ -1025,8 +1027,8 @@ function PremiumStoreHome() {
             </div>
             <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#16201A]">
               {lang === "hi"
-                ? "क्यों खरीदें Arun Gopal Traders से?"
-                : "Why Choose Arun Gopal Traders?"}
+                ? `क्यों खरीदें ${t.storeName} से?`
+                : `Why Choose ${t.storeName}?`}
             </h2>
             <p className="text-xs sm:text-sm text-[#5A655F]">
               {lang === "hi"

@@ -156,10 +156,10 @@ export function Header() {
                 <SheetHeader className="border-b border-[#E5E0D5] bg-[#FAF8F2] p-4.5 pr-14 text-left">
                   <div className="flex flex-col gap-1">
                     <SheetTitle className="text-lg font-black text-[#0F4A38] tracking-tight flex items-center gap-1.5">
-                      <span className="text-base">🌾</span> Arun Gopal Traders
+                      <span className="text-base">🌾</span> {t.storeName}
                     </SheetTitle>
                     <p className="text-[11px] text-[#5A655F]">
-                      Ramnagar, Adda Bazar Road, Maharajganj, UP
+                      {t.storeAddressShort}
                     </p>
 
                     {/* Mobile Lang Selector */}
@@ -266,7 +266,7 @@ export function Header() {
             {/* Brand Logo */}
             <Link to="/" className="flex flex-col group shrink-0">
               <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#0F4A38] flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-base sm:text-lg">🌾</span> Arun Gopal Traders
+                <span className="text-base sm:text-lg">🌾</span> {t.storeName}
               </span>
               <span className="hidden md:block text-[11px] font-medium text-[#5A655F] group-hover:text-[#145A45] transition-colors whitespace-nowrap">
                 {lang === "hi"

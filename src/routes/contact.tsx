@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, isOpenNow } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -48,6 +49,7 @@ const DAYS = [
 ];
 
 function ContactPage() {
+  const { t, lang } = useLanguage();
   const { data: s } = useQuery(settingsQuery);
   const status = isOpenNow(s);
 
@@ -100,11 +102,12 @@ function ContactPage() {
       {/* Header */}
       <div className="max-w-2xl mx-auto text-center space-y-3">
         <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#16201A]">
-          We're here to help.
+          {t.weAreHereToHelp}
         </h1>
         <p className="text-xs sm:text-sm text-[#5A655F]">
-          Having trouble finding a product or placing an order? Talk to our Ramnagar store team
-          directly.
+          {lang === "hi"
+            ? "सामान खोजने या ऑर्डर करने में कोई समस्या? हमारी रामनगर दुकान टीम से सीधे बात करें।"
+            : "Having trouble finding a product or placing an order? Talk to our Ramnagar store team directly."}
         </p>
       </div>
 
@@ -116,14 +119,16 @@ function ContactPage() {
             <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
               <Phone className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">Call Us</h3>
+            <h3 className="font-sans text-base font-bold text-[#16201A]">
+              {lang === "hi" ? "कॉल करें" : "Call Us"}
+            </h3>
             <p className="text-xs text-[#5A655F]">{phone}</p>
           </div>
           <Button
             asChild
             className="mt-6 rounded-lg bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
           >
-            <a href={telHref(cleanPhone)}>Call Now</a>
+            <a href={telHref(cleanPhone)}>{t.callNow}</a>
           </Button>
         </div>
 
@@ -133,8 +138,12 @@ function ContactPage() {
             <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
               <MessageCircle className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">WhatsApp</h3>
-            <p className="text-xs text-[#5A655F]">Send your kirana list</p>
+            <h3 className="font-sans text-base font-bold text-[#16201A]">
+              {t.orderOnWhatsapp}
+            </h3>
+            <p className="text-xs text-[#5A655F]">
+              {lang === "hi" ? "किराना सामान की लिस्ट भेजें" : "Send your kirana list"}
+            </p>
           </div>
           <Button
             asChild
@@ -143,12 +152,14 @@ function ContactPage() {
             <a
               href={waHref(
                 whatsapp,
-                "Namaste Arun Gopal Traders, I want to inquire about groceries.",
+                lang === "hi"
+                  ? `नमस्ते ${t.storeName}, मुझे किराने के सामान के बारे में जानकारी चाहिए।`
+                  : `Namaste ${t.storeName}, I want to inquire about groceries.`,
               )}
               target="_blank"
               rel="noreferrer"
             >
-              Chat on WhatsApp
+              {lang === "hi" ? "व्हाट्सएप पर चैट करें" : "Chat on WhatsApp"}
             </a>
           </Button>
         </div>
@@ -159,7 +170,9 @@ function ContactPage() {
             <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
               <Mail className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">Email</h3>
+            <h3 className="font-sans text-base font-bold text-[#16201A]">
+              {lang === "hi" ? "ईमेल" : "Email"}
+            </h3>
             <p className="text-xs text-[#5A655F] truncate">{email}</p>
           </div>
           <Button
@@ -167,7 +180,9 @@ function ContactPage() {
             variant="outline"
             className="mt-6 rounded-lg border-[#E5E0D5] text-[#0F4A38] text-xs font-semibold hover:bg-[#E6EFE8]"
           >
-            <a href={`mailto:${email}`}>Email Us</a>
+            <a href={`mailto:${email}`}>
+              {lang === "hi" ? "ईमेल भेजें" : "Email Us"}
+            </a>
           </Button>
         </div>
 
@@ -177,9 +192,11 @@ function ContactPage() {
             <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
               <MapPin className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">Visit Store</h3>
+            <h3 className="font-sans text-base font-bold text-[#16201A]">
+              {lang === "hi" ? "दुकान पर आएं" : "Visit Store"}
+            </h3>
             <p className="text-xs text-[#5A655F] line-clamp-2">
-              Ramnagar, Adda Bazar Road, Maharajganj
+              {t.storeAddressShort}
             </p>
           </div>
           <Button
@@ -195,7 +212,7 @@ function ContactPage() {
               target="_blank"
               rel="noreferrer"
             >
-              Get Directions
+              {lang === "hi" ? "रास्ता देखें (मैप्स)" : "Get Directions"}
             </a>
           </Button>
         </div>
@@ -330,7 +347,7 @@ function ContactPage() {
           </div>
 
           <div className="border-t border-[#E5E0D5] pt-4 text-xs text-[#5A655F] space-y-1">
-            <p className="font-bold text-[#16201A]">📍 Arun Gopal Traders</p>
+            <p className="font-bold text-[#16201A]">📍 {t.storeName}</p>
             <p>{address}</p>
           </div>
         </div>

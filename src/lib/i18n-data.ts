@@ -9,7 +9,8 @@ export type Translations = {
   closedOpensAt: string;
   closedToday: string;
 
-  // Header
+  // Header & Brand
+  storeName: string;
   searchPlaceholder: string;
   searchSuggestions: string[];
   searchBtn: string;
@@ -93,6 +94,22 @@ export type Translations = {
   name: string;
   phone: string;
   message: string;
+
+  // Store Address & Info
+  storeAddress: string;
+  storeAddressShort: string;
+  storeLocationLabel: string;
+  storeHoursLabel: string;
+  storeHoursValue: string;
+
+  // Quick Order Modal
+  quickOrderTitle: string;
+  quickOrderDesc: string;
+  callStoreDirectly: string;
+  instantChatList: string;
+  sendList: string;
+  currentBasketLabel: string;
+  cartAutoFormatNote: string;
 };
 
 export const translations: Record<Language, Translations> = {
@@ -103,6 +120,7 @@ export const translations: Record<Language, Translations> = {
     openUntil: "Open today until {time}",
     closedOpensAt: "Closed • Opens at {time}",
     closedToday: "Closed today",
+    storeName: "Arun Gopal Traders",
     searchPlaceholder: "Search atta, basmati rice, mustard oil, spices...",
     searchSuggestions: [
       "Search flour...",
@@ -177,10 +195,21 @@ export const translations: Record<Language, Translations> = {
     needHelp: "Need Help? Call Us",
     weAreHereToHelp: "We're here to help.",
     contactSub: "Having trouble finding an item or placing an order? Talk to us.",
-    submitInquiry: "Submit Inquiry",
     name: "Full Name",
     phone: "Mobile Number",
     message: "Your Message / Item List",
+    storeAddress: "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh",
+    storeAddressShort: "Ramnagar, Adda Bazar Road, Maharajganj, UP",
+    storeLocationLabel: "Store Location",
+    storeHoursLabel: "Hours",
+    storeHoursValue: "Open 7:00 AM - 9:00 PM Daily (Sunday 8:00 AM - 2:00 PM)",
+    quickOrderTitle: "Quick Order via Call or WhatsApp",
+    quickOrderDesc: "Prefer not to order online? You can place your grocery order directly by speaking with our Maharajganj store team.",
+    callStoreDirectly: "Call Store Directly",
+    instantChatList: "Instant chat & grocery list",
+    sendList: "Send List",
+    currentBasketLabel: "Current Basket",
+    cartAutoFormatNote: "Your cart items will be automatically formatted and sent in the WhatsApp message.",
   },
   hi: {
     topAlert: "महाराजगंज में ₹499 से अधिक के ऑर्डर पर फ्री होम डिलीवरी",
@@ -189,6 +218,7 @@ export const translations: Record<Language, Translations> = {
     openUntil: "आज रात {time} तक खुली है",
     closedOpensAt: "दुकान बंद है • सुबह {time} खुलेगी",
     closedToday: "आज दुकान बंद है",
+    storeName: "अरुण गोपाल ट्रेडर्स",
     searchPlaceholder: "आटा, बासमती चावल, सरसों तेल, मसाले खोजें...",
     searchSuggestions: [
       "आटा खोजें...",
@@ -267,6 +297,18 @@ export const translations: Record<Language, Translations> = {
     name: "पूरा नाम",
     phone: "मोबाइल नंबर",
     message: "सामान की सूची / संदेश",
+    storeAddress: "रामनगर, अड्डा बाजार रोड, महाराजगंज, उत्तर प्रदेश",
+    storeAddressShort: "रामनगर, अड्डा बाजार रोड, महाराजगंज, उ.प्र.",
+    storeLocationLabel: "दुकान का पता",
+    storeHoursLabel: "समय",
+    storeHoursValue: "प्रतिदिन सुबह 7:00 से रात 9:00 बजे (रविवार सुबह 8:00 से दोपहर 2:00 बजे)",
+    quickOrderTitle: "कॉल या व्हाट्सएप से तुरंत ऑर्डर करें",
+    quickOrderDesc: "ऑनलाइन ऑर्डर नहीं करना चाहते? आप सीधे हमारी महाराजगंज दुकान से बात करके किराने का सामान ऑर्डर कर सकते हैं।",
+    callStoreDirectly: "दुकान पर सीधे कॉल करें",
+    instantChatList: "तुरंत चैट व सामान की लिस्ट भेजें",
+    sendList: "लिस्ट भेजें",
+    currentBasketLabel: "वर्तमान कार्ट",
+    cartAutoFormatNote: "आपके कार्ट का सामान अपने आप व्यवस्थित होकर व्हाट्सएप संदेश में जुड़ जाएगा।",
   },
 };
 

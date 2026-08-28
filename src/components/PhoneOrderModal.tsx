@@ -1,4 +1,4 @@
-import { Phone, MessageCircle, ShoppingBag, X } from "lucide-react";
+import { Phone, MessageCircle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +11,7 @@ import { useCart } from "@/lib/cart";
 import { useQuery } from "@tanstack/react-query";
 import { settingsQuery } from "@/lib/queries";
 import { inr, telHref, waHref } from "@/lib/format";
+import { useLanguage } from "@/lib/i18n";
 
 type PhoneOrderModalProps = {
   open: boolean;
@@ -20,20 +21,34 @@ type PhoneOrderModalProps = {
 export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
   const { items, subtotal } = useCart();
   const { data: settings } = useQuery(settingsQuery);
+  const { t, lang } = useLanguage();
 
   const phone = settings?.phone ?? "+916388354988";
   const whatsapp = settings?.whatsapp ?? "916388354988";
 
-  let waMessage = `Namaste Arun Gopal Traders, I want to place a grocery order:`;
+  let waMessage =
+    lang === "hi"
+      ? `नमस्ते ${t.storeName}, मुझे किराने का सामान ऑर्डर करना है:`
+      : `Namaste ${t.storeName}, I want to place a grocery order:`;
+
   if (items.length > 0) {
-    waMessage += `\n\n*Cart Items:*`;
+    waMessage += lang === "hi" ? `\n\n*कार्ट का सामान:*` : `\n\n*Cart Items:*`;
     items.forEach((item, idx) => {
       waMessage += `\n${idx + 1}. ${item.name} (${item.variantLabel}) - Qty: ${item.qty} (${inr(item.price * item.qty)})`;
     });
-    waMessage += `\n\n*Estimated Subtotal:* ${inr(subtotal)}`;
-    waMessage += `\n\nPlease confirm availability and delivery time for Maharajganj.`;
+    waMessage +=
+      lang === "hi"
+        ? `\n\n*अनुमानित कुल राशि:* ${inr(subtotal)}`
+        : `\n\n*Estimated Subtotal:* ${inr(subtotal)}`;
+    waMessage +=
+      lang === "hi"
+        ? `\n\nकृपया महाराजगंज के लिए उपलब्धता और डिलीवरी का समय बताएं।`
+        : `\n\nPlease confirm availability and delivery time for Maharajganj.`;
   } else {
-    waMessage += `\n\nPlease share the latest grocery list or help me place an order for Maharajganj delivery/pickup.`;
+    waMessage +=
+      lang === "hi"
+        ? `\n\nकृपया महाराजगंज होम डिलीवरी/पिकअप के लिए नवीनतम किराना लिस्ट साझा करें।`
+        : `\n\nPlease share the latest grocery list or help me place an order for Maharajganj delivery/pickup.`;
   }
 
   return (
@@ -41,11 +56,10 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">
-            Quick Order via Call or WhatsApp
+            {t.quickOrderTitle}
           </DialogTitle>
           <DialogDescription>
-            Prefer not to order online? You can place your grocery order directly by speaking with
-            our Maharajganj store team.
+            {t.quickOrderDesc}
           </DialogDescription>
         </DialogHeader>
 
@@ -54,13 +68,13 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
             <div className="rounded-xl border border-border bg-muted/50 p-3 text-xs">
               <div className="flex items-center justify-between font-semibold">
                 <span className="flex items-center gap-1.5">
-                  <ShoppingBag className="size-4 text-primary" /> Current Basket ({items.length}{" "}
-                  items)
+                  <ShoppingBag className="size-4 text-primary" /> {t.currentBasketLabel} ({items.length}{" "}
+                  {lang === "hi" ? "सामान" : "items"})
                 </span>
                 <span>{inr(subtotal)}</span>
               </div>
               <p className="mt-1 text-muted-foreground">
-                Your cart items will be automatically formatted and sent in the WhatsApp message.
+                {t.cartAutoFormatNote}
               </p>
             </div>
           ) : null}
@@ -75,11 +89,11 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                   <Phone className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">Call Store Directly</h4>
+                  <h4 className="font-semibold text-foreground">{t.callStoreDirectly}</h4>
                   <p className="text-xs text-muted-foreground">{phone}</p>
                 </div>
               </div>
-              <Button size="sm">Call Now</Button>
+              <Button size="sm">{t.callNow}</Button>
             </a>
 
             <a
@@ -93,8 +107,8 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                   <MessageCircle className="size-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground">Order on WhatsApp</h4>
-                  <p className="text-xs text-muted-foreground">Instant chat &amp; grocery list</p>
+                  <h4 className="font-semibold text-foreground">{t.orderOnWhatsapp}</h4>
+                  <p className="text-xs text-muted-foreground">{t.instantChatList}</p>
                 </div>
               </div>
               <Button
@@ -102,15 +116,15 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                 variant="outline"
                 className="border-success/40 text-success hover:bg-success/10"
               >
-                Send List
+                {t.sendList}
               </Button>
             </a>
           </div>
 
           <div className="rounded-lg bg-muted p-3 text-[11px] text-muted-foreground">
-            📍 <strong>Store Location:</strong> Ramnagar, Adda Bazar Road, Maharajganj, UP
+            📍 <strong>{t.storeLocationLabel}:</strong> {t.storeAddressShort}
             <br />
-            🕒 <strong>Hours:</strong> Open 7:00 AM - 9:00 PM Daily (Sunday 8:00 AM - 2:00 PM)
+            🕒 <strong>{t.storeHoursLabel}:</strong> {t.storeHoursValue}
           </div>
         </div>
       </DialogContent>
