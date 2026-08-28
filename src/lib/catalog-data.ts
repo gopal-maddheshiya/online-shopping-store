@@ -125,6 +125,10 @@ export const ADDITIONAL_PRODUCTS: Product[] = [
     subcategory_id: null,
     description: "Protein-rich yellow split Bengal gram for delicious dal tadka.",
     image_url: "/images/products/chana-dal.svg",
+    images: [
+      { url: "/images/products/chana-dal.svg", type: "front", label: "Front View", sort_order: 0 },
+      { url: "/images/dal.jpg", type: "detail", label: "Grain Quality & Texture", sort_order: 1 },
+    ],
     tags: ["chana dal", "pulses", "dal", "protein"],
     is_featured: false,
     is_popular: true,
@@ -169,6 +173,10 @@ export const ADDITIONAL_PRODUCTS: Product[] = [
     subcategory_id: null,
     description: "Washed white split urad dal for dal makhani, idli and medu vada.",
     image_url: "/images/products/urad-dal.svg",
+    images: [
+      { url: "/images/products/urad-dal.svg", type: "front", label: "Front View", sort_order: 0 },
+      { url: "/images/dal.jpg", type: "detail", label: "Purity & Polish", sort_order: 1 },
+    ],
     tags: ["urad dal", "dal", "white urad"],
     is_featured: false,
     is_popular: true,

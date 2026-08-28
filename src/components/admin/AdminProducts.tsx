@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Plus,
   Search,
@@ -12,6 +12,14 @@ import {
   Image as ImageIcon,
   Check,
   Boxes,
+  Upload,
+  ArrowUp,
+  ArrowDown,
+  Star,
+  ImagePlus,
+  FileImage,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +37,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, discountPercent } from "@/lib/format";
-import { getProductImage } from "@/lib/product-images";
-import type { Product, Category, Variant } from "@/lib/queries";
+import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
+import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
 
 type AdminProductsProps = {
   products: Product[];
@@ -73,10 +81,21 @@ export function AdminProducts({
   const [categoryId, setCategoryId] = useState<string>("");
   const [subcategoryId, setSubcategoryId] = useState<string>("");
   const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
+
+  type GalleryImageItem = {
+    id: string;
+    url: string;
+    type: ProductImageType;
+    label: string;
+    sort_order: number;
+  };
+
+  const [galleryImages, setGalleryImages] = useState<GalleryImageItem[]>([
+    { id: "img-1", url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 },
+  ]);
 
   // Variants in Modal
   const [variants, setVariants] = useState<VariantFormItem[]>([
@@ -95,7 +114,15 @@ export function AdminProducts({
     setCategoryId(parentCategories[0]?.id ?? "");
     setSubcategoryId("");
     setDescription("");
-    setImageUrl("/images/packaged.jpg");
+    setGalleryImages([
+      {
+        id: `img-${Date.now()}`,
+        url: "/images/packaged.jpg",
+        type: "front",
+        label: "Front View",
+        sort_order: 0,
+      },
+    ]);
     setIsFeatured(false);
     setIsPopular(false);
     setIsActive(true);
@@ -111,10 +138,39 @@ export function AdminProducts({
     setCategoryId(prod.category_id ?? "");
     setSubcategoryId(prod.subcategory_id ?? "");
     setDescription(prod.description ?? "");
-    setImageUrl(prod.image_url ?? "/images/packaged.jpg");
     setIsFeatured(prod.is_featured);
     setIsPopular(prod.is_popular);
     setIsActive(prod.is_active);
+
+    const parsedImages = getProductImages(prod).map((img, idx) => ({
+      id: `img-${idx}-${Date.now()}`,
+      url: img.url,
+      type: img.type,
+      label:
+        img.label ||
+        (img.type === "front"
+          ? "Front View"
+          : img.type === "back"
+            ? "Back / Nutrition"
+            : img.type === "detail"
+              ? "Detail View"
+              : "Additional Photo"),
+      sort_order: img.sort_order ?? idx,
+    }));
+
+    setGalleryImages(
+      parsedImages.length > 0
+        ? parsedImages
+        : [
+            {
+              id: `img-${Date.now()}`,
+              url: prod.image_url || "/images/packaged.jpg",
+              type: "front",
+              label: "Front View",
+              sort_order: 0,
+            },
+          ],
+    );
 
     const existingVars = (prod.product_variants ?? []).map((v) => ({
       id: v.id,
@@ -143,6 +199,118 @@ export function AdminProducts({
           .replace(/^-|-$/g, ""),
       );
     }
+  }
+
+  function addGalleryImage(type: ProductImageType = "additional", defaultUrl: string = "") {
+    if (galleryImages.length >= 8) {
+      toast.error("Maximum 8 images allowed per product");
+      return;
+    }
+    const newId = `img-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const label =
+      type === "front"
+        ? "Front View"
+        : type === "back"
+          ? "Back / Nutrition"
+          : type === "detail"
+            ? "Detail View"
+            : `Additional Photo ${galleryImages.length + 1}`;
+
+    setGalleryImages((prev) => [
+      ...prev,
+      {
+        id: newId,
+        url: defaultUrl || "/images/packaged.jpg",
+        type,
+        label,
+        sort_order: prev.length,
+      },
+    ]);
+  }
+
+  function updateGalleryImage(id: string, field: keyof GalleryImageItem, value: any) {
+    setGalleryImages((prev) =>
+      prev.map((img) => (img.id === id ? { ...img, [field]: value } : img)),
+    );
+  }
+
+  function removeGalleryImage(id: string) {
+    if (galleryImages.length <= 1) {
+      toast.error("At least one product image is required");
+      return;
+    }
+    setGalleryImages((prev) => {
+      const filtered = prev.filter((img) => img.id !== id);
+      if (!filtered.some((img) => img.type === "front") && filtered.length > 0) {
+        filtered[0]!.type = "front";
+      }
+      return filtered.map((img, idx) => ({ ...img, sort_order: idx }));
+    });
+  }
+
+  function setPrimaryImage(id: string) {
+    setGalleryImages((prev) => {
+      const targetIndex = prev.findIndex((img) => img.id === id);
+      if (targetIndex === -1) return prev;
+      const target = prev[targetIndex]!;
+      const remaining = prev.filter((img) => img.id !== id);
+
+      const updatedTarget: GalleryImageItem = { ...target, type: "front", sort_order: 0 };
+      const updatedRemaining = remaining.map((img, idx) => ({
+        ...img,
+        type: img.type === "front" ? ("additional" as ProductImageType) : img.type,
+        sort_order: idx + 1,
+      }));
+
+      return [updatedTarget, ...updatedRemaining];
+    });
+    toast.success("Designated as primary front image");
+  }
+
+  function moveGalleryImage(index: number, direction: "up" | "down") {
+    setGalleryImages((prev) => {
+      const targetIdx = direction === "up" ? index - 1 : index + 1;
+      if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+
+      const copy = [...prev];
+      const temp = copy[index]!;
+      copy[index] = copy[targetIdx]!;
+      copy[targetIdx] = temp;
+
+      return copy.map((img, idx) => ({ ...img, sort_order: idx }));
+    });
+  }
+
+  function handleFileUpload(id: string, file: File) {
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+      "image/gif",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (PNG, JPG, WebP, SVG)");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("Image file is too large (max 5 MB allowed)");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      updateGalleryImage(id, "url", result);
+      toast.success("Image loaded successfully!");
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read image file");
+    };
+    reader.readAsDataURL(file);
   }
 
   function addVariantRow() {
@@ -175,6 +343,20 @@ export function AdminProducts({
       return;
     }
 
+    // Determine primary Front image and full images array
+    const primary =
+      galleryImages.find((img) => img.type === "front") ||
+      galleryImages[0] || { url: "/images/packaged.jpg" };
+
+    const cleanImages: ProductImage[] = galleryImages
+      .filter((img) => img.url && img.url.trim().length > 0)
+      .map((img, idx) => ({
+        url: img.url.trim(),
+        type: img.type,
+        label: img.label.trim() || undefined,
+        sort_order: idx,
+      }));
+
     setIsSaving(true);
     try {
       if (editingProduct) {
@@ -188,7 +370,8 @@ export function AdminProducts({
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
-            image_url: imageUrl.trim() || null,
+            image_url: primary.url.trim() || "/images/packaged.jpg",
+            images: cleanImages as unknown as string[],
             is_featured: isFeatured,
             is_popular: isPopular,
             is_active: isActive,
@@ -237,7 +420,8 @@ export function AdminProducts({
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
-            image_url: imageUrl.trim() || null,
+            image_url: primary.url.trim() || "/images/packaged.jpg",
+            images: cleanImages as unknown as string[],
             is_featured: isFeatured,
             is_popular: isPopular,
             is_active: isActive,
@@ -763,78 +947,266 @@ export function AdminProducts({
               </div>
             </div>
 
-            {/* Section 3: Media & Description */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
-                3. Image &amp; Description
-              </h4>
+            {/* Section 3: Product Images Gallery */}
+            <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF8F2] p-3.5 sm:p-4 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#16201A] flex items-center gap-2">
+                    <ImageIcon className="size-4 text-[#145A45]" />
+                    3. Product Images Gallery
+                  </h4>
+                  <p className="text-[10px] sm:text-[11px] text-[#5A655F]">
+                    Upload and manage Front (Primary), Back (Packaging &amp; Nutrition), Detail, and Additional photos.
+                  </p>
+                </div>
+
+                {/* Quick Add Image Slot Buttons */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    type="button"
+                    onClick={() => addGalleryImage("front")}
+                    variant="outline"
+                    size="sm"
+                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#145A45] hover:bg-[#FAF8F2] shadow-2xs"
+                  >
+                    <Plus className="size-3 mr-1" /> Front
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => addGalleryImage("back")}
+                    variant="outline"
+                    size="sm"
+                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#D97706] hover:bg-[#FAF8F2] shadow-2xs"
+                  >
+                    <Plus className="size-3 mr-1" /> Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => addGalleryImage("detail")}
+                    variant="outline"
+                    size="sm"
+                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-emerald-700 hover:bg-[#FAF8F2] shadow-2xs"
+                  >
+                    <Plus className="size-3 mr-1" /> Detail
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => addGalleryImage("additional")}
+                    variant="outline"
+                    size="sm"
+                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#5A655F] hover:bg-[#FAF8F2] shadow-2xs"
+                  >
+                    <Plus className="size-3 mr-1" /> Photo
+                  </Button>
+                </div>
+              </div>
+
+              {/* Image Cards Stack */}
               <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#1F2924]">
-                    Product Image URL / Asset Link
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={imageUrl || "/images/packaged.jpg"}
-                      alt="Preview"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                      }}
-                      className="size-14 rounded-xl object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1 shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <Input
-                        placeholder="https://... ya /images/atta.jpg"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        className="rounded-xl text-xs border-[#E8E4DA] h-9"
-                      />
-                      <p className="text-[10px] text-[#6B746F]">
-                        Koi bhi online image URL daalein ya neeche quick presets me se choose karein:
-                      </p>
+                {galleryImages.map((img, idx) => {
+                  const isPrimary = img.type === "front" || idx === 0;
+
+                  return (
+                    <div
+                      key={img.id}
+                      className={`rounded-xl bg-white p-3 border transition-all shadow-2xs space-y-2.5 ${
+                        isPrimary
+                          ? "border-[#145A45]/50 ring-1 ring-[#145A45]/30 bg-white"
+                          : "border-[#E5E0D5]"
+                      }`}
+                    >
+                      {/* Image Header: Type, Primary Badge, Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E0D5]/60 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold text-[#5A655F]">
+                            #{idx + 1}
+                          </span>
+
+                          <Select
+                            value={img.type}
+                            onValueChange={(val) =>
+                              updateGalleryImage(img.id, "type", val as ProductImageType)
+                            }
+                          >
+                            <SelectTrigger className="h-7 rounded-md text-[11px] font-semibold border-[#E5E0D5] bg-[#FAF8F2] w-40">
+                              <SelectValue placeholder="Slot Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="front" className="text-xs">
+                                🌾 Front (Primary Image)
+                              </SelectItem>
+                              <SelectItem value="back" className="text-xs">
+                                📦 Back (Nutrition / MRP)
+                              </SelectItem>
+                              <SelectItem value="detail" className="text-xs">
+                                🔍 Detail (Label / Seal)
+                              </SelectItem>
+                              <SelectItem value="additional" className="text-xs">
+                                🖼️ Additional Photo
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          {isPrimary && (
+                            <span className="rounded-md bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#0F4A38] border border-[#145A45]/30 flex items-center gap-1">
+                              <Star className="size-3 fill-[#0F4A38]" /> Primary
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Image Actions: Move, Set Primary, Remove */}
+                        <div className="flex items-center gap-1">
+                          {!isPrimary && (
+                            <button
+                              type="button"
+                              onClick={() => setPrimaryImage(img.id)}
+                              title="Make Primary Front Image"
+                              className="flex h-7 items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 text-[10px] font-bold text-[#145A45] hover:bg-white active:scale-95"
+                            >
+                              <Star className="size-3" /> Make Front
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => moveGalleryImage(idx, "up")}
+                            disabled={idx === 0}
+                            title="Move Up"
+                            className="flex size-7 items-center justify-center rounded-md border border-[#E5E0D5] text-[#5A655F] hover:bg-[#FAF8F2] disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ArrowUp className="size-3.5" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => moveGalleryImage(idx, "down")}
+                            disabled={idx === galleryImages.length - 1}
+                            title="Move Down"
+                            className="flex size-7 items-center justify-center rounded-md border border-[#E5E0D5] text-[#5A655F] hover:bg-[#FAF8F2] disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <ArrowDown className="size-3.5" />
+                          </button>
+
+                          {galleryImages.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeGalleryImage(img.id)}
+                              title="Delete Image"
+                              className="flex size-7 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 active:scale-95 ml-1"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Image Content Row: Preview, URL Input, Upload Button, Label Input */}
+                      <div className="grid gap-3 sm:grid-cols-[5rem_1fr] items-start">
+                        {/* Thumbnail Preview */}
+                        <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0 mx-auto sm:mx-0">
+                          <img
+                            src={img.url || "/images/packaged.jpg"}
+                            alt={img.label || "Preview"}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                            }}
+                            className="size-full object-contain"
+                          />
+                        </div>
+
+                        {/* Inputs: URL, File Upload, Label */}
+                        <div className="space-y-2 text-xs">
+                          <div className="flex gap-2 items-center">
+                            <div className="flex-1">
+                              <Input
+                                placeholder="https://... or /images/atta.jpg"
+                                value={img.url}
+                                onChange={(e) => updateGalleryImage(img.id, "url", e.target.value)}
+                                className="h-8 text-xs rounded-lg border-[#E5E0D5]"
+                              />
+                            </div>
+
+                            {/* File Upload Trigger */}
+                            <label className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-2.5 text-[11px] font-semibold text-[#16201A] hover:bg-white active:scale-95 cursor-pointer shadow-2xs">
+                              <Upload className="size-3 text-[#145A45]" />
+                              <span>Upload File</span>
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileUpload(img.id, file);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              placeholder="Image Caption (e.g. Front packaging, Nutrition table, Purity mark)"
+                              value={img.label}
+                              onChange={(e) => updateGalleryImage(img.id, "label", e.target.value)}
+                              className="h-7 text-xs rounded-lg border-[#E5E0D5] text-[#5A655F]"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  );
+                })}
+              </div>
 
-                  {/* Quick Preset Badges */}
-                  <div className="flex flex-wrap gap-1.5 pt-1.5">
-                    {[
-                      { label: "🌾 Atta", url: "/images/atta.jpg" },
-                      { label: "🍚 Rice", url: "/images/rice.jpg" },
-                      { label: "🫘 Dal", url: "/images/dal.jpg" },
-                      { label: "🛢️ Oil/Ghee", url: "/images/oil.jpg" },
-                      { label: "🌶️ Spices", url: "/images/spices.jpg" },
-                      { label: "🍪 Biscuits", url: "/images/biscuits.jpg" },
-                      { label: "🍵 Tea", url: "/images/tea.jpg" },
-                      { label: "🥨 Snacks", url: "/images/snacks.jpg" },
-                      { label: "🧼 Detergent", url: "/images/surf_excel_detergent_1787801991917.jpg" },
-                      { label: "📦 General", url: "/images/packaged.jpg" },
-                    ].map((preset) => (
-                      <button
-                        key={preset.url}
-                        type="button"
-                        onClick={() => setImageUrl(preset.url)}
-                        className={`rounded-lg px-2 py-1 text-[11px] font-medium border transition-colors ${
-                          imageUrl === preset.url
-                            ? "bg-[#145A45] text-white border-[#145A45]"
-                            : "bg-[#FAF8F2] text-[#1F2924] border-[#E8E4DA] hover:bg-white"
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
+              {/* Quick Grocery Presets Selector */}
+              <div className="space-y-1.5 pt-1 border-t border-[#E5E0D5]/60">
+                <Label className="text-[11px] font-semibold text-[#5A655F]">
+                  Quick Presets (Click to apply to primary image):
+                </Label>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    { label: "🌾 Atta", url: "/images/atta.jpg" },
+                    { label: "🍚 Rice", url: "/images/rice.jpg" },
+                    { label: "🫘 Dal", url: "/images/dal.jpg" },
+                    { label: "🛢️ Mustard Oil", url: "/images/fortune_mustard_oil_1787801798943.jpg" },
+                    { label: "🧈 Amul Ghee", url: "/images/amul_desi_ghee_1787801851052.jpg" },
+                    { label: "🌶️ Spices", url: "/images/spices.jpg" },
+                    { label: "🧂 Tata Salt", url: "/images/tata_salt_pack_1787801868973.jpg" },
+                    { label: "🍪 Parle-G", url: "/images/parle_g_biscuits_1787801925687.jpg" },
+                    { label: "🥨 Bhujia", url: "/images/haldirams_aloo_bhujia_1787801945399.jpg" },
+                    { label: "🍫 Cadbury", url: "/images/cadbury_dairy_milk_1787801969771.jpg" },
+                    { label: "🍯 Honey", url: "/images/dabur_honey_jar_1787802014923.jpg" },
+                    { label: "🧼 Surf Excel", url: "/images/surf_excel_detergent_1787801991917.jpg" },
+                    { label: "📦 General Pack", url: "/images/packaged.jpg" },
+                  ].map((preset) => (
+                    <button
+                      key={preset.url}
+                      type="button"
+                      onClick={() => {
+                        if (galleryImages.length > 0) {
+                          updateGalleryImage(galleryImages[0]!.id, "url", preset.url);
+                          toast.success(`Applied ${preset.label} image`);
+                        }
+                      }}
+                      className="rounded-md border border-[#E5E0D5] bg-white px-2 py-1 text-[10px] font-medium text-[#16201A] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-colors shadow-2xs"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#1F2924]">Description / Highlights</Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="Pure whole wheat chakki atta with natural dietary fiber…"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="rounded-xl text-xs border-[#E8E4DA]"
-                  />
-                </div>
+              {/* Description / Highlights */}
+              <div className="space-y-1 pt-2 border-t border-[#E5E0D5]/60">
+                <Label className="text-xs font-semibold text-[#16201A]">
+                  Description / Product Highlights
+                </Label>
+                <Textarea
+                  rows={2}
+                  placeholder="Pure whole wheat chakki atta with natural dietary fiber, 0% maida..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="rounded-xl text-xs border-[#E5E0D5] bg-white"
+                />
               </div>
             </div>
 

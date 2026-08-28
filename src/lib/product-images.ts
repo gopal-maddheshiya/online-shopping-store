@@ -1,3 +1,5 @@
+import type { Product, ProductImage, ProductImageType } from "./queries";
+
 // Category-specific photo-realistic images map
 export function getCategoryThumbnail(category: {
   slug?: string;
@@ -725,3 +727,116 @@ export function getProductImage(product?: {
 
   return "/images/packaged.jpg";
 }
+
+/**
+ * Normalizes any product's image data into an array of typed ProductImage items.
+ * Ensures 100% backward compatibility with legacy products that only have image_url.
+ */
+export function getProductImages(
+  product: (Partial<Product> & { images?: (string | ProductImage)[] }) | null | undefined,
+): ProductImage[] {
+  if (!product) {
+    return [{ url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 }];
+  }
+
+  // 1. If product has structured or string images array
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    const parsed: ProductImage[] = product.images
+      .map((item, index): ProductImage | null => {
+        if (!item) return null;
+        if (typeof item === "string") {
+          const trimmed = item.trim();
+          if (!trimmed) return null;
+          const type: ProductImageType =
+            index === 0 ? "front" : index === 1 ? "back" : index === 2 ? "detail" : "additional";
+          return {
+            url: trimmed,
+            type,
+            label:
+              type === "front"
+                ? "Front View"
+                : type === "back"
+                  ? "Back / Nutrition"
+                  : type === "detail"
+                    ? "Detail View"
+                    : `Photo ${index + 1}`,
+            sort_order: index,
+          };
+        }
+        if (typeof item === "object" && item.url && item.url.trim().length > 0) {
+          const type: ProductImageType = item.type || (index === 0 ? "front" : "additional");
+          return {
+            url: item.url.trim(),
+            type,
+            label:
+              item.label ||
+              (type === "front"
+                ? "Front View"
+                : type === "back"
+                  ? "Back / Nutrition"
+                  : type === "detail"
+                    ? "Detail View"
+                    : "Additional"),
+            sort_order: typeof item.sort_order === "number" ? item.sort_order : index,
+          };
+        }
+        return null;
+      })
+      .filter((img): img is ProductImage => Boolean(img && img.url && img.url.length > 0));
+
+    if (parsed.length > 0) {
+      // Sort by sort_order
+      parsed.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      // Ensure there is at least one 'front' type
+      if (!parsed.some((img) => img.type === "front")) {
+        parsed[0]!.type = "front";
+      }
+      return parsed;
+    }
+  }
+
+  // 2. Fallback to primary single image
+  const primaryUrl = getProductImage(product);
+  return [
+    {
+      url: primaryUrl,
+      type: "front",
+      label: "Front View",
+      sort_order: 0,
+    },
+  ];
+}
+
+/**
+ * Returns localized label for each image type (Front, Back, Detail, Additional).
+ */
+export function getImageTypeLabel(type: ProductImageType, lang: string = "en"): string {
+  if (lang === "hi") {
+    switch (type) {
+      case "front":
+        return "सामने का दृश्य";
+      case "back":
+        return "पीछे / पोषण विवरण";
+      case "detail":
+        return "बारीक दृश्य / सील";
+      case "additional":
+        return "अतिरिक्त तस्वीर";
+      default:
+        return "तस्वीर";
+    }
+  }
+
+  switch (type) {
+    case "front":
+      return "Front View";
+    case "back":
+      return "Back & Nutrition";
+    case "detail":
+      return "Detail / Label";
+    case "additional":
+      return "Additional";
+    default:
+      return "Photo";
+  }
+}
+

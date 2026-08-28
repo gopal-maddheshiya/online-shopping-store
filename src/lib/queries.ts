@@ -15,6 +15,15 @@ export type Variant = {
   is_active: boolean;
 };
 
+export type ProductImageType = "front" | "back" | "detail" | "additional";
+
+export type ProductImage = {
+  url: string;
+  type: ProductImageType;
+  label?: string | undefined;
+  sort_order?: number | undefined;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -24,7 +33,7 @@ export type Product = {
   subcategory_id: string | null;
   description: string | null;
   image_url: string | null;
-  images?: string[];
+  images?: (string | ProductImage)[];
   tags: string[];
   is_featured: boolean;
   is_popular: boolean;

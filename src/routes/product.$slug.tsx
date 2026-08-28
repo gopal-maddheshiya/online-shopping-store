@@ -15,9 +15,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { useCart } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
-import { getProductImage } from "@/lib/product-images";
+import { getProductImage, getProductImages } from "@/lib/product-images";
 import { productQuery, productsQuery, type Variant } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 
@@ -125,6 +126,8 @@ function ProductPage() {
     .filter((p) => p.category_id === product.category_id && p.id !== product.id)
     .slice(0, 4);
 
+  const productImages = getProductImages(product);
+
   return (
     <div className="container-page py-6 sm:py-10 pb-28 md:pb-12 space-y-8 sm:space-y-10">
       {/* Breadcrumb Navigation */}
@@ -142,14 +145,11 @@ function ProductPage() {
 
       {/* Main Details Grid */}
       <div className="grid gap-8 md:grid-cols-2 items-start">
-        {/* Left Image Gallery Container */}
-        <div className="card-base relative flex aspect-square w-full max-w-[460px] mx-auto items-center justify-center overflow-hidden rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5] p-6 sm:p-10 shadow-xs">
-          <img
-            src={getProductImage(product)}
-            alt={localizedName}
-            className="size-full max-h-[380px] object-contain object-center transition-transform duration-200 hover:scale-105"
-          />
-        </div>
+        {/* Left Multi-Image Gallery Container */}
+        <ProductImageGallery
+          images={productImages}
+          productName={localizedName}
+        />
 
         {/* Right Buy Box Content */}
         <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E5E0D5]">
