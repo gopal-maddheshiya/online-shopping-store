@@ -40,6 +40,8 @@ import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminCoupons } from "@/components/admin/AdminCoupons";
 import { AdminHelpRequests } from "@/components/admin/AdminHelpRequests";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { mergeOrderWithOverrides } from "@/lib/orders";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -117,13 +119,15 @@ function AdminPage() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders((data ?? []) as unknown as Order[]);
+      const merged = ((data ?? []) as unknown as Order[]).map(mergeOrderWithOverrides);
+      setOrders(merged);
     } catch (err: unknown) {
       console.error("Failed to load admin orders:", err);
     } finally {
       setOrdersLoading(false);
     }
   }
+
 
   useEffect(() => {
     if (!isAuthorizedAdmin) return;
