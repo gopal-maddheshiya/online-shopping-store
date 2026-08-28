@@ -112,6 +112,8 @@ export type Order = {
     instructions?: string;
   };
   payment_method: string;
+  payment_status?: string | null;
+  paid_at?: string | null;
   coupon_code: string | null;
   subtotal: number;
   discount: number;
@@ -124,6 +126,7 @@ export type Order = {
   order_items?: OrderItem[];
   order_events?: OrderEvent[];
 };
+
 
 export type Coupon = {
   id: string;

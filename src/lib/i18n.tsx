@@ -24,6 +24,7 @@ export {
 
 interface LanguageContextType {
   lang: Language;
+  language: Language;
   setLang: (l: Language) => void;
   t: Translations;
   getCategoryName: (name: string, slug?: string) => string;
@@ -31,6 +32,7 @@ interface LanguageContextType {
   getVariantLabel: (label: string) => string;
   formatStatus: (status: { open: boolean; text: string }) => string;
 }
+
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
@@ -115,6 +117,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     <LanguageContext.Provider
       value={{
         lang,
+        language: lang,
         setLang,
         t: translations[lang],
         getCategoryName,
@@ -133,6 +136,7 @@ export function useLanguage() {
   if (!ctx) {
     return {
       lang: "en" as Language,
+      language: "en" as Language,
       setLang: () => {},
       t: translations.en,
       getCategoryName: (name: string) => name,
@@ -143,3 +147,4 @@ export function useLanguage() {
   }
   return ctx;
 }
+

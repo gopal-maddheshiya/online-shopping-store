@@ -27,15 +27,16 @@ import { getProductImage } from "@/lib/product-images";
 import { fetchOrderForTracking, subscribeToOrderRealtime } from "@/lib/orders";
 
 type TrackSearchParams = {
-  orderNo?: string;
-  phone?: string;
+  orderNo?: string | undefined;
+  phone?: string | undefined;
 };
 
 export const Route = createFileRoute("/track")({
   validateSearch: (search: Record<string, unknown>): TrackSearchParams => ({
-    orderNo: typeof search.orderNo === "string" ? search.orderNo : undefined,
-    phone: typeof search.phone === "string" ? search.phone : undefined,
+    orderNo: typeof search["orderNo"] === "string" ? (search["orderNo"] as string) : undefined,
+    phone: typeof search["phone"] === "string" ? (search["phone"] as string) : undefined,
   }),
+
   head: () => ({
     meta: [
       { title: "Track Your Grocery Order | Arun Gopal Traders Maharajganj" },
@@ -50,8 +51,9 @@ export const Route = createFileRoute("/track")({
 });
 
 function TrackPage() {
-  const { t, language } = useLanguage();
+  const { t, lang, language = lang } = useLanguage();
   const search = Route.useSearch();
+
   const { data: settings } = useQuery(settingsQuery);
 
   const [orderNoInput, setOrderNoInput] = useState(search.orderNo ?? "");
@@ -120,14 +122,15 @@ function TrackPage() {
               return {
                 ...order,
                 status: partial.status || curr.status || order.status,
-                notes: partial.notes !== undefined ? partial.notes : (curr.notes ?? order.notes),
-                payment_status: partial.payment_status || curr.payment_status || order.payment_status,
+                notes: partial.notes !== undefined ? partial.notes : (curr.notes ?? null),
+                payment_status: (partial.payment_status ?? curr.payment_status ?? null) as string | null,
               };
             });
           }
         });
       }
     });
+
 
 
     return unsub;

@@ -117,7 +117,7 @@ export async function updateOrderStatus(
           id: orderId,
           status: newStatus,
           updated_at: new Date().toISOString(),
-          notes: note || undefined,
+          notes: note ?? null,
         },
       };
     }
@@ -127,9 +127,9 @@ export async function updateOrderStatus(
       .from("orders")
       .update({
         status: newStatus as never,
-        notes: note || undefined,
+        notes: note ?? null,
         updated_at: new Date().toISOString() as never,
-      })
+      } as never)
       .eq("id", orderId);
 
     return {
@@ -138,7 +138,7 @@ export async function updateOrderStatus(
         id: orderId,
         status: newStatus,
         updated_at: new Date().toISOString(),
-        notes: note || undefined,
+        notes: note ?? null,
       },
     };
   } catch {
@@ -148,7 +148,7 @@ export async function updateOrderStatus(
         id: orderId,
         status: newStatus,
         updated_at: new Date().toISOString(),
-        notes: note || undefined,
+        notes: note ?? null,
       },
     };
   }
@@ -218,23 +218,23 @@ export function subscribeToOrderRealtime(
   // 1. Multi-device realtime broadcast listener
   const broadcastChannel = supabase
     .channel("store-status-broadcast")
-    .on("broadcast", { event: "STATUS_UPDATE" }, (payload) => {
-      const data = payload?.payload as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
-      if (data && (data.orderId === orderId || !data.orderId)) {
+    .on("broadcast", { event: "STATUS_UPDATE" }, (payload: Record<string, unknown>) => {
+      const data = payload["payload"] as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
+      if (data && (data.orderId === orderId || !data.orderId) && data.newStatus) {
         onUpdate({
           id: orderId,
           status: data.newStatus,
-          notes: data.note,
+          notes: data.note ?? null,
           updated_at: data.updatedAt || new Date().toISOString(),
         });
       }
     })
-    .on("broadcast", { event: "PAYMENT_UPDATE" }, (payload) => {
-      const data = payload?.payload as { orderId?: string; paymentStatus?: string; updatedAt?: string } | undefined;
+    .on("broadcast", { event: "PAYMENT_UPDATE" }, (payload: Record<string, unknown>) => {
+      const data = payload["payload"] as { orderId?: string; paymentStatus?: string; updatedAt?: string } | undefined;
       if (data && data.orderId === orderId) {
         onUpdate({
           id: orderId,
-          payment_status: data.paymentStatus as never,
+          payment_status: data.paymentStatus ?? null,
           updated_at: data.updatedAt || new Date().toISOString(),
         });
       }
@@ -346,7 +346,7 @@ export async function fetchCustomerOrderList(
         } as never
       );
 
-      if (!rpcErr && Array.isArray(rpcData) && rpcData.length > 0) {
+      if (!rpcErr && Array.isArray(rpcData) && (rpcData as unknown[]).length > 0) {
         return (rpcData as unknown as Order[]).map(mergeOrderWithOverrides);
       }
     }
@@ -394,7 +394,7 @@ export function registerPlacedOrder(meta: { order_no: string; phone: string; id?
       list.unshift({
         order_no: meta.order_no.toUpperCase(),
         phone: cleanPhone,
-        id: meta.id,
+        id: meta.id || "",
         created_at: new Date().toISOString(),
       });
       localStorage.setItem(PLACED_ORDERS_REGISTRY_KEY, JSON.stringify(list.slice(0, 100)));
@@ -435,7 +435,7 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
   try {
     // 1. Try get_all_orders_for_admin RPC procedure first
     const { data: rpcOrders, error: rpcErr } = await supabase.rpc("get_all_orders_for_admin" as never);
-    if (!rpcErr && Array.isArray(rpcOrders) && rpcOrders.length > 0) {
+    if (!rpcErr && Array.isArray(rpcOrders) && (rpcOrders as unknown[]).length > 0) {
       return (rpcOrders as unknown as Order[]).map(mergeOrderWithOverrides);
     }
 
@@ -481,5 +481,3 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
     return [];
   }
 }
-
-

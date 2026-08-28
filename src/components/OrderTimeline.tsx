@@ -18,8 +18,9 @@ const STEP_ICONS: Record<string, typeof Package> = {
 };
 
 export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
-  const { language } = useLanguage();
+  const { lang, language = lang } = useLanguage();
   const isCancelled = currentStatus === "cancelled" || currentStatus === "rejected";
+
   const isReturned = currentStatus === "returned";
 
   if (isCancelled || isReturned) {

@@ -45,7 +45,10 @@ import { useLanguage } from "@/lib/i18n";
 type AdminOrdersProps = {
   orders: Order[];
   onRefresh: () => void;
+  selectedOrder?: Order | null;
+  setSelectedOrder?: React.Dispatch<React.SetStateAction<Order | null>>;
 };
+
 
 const STATUS_FILTERS = [
   { value: "all", label: "All Orders (सभी ऑर्डर)" },
@@ -58,16 +61,26 @@ const STATUS_FILTERS = [
   { value: "cancelled", label: "Cancelled (रद्द)" },
 ];
 
-export function AdminOrders({ orders, onRefresh }: AdminOrdersProps) {
-  const { language } = useLanguage();
+export function AdminOrders({
+  orders,
+  onRefresh,
+  selectedOrder: controlledSelectedOrder,
+  setSelectedOrder: controlledSetSelectedOrder,
+}: AdminOrdersProps) {
+  const { lang, language = lang } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [internalSelectedOrder, setInternalSelectedOrder] = useState<Order | null>(null);
+
+  const selectedOrder = controlledSelectedOrder !== undefined ? controlledSelectedOrder : internalSelectedOrder;
+  const setSelectedOrder = controlledSetSelectedOrder || setInternalSelectedOrder;
+
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [adminNote, setAdminNote] = useState("");
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(null);
+
 
   // Subscribe to realtime changes for the active selected order
   useEffect(() => {

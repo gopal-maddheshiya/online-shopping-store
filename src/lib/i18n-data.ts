@@ -207,7 +207,9 @@ export const translations: Record<Language, Translations> = {
     quickOrderDesc: "Prefer not to order online? You can place your grocery order directly by speaking with our Maharajganj store team.",
     callStoreDirectly: "Call Store Directly",
     instantChatList: "Instant chat & grocery list",
+    submitInquiry: "Submit Inquiry",
     sendList: "Send List",
+
     currentBasketLabel: "Current Basket",
     cartAutoFormatNote: "Your cart items will be automatically formatted and sent in the WhatsApp message.",
   },
