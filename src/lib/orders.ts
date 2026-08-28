@@ -221,6 +221,9 @@ export function subscribeToOrderRealtime(
     .on("broadcast", { event: "STATUS_UPDATE" }, (payload: Record<string, unknown>) => {
       const data = payload["payload"] as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
       if (data && (data.orderId === orderId || !data.orderId) && data.newStatus) {
+        // Automatically save to this client's persistent cache
+        saveLocalStatusOverride(orderId, data.newStatus, data.note || undefined);
+        
         onUpdate({
           id: orderId,
           status: data.newStatus,
@@ -232,6 +235,8 @@ export function subscribeToOrderRealtime(
     .on("broadcast", { event: "PAYMENT_UPDATE" }, (payload: Record<string, unknown>) => {
       const data = payload["payload"] as { orderId?: string; paymentStatus?: string; updatedAt?: string } | undefined;
       if (data && data.orderId === orderId) {
+        saveLocalStatusOverride(orderId, undefined, undefined, data.paymentStatus);
+        
         onUpdate({
           id: orderId,
           payment_status: data.paymentStatus ?? null,
@@ -240,6 +245,7 @@ export function subscribeToOrderRealtime(
       }
     })
     .subscribe();
+
 
   // 2. Direct postgres database changes
   const dbChannel = supabase
