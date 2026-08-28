@@ -185,7 +185,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
 
 export async function withTimeout<T>(
   promise: Promise<T>,
-  ms: number = 2500,
+  ms: number = 6000,
   fallback: T,
 ): Promise<T> {
   let timer: NodeJS.Timeout;

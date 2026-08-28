@@ -45,6 +45,7 @@ import {
   isOpenNow,
   type Product,
 } from "@/lib/queries";
+import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "@/lib/catalog-data";
 import { telHref, waHref, inr, discountPercent } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 import { toast } from "sonner";
@@ -108,53 +109,72 @@ function PremiumStoreHome() {
   const cleanPhone = storePhone.replace(/\s+/g, "");
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
-  // Filter categories
-  const parentCategories = categories.filter((c) => !c.parent_id);
+  // Filter categories with fallback guarantee
+  const rawCategories = categories && categories.length > 0 ? categories : ADDITIONAL_CATEGORIES;
+  const parentCategories = rawCategories.filter((c) => !c.parent_id);
 
-  // Group products by category types to show maximum items cleanly
-  const flashDeals = products.slice(0, 10);
-  const attaRiceProducts = products.filter(
+  // Group products by category types to show maximum items cleanly with fallback guarantee
+  const allDisplayProducts = products && products.length > 0 ? products : ADDITIONAL_PRODUCTS;
+  const displayFeatured =
+    featuredProducts && featuredProducts.length > 0
+      ? featuredProducts
+      : allDisplayProducts.filter((p) => p.is_featured || p.is_popular);
+
+  const flashDeals = allDisplayProducts.slice(0, 10);
+  const attaRiceProducts = allDisplayProducts.filter(
     (p) =>
       p.category_id === "flour-atta" ||
+      p.category_id === "atta-flour" ||
       p.category_id === "rice-grains" ||
+      p.category_id === "rice" ||
       p.category_id === "grains-pulses" ||
       p.name.toLowerCase().includes("atta") ||
       p.name.toLowerCase().includes("rice") ||
       p.name.toLowerCase().includes("gehu") ||
       p.name.toLowerCase().includes("bajra") ||
       p.name.toLowerCase().includes("jowar") ||
-      p.name.toLowerCase().includes("besan"),
+      p.name.toLowerCase().includes("besan") ||
+      p.name.toLowerCase().includes("suji") ||
+      p.name.toLowerCase().includes("maida"),
   );
-  const dalPulsesProducts = products.filter(
+  const dalPulsesProducts = allDisplayProducts.filter(
     (p) =>
       p.category_id === "pulses-dal" ||
       p.name.toLowerCase().includes("dal") ||
       p.name.toLowerCase().includes("chana") ||
       p.name.toLowerCase().includes("rajma") ||
-      p.name.toLowerCase().includes("lentils"),
+      p.name.toLowerCase().includes("lentils") ||
+      p.name.toLowerCase().includes("urad") ||
+      p.name.toLowerCase().includes("moong"),
   );
-  const oilGheeProducts = products.filter(
+  const oilGheeProducts = allDisplayProducts.filter(
     (p) =>
       p.category_id === "oil-ghee" ||
       p.category_id === "cooking-oils" ||
       p.name.toLowerCase().includes("oil") ||
       p.name.toLowerCase().includes("ghee") ||
-      p.name.toLowerCase().includes("tel"),
+      p.name.toLowerCase().includes("tel") ||
+      p.name.toLowerCase().includes("sarson"),
   );
-  const spicesMasalaProducts = products.filter(
+  const spicesMasalaProducts = allDisplayProducts.filter(
     (p) =>
       p.category_id === "spices-masala" ||
       p.category_id === "dry-fruits" ||
       p.category_id === "spices" ||
+      p.category_id === "salt-sugar" ||
       p.name.toLowerCase().includes("masala") ||
       p.name.toLowerCase().includes("haldi") ||
       p.name.toLowerCase().includes("mirch") ||
       p.name.toLowerCase().includes("hing") ||
+      p.name.toLowerCase().includes("jeera") ||
       p.name.toLowerCase().includes("cardamom") ||
       p.name.toLowerCase().includes("kesar") ||
-      p.name.toLowerCase().includes("kaju"),
+      p.name.toLowerCase().includes("kaju") ||
+      p.name.toLowerCase().includes("badam") ||
+      p.name.toLowerCase().includes("salt") ||
+      p.name.toLowerCase().includes("sugar"),
   );
-  const dairyProducts = products.filter(
+  const dairyProducts = allDisplayProducts.filter(
     (p) =>
       p.category_id === "dairy" ||
       p.category_id === "dairy-products" ||
@@ -162,9 +182,10 @@ function PremiumStoreHome() {
       p.name.toLowerCase().includes("dahi") ||
       p.name.toLowerCase().includes("paneer") ||
       p.name.toLowerCase().includes("cheese") ||
-      p.name.toLowerCase().includes("butter"),
+      p.name.toLowerCase().includes("butter") ||
+      p.name.toLowerCase().includes("taaza"),
   );
-  const cookwareUtensils = products.filter(
+  const cookwareUtensils = allDisplayProducts.filter(
     (p) =>
       p.category_id === "utensils-cookware" ||
       p.category_id === "cookware" ||
@@ -177,10 +198,12 @@ function PremiumStoreHome() {
       p.name.toLowerCase().includes("knife") ||
       p.name.toLowerCase().includes("jar"),
   );
-  const cleaningProducts = products.filter(
+  const cleaningProducts = allDisplayProducts.filter(
     (p) =>
+      p.category_id === "household-cleaning" ||
       p.category_id === "cleaning-supplies" ||
       p.category_id === "cleaning" ||
+      p.category_id === "laundry" ||
       p.name.toLowerCase().includes("detergent") ||
       p.name.toLowerCase().includes("surf") ||
       p.name.toLowerCase().includes("colin") ||
@@ -188,21 +211,33 @@ function PremiumStoreHome() {
       p.name.toLowerCase().includes("harpic") ||
       p.name.toLowerCase().includes("broom") ||
       p.name.toLowerCase().includes("mop") ||
-      p.name.toLowerCase().includes("bucket"),
+      p.name.toLowerCase().includes("bucket") ||
+      p.name.toLowerCase().includes("soap") ||
+      p.name.toLowerCase().includes("handwash") ||
+      p.name.toLowerCase().includes("rin"),
   );
-  const snacksBreakfastProducts = products.filter(
+  const snacksBreakfastProducts = allDisplayProducts.filter(
     (p) =>
+      p.category_id === "namkeen-snacks" ||
       p.category_id === "snacks-namkeen" ||
       p.category_id === "tea-coffee" ||
+      p.category_id === "breakfast" ||
       p.category_id === "breakfast-items" ||
       p.category_id === "snacks-sweets" ||
+      p.category_id === "biscuits" ||
+      p.category_id === "chocolates" ||
+      p.category_id === "noodles-pasta" ||
       p.category_id === "beverages" ||
       p.name.toLowerCase().includes("tea") ||
+      p.name.toLowerCase().includes("coffee") ||
       p.name.toLowerCase().includes("biscuit") ||
+      p.name.toLowerCase().includes("maggi") ||
+      p.name.toLowerCase().includes("chips") ||
+      p.name.toLowerCase().includes("bhujia") ||
+      p.name.toLowerCase().includes("chocolate") ||
+      p.name.toLowerCase().includes("dairy milk") ||
       p.name.toLowerCase().includes("jam") ||
-      p.name.toLowerCase().includes("bread") ||
-      p.name.toLowerCase().includes("rasgulla") ||
-      p.name.toLowerCase().includes("gulab jamun"),
+      p.name.toLowerCase().includes("bread"),
   );
 
 

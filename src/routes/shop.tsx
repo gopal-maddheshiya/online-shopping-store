@@ -19,6 +19,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useLanguage } from "@/lib/i18n";
 import { getCategoryThumbnail } from "@/lib/product-images";
 import { categoriesQuery, cheapestVariant, productsQuery, totalStock } from "@/lib/queries";
+import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "@/lib/catalog-data";
 
 type ShopSearch = {
   q?: string | undefined;
@@ -89,19 +90,26 @@ function Shop() {
   const { lang, t, getCategoryName, getProductName } = useLanguage();
   const [term, setTerm] = useState(search.q ?? "");
 
-  const parents = (categories ?? []).filter((c) => !c.parent_id);
+  const allCategories = categories && categories.length > 0 ? categories : ADDITIONAL_CATEGORIES;
+  const allProducts = products && products.length > 0 ? products : ADDITIONAL_PRODUCTS;
+
+  const parents = allCategories.filter((c) => !c.parent_id);
   const activeCategory = parents.find((c) => c.slug === search.category);
-  const subs = (categories ?? []).filter((c) => c.parent_id && c.parent_id === activeCategory?.id);
+  const subs = allCategories.filter(
+    (c) =>
+      c.parent_id &&
+      (c.parent_id === activeCategory?.id || c.parent_id === activeCategory?.slug),
+  );
 
   function update(patch: Partial<ShopSearch>) {
     void navigate({ search: (prev) => ({ ...prev, ...patch }) });
   }
 
   const results = useMemo(() => {
-    let list = products ?? [];
+    let list = allProducts;
     const catId = activeCategory?.id;
     const catSlug = activeCategory?.slug;
-    const subCategory = (categories ?? []).find((c) => c.slug === search.subcategory);
+    const subCategory = allCategories.find((c) => c.slug === search.subcategory);
     const subId = subCategory?.id;
     const subSlug = subCategory?.slug;
 
