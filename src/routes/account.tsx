@@ -1247,9 +1247,25 @@ function AccountPage() {
   }
 
   // ==========================================
-  const customerName = profile?.full_name || (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
-  const rawPhone = user.phone || profile?.phone || "";
-  const customerPhone = rawPhone.replace(/\D/g, "").slice(-10);
+  const customerName =
+    profile?.full_name ||
+    (user.user_metadata?.["full_name"] as string) ||
+    (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
+
+  const rawPhone =
+    user.phone ||
+    profile?.phone ||
+    (user.user_metadata?.["phone"] as string) ||
+    "";
+  const digitsOnly = rawPhone.replace(/\D/g, "");
+  const customerPhone =
+    digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly || rawPhone;
+
+  const customerEmail =
+    profile?.email ||
+    user.email ||
+    (user.user_metadata?.["email"] as string) ||
+    "";
 
   return (
     <div className="container-page py-4 sm:py-6 pb-24 lg:pb-10">
@@ -1270,17 +1286,18 @@ function AccountPage() {
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5A655F] mt-1">
-                {customerPhone && (
+                {customerPhone ? (
                   <span className="flex items-center gap-1 font-semibold text-[#16201A] shrink-0">
-                    <Phone className="size-3.5 text-[#145A45]" /> {customerPhone}
+                    <Phone className="size-3.5 text-[#145A45]" />
+                    <span>{customerPhone}</span>
                   </span>
-                )}
-                {profile?.email && (
+                ) : null}
+                {customerEmail ? (
                   <span className="flex items-center gap-1 font-medium text-[#16201A] truncate max-w-full">
                     <Mail className="size-3.5 text-[#145A45] shrink-0" />
-                    <span className="truncate">{profile.email}</span>
+                    <span className="truncate">{customerEmail}</span>
                   </span>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
