@@ -1247,10 +1247,9 @@ function AccountPage() {
   }
 
   // ==========================================
-  // 3. AUTHENTICATED CUSTOMER ACCOUNT SCREEN
-  // ==========================================
   const customerName = profile?.full_name || (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
-  const customerPhone = user.phone || profile?.phone || "";
+  const rawPhone = user.phone || profile?.phone || "";
+  const customerPhone = rawPhone.replace(/\D/g, "").slice(-10);
 
   return (
     <div className="container-page py-4 sm:py-6 pb-24 lg:pb-10">
@@ -1823,7 +1822,7 @@ function AccountPage() {
                   <Input
                     id="prof-phone"
                     disabled
-                    value={user.phone || profile?.phone || ""}
+                    value={customerPhone}
                     className="rounded-xl border-[#E5E0D5] bg-[#FAF8F2] text-xs font-bold text-[#145A45]"
                   />
                   <p className="text-[10px] text-[#5A655F]">
