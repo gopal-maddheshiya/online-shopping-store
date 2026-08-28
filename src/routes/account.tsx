@@ -102,6 +102,7 @@ function AccountPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isSendingRecoveryOtp, setIsSendingRecoveryOtp] = useState(false);
 
   // Error Banner State
   const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
@@ -360,8 +361,56 @@ function AccountPage() {
     }
   }
 
+  async function handleSendRecoveryCode() {
+    setAuthErrorMessage(null);
+    const clean = forgotPhone.replace(/\D/g, "").slice(-10);
+    if (clean.length !== 10) {
+      setAuthErrorMessage(
+        lang === "hi"
+          ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें"
+          : "Please enter a valid 10-digit mobile number",
+      );
+      return;
+    }
+
+    setIsSendingRecoveryOtp(true);
+    try {
+      const fullPhone = `+91${clean}`;
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: fullPhone,
+        options: { shouldCreateUser: false },
+      });
+
+      if (error) {
+        if (
+          error.message.toLowerCase().includes("user not found") ||
+          error.message.toLowerCase().includes("not registered")
+        ) {
+          setAuthErrorMessage(
+            lang === "hi"
+              ? "इस मोबाइल नंबर से कोई खाता नहीं मिला।"
+              : "No account found with this mobile number.",
+          );
+        } else {
+          setAuthErrorMessage(error.message);
+        }
+      } else {
+        toast.success(
+          lang === "hi"
+            ? "रिकवरी कोड भेजा गया! कृपया कोड दर्ज करें।"
+            : "Recovery code sent! Please enter the code below.",
+        );
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to send code";
+      setAuthErrorMessage(msg);
+    } finally {
+      setIsSendingRecoveryOtp(false);
+    }
+  }
+
   // ==========================================
-  // 3. FORGOT PASSWORD (Development Recovery)
+  // 3. FORGOT PASSWORD (Supabase Auth updateUser)
   // ==========================================
   async function handleResetPassword(e: React.FormEvent) {
     e.preventDefault();
@@ -377,11 +426,10 @@ function AccountPage() {
       return;
     }
 
-    if (recoveryCode.trim() !== DEV_RECOVERY_KEY && recoveryCode.trim() !== "AGT7799") {
+    const code = recoveryCode.trim();
+    if (!code) {
       setAuthErrorMessage(
-        lang === "hi"
-          ? "अमान्य रिकवरी कोड। कृपया सही कोड दर्ज करें (परीक्षण कोड: AGT7799)"
-          : "Invalid recovery code. Please enter the valid code (test key: AGT7799)",
+        lang === "hi" ? "कृपया रिकवरी कोड दर्ज करें" : "Please enter the recovery code",
       );
       return;
     }
@@ -406,47 +454,95 @@ function AccountPage() {
     try {
       const fullPhone = `+91${clean}`;
 
-      // In development mode, we update the user's password directly or re-authenticate
-      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+      // 1. Establish authenticated recovery session via Supabase Auth verifyOtp
+      let authSessionActive = false;
+      const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
         phone: fullPhone,
-        password: newPassword,
+        token: code,
+        type: "sms",
       });
 
-      if (!signInErr && signInData.user) {
-        toast.success(
+      if (!verifyErr && verifyData?.session) {
+        authSessionActive = true;
+      } else {
+        const { data: recData, error: recErr } = await supabase.auth.verifyOtp({
+          phone: fullPhone,
+          token: code,
+          type: "recovery",
+        });
+        if (!recErr && recData?.session) {
+          authSessionActive = true;
+        } else {
+          console.error("Supabase verifyOtp failed:", verifyErr || recErr);
+          setAuthErrorMessage(
+            lang === "hi"
+              ? "अमान्य या समाप्त रिकवरी कोड। कृपया सही कोड दर्ज करें।"
+              : "Invalid or expired recovery code. Please check and try again.",
+          );
+          setIsResettingPassword(false);
+          return;
+        }
+      }
+
+      if (!authSessionActive) {
+        setAuthErrorMessage(
           lang === "hi"
-            ? "पासवर्ड पहले से ही यह है! लॉगिन हो गया।"
-            : "Password matches. Signed in successfully.",
+            ? "रिकवरी सत्र स्थापित नहीं हो सका।"
+            : "Could not establish recovery session.",
         );
-        await refreshProfile();
-        setAuthView("signin");
+        setIsResettingPassword(false);
         return;
       }
 
-      // If user is currently in session or after verification, update password
-      const { error: updateErr } = await supabase.auth.updateUser({
+      // 2. Call supabase.auth.updateUser({ password: newPassword })
+      const { data: updateData, error: updateErr } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
+      // 3. Strictly check returned { data, error }
       if (updateErr) {
-        // If not in active session, inform user to sign in with updated credentials or sign up
-        toast.info(
+        console.error("Supabase auth.updateUser error:", updateErr);
+        setAuthErrorMessage(
           lang === "hi"
-            ? "रिकवरी सत्यापित! कृपया नए पासवर्ड के साथ लॉगिन करें।"
-            : "Recovery verified! Please sign in with your new password.",
+            ? `पासवर्ड अपडेट त्रुटि: ${updateErr.message}`
+            : `Password update failed: ${updateErr.message}`,
         );
-      } else {
-        toast.success(
-          lang === "hi"
-            ? "पासवर्ड सफलतापूर्वक बदल गया!"
-            : "Password updated successfully!",
-        );
+        await supabase.auth.signOut();
+        setIsResettingPassword(false);
+        return;
       }
 
+      if (!updateData || !updateData.user) {
+        console.error("Supabase auth.updateUser returned no user");
+        setAuthErrorMessage(
+          lang === "hi"
+            ? "पासवर्ड अपडेट की पुष्टि नहीं हो सकी।"
+            : "Password update could not be confirmed.",
+        );
+        await supabase.auth.signOut();
+        setIsResettingPassword(false);
+        return;
+      }
+
+      // 4. Password update confirmed in Supabase Auth!
+      // Sign out of recovery session so the user can freshly sign in with new password
+      await supabase.auth.signOut();
+
+      toast.success(
+        lang === "hi"
+          ? "पासवर्ड सफलतापूर्वक बदल गया! कृपया नए पासवर्ड के साथ लॉगिन करें।"
+          : "Password successfully changed. Please login with your new password.",
+      );
+
+      // Redirect to sign in view with phone prefilled
       setAuthView("signin");
       setSignInPhone(clean);
       setSignInPassword("");
+      setRecoveryCode("");
+      setNewPassword("");
+      setConfirmNewPassword("");
     } catch (err: unknown) {
+      console.error("Password reset error:", err);
       const msg = err instanceof Error ? err.message : "Password reset failed";
       setAuthErrorMessage(msg);
     } finally {
@@ -909,9 +1005,21 @@ function AccountPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
+                  </Label>
+                  <button
+                    type="button"
+                    disabled={isSendingRecoveryOtp || forgotPhone.replace(/\D/g, "").length !== 10}
+                    onClick={handleSendRecoveryCode}
+                    className="text-[11px] font-bold text-[#145A45] hover:underline disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSendingRecoveryOtp
+                      ? (lang === "hi" ? "भेज रहा है..." : "Sending...")
+                      : (lang === "hi" ? "कोड भेजें (Send Code)" : "Send Code")}
+                  </button>
+                </div>
                 <div className="flex rounded-xl border border-[#E5E0D5] bg-white overflow-hidden shadow-2xs">
                   <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
                     +91
@@ -931,12 +1039,12 @@ function AccountPage() {
 
               <div className="space-y-1">
                 <Label htmlFor="recovery-code" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "रिकवरी कोड (Dev Recovery Code)" : "Recovery Code"}
+                  {lang === "hi" ? "रिकवरी कोड (Recovery OTP / Code)" : "Recovery Code"}
                 </Label>
                 <Input
                   id="recovery-code"
                   required
-                  placeholder="उदा. AGT7799"
+                  placeholder={lang === "hi" ? "6 अंकों का कोड (उदा. 638858)" : "6-digit code (e.g. 638858)"}
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value)}
                   className="h-10 rounded-xl border-[#E5E0D5] font-mono text-xs font-bold placeholder:text-[#A8B2AC] placeholder:font-normal"
