@@ -759,6 +759,8 @@ export function getProductImages(
     return [{ url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 }];
   }
 
+  const primaryUrl = getProductImage(product);
+
   // 1. If product has structured or string images array
   if (Array.isArray(product.images) && product.images.length > 0) {
     const parsed: ProductImage[] = product.images
@@ -804,19 +806,33 @@ export function getProductImages(
       })
       .filter((img): img is ProductImage => Boolean(img && img.url && img.url.length > 0));
 
-    if (parsed.length > 0) {
-      // Sort by sort_order
-      parsed.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-      // Ensure there is at least one 'front' type
-      if (!parsed.some((img) => img.type === "front")) {
-        parsed[0]!.type = "front";
+    // Filter out dummy /images/packaged.jpg if primaryUrl or any image is valid custom photo
+    const realImages = parsed.filter((img) => img.url && img.url !== "/images/packaged.jpg");
+
+    if (realImages.length > 0) {
+      // If primaryUrl is custom and not already in realImages, prepend it as front view
+      if (
+        primaryUrl &&
+        primaryUrl !== "/images/packaged.jpg" &&
+        !realImages.some((img) => img.url === primaryUrl)
+      ) {
+        realImages.unshift({
+          url: primaryUrl,
+          type: "front",
+          label: "Front View",
+          sort_order: 0,
+        });
       }
-      return parsed;
+
+      realImages.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      if (!realImages.some((img) => img.type === "front")) {
+        realImages[0]!.type = "front";
+      }
+      return realImages.map((img, idx) => ({ ...img, sort_order: idx }));
     }
   }
 
-  // 2. Fallback to primary single image
-  const primaryUrl = getProductImage(product);
+  // 2. Fallback to primary image
   return [
     {
       url: primaryUrl,
@@ -826,6 +842,7 @@ export function getProductImages(
     },
   ];
 }
+
 
 /**
  * Returns localized label for each image type (Front, Back, Detail, Additional).

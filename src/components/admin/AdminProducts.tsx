@@ -119,12 +119,13 @@ export function AdminProducts({
     setGalleryImages([
       {
         id: `img-${Date.now()}`,
-        url: "/images/packaged.jpg",
+        url: "",
         type: "front",
         label: "Front View",
         sort_order: 0,
       },
     ]);
+
     setIsFeatured(false);
     setIsPopular(false);
     setIsActive(true);
