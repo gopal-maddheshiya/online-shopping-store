@@ -40,8 +40,10 @@ export type Product = {
   is_active: boolean;
   sold_count: number;
   created_at: string;
+  updated_at?: string | null;
   product_variants: Variant[];
 };
+
 
 export type Category = {
   id: string;

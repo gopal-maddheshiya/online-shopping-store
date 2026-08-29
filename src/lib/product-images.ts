@@ -402,6 +402,7 @@ export function getProductImage(product?: {
   name?: string | null;
   image_url?: string | null;
   category_id?: string | null;
+  updated_at?: string | null;
 }): string {
   if (!product) return "/images/packaged.jpg";
 
@@ -420,9 +421,10 @@ export function getProductImage(product?: {
       cleanUrl.startsWith("blob:") ||
       cleanUrl.startsWith("/")
     ) {
-      return cleanUrl;
+      return withImageVersion(cleanUrl, product.updated_at);
     }
   }
+
 
   // 2. Check exact slug match in verified product catalog
   if (product.slug) {
@@ -742,10 +744,24 @@ export function getProductImage(product?: {
     product.image_url &&
     (product.image_url.startsWith("/images/") || product.image_url.startsWith("http"))
   ) {
-    return product.image_url;
+    return withImageVersion(product.image_url, product.updated_at);
   }
 
+
   return "/images/packaged.jpg";
+}
+
+/**
+ * Deterministically versions Supabase Storage product image URLs using product.updated_at
+ * to prevent browser disk cache from serving stale images when an image is replaced in Admin.
+ */
+export function withImageVersion(url: string, updatedAt?: string | null): string {
+  if (!url || !updatedAt || !url.includes("supabase.co/storage")) return url;
+  if (url.includes("?v=") || url.includes("&v=")) return url;
+  const version = new Date(updatedAt).getTime();
+  if (isNaN(version) || version <= 0) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}v=${version}`;
 }
 
 /**
@@ -753,8 +769,9 @@ export function getProductImage(product?: {
  * Ensures 100% backward compatibility with legacy products that only have image_url.
  */
 export function getProductImages(
-  product: (Partial<Product> & { images?: (string | ProductImage)[] }) | null | undefined,
+  product: (Partial<Product> & { images?: (string | ProductImage)[]; updated_at?: string | null }) | null | undefined,
 ): ProductImage[] {
+
   if (!product) {
     return [{ url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 }];
   }
@@ -784,11 +801,11 @@ export function getProductImages(
           obj = item as { url?: unknown; type?: unknown; label?: unknown; sort_order?: unknown };
         }
 
-
         if (!obj || typeof obj.url !== "string") return null;
         const cleanUrl = obj.url.trim();
         if (!cleanUrl || cleanUrl === "/images/packaged.jpg") return null;
 
+        const versionedUrl = withImageVersion(cleanUrl, product.updated_at);
         const rawType = typeof obj.type === "string" ? obj.type : undefined;
         const type: ProductImageType =
           rawType === "front" || rawType === "back" || rawType === "detail" || rawType === "additional"
@@ -813,23 +830,22 @@ export function getProductImages(
         const sort_order = typeof obj.sort_order === "number" ? obj.sort_order : index;
 
         return {
-          url: cleanUrl,
+          url: versionedUrl,
           type,
           label,
           sort_order,
         };
       })
-
       .filter((img): img is ProductImage => Boolean(img && img.url && img.url.length > 0));
 
     // Filter out dummy /images/packaged.jpg if primaryUrl or any image is valid custom photo
-    const realImages = parsed.filter((img) => img.url && img.url !== "/images/packaged.jpg");
+    const realImages = parsed.filter((img) => img.url && !img.url.includes("/images/packaged.jpg"));
 
     if (realImages.length > 0) {
       // If primaryUrl is custom and not already in realImages, prepend it as front view
       if (
         primaryUrl &&
-        primaryUrl !== "/images/packaged.jpg" &&
+        !primaryUrl.includes("/images/packaged.jpg") &&
         !realImages.some((img) => img.url === primaryUrl)
       ) {
         realImages.unshift({
@@ -839,6 +855,7 @@ export function getProductImages(
           sort_order: 0,
         });
       }
+
 
       realImages.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
       if (!realImages.some((img) => img.type === "front")) {

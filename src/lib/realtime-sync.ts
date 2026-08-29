@@ -33,17 +33,46 @@ export type SettingsSyncPayload = {
 };
 
 // =========================================================================
+// DIAGNOSTIC LOGGING (Development & Live Verification)
+// =========================================================================
+
+const IS_LOGGING_ENABLED = true; // Temporary diagnostic logging for real-time verification
+
+function logRealtime(tag: string, ...args: unknown[]) {
+  if (IS_LOGGING_ENABLED) {
+    console.log(`[REALTIME] ${tag}`, ...args);
+  }
+}
+
+function logRealtimeEvent(eventType: string, target: string, recordId?: string, payload?: Record<string, unknown>) {
+  if (IS_LOGGING_ENABLED) {
+    console.log(
+      `[REALTIME EVENT] ${eventType} | Target: ${target}${recordId ? ` | ID: ${recordId}` : ""}`,
+      payload || {}
+    );
+  }
+}
+
+function logRealtimeInvalidate(queryKey: unknown) {
+  if (IS_LOGGING_ENABLED) {
+    console.log(`[REALTIME INVALIDATE]`, queryKey);
+  }
+}
+
+// =========================================================================
 // BROADCAST TRANSMITTERS
 // =========================================================================
 
-let broadcastChannelRef: ReturnType<typeof supabase.channel> | null = null;
-
 function getBroadcastChannel() {
-  if (!broadcastChannelRef) {
-    broadcastChannelRef = supabase.channel(STORE_SYNC_CHANNEL);
-    broadcastChannelRef.subscribe();
+  const existing = supabase.getChannels().find((c) => c.topic === `realtime:${STORE_SYNC_CHANNEL}`);
+  if (existing && existing.state === "joined") {
+    return existing;
   }
-  return broadcastChannelRef;
+  const ch = supabase.channel(STORE_SYNC_CHANNEL, {
+    config: { broadcast: { self: true } },
+  });
+  ch.subscribe();
+  return ch;
 }
 
 /**
@@ -52,6 +81,7 @@ function getBroadcastChannel() {
 export function broadcastProductSync(payload: ProductSyncPayload = {}) {
   try {
     const channel = getBroadcastChannel();
+    logRealtimeEvent("BROADCAST_SEND", "PRODUCT_SYNC", payload.productId || payload.slug, { action: payload.action, slug: payload.slug });
     void channel.send({
       type: "broadcast",
       event: "PRODUCT_SYNC",
@@ -61,7 +91,7 @@ export function broadcastProductSync(payload: ProductSyncPayload = {}) {
       },
     });
   } catch (err) {
-    console.warn("Failed to broadcast product sync event:", err);
+    console.warn("[REALTIME] Failed to broadcast product sync event:", err);
   }
 }
 
@@ -71,6 +101,7 @@ export function broadcastProductSync(payload: ProductSyncPayload = {}) {
 export function broadcastOrderSync(payload: OrderSyncPayload) {
   try {
     const channel = getBroadcastChannel();
+    logRealtimeEvent("BROADCAST_SEND", "ORDER_SYNC", payload.orderId || payload.orderNo, { status: payload.status, paymentStatus: payload.paymentStatus });
     void channel.send({
       type: "broadcast",
       event: "ORDER_SYNC",
@@ -80,7 +111,7 @@ export function broadcastOrderSync(payload: OrderSyncPayload) {
       },
     });
   } catch (err) {
-    console.warn("Failed to broadcast order sync event:", err);
+    console.warn("[REALTIME] Failed to broadcast order sync event:", err);
   }
 }
 
@@ -90,6 +121,7 @@ export function broadcastOrderSync(payload: OrderSyncPayload) {
 export function broadcastNewOrder(payload: NewOrderPayload) {
   try {
     const channel = getBroadcastChannel();
+    logRealtimeEvent("BROADCAST_SEND", "NEW_ORDER_SYNC", payload.orderId || payload.orderNo, { total: payload.total });
     void channel.send({
       type: "broadcast",
       event: "NEW_ORDER_SYNC",
@@ -99,7 +131,7 @@ export function broadcastNewOrder(payload: NewOrderPayload) {
       },
     });
   } catch (err) {
-    console.warn("Failed to broadcast new order event:", err);
+    console.warn("[REALTIME] Failed to broadcast new order event:", err);
   }
 }
 
@@ -109,6 +141,7 @@ export function broadcastNewOrder(payload: NewOrderPayload) {
 export function broadcastSettingsSync(payload: SettingsSyncPayload = {}) {
   try {
     const channel = getBroadcastChannel();
+    logRealtimeEvent("BROADCAST_SEND", "SETTINGS_SYNC", undefined, {});
     void channel.send({
       type: "broadcast",
       event: "SETTINGS_SYNC",
@@ -118,7 +151,7 @@ export function broadcastSettingsSync(payload: SettingsSyncPayload = {}) {
       },
     });
   } catch (err) {
-    console.warn("Failed to broadcast settings sync event:", err);
+    console.warn("[REALTIME] Failed to broadcast settings sync event:", err);
   }
 }
 
@@ -137,15 +170,35 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
   optionsRef.current = options;
 
   useEffect(() => {
-    // Helper to debounce query invalidations to prevent flood on batch mutations
-    const debouncedInvalidate = (keyPrefix: string, queryKeys: unknown[][], delay = 60) => {
+    let isMounted = true;
+
+    // Debounced invalidator to batch multi-row updates and prevent duplicate network queries
+    const debouncedInvalidate = (keyPrefix: string, queryKeys: unknown[][], delay = 40) => {
       if (debounceTimers.current[keyPrefix]) {
         window.clearTimeout(debounceTimers.current[keyPrefix]);
       }
       debounceTimers.current[keyPrefix] = window.setTimeout(() => {
+        if (!isMounted) return;
         queryKeys.forEach((key) => {
-          void queryClient.invalidateQueries({ queryKey: key });
+          logRealtimeInvalidate(key);
+          void queryClient
+            .invalidateQueries({
+              queryKey: key,
+              refetchType: "all",
+            })
+            .then(() => queryClient.refetchQueries({ queryKey: key, type: "all" }))
+            .then(() => {
+              if (IS_LOGGING_ENABLED) {
+                console.log(`[REALTIME REFETCH]`, key, "success", new Date().toISOString());
+              }
+            })
+            .catch((err: unknown) => {
+              if (IS_LOGGING_ENABLED) {
+                console.warn(`[REALTIME REFETCH]`, key, "error", err, new Date().toISOString());
+              }
+            });
         });
+
         delete debounceTimers.current[keyPrefix];
       }, delay);
     };
@@ -158,42 +211,53 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
       ];
       if (slug) {
         keys.push(["product", slug]);
-      } else {
-        keys.push(["product"]);
       }
-      debouncedInvalidate("products", keys, 50);
+      keys.push(["product"]);
+      debouncedInvalidate("products", keys, 40);
     };
 
     const invalidateOrderQueries = () => {
-      debouncedInvalidate("orders", [
-        ["admin-orders"],
-        ["customer-orders"],
-      ], 50);
+      debouncedInvalidate(
+        "orders",
+        [
+          ["admin-orders"],
+          ["customer-orders"],
+        ],
+        40,
+      );
+    };
+
+    const invalidateCategoryQueries = () => {
+      debouncedInvalidate("categories", [["categories"], ["products"]], 40);
     };
 
     const invalidateSettingsQueries = () => {
-      debouncedInvalidate("settings", [["store-settings"]], 50);
+      debouncedInvalidate("settings", [["store-settings"]], 40);
     };
 
     // Connect to the shared store realtime synchronization channel
+    logRealtime("connecting");
     const channel = supabase.channel(STORE_SYNC_CHANNEL, {
       config: {
         broadcast: { self: true },
       },
     });
 
-
     channel
       // 1. BROADCAST LISTENERS (Instant 0ms multi-tab sync)
       .on("broadcast", { event: "PRODUCT_SYNC" }, (event) => {
         const payload = (event["payload"] as ProductSyncPayload) || {};
+        logRealtimeEvent("BROADCAST_RECV", "PRODUCT_SYNC", payload.productId || payload.slug, { action: payload.action, slug: payload.slug });
         invalidateProductQueries(payload.slug);
       })
-      .on("broadcast", { event: "ORDER_SYNC" }, () => {
+      .on("broadcast", { event: "ORDER_SYNC" }, (event) => {
+        const payload = (event["payload"] as OrderSyncPayload) || {};
+        logRealtimeEvent("BROADCAST_RECV", "ORDER_SYNC", payload.orderId || payload.orderNo, { status: payload.status, paymentStatus: payload.paymentStatus });
         invalidateOrderQueries();
       })
       .on("broadcast", { event: "NEW_ORDER_SYNC" }, (event) => {
         const payload = (event["payload"] as NewOrderPayload) || {};
+        logRealtimeEvent("BROADCAST_RECV", "NEW_ORDER_SYNC", payload.orderId || payload.orderNo, { total: payload.total });
         invalidateOrderQueries();
         if (optionsRef.current.isAdmin) {
           if (optionsRef.current.onNewOrderNotification) {
@@ -207,39 +271,51 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         }
       })
       .on("broadcast", { event: "SETTINGS_SYNC" }, () => {
+        logRealtimeEvent("BROADCAST_RECV", "SETTINGS_SYNC");
         invalidateSettingsQueries();
       })
 
-      // 2. POSTGRES WAL CHANGES (Catches direct Supabase / SQL updates)
+      // 2. POSTGRES WAL CHANGES (Authoritative database updates)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "products" },
         (payload) => {
-          const slug = (payload.new as { slug?: string })?.slug || (payload.old as { slug?: string })?.slug;
+          const newRow = payload.new as { id?: string; slug?: string } | undefined;
+          const oldRow = payload.old as { id?: string; slug?: string } | undefined;
+          const slug = newRow?.slug || oldRow?.slug;
+          const id = newRow?.id || oldRow?.id;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "products", id, { slug });
           invalidateProductQueries(slug);
         }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "product_variants" },
-        () => {
+        (payload) => {
+          const newRow = payload.new as { id?: string } | undefined;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "product_variants", newRow?.id);
           invalidateProductQueries();
         }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "categories" },
-        () => {
-          debouncedInvalidate("categories", [["categories"], ["products"]], 50);
+        (payload) => {
+          const newRow = payload.new as { id?: string } | undefined;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "categories", newRow?.id);
+          invalidateCategoryQueries();
         }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "orders" },
         (payload) => {
+          const newRow = payload.new as { id?: string; order_no?: string; status?: string } | undefined;
+          const id = newRow?.id;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "orders", id, { status: newRow?.status });
           invalidateOrderQueries();
           if (payload.eventType === "INSERT" && optionsRef.current.isAdmin) {
-            const orderNo = (payload.new as { order_no?: string })?.order_no || "AGT";
+            const orderNo = newRow?.order_no || "AGT";
             toast.success(`🛒 नया ऑर्डर प्राप्त हुआ! (#${orderNo})`, { duration: 5000 });
           }
         }
@@ -247,7 +323,9 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "order_events" },
-        () => {
+        (payload) => {
+          const newRow = payload.new as { id?: string; status?: string } | undefined;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "order_events", newRow?.id, { status: newRow?.status });
           invalidateOrderQueries();
         }
       )
@@ -255,21 +333,27 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         "postgres_changes",
         { event: "*", schema: "public", table: "store_settings" },
         () => {
+          logRealtimeEvent("POSTGRES_CHANGE", "store_settings");
           invalidateSettingsQueries();
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
+        logRealtime(status, err ? `Error: ${err.message || JSON.stringify(err)}` : "");
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.warn(`[RealtimeSync] Channel ${channelId} status: ${status}. Attempting reconnection...`);
-          // Re-subscribe if connection drops
+          console.warn(`[REALTIME] Channel status: ${status}. Attempting reconnection...`);
           setTimeout(() => {
-            void channel.subscribe();
+            if (isMounted) {
+              void channel.subscribe();
+            }
           }, 3000);
         }
       });
 
     return () => {
-      // Clean up debounces
+      isMounted = false;
+      logRealtime("CLOSED");
+
+      // Clean up debounce timers
       Object.values(debounceTimers.current).forEach((t) => window.clearTimeout(t));
       debounceTimers.current = {};
 
