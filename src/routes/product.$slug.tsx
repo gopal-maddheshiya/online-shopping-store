@@ -24,10 +24,9 @@ import { discountPercent, inr } from "@/lib/format";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params, context }) => {
-    const [product] = await Promise.all([
-      context.queryClient.ensureQueryData(productQuery(params.slug)),
-      context.queryClient.ensureQueryData(productsQuery()),
-    ]);
+    const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
+    // Non-blocking pre-warm of catalog in background for instant related products
+    void context.queryClient.ensureQueryData(productsQuery());
     return { product };
   },
   head: ({ loaderData, params }) => {

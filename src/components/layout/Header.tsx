@@ -38,8 +38,7 @@ export function Header() {
   const { user, profile } = useAuth();
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
-  const routerState = useRouterState();
-  const currentPath = routerState.location.pathname;
+  const currentPath = useRouterState({ select: (s) => s.location.pathname });
   const isOnCart = currentPath === "/cart";
 
   const handleCartClick = (e: React.MouseEvent) => {

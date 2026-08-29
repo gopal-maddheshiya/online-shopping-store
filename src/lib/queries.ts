@@ -257,7 +257,7 @@ export const settingsQuery = queryOptions({
       DEFAULT_STORE_SETTINGS,
     );
   },
-  staleTime: 60_000,
+  staleTime: 1000 * 60 * 10, // 10 minutes
 });
 
 export const categoriesQuery = queryOptions({
@@ -289,7 +289,7 @@ export const categoriesQuery = queryOptions({
       ADDITIONAL_CATEGORIES,
     );
   },
-  staleTime: 60_000,
+  staleTime: 1000 * 60 * 10, // 10 minutes
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {
@@ -331,7 +331,7 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
         fallback,
       );
     },
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
@@ -385,7 +385,7 @@ export function featuredProductsQuery(limit: number = 12) {
         fallback,
       );
     },
-    staleTime: 60_000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
@@ -413,7 +413,7 @@ export function productQuery(slug: string) {
         fallback,
       );
     },
-    staleTime: 30_000,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 

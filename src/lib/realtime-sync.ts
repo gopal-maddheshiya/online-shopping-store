@@ -35,9 +35,7 @@ export type SettingsSyncPayload = {
 
 // =========================================================================
 // DIAGNOSTIC LOGGING (Development & Live Verification)
-// =========================================================================
-
-const IS_LOGGING_ENABLED = true; // Temporary diagnostic logging for real-time verification
+const IS_LOGGING_ENABLED = false; // Diagnostic logging disabled in production for max performance
 
 function logRealtime(tag: string, ...args: unknown[]) {
   if (IS_LOGGING_ENABLED) {

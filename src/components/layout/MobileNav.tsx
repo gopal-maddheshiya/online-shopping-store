@@ -32,8 +32,7 @@ export function MobileNav() {
   const { user } = useAuth();
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
-  const routerState = useRouterState();
-  const currentPath = routerState.location.pathname;
+  const currentPath = useRouterState({ select: (s) => s.location.pathname });
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [hasLocalPhone, setHasLocalPhone] = useState(false);
 
