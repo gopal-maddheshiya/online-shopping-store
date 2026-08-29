@@ -36,10 +36,14 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { inr, discountPercent } from "@/lib/format";
 import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
 import { uploadProductImage } from "@/lib/image-upload";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
+
+
+
 
 
 type AdminProductsProps = {
@@ -55,6 +59,7 @@ export function AdminProducts({
   onRefresh,
   initialOpenAdd = false,
 }: AdminProductsProps) {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(initialOpenAdd);
@@ -87,17 +92,18 @@ export function AdminProducts({
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
-  type GalleryImageItem = {
-    id: string;
-    url: string;
-    type: ProductImageType;
-    label: string;
-    sort_order: number;
-  };
+  // Dedicated Front & Back Image State
+  const [frontImageUrl, setFrontImageUrl] = useState("");
+  const [frontImageLabel, setFrontImageLabel] = useState("Front View");
+  const [backImageUrl, setBackImageUrl] = useState("");
+  const [backImageLabel, setBackImageLabel] = useState("Back / Nutrition");
+  const [additionalImages, setAdditionalImages] = useState<
+    { id: string; url: string; label: string }[]
+  >([]);
 
-  const [galleryImages, setGalleryImages] = useState<GalleryImageItem[]>([
-    { id: "img-1", url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 },
-  ]);
+  const [isUploadingFront, setIsUploadingFront] = useState(false);
+  const [isUploadingBack, setIsUploadingBack] = useState(false);
+  const [uploadingAdditionalId, setUploadingAdditionalId] = useState<string | null>(null);
 
   // Variants in Modal
   const [variants, setVariants] = useState<VariantFormItem[]>([
@@ -116,16 +122,11 @@ export function AdminProducts({
     setCategoryId(parentCategories[0]?.id ?? "");
     setSubcategoryId("");
     setDescription("");
-    setGalleryImages([
-      {
-        id: `img-${Date.now()}`,
-        url: "",
-        type: "front",
-        label: "Front View",
-        sort_order: 0,
-      },
-    ]);
-
+    setFrontImageUrl("");
+    setFrontImageLabel("Front View");
+    setBackImageUrl("");
+    setBackImageLabel("Back / Nutrition");
+    setAdditionalImages([]);
     setIsFeatured(false);
     setIsPopular(false);
     setIsActive(true);
@@ -145,34 +146,23 @@ export function AdminProducts({
     setIsPopular(prod.is_popular);
     setIsActive(prod.is_active);
 
-    const parsedImages = getProductImages(prod).map((img, idx) => ({
-      id: `img-${idx}-${Date.now()}`,
-      url: img.url,
-      type: img.type,
-      label:
-        img.label ||
-        (img.type === "front"
-          ? "Front View"
-          : img.type === "back"
-            ? "Back / Nutrition"
-            : img.type === "detail"
-              ? "Detail View"
-              : "Additional Photo"),
-      sort_order: img.sort_order ?? idx,
-    }));
+    const parsedImages = getProductImages(prod);
+    const front = parsedImages.find((img) => img.type === "front") || parsedImages[0];
+    const back =
+      parsedImages.find((img) => img.type === "back") ||
+      (parsedImages.length > 1 && parsedImages[1] !== front ? parsedImages[1] : undefined);
+    const extras = parsedImages.filter((img) => img !== front && img !== back);
 
-    setGalleryImages(
-      parsedImages.length > 0
-        ? parsedImages
-        : [
-          {
-            id: `img-${Date.now()}`,
-            url: prod.image_url || "/images/packaged.jpg",
-            type: "front",
-            label: "Front View",
-            sort_order: 0,
-          },
-        ],
+    setFrontImageUrl(front?.url || prod.image_url || "");
+    setFrontImageLabel(front?.label || "Front View");
+    setBackImageUrl(back?.url || "");
+    setBackImageLabel(back?.label || "Back / Nutrition");
+    setAdditionalImages(
+      extras.map((img, idx) => ({
+        id: `extra-${idx}-${Date.now()}`,
+        url: img.url,
+        label: img.label || `Photo ${idx + 3}`,
+      })),
     );
 
     const existingVars = (prod.product_variants ?? []).map((v) => ({
@@ -204,87 +194,7 @@ export function AdminProducts({
     }
   }
 
-  function addGalleryImage(type: ProductImageType = "additional", defaultUrl: string = "") {
-    if (galleryImages.length >= 8) {
-      toast.error("Maximum 8 images allowed per product");
-      return;
-    }
-    const newId = `img-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const label =
-      type === "front"
-        ? "Front View"
-        : type === "back"
-          ? "Back / Nutrition"
-          : type === "detail"
-            ? "Detail View"
-            : `Additional Photo ${galleryImages.length + 1}`;
-
-    setGalleryImages((prev) => [
-      ...prev,
-      {
-        id: newId,
-        url: defaultUrl || "/images/packaged.jpg",
-        type,
-        label,
-        sort_order: prev.length,
-      },
-    ]);
-  }
-
-  function updateGalleryImage(id: string, field: keyof GalleryImageItem, value: any) {
-    setGalleryImages((prev) =>
-      prev.map((img) => (img.id === id ? { ...img, [field]: value } : img)),
-    );
-  }
-
-  function removeGalleryImage(id: string) {
-    if (galleryImages.length <= 1) {
-      toast.error("At least one product image is required");
-      return;
-    }
-    setGalleryImages((prev) => {
-      const filtered = prev.filter((img) => img.id !== id);
-      if (!filtered.some((img) => img.type === "front") && filtered.length > 0) {
-        filtered[0]!.type = "front";
-      }
-      return filtered.map((img, idx) => ({ ...img, sort_order: idx }));
-    });
-  }
-
-  function setPrimaryImage(id: string) {
-    setGalleryImages((prev) => {
-      const targetIndex = prev.findIndex((img) => img.id === id);
-      if (targetIndex === -1) return prev;
-      const target = prev[targetIndex]!;
-      const remaining = prev.filter((img) => img.id !== id);
-
-      const updatedTarget: GalleryImageItem = { ...target, type: "front", sort_order: 0 };
-      const updatedRemaining = remaining.map((img, idx) => ({
-        ...img,
-        type: img.type === "front" ? ("additional" as ProductImageType) : img.type,
-        sort_order: idx + 1,
-      }));
-
-      return [updatedTarget, ...updatedRemaining];
-    });
-    toast.success("Designated as primary front image");
-  }
-
-  function moveGalleryImage(index: number, direction: "up" | "down") {
-    setGalleryImages((prev) => {
-      const targetIdx = direction === "up" ? index - 1 : index + 1;
-      if (targetIdx < 0 || targetIdx >= prev.length) return prev;
-
-      const copy = [...prev];
-      const temp = copy[index]!;
-      copy[index] = copy[targetIdx]!;
-      copy[targetIdx] = temp;
-
-      return copy.map((img, idx) => ({ ...img, sort_order: idx }));
-    });
-  }
-
-  async function handleFileUpload(id: string, file: File) {
+  async function handleUploadFront(file: File) {
     const validTypes = [
       "image/png",
       "image/jpeg",
@@ -297,24 +207,110 @@ export function AdminProducts({
       toast.error("Please select a valid image file (PNG, JPG, WebP, SVG)");
       return;
     }
-
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > 10 * 1024 * 1024) {
       toast.error("Image file is too large (max 10 MB allowed)");
       return;
     }
 
-    const toastId = toast.loading("Optimizing and processing photo...");
+    setIsUploadingFront(true);
+    const toastId = toast.loading("Optimizing and processing front photo...");
     try {
-      const optimizedUrl = await uploadProductImage(file);
-      updateGalleryImage(id, "url", optimizedUrl);
-      toast.success("Photo uploaded and applied successfully!", { id: toastId });
+      const url = await uploadProductImage(file);
+      setFrontImageUrl(url);
+      toast.success("Front photo uploaded successfully!", { id: toastId });
     } catch (err) {
-      console.error("Upload error:", err);
-      toast.error("Failed to process image file", { id: toastId });
+      console.error("Upload front error:", err);
+      toast.error("Failed to process front image file", { id: toastId });
+    } finally {
+      setIsUploadingFront(false);
     }
   }
 
+  async function handleUploadBack(file: File) {
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+      "image/gif",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (PNG, JPG, WebP, SVG)");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file is too large (max 10 MB allowed)");
+      return;
+    }
+
+    setIsUploadingBack(true);
+    const toastId = toast.loading("Optimizing and processing back photo...");
+    try {
+      const url = await uploadProductImage(file);
+      setBackImageUrl(url);
+      toast.success("Back photo uploaded successfully!", { id: toastId });
+    } catch (err) {
+      console.error("Upload back error:", err);
+      toast.error("Failed to process back image file", { id: toastId });
+    } finally {
+      setIsUploadingBack(false);
+    }
+  }
+
+  async function handleUploadAdditional(id: string, file: File) {
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/svg+xml",
+      "image/gif",
+    ];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (PNG, JPG, WebP, SVG)");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file is too large (max 10 MB allowed)");
+      return;
+    }
+
+    setUploadingAdditionalId(id);
+    const toastId = toast.loading("Optimizing and processing photo...");
+    try {
+      const url = await uploadProductImage(file);
+      setAdditionalImages((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, url } : img)),
+      );
+      toast.success("Photo uploaded successfully!", { id: toastId });
+    } catch (err) {
+      console.error("Upload additional error:", err);
+      toast.error("Failed to process image file", { id: toastId });
+    } finally {
+      setUploadingAdditionalId(null);
+    }
+  }
+
+  function addAdditionalImageSlot() {
+    if (additionalImages.length >= 6) {
+      toast.error("Maximum 6 additional photos allowed");
+      return;
+    }
+    const newId = `extra-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setAdditionalImages((prev) => [
+      ...prev,
+      {
+        id: newId,
+        url: "",
+        label: `Photo ${prev.length + 3}`,
+      },
+    ]);
+  }
+
+  function removeAdditionalImageSlot(id: string) {
+    setAdditionalImages((prev) => prev.filter((img) => img.id !== id));
+  }
 
   function addVariantRow() {
     setVariants((prev) => [
@@ -346,19 +342,43 @@ export function AdminProducts({
       return;
     }
 
-    // Determine primary Front image and full images array
-    const primary =
-      galleryImages.find((img) => img.type === "front") ||
-      galleryImages[0] || { url: "/images/packaged.jpg" };
+    // Build structured clean images array
+    const cleanImages: ProductImage[] = [];
 
-    const cleanImages: ProductImage[] = galleryImages
-      .filter((img) => img.url && img.url.trim().length > 0)
-      .map((img, idx) => ({
-        url: img.url.trim(),
-        type: img.type,
-        label: img.label.trim() || undefined,
-        sort_order: idx,
-      }));
+    // 1. Front View (sort_order: 0)
+    if (frontImageUrl.trim()) {
+      cleanImages.push({
+        url: frontImageUrl.trim(),
+        type: "front",
+        label: frontImageLabel.trim() || "Front View",
+        sort_order: 0,
+      });
+    }
+
+    // 2. Back / Nutrition View (sort_order: 1)
+    if (backImageUrl.trim()) {
+      cleanImages.push({
+        url: backImageUrl.trim(),
+        type: "back",
+        label: backImageLabel.trim() || "Back / Nutrition",
+        sort_order: 1,
+      });
+    }
+
+    // 3. Additional Photos (sort_order: 2+)
+    additionalImages.forEach((img, idx) => {
+      if (img.url.trim()) {
+        cleanImages.push({
+          url: img.url.trim(),
+          type: "additional",
+          label: img.label.trim() || `Photo ${idx + 3}`,
+          sort_order: 2 + idx,
+        });
+      }
+    });
+
+    const primaryUrl = frontImageUrl.trim() || backImageUrl.trim() || "/images/packaged.jpg";
+    const stringifiedImages = cleanImages.map((img) => JSON.stringify(img));
 
     setIsSaving(true);
     try {
@@ -373,8 +393,8 @@ export function AdminProducts({
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
-            image_url: primary.url.trim() || "/images/packaged.jpg",
-            images: cleanImages as unknown as string[],
+            image_url: primaryUrl,
+            images: stringifiedImages as unknown as string[],
             is_featured: isFeatured,
             is_popular: isPopular,
             is_active: isActive,
@@ -383,7 +403,16 @@ export function AdminProducts({
 
         if (prodError) throw prodError;
 
-        // 2. Upsert variants
+        // 2. Clean up removed variants
+        const activeVariantIds = new Set(variants.map((v) => v.id).filter(Boolean));
+        const existingDbVariants = editingProduct.product_variants ?? [];
+        for (const dbv of existingDbVariants) {
+          if (!activeVariantIds.has(dbv.id)) {
+            await supabase.from("product_variants").delete().eq("id", dbv.id);
+          }
+        }
+
+        // 3. Upsert active variants
         for (let i = 0; i < variants.length; i++) {
           const v = variants[i]!;
           if (v.id) {
@@ -423,8 +452,8 @@ export function AdminProducts({
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
-            image_url: primary.url.trim() || "/images/packaged.jpg",
-            images: cleanImages as unknown as string[],
+            image_url: primaryUrl,
+            images: stringifiedImages as unknown as string[],
             is_featured: isFeatured,
             is_popular: isPopular,
             is_active: isActive,
@@ -450,6 +479,11 @@ export function AdminProducts({
         toast.success(`Product "${name}" added to catalogue!`);
       }
 
+      // Invalidate all product queries across the storefront
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+
       setIsAddModalOpen(false);
       onRefresh();
     } catch (err: unknown) {
@@ -467,6 +501,11 @@ export function AdminProducts({
       const { error } = await supabase.from("products").delete().eq("id", prod.id);
       if (error) throw error;
       toast.success(`Deleted ${prod.name}`);
+
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+
       onRefresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Delete failed";
@@ -482,12 +521,18 @@ export function AdminProducts({
         .eq("id", prod.id);
       if (error) throw error;
       toast.success(`${prod.name} is now ${!prod.is_active ? "Visible" : "Hidden"}`);
+
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+
       onRefresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Update failed";
       toast.error(msg);
     }
   }
+
 
   const filteredProducts = products.filter((p) => {
     if (selectedCategory !== "all" && p.category_id !== selectedCategory) return false;
@@ -946,165 +991,165 @@ export function AdminProducts({
               </div>
             </div>
 
-            {/* Section 3: Product Images Gallery */}
+            {/* Section 3: Dedicated Front & Back Product Images */}
             <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF8F2] p-3.5 sm:p-4 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h4 className="font-sans font-bold text-xs sm:text-sm text-[#16201A] flex items-center gap-2">
                     <ImageIcon className="size-4 text-[#145A45]" />
-                    3. Product Images Gallery
+                    3. Product Images (Front &amp; Back Photos)
                   </h4>
                   <p className="text-[10px] sm:text-[11px] text-[#5A655F]">
-                    Upload and manage Front (Primary), Back (Packaging &amp; Nutrition), Detail, and Additional photos.
+                    Upload crisp photos for front display and back packaging/nutrition. Both are independently editable.
                   </p>
                 </div>
 
-                {/* Quick Add Image Slot Buttons */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Button
-                    type="button"
-                    onClick={() => addGalleryImage("front")}
-                    variant="outline"
-                    size="sm"
-                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#145A45] hover:bg-[#FAF8F2] shadow-2xs"
-                  >
-                    <Plus className="size-3 mr-1" /> Front
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => addGalleryImage("back")}
-                    variant="outline"
-                    size="sm"
-                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#D97706] hover:bg-[#FAF8F2] shadow-2xs"
-                  >
-                    <Plus className="size-3 mr-1" /> Back
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => addGalleryImage("detail")}
-                    variant="outline"
-                    size="sm"
-                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-emerald-700 hover:bg-[#FAF8F2] shadow-2xs"
-                  >
-                    <Plus className="size-3 mr-1" /> Detail
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => addGalleryImage("additional")}
-                    variant="outline"
-                    size="sm"
-                    className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#5A655F] hover:bg-[#FAF8F2] shadow-2xs"
-                  >
-                    <Plus className="size-3 mr-1" /> Photo
-                  </Button>
+                <Button
+                  type="button"
+                  onClick={addAdditionalImageSlot}
+                  variant="outline"
+                  size="sm"
+                  className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#145A45] hover:bg-[#FAF8F2] shadow-2xs"
+                >
+                  <Plus className="size-3 mr-1" /> Add Extra Photo
+                </Button>
+              </div>
+
+              {/* Grid: 1. Front Image Card & 2. Back Image Card */}
+              <div className="grid gap-3.5 sm:grid-cols-2">
+                {/* 1. Front Image (Primary) */}
+                <div className="rounded-2xl bg-white p-3.5 border-2 border-[#145A45]/40 ring-1 ring-[#145A45]/20 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E5E0D5]/70 pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="rounded-md bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#0F4A38] border border-[#145A45]/30 flex items-center gap-1">
+                        <Star className="size-3 fill-[#0F4A38]" /> Front Image (मुख्य फोटो)
+                      </span>
+                    </div>
+                    {frontImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFrontImageUrl("")}
+                        className="text-[10px] font-bold text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3 items-center">
+                    {/* Thumbnail */}
+                    <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
+                      <img
+                        src={frontImageUrl || "/images/packaged.jpg"}
+                        alt="Front View Preview"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                        }}
+                        className="size-full object-contain"
+                      />
+                    </div>
+
+                    {/* Actions & Inputs */}
+                    <div className="flex-1 space-y-2 text-xs">
+                      <label className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-[#145A45]/40 bg-[#E6EFE8]/70 text-[#0F4A38] px-2.5 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                        <Upload className="size-3.5" />
+                        <span>{isUploadingFront ? "Uploading..." : "Upload Front Photo"}</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadFront(file);
+                          }}
+                          disabled={isUploadingFront}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <Input
+                        placeholder="Or enter Front Image URL"
+                        value={frontImageUrl}
+                        onChange={(e) => setFrontImageUrl(e.target.value)}
+                        className="h-7 text-xs rounded-lg border-[#E5E0D5]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Back Image (Nutrition / Details) */}
+                <div className="rounded-2xl bg-white p-3.5 border border-[#E5E0D5] shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between border-b border-[#E5E0D5]/70 pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="rounded-md bg-[#FAF8F2] px-2 py-0.5 text-[10px] font-bold text-[#5A655F] border border-[#E5E0D5] flex items-center gap-1">
+                        <Boxes className="size-3 text-[#5A655F]" /> Back Image (पीछे का फोटो / पोषण)
+                      </span>
+                    </div>
+                    {backImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setBackImageUrl("")}
+                        className="text-[10px] font-bold text-red-600 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3 items-center">
+                    {/* Thumbnail */}
+                    <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
+                      <img
+                        src={backImageUrl || "/images/packaged.jpg"}
+                        alt="Back View Preview"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                        }}
+                        className="size-full object-contain"
+                      />
+                    </div>
+
+                    {/* Actions & Inputs */}
+                    <div className="flex-1 space-y-2 text-xs">
+                      <label className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#1F2924] px-2.5 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                        <Upload className="size-3.5 text-[#145A45]" />
+                        <span>{isUploadingBack ? "Uploading..." : "Upload Back Photo"}</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadBack(file);
+                          }}
+                          disabled={isUploadingBack}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <Input
+                        placeholder="Or enter Back Image URL"
+                        value={backImageUrl}
+                        onChange={(e) => setBackImageUrl(e.target.value)}
+                        className="h-7 text-xs rounded-lg border-[#E5E0D5]"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Image Cards Stack */}
-              <div className="space-y-3">
-                {galleryImages.map((img, idx) => {
-                  const isPrimary = img.type === "front" || idx === 0;
-
-                  return (
-                    <div
-                      key={img.id}
-                      className={`rounded-xl bg-white p-3 border transition-all shadow-2xs space-y-2.5 ${isPrimary
-                          ? "border-[#145A45]/50 ring-1 ring-[#145A45]/30 bg-white"
-                          : "border-[#E5E0D5]"
-                        }`}
-                    >
-                      {/* Image Header: Type, Primary Badge, Actions */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E0D5]/60 pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-bold text-[#5A655F]">
-                            #{idx + 1}
-                          </span>
-
-                          <Select
-                            value={img.type}
-                            onValueChange={(val) =>
-                              updateGalleryImage(img.id, "type", val as ProductImageType)
-                            }
-                          >
-                            <SelectTrigger className="h-7 rounded-md text-[11px] font-semibold border-[#E5E0D5] bg-[#FAF8F2] w-40">
-                              <SelectValue placeholder="Slot Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="front" className="text-xs">
-                                🌾 Front (Primary Image)
-                              </SelectItem>
-                              <SelectItem value="back" className="text-xs">
-                                📦 Back (Nutrition / MRP)
-                              </SelectItem>
-                              <SelectItem value="detail" className="text-xs">
-                                🔍 Detail (Label / Seal)
-                              </SelectItem>
-                              <SelectItem value="additional" className="text-xs">
-                                🖼️ Additional Photo
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-
-                          {isPrimary && (
-                            <span className="rounded-md bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#0F4A38] border border-[#145A45]/30 flex items-center gap-1">
-                              <Star className="size-3 fill-[#0F4A38]" /> Primary
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Image Actions: Move, Set Primary, Remove */}
-                        <div className="flex items-center gap-1">
-                          {!isPrimary && (
-                            <button
-                              type="button"
-                              onClick={() => setPrimaryImage(img.id)}
-                              title="Make Primary Front Image"
-                              className="flex h-7 items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 text-[10px] font-bold text-[#145A45] hover:bg-white active:scale-95"
-                            >
-                              <Star className="size-3" /> Make Front
-                            </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => moveGalleryImage(idx, "up")}
-                            disabled={idx === 0}
-                            title="Move Up"
-                            className="flex size-7 items-center justify-center rounded-md border border-[#E5E0D5] text-[#5A655F] hover:bg-[#FAF8F2] disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <ArrowUp className="size-3.5" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => moveGalleryImage(idx, "down")}
-                            disabled={idx === galleryImages.length - 1}
-                            title="Move Down"
-                            className="flex size-7 items-center justify-center rounded-md border border-[#E5E0D5] text-[#5A655F] hover:bg-[#FAF8F2] disabled:opacity-30 disabled:cursor-not-allowed"
-                          >
-                            <ArrowDown className="size-3.5" />
-                          </button>
-
-                          {galleryImages.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeGalleryImage(img.id)}
-                              title="Delete Image"
-                              className="flex size-7 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 active:scale-95 ml-1"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Image Content Row: Preview, URL Input, Upload Button, Label Input */}
-                      <div className="grid gap-3 sm:grid-cols-[5rem_1fr] items-start">
-                        {/* Thumbnail Preview */}
-                        <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0 mx-auto sm:mx-0">
+              {/* 3. Additional Image Slots (if any) */}
+              {additionalImages.length > 0 && (
+                <div className="space-y-2.5 pt-2 border-t border-[#E5E0D5]/70">
+                  <Label className="text-xs font-bold text-[#16201A]">Additional Product Photos</Label>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {additionalImages.map((addImg, idx) => (
+                      <div
+                        key={addImg.id}
+                        className="rounded-xl bg-white p-2.5 border border-[#E5E0D5] flex items-center gap-2.5 text-xs shadow-2xs"
+                      >
+                        <div className="relative size-14 rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
                           <img
-                            src={img.url || "/images/packaged.jpg"}
-                            alt={img.label || "Preview"}
+                            src={addImg.url || "/images/packaged.jpg"}
+                            alt=""
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/images/packaged.jpg";
                             }}
@@ -1112,53 +1157,54 @@ export function AdminProducts({
                           />
                         </div>
 
-                        {/* Inputs: URL, File Upload, Label */}
-                        <div className="space-y-2 text-xs">
-                          <div className="flex gap-2 items-center">
-                            <div className="flex-1">
-                              <Input
-                                placeholder="https://... or /images/atta.jpg"
-                                value={img.url}
-                                onChange={(e) => updateGalleryImage(img.id, "url", e.target.value)}
-                                className="h-8 text-xs rounded-lg border-[#E5E0D5]"
-                              />
-                            </div>
-
-                            {/* File Upload Trigger */}
-                            <label className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-2.5 text-[11px] font-semibold text-[#16201A] hover:bg-white active:scale-95 cursor-pointer shadow-2xs">
-                              <Upload className="size-3 text-[#145A45]" />
-                              <span>Upload File</span>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-1">
+                            <Input
+                              placeholder="Image URL"
+                              value={addImg.url}
+                              onChange={(e) =>
+                                setAdditionalImages((prev) =>
+                                  prev.map((item) =>
+                                    item.id === addImg.id ? { ...item, url: e.target.value } : item,
+                                  ),
+                                )
+                              }
+                              className="h-6.5 text-[11px] rounded-md border-[#E5E0D5]"
+                            />
+                            <label className="flex h-6.5 shrink-0 items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 text-[10px] font-bold text-[#145A45] hover:bg-white cursor-pointer">
+                              <Upload className="size-2.5" />
                               <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
-                                  if (file) handleFileUpload(img.id, file);
+                                  if (file) handleUploadAdditional(addImg.id, file);
                                 }}
+                                disabled={uploadingAdditionalId === addImg.id}
                                 className="hidden"
                               />
                             </label>
                           </div>
-
-                          <div className="flex gap-2 items-center">
-                            <Input
-                              placeholder="Image Caption (e.g. Front packaging, Nutrition table, Purity mark)"
-                              value={img.label}
-                              onChange={(e) => updateGalleryImage(img.id, "label", e.target.value)}
-                              className="h-7 text-xs rounded-lg border-[#E5E0D5] text-[#5A655F]"
-                            />
-                          </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeAdditionalImageSlot(addImg.id)}
+                          className="size-6 text-red-500 hover:text-red-700 flex items-center justify-center shrink-0"
+                          title="Remove Photo"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Quick Grocery Presets Selector */}
-              <div className="space-y-1.5 pt-1 border-t border-[#E5E0D5]/60">
+              <div className="space-y-1.5 pt-2 border-t border-[#E5E0D5]/60">
                 <Label className="text-[11px] font-semibold text-[#5A655F]">
-                  Quick Presets (Click to apply to primary image):
+                  Quick Presets (Click to set as Front Image):
                 </Label>
                 <div className="flex flex-wrap gap-1">
                   {[
@@ -1180,10 +1226,8 @@ export function AdminProducts({
                       key={preset.url}
                       type="button"
                       onClick={() => {
-                        if (galleryImages.length > 0) {
-                          updateGalleryImage(galleryImages[0]!.id, "url", preset.url);
-                          toast.success(`Applied ${preset.label} image`);
-                        }
+                        setFrontImageUrl(preset.url);
+                        toast.success(`Set Front Image to ${preset.label}`);
                       }}
                       className="rounded-md border border-[#E5E0D5] bg-white px-2 py-1 text-[10px] font-medium text-[#16201A] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-colors shadow-2xs"
                     >
@@ -1193,8 +1237,10 @@ export function AdminProducts({
                 </div>
               </div>
 
+
               {/* Description / Highlights */}
               <div className="space-y-1 pt-2 border-t border-[#E5E0D5]/60">
+
                 <Label className="text-xs font-semibold text-[#16201A]">
                   Description / Product Highlights
                 </Label>

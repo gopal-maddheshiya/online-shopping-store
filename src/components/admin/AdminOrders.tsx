@@ -51,7 +51,7 @@ type AdminOrdersProps = {
 
 
 const STATUS_FILTERS = [
-  { value: "all", label: "All Orders (सभी ऑर्डर)" },
+  { value: "all", label: "All Statuses (सभी स्थितियां)" },
   { value: "placed", label: "Order Placed (प्राप्त)" },
   { value: "confirmed", label: "Confirmed (स्वीकृत)" },
   { value: "preparing", label: "Preparing (पैकिंग)" },
@@ -69,6 +69,9 @@ export function AdminOrders({
 }: AdminOrdersProps) {
   const { lang, language = lang } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeQueueTab, setActiveQueueTab] = useState<
+    "active" | "placed" | "preparing" | "out_for_delivery" | "delivered" | "cancelled" | "all"
+  >("active");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
   const [internalSelectedOrder, setInternalSelectedOrder] = useState<Order | null>(null);
@@ -81,6 +84,16 @@ export function AdminOrders({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(null);
 
+  // Queue Counts
+  const activeCount = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").length;
+  const placedCount = orders.filter((o) => o.status === "placed").length;
+  const preparingCount = orders.filter(
+    (o) => o.status === "confirmed" || o.status === "preparing" || o.status === "ready",
+  ).length;
+  const outCount = orders.filter((o) => o.status === "out_for_delivery").length;
+  const deliveredCount = orders.filter((o) => o.status === "delivered").length;
+  const cancelledCount = orders.filter((o) => o.status === "cancelled").length;
+  const totalCount = orders.length;
 
   // Subscribe to realtime changes for the active selected order
   useEffect(() => {
@@ -92,10 +105,28 @@ export function AdminOrders({
     return unsub;
   }, [selectedOrder?.id, onRefresh]);
 
-  // Filter & Sort orders
+  // Filter & Sort orders based on Active Queue Tab and search
   const filteredOrders = orders
     .filter((o) => {
+      // 1. Queue Tab Filtering
+      if (activeQueueTab === "active") {
+        if (o.status === "delivered" || o.status === "cancelled") return false;
+      } else if (activeQueueTab === "placed") {
+        if (o.status !== "placed") return false;
+      } else if (activeQueueTab === "preparing") {
+        if (o.status !== "confirmed" && o.status !== "preparing" && o.status !== "ready") return false;
+      } else if (activeQueueTab === "out_for_delivery") {
+        if (o.status !== "out_for_delivery") return false;
+      } else if (activeQueueTab === "delivered") {
+        if (o.status !== "delivered") return false;
+      } else if (activeQueueTab === "cancelled") {
+        if (o.status !== "cancelled") return false;
+      }
+
+      // 2. Specific status sub-filter
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
+
+      // 3. Search query
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase();
         const matchNo = o.order_no.toLowerCase().includes(q);
@@ -112,6 +143,7 @@ export function AdminOrders({
       if (sortBy === "lowest") return a.total - b.total;
       return 0;
     });
+
 
   async function handleStatusChange(orderId: string, newStatus: string, note?: string) {
     if (newStatus === "cancelled" && !confirmCancelOpen) {
@@ -168,6 +200,145 @@ export function AdminOrders({
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Queue Tabs Navigation */}
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-[#E8E4DA] bg-white p-2.5 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("active")}
+          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "active"
+              ? "bg-[#145A45] text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#1F2924] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+            {language === "hi" ? "सक्रिय ऑर्डर (कार्रवाई योग्य)" : "Active Orders (Action Needed)"}
+          </span>
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+              activeQueueTab === "active" ? "bg-white/20 text-white" : "bg-[#145A45]/10 text-[#145A45]"
+            }`}
+          >
+            {activeCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("placed")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "placed"
+              ? "bg-[#D97706] text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>📥 {language === "hi" ? "नए ऑर्डर" : "New / Placed"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "placed" ? "bg-white/20 text-white" : "bg-[#D97706]/10 text-[#D97706]"
+            }`}
+          >
+            {placedCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("preparing")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "preparing"
+              ? "bg-amber-600 text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>🍳 {language === "hi" ? "तैयारी / पैकिंग" : "Preparing & Ready"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "preparing" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {preparingCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("out_for_delivery")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "out_for_delivery"
+              ? "bg-indigo-600 text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>🚚 {language === "hi" ? "रास्ते में" : "Out for Delivery"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "out_for_delivery" ? "bg-white/20 text-white" : "bg-indigo-100 text-indigo-800"
+            }`}
+          >
+            {outCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("delivered")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "delivered"
+              ? "bg-emerald-700 text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>✅ {language === "hi" ? "सफल / डिलीवर" : "Delivered (Completed)"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "delivered" ? "bg-white/20 text-white" : "bg-emerald-100 text-emerald-800"
+            }`}
+          >
+            {deliveredCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("cancelled")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "cancelled"
+              ? "bg-red-600 text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>❌ {language === "hi" ? "रद्द" : "Cancelled"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "cancelled" ? "bg-white/20 text-white" : "bg-red-100 text-red-800"
+            }`}
+          >
+            {cancelledCount}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveQueueTab("all")}
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all ${
+            activeQueueTab === "all"
+              ? "bg-[#1F2924] text-white shadow-xs"
+              : "bg-[#FAF8F2] text-[#5A655F] hover:bg-[#E8E4DA]/60"
+          }`}
+        >
+          <span>📋 {language === "hi" ? "सभी ऑर्डर" : "All Orders"}</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeQueueTab === "all" ? "bg-white/20 text-white" : "bg-[#1F2924]/10 text-[#1F2924]"
+            }`}
+          >
+            {totalCount}
+          </span>
+        </button>
+      </div>
+
       {/* Filters & Search Header */}
       <div className="flex flex-col gap-3 rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-4 shadow-2xs">
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
@@ -180,6 +351,7 @@ export function AdminOrders({
               className="pl-9.5 rounded-xl text-xs border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white h-11"
             />
           </div>
+
 
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -766,44 +766,60 @@ export function getProductImages(
     const parsed: ProductImage[] = product.images
       .map((item, index): ProductImage | null => {
         if (!item) return null;
+
+        let obj: { url?: unknown; type?: unknown; label?: unknown; sort_order?: unknown } | null = null;
         if (typeof item === "string") {
           const trimmed = item.trim();
           if (!trimmed) return null;
-          const type: ProductImageType =
-            index === 0 ? "front" : index === 1 ? "back" : index === 2 ? "detail" : "additional";
-          return {
-            url: trimmed,
-            type,
-            label:
-              type === "front"
-                ? "Front View"
-                : type === "back"
-                  ? "Back / Nutrition"
-                  : type === "detail"
-                    ? "Detail View"
-                    : `Photo ${index + 1}`,
-            sort_order: index,
-          };
+          if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            try {
+              obj = JSON.parse(trimmed) as { url?: unknown; type?: unknown; label?: unknown; sort_order?: unknown };
+            } catch {
+              obj = { url: trimmed };
+            }
+          } else {
+            obj = { url: trimmed };
+          }
+        } else if (typeof item === "object" && item !== null) {
+          obj = item as { url?: unknown; type?: unknown; label?: unknown; sort_order?: unknown };
         }
-        if (typeof item === "object" && item.url && item.url.trim().length > 0) {
-          const type: ProductImageType = item.type || (index === 0 ? "front" : "additional");
-          return {
-            url: item.url.trim(),
-            type,
-            label:
-              item.label ||
-              (type === "front"
-                ? "Front View"
-                : type === "back"
-                  ? "Back / Nutrition"
-                  : type === "detail"
-                    ? "Detail View"
-                    : "Additional"),
-            sort_order: typeof item.sort_order === "number" ? item.sort_order : index,
-          };
-        }
-        return null;
+
+
+        if (!obj || typeof obj.url !== "string") return null;
+        const cleanUrl = obj.url.trim();
+        if (!cleanUrl || cleanUrl === "/images/packaged.jpg") return null;
+
+        const rawType = typeof obj.type === "string" ? obj.type : undefined;
+        const type: ProductImageType =
+          rawType === "front" || rawType === "back" || rawType === "detail" || rawType === "additional"
+            ? rawType
+            : index === 0
+              ? "front"
+              : index === 1
+                ? "back"
+                : "additional";
+
+        const label =
+          typeof obj.label === "string" && obj.label.trim().length > 0
+            ? obj.label.trim()
+            : type === "front"
+              ? "Front View"
+              : type === "back"
+                ? "Back / Nutrition"
+                : type === "detail"
+                  ? "Detail View"
+                  : `Photo ${index + 1}`;
+
+        const sort_order = typeof obj.sort_order === "number" ? obj.sort_order : index;
+
+        return {
+          url: cleanUrl,
+          type,
+          label,
+          sort_order,
+        };
       })
+
       .filter((img): img is ProductImage => Boolean(img && img.url && img.url.length > 0));
 
     // Filter out dummy /images/packaged.jpg if primaryUrl or any image is valid custom photo
@@ -835,13 +851,14 @@ export function getProductImages(
   // 2. Fallback to primary image
   return [
     {
-      url: primaryUrl,
+      url: primaryUrl || "/images/packaged.jpg",
       type: "front",
       label: "Front View",
       sort_order: 0,
     },
   ];
 }
+
 
 
 /**

@@ -311,7 +311,7 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
             return fallback;
           }
         })(),
-        2500,
+        10000,
         fallback,
       );
     },
@@ -365,7 +365,7 @@ export function featuredProductsQuery(limit: number = 12) {
             return fallback;
           }
         })(),
-        2500,
+        10000,
         fallback,
       );
     },
@@ -393,13 +393,14 @@ export function productQuery(slug: string) {
           }
           return fallback;
         })(),
-        2500,
+        10000,
         fallback,
       );
     },
     staleTime: 30_000,
   });
 }
+
 
 export function cheapestVariant(product: Product): Variant | undefined {
   const active = (product.product_variants ?? [])
