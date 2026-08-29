@@ -38,7 +38,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, discountPercent } from "@/lib/format";
 import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
+import { uploadProductImage } from "@/lib/image-upload";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
+
 
 type AdminProductsProps = {
   products: Product[];
@@ -281,7 +283,7 @@ export function AdminProducts({
     });
   }
 
-  function handleFileUpload(id: string, file: File) {
+  async function handleFileUpload(id: string, file: File) {
     const validTypes = [
       "image/png",
       "image/jpeg",
@@ -295,23 +297,23 @@ export function AdminProducts({
       return;
     }
 
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error("Image file is too large (max 5 MB allowed)");
+      toast.error("Image file is too large (max 10 MB allowed)");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      updateGalleryImage(id, "url", result);
-      toast.success("Image loaded successfully!");
-    };
-    reader.onerror = () => {
-      toast.error("Failed to read image file");
-    };
-    reader.readAsDataURL(file);
+    const toastId = toast.loading("Optimizing and processing photo...");
+    try {
+      const optimizedUrl = await uploadProductImage(file);
+      updateGalleryImage(id, "url", optimizedUrl);
+      toast.success("Photo uploaded and applied successfully!", { id: toastId });
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Failed to process image file", { id: toastId });
+    }
   }
+
 
   function addVariantRow() {
     setVariants((prev) => [

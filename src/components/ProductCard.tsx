@@ -94,8 +94,9 @@ export function ProductCard({ product }: { product: Product }) {
           alt={localizedProductName}
           loading="lazy"
           onError={(e) => {
-            e.currentTarget.src = "/images/products/aashirvaad-atta.svg";
+            e.currentTarget.src = "/images/packaged.jpg";
           }}
+
           className="h-[140px] sm:h-[146px] max-h-full max-w-full w-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-105 select-none"
           style={{
             maxHeight: "146px",

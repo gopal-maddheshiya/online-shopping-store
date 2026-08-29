@@ -405,18 +405,38 @@ export function getProductImage(product?: {
 }): string {
   if (!product) return "/images/packaged.jpg";
 
-  // 1. Check exact slug match
+  // 1. Check if product has an explicit custom image_url (Uploaded Base64, Storage URL, External URL)
+  if (
+    product.image_url &&
+    typeof product.image_url === "string" &&
+    product.image_url.trim().length > 0 &&
+    product.image_url !== "/images/packaged.jpg"
+  ) {
+    const cleanUrl = product.image_url.trim();
+    if (
+      cleanUrl.startsWith("data:image/") ||
+      cleanUrl.startsWith("http://") ||
+      cleanUrl.startsWith("https://") ||
+      cleanUrl.startsWith("blob:") ||
+      cleanUrl.startsWith("/")
+    ) {
+      return cleanUrl;
+    }
+  }
+
+  // 2. Check exact slug match in verified product catalog
   if (product.slug) {
     const direct = PRODUCT_SPECIFIC_IMAGES[product.slug];
     if (direct) return direct;
   }
 
-  // 2. Check normalized slug
+  // 3. Check normalized slug
   if (product.slug) {
     const norm = product.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     const normMatch = PRODUCT_SPECIFIC_IMAGES[norm];
     if (normMatch) return normMatch;
   }
+
 
   // 3. Check name lookup
   if (product.name) {

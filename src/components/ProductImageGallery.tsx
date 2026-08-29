@@ -236,8 +236,9 @@ export function ProductImageGallery({
               loading={activeIndex === 0 ? "eager" : "lazy"}
               decoding="async"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/images/products/aashirvaad-atta.svg";
+                (e.target as HTMLImageElement).src = "/images/packaged.jpg";
               }}
+
               className={`max-h-full max-w-full w-auto h-auto object-contain object-center transition-opacity duration-150 ease-out select-none ${
                 isTransitioning ? "opacity-30" : "opacity-100"
               }`}
@@ -276,8 +277,9 @@ export function ProductImageGallery({
                       alt=""
                       loading="lazy"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/products/aashirvaad-atta.svg";
+                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
                       }}
+
                       className="max-h-full max-w-full w-auto h-auto object-contain object-center"
                     />
                   </div>
