@@ -353,48 +353,107 @@
 }
 
 /* =========================================================
-   PRINT STYLES FOR INVOICES & POS RECEIPTS
+   HARDENED PRINT STYLES FOR INVOICES & POS RECEIPTS
    ========================================================= */
 @media print {
-  body * {
-    visibility: hidden;
+  /* Page setup for standard A4 & POS printers */
+  @page {
+    size: auto;
+    margin: 10mm 8mm 10mm 8mm;
   }
 
-  .printable-invoice-container,
-  .printable-invoice-container * {
-    visibility: visible !important;
-  }
-
-  .printable-invoice-container {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  /* Reset document root */
+  html, body {
     width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    background: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffffff !important;
-    color: #000000 !important;
-    box-shadow: none !important;
-    border: none !important;
+    color: #111827 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
+  /* Hide all non-dialog root elements */
+  body > *:not([data-radix-portal]) {
+    display: none !important;
+  }
+
+  /* Completely un-constrain Radix Dialog for printing */
+  [data-radix-portal],
+  [data-radix-portal] > * {
+    position: static !important;
+    display: block !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide overlays, close buttons, interactive chrome */
+  [data-radix-dialog-overlay],
   .no-print,
+  .print-hide,
   button,
   nav,
   header,
   footer,
   aside,
-  .radix-dialog-overlay,
-  [data-sonner-toaster] {
+  [data-sonner-toaster],
+  [data-radix-collection-item] button {
     display: none !important;
   }
 
-  /* Prevent awkward table row splitting */
-  tr, .invoice-item-row {
+  /* Targeted Printable Container */
+  .printable-invoice-container {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .printable-invoice-card {
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 12px !important;
+    background: #ffffff !important;
+  }
+
+  /* Table styling */
+  .printable-invoice-container table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-invoice-container th,
+  .printable-invoice-container td {
+    border-color: #e5e7eb !important;
+    padding: 6px 8px !important;
+  }
+
+  /* Avoid row splitting */
+  tr, .invoice-item-row, .invoice-card-break {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 }
+
 
 
 
