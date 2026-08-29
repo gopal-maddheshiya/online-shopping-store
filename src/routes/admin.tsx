@@ -28,8 +28,10 @@ import {
   categoriesQuery,
   settingsQuery,
   couponsQuery,
+  adminOrdersQuery,
   type Order,
 } from "@/lib/queries";
+
 
 import { AdminOverview } from "@/components/admin/AdminOverview";
 import { AdminOrders } from "@/components/admin/AdminOrders";
@@ -106,49 +108,16 @@ function AdminPage() {
     enabled: isAuthorizedAdmin,
   });
 
-  // Load orders directly for admin
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
+  // Load orders with instant TanStack Query cache & realtime synchronization
+  const {
+    data: orders = [],
+    isLoading: ordersLoading,
+    refetch: refetchOrders,
+  } = useQuery({
+    ...adminOrdersQuery,
+    enabled: isAuthorizedAdmin,
+  });
 
-  async function loadAllOrders() {
-    if (!isAuthorizedAdmin) return;
-    setOrdersLoading(true);
-    try {
-      const allOrders = await fetchAllAdminOrders();
-      setOrders(allOrders);
-    } catch (err: unknown) {
-      console.error("Failed to load admin orders:", err);
-    } finally {
-      setOrdersLoading(false);
-    }
-  }
-
-
-
-  useEffect(() => {
-    if (!isAuthorizedAdmin) return;
-
-    void loadAllOrders();
-
-    // Realtime subscription for live order updates
-    const channel = supabase
-      .channel("admin-orders-realtime")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        (payload) => {
-          void loadAllOrders();
-          if (payload.eventType === "INSERT") {
-            toast.success("🔔 New Customer Order Received!");
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [isAuthorizedAdmin]);
 
   async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
@@ -198,9 +167,10 @@ function AdminPage() {
     void refetchCategories();
     void refetchSettings();
     void refetchCoupons();
-    void loadAllOrders();
+    void refetchOrders();
     toast.success("Catalogue and orders refreshed!");
   }
+
 
   // If not authenticated as admin -> show clean Admin Security Gate
   if (!isAdmin) {
@@ -519,11 +489,12 @@ function AdminPage() {
             {activeTab === "orders" && (
               <AdminOrders
                 orders={orders}
-                onRefresh={loadAllOrders}
+                onRefresh={refetchOrders}
                 selectedOrder={selectedOrder}
                 setSelectedOrder={setSelectedOrder}
               />
             )}
+
 
             {activeTab === "products" && (
               <AdminProducts

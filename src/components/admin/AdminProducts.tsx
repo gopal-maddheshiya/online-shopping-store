@@ -40,7 +40,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { inr, discountPercent } from "@/lib/format";
 import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
 import { uploadProductImage } from "@/lib/image-upload";
+import { broadcastProductSync } from "@/lib/realtime-sync";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
+
 
 
 
@@ -479,10 +481,11 @@ export function AdminProducts({
         toast.success(`Product "${name}" added to catalogue!`);
       }
 
-      // Invalidate all product queries across the storefront
+      // Invalidate all product queries across the storefront and broadcast in realtime
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["featured-products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
+      broadcastProductSync({ slug: slug.trim(), action: "update" });
 
       setIsAddModalOpen(false);
       onRefresh();
@@ -505,6 +508,7 @@ export function AdminProducts({
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["featured-products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
+      broadcastProductSync({ productId: prod.id, slug: prod.slug, action: "delete" });
 
       onRefresh();
     } catch (err: unknown) {
@@ -525,9 +529,11 @@ export function AdminProducts({
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["featured-products"] });
       queryClient.invalidateQueries({ queryKey: ["product"] });
+      broadcastProductSync({ productId: prod.id, slug: prod.slug, action: "status" });
 
       onRefresh();
     } catch (err: unknown) {
+
       const msg = err instanceof Error ? err.message : "Update failed";
       toast.error(msg);
     }

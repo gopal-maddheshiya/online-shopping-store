@@ -28,6 +28,8 @@ import { settingsQuery, couponsQuery, type Coupon } from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, telHref } from "@/lib/format";
 import { registerPlacedOrder } from "@/lib/orders";
+import { broadcastNewOrder } from "@/lib/realtime-sync";
+
 
 
 export const Route = createFileRoute("/checkout")({
@@ -261,8 +263,16 @@ function CheckoutPage() {
         }
       }
 
-      // Register order for admin manifest
+      // Register order for admin manifest and broadcast in realtime
       registerPlacedOrder({ order_no: orderNo, phone: cleanPhone });
+      broadcastNewOrder({
+        orderId: orderNo,
+        orderNo,
+        total: grandTotal,
+        customerName: name.trim(),
+        createdAt: new Date().toISOString(),
+      });
+
 
 
       // Save customer info locally for instant future checkout

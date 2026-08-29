@@ -40,6 +40,14 @@ export function ProductImageGallery({
   const activeImage = safeImages[activeIndex] || safeImages[0]!;
   const hasMultipleImages = safeImages.length > 1;
 
+  // Ensure activeIndex is always within safe range if image count changes in realtime
+  useEffect(() => {
+    if (activeIndex >= safeImages.length) {
+      setActiveIndex(Math.max(0, safeImages.length - 1));
+    }
+  }, [safeImages.length, activeIndex]);
+
+
   // Touch Swipe Handling for Mobile (Safe angle calculation so vertical scroll is undisturbed)
   const touchStartX = useRef<number>(0);
   const touchStartY = useRef<number>(0);

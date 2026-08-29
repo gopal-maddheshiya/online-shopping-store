@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Order } from "@/lib/queries";
+import { broadcastOrderSync } from "@/lib/realtime-sync";
+
 
 export const ORDER_LIFECYCLE_STEPS = [
   "placed",
@@ -68,6 +70,7 @@ export function mergeOrderWithOverrides(order: Order): Order {
 
 /**
  * Robust, server-authorized Order Status Update function
+
  * Persists status across database and client session
  */
 export async function updateOrderStatus(
@@ -78,7 +81,12 @@ export async function updateOrderStatus(
   // Always record status in persistent local overrides
   saveLocalStatusOverride(orderId, newStatus, note);
 
-  // Broadcast to all connected customer devices in realtime
+  // Broadcast to all connected customer devices and admin panels in realtime
+  broadcastOrderSync({
+    orderId,
+    status: newStatus,
+  });
+
   try {
     const broadcastChannel = supabase.channel("store-status-broadcast");
     broadcastChannel.subscribe((subStatus) => {
@@ -98,6 +106,7 @@ export async function updateOrderStatus(
   } catch {
     // Non-blocking
   }
+
 
   try {
     // 1. Primary: Try secure database procedure
@@ -163,8 +172,15 @@ export async function updatePaymentStatus(
 ): Promise<{ success: boolean; error?: string }> {
   saveLocalStatusOverride(orderId, undefined, undefined, paymentStatus);
 
+  // Broadcast to all connected customer devices and admin panels in realtime
+  broadcastOrderSync({
+    orderId,
+    paymentStatus,
+  });
+
   try {
     const broadcastChannel = supabase.channel("store-status-broadcast");
+
     broadcastChannel.subscribe((subStatus) => {
       if (subStatus === "SUBSCRIBED") {
         void broadcastChannel.send({

@@ -445,7 +445,7 @@ export function isOpenNow(settings: StoreSettings | undefined): { open: boolean;
   };
 }
 
-import { fetchCustomerOrderList } from "./orders";
+import { fetchCustomerOrderList, fetchAllAdminOrders } from "./orders";
 
 // Customer Orders query by user_id or phone
 export function customerOrdersQuery(userId?: string | null, phone?: string | null) {
@@ -457,4 +457,14 @@ export function customerOrdersQuery(userId?: string | null, phone?: string | nul
     enabled: Boolean(userId || phone),
   });
 }
+
+// Admin Orders query with instant invalidation
+export const adminOrdersQuery = queryOptions({
+  queryKey: ["admin-orders"],
+  queryFn: async (): Promise<Order[]> => {
+    return fetchAllAdminOrders();
+  },
+  staleTime: 10_000,
+});
+
 

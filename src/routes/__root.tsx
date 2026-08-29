@@ -19,6 +19,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Toaster } from "@/components/ui/sonner";
+import { useRealtimeSync } from "@/lib/realtime-sync";
+
 
 function NotFoundComponent() {
   return (
@@ -200,9 +202,13 @@ function RootDocument({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+
   const { queryClient } = Route.useRouteContext();
   const routerState = useRouterState();
   const isAdminRoute = routerState.location.pathname.startsWith("/admin");
+
+  // Centralized real-time synchronization across all tabs and database updates
+  useRealtimeSync(queryClient, { isAdmin: isAdminRoute });
 
   return (
     <RootDocument>
@@ -234,3 +240,4 @@ function RootComponent() {
     </RootDocument>
   );
 }
+
