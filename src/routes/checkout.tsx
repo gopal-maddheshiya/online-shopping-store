@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import {
   Truck,
@@ -14,6 +14,11 @@ import {
   ArrowLeft,
   ShoppingBag,
   Info,
+  MapPin,
+  Plus,
+  Pencil,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +29,13 @@ import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
-import { settingsQuery, couponsQuery, type Coupon } from "@/lib/queries";
+import {
+  settingsQuery,
+  couponsQuery,
+  userAddressesQuery,
+  type Coupon,
+  type CustomerAddress,
+} from "@/lib/queries";
 import { supabase } from "@/integrations/supabase/client";
 import { inr, telHref } from "@/lib/format";
 import { registerPlacedOrder } from "@/lib/orders";
@@ -47,11 +58,13 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { items, subtotal, clear, hydrated } = useCart();
   const { user, profile } = useAuth();
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
   const { data: settings } = useQuery(settingsQuery);
   const { data: coupons } = useQuery(couponsQuery);
+  const { data: savedAddresses = [] } = useQuery(userAddressesQuery(user?.id));
 
   // Form State
   const [name, setName] = useState("");
@@ -66,6 +79,12 @@ function CheckoutPage() {
   const [instructions, setInstructions] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
 
+  // Address selection state
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isCustomAddress, setIsCustomAddress] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [saveNewAddressToProfile, setSaveNewAddressToProfile] = useState(true);
+
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -77,16 +96,37 @@ function CheckoutPage() {
   // Prefill customer details if user is authenticated or has stored info
   useEffect(() => {
     if (profile) {
-      if (profile.full_name) setName(profile.full_name);
-      if (profile.phone) setPhone(profile.phone);
-      if (profile.email) setEmail(profile.email);
+      if (profile.full_name) setName((prev) => prev || profile.full_name || "");
+      if (profile.phone) setPhone((prev) => prev || profile.phone?.replace(/\D/g, "").slice(-10) || "");
+      if (profile.email) setEmail((prev) => prev || profile.email || "");
     } else {
       const storedPhone = localStorage.getItem("agt.last_phone");
       const storedName = localStorage.getItem("agt.last_name");
+      if (storedPhone) setPhone((prev) => prev || storedPhone);
+      if (storedName) setName((prev) => prev || storedName);
+    }
+  }, [profile]);
+
+  // Synchronize saved addresses from profile
+  useEffect(() => {
+    if (savedAddresses && savedAddresses.length > 0) {
+      const currentSelected = savedAddresses.find((a) => a.id === selectedAddressId);
+      if (!isCustomAddress && (!selectedAddressId || !currentSelected)) {
+        const defaultAddr = savedAddresses.find((a) => a.is_default) || savedAddresses[0];
+        if (defaultAddr) {
+          setSelectedAddressId(defaultAddr.id);
+          setHouse(defaultAddr.house || "");
+          setArea(defaultAddr.area || "");
+          setLandmark(defaultAddr.landmark || "");
+          setCity(defaultAddr.city || "Maharajganj");
+          setPincode(defaultAddr.pincode || "273303");
+          if (defaultAddr.name) setName(defaultAddr.name);
+          if (defaultAddr.phone) setPhone(defaultAddr.phone.replace(/\D/g, "").slice(-10));
+        }
+      }
+    } else if (!user) {
       const storedAddress = localStorage.getItem("agt.last_address");
-      if (storedPhone) setPhone(storedPhone);
-      if (storedName) setName(storedName);
-      if (storedAddress) {
+      if (storedAddress && !house && !area) {
         try {
           const addr = JSON.parse(storedAddress);
           if (addr.house) setHouse(addr.house);
@@ -98,7 +138,8 @@ function CheckoutPage() {
         }
       }
     }
-  }, [profile]);
+  }, [savedAddresses, user, isCustomAddress, selectedAddressId]);
+
 
   // Calculations
   const freeDeliveryThreshold = Number(settings?.free_delivery_threshold ?? 499);
@@ -288,7 +329,28 @@ function CheckoutPage() {
             pincode: pincode.trim(),
           }),
         );
+
+        // Save newly entered address to profile if option is checked
+        if (user?.id && (isCustomAddress || !selectedAddressId) && saveNewAddressToProfile) {
+          try {
+            await supabase.from("addresses").insert({
+              user_id: user.id,
+              name: name.trim(),
+              phone: cleanPhone,
+              house: house.trim(),
+              area: area.trim(),
+              landmark: landmark.trim() || null,
+              city: city.trim() || "Maharajganj",
+              pincode: pincode.trim() || "273303",
+              is_default: savedAddresses.length === 0,
+            });
+            void queryClient.invalidateQueries({ queryKey: ["user-addresses", user.id] });
+          } catch (saveErr) {
+            console.warn("Could not save new address to profile:", saveErr);
+          }
+        }
       }
+
 
       // Clear the shopping cart
       clear();
@@ -497,97 +559,294 @@ function CheckoutPage() {
             {/* Address fields if Home Delivery */}
             {orderType === "delivery" ? (
               <div className="mt-5 space-y-4 border-t border-[#E5E0D5] pt-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#5A655F]">
-                  {lang === "hi" ? "डिलीवरी का पता (महाराजगंज)" : "Delivery Address in Maharajganj"}
-                </h3>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="addr-house" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "मकान / दुकान / फ्लैट नं." : "House / Flat / Shop No."} <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="addr-house"
-                      required
-                      placeholder={lang === "hi" ? "उदा. मकान नं. 42 या एसबीआई के पीछे" : "e.g. House No. 42 or Behind SBI"}
-                      value={house}
-                      onChange={(e) => setHouse(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="addr-area" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "मोहल्ला / गली / वार्ड" : "Area / Mohalla / Road"} <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="addr-area"
-                      required
-                      placeholder={lang === "hi" ? "उदा. अड्डा बाजार रोड, वार्ड नं. 5" : "e.g. Adda Bazar Road, Ward No. 5"}
-                      value={area}
-                      onChange={(e) => setArea(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="addr-landmark" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "नजदीकी लैंडमार्क / पहचान" : "Nearby Landmark"}{" "}
-                      <span className="text-[#5A655F] font-normal">
-                        {lang === "hi" ? "(डिलीवरी में आसानी के लिए)" : "(Helpful for delivery boy)"}
-                      </span>
-                    </Label>
-                    <Input
-                      id="addr-landmark"
-                      placeholder={lang === "hi" ? "उदा. दुर्गा मंदिर के पास / अड्डा चौक" : "e.g. Near Durga Mandir / Adda Chowk"}
-                      value={landmark}
-                      onChange={(e) => setLandmark(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="addr-city" className="text-xs font-semibold text-[#16201A]">
-                        {lang === "hi" ? "शहर / कस्बा" : "City / Town"}
-                      </Label>
-                      <Input
-                        id="addr-city"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="rounded-lg bg-[#FAF8F2] border-[#E5E0D5]"
-                      />
+                {/* 1. Saved Addresses Selection (Logged In Customer) */}
+                {user && savedAddresses.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#145A45]">
+                        <MapPin className="size-3.5" />
+                        {lang === "hi" ? "सहेजे गए पते से चुनें" : "Select from Saved Addresses"}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomAddress(true);
+                          setSelectedAddressId(null);
+                          setShowAddressForm(true);
+                          setHouse("");
+                          setArea("");
+                          setLandmark("");
+                          setPincode("273303");
+                        }}
+                        className={`text-xs font-bold transition-all ${
+                          isCustomAddress
+                            ? "text-[#145A45] underline"
+                            : "text-[#D97706] hover:text-[#B45309] hover:underline"
+                        }`}
+                      >
+                        + {lang === "hi" ? "नया पता दर्ज करें" : "Enter New Address"}
+                      </button>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="addr-pin" className="text-xs font-semibold text-[#16201A]">
-                        PIN Code
-                      </Label>
-                      <Input
-                        id="addr-pin"
-                        maxLength={6}
-                        value={pincode}
-                        onChange={(e) => setPincode(e.target.value)}
-                        className="rounded-lg border-[#E5E0D5] bg-white"
-                      />
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {savedAddresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.id && !isCustomAddress;
+                        return (
+                          <div
+                            key={addr.id}
+                            onClick={() => {
+                              setSelectedAddressId(addr.id);
+                              setIsCustomAddress(false);
+                              setShowAddressForm(false);
+                              setHouse(addr.house || "");
+                              setArea(addr.area || "");
+                              setLandmark(addr.landmark || "");
+                              setCity(addr.city || "Maharajganj");
+                              setPincode(addr.pincode || "273303");
+                              if (addr.name) setName(addr.name);
+                              if (addr.phone) setPhone(addr.phone.replace(/\D/g, "").slice(-10));
+                            }}
+                            className={`group relative cursor-pointer rounded-xl border p-3.5 transition-all ${
+                              isSelected
+                                ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                                : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className={`grid size-5 place-items-center rounded-full ${
+                                    isSelected
+                                      ? "bg-[#145A45] text-white"
+                                      : "bg-[#145A45]/10 text-[#145A45]"
+                                  }`}
+                                >
+                                  <MapPin className="size-3" />
+                                </span>
+                                <span className="text-xs font-bold text-[#16201A]">
+                                  {addr.name || (lang === "hi" ? "घर" : "Home")}
+                                </span>
+                                {addr.is_default && (
+                                  <span className="rounded-full bg-[#145A45]/10 px-2 py-0.2 text-[10px] font-bold text-[#145A45]">
+                                    {lang === "hi" ? "डिफ़ॉल्ट" : "Default"}
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                className={`grid size-4 place-items-center rounded-full border transition-all ${
+                                  isSelected
+                                    ? "border-[#145A45] bg-[#145A45] text-white"
+                                    : "border-[#D1C9BC] bg-white group-hover:border-[#145A45]"
+                                }`}
+                              >
+                                {isSelected && <CheckCircle2 className="size-3.5" />}
+                              </div>
+                            </div>
+
+                            <p className="mt-2 text-xs font-medium text-[#2C3E35] leading-relaxed">
+                              {[addr.house, addr.area, addr.landmark].filter(Boolean).join(", ")}
+                            </p>
+                            <p className="text-[11px] text-[#5A655F]">
+                              {addr.city || "Maharajganj"} - {addr.pincode || "273303"}
+                            </p>
+
+                            {addr.phone && (
+                              <p className="mt-1 flex items-center gap-1 text-[11px] text-[#5A655F]">
+                                <PhoneCall className="size-2.5" /> +91 {addr.phone}
+                              </p>
+                            )}
+
+                            {isSelected && (
+                              <div className="mt-2.5 flex items-center justify-between border-t border-[#145A45]/20 pt-2 text-[11px] font-bold text-[#145A45]">
+                                <span className="flex items-center gap-1">
+                                  <CheckCircle2 className="size-3 text-emerald-600" />
+                                  {lang === "hi" ? "इस पते पर डिलीवरी होगी" : "Delivering to this address"}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowAddressForm((prev) => !prev);
+                                  }}
+                                  className="flex items-center gap-0.5 text-[11px] font-semibold text-[#145A45] hover:underline"
+                                >
+                                  {showAddressForm
+                                    ? (lang === "hi" ? "छुपाएं" : "Hide")
+                                    : (lang === "hi" ? "बदलें" : "Edit")}
+                                  {showAddressForm ? (
+                                    <ChevronUp className="size-3" />
+                                  ) : (
+                                    <ChevronDown className="size-3" />
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* + Add New Address Tile */}
+                      <div
+                        onClick={() => {
+                          setIsCustomAddress(true);
+                          setSelectedAddressId(null);
+                          setShowAddressForm(true);
+                          setHouse("");
+                          setArea("");
+                          setLandmark("");
+                          setPincode("273303");
+                        }}
+                        className={`flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center transition-all ${
+                          isCustomAddress
+                            ? "border-[#145A45] bg-[#E6EFE8]/40 ring-2 ring-[#145A45]"
+                            : "border-[#D1C9BC] bg-[#FAF8F2]/60 hover:bg-[#FAF8F2] hover:border-[#145A45]"
+                        }`}
+                      >
+                        <Plus
+                          className={`size-5 ${
+                            isCustomAddress ? "text-[#145A45]" : "text-[#5A655F]"
+                          }`}
+                        />
+                        <span
+                          className={`mt-1 text-xs font-bold ${
+                            isCustomAddress ? "text-[#145A45]" : "text-[#16201A]"
+                          }`}
+                        >
+                          {lang === "hi" ? "+ नया पता जोड़ें" : "+ Add New Address"}
+                        </span>
+                        <span className="text-[10px] text-[#5A655F]">
+                          {lang === "hi" ? "अलग स्थान पर मंगाने हेतु" : "For delivery elsewhere"}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <Label htmlFor="addr-notes" className="text-xs font-semibold text-[#16201A]">
-                      {lang === "hi" ? "डिलीवरी के लिए विशेष निर्देश" : "Special Delivery Instructions"}{" "}
-                      <span className="text-[#5A655F] font-normal">(Optional)</span>
-                    </Label>
-                    <Textarea
-                      id="addr-notes"
-                      rows={2}
-                      placeholder={lang === "hi" ? "उदा. शाम 5 बजे से पहले पहुंचाएं या आने पर कॉल करें" : "e.g. Please deliver before 5 PM, or call when near Adda Bazar"}
-                      value={instructions}
-                      onChange={(e) => setInstructions(e.target.value)}
-                      className="rounded-lg border-[#E5E0D5] bg-white"
-                    />
+                {/* 2. Address Input Fields (Expanded if no saved addresses, custom address selected, or edit toggled) */}
+                {(!user || savedAddresses.length === 0 || isCustomAddress || showAddressForm) && (
+                  <div className="space-y-4 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2]/40 p-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#5A655F]">
+                        {isCustomAddress
+                          ? (lang === "hi" ? "नया डिलीवरी पता" : "New Delivery Address")
+                          : (lang === "hi" ? "डिलीवरी पता विवरण" : "Delivery Address Details")}
+                      </h3>
+                      {user && savedAddresses.length > 0 && (
+                        <span className="text-[11px] text-[#5A655F]">
+                          {isCustomAddress
+                            ? (lang === "hi" ? "अलग पता दर्ज करें" : "Entering new address")
+                            : (lang === "hi" ? "चुना गया पता संपादित करें" : "Editing selected address")}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="addr-house" className="text-xs font-semibold text-[#16201A]">
+                          {lang === "hi" ? "मकान / दुकान / फ्लैट नं." : "House / Flat / Shop No."} <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="addr-house"
+                          required
+                          placeholder={lang === "hi" ? "उदा. मकान नं. 42 या एसबीआई के पीछे" : "e.g. House No. 42 or Behind SBI"}
+                          value={house}
+                          onChange={(e) => setHouse(e.target.value)}
+                          className="rounded-lg border-[#E5E0D5] bg-white"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="addr-area" className="text-xs font-semibold text-[#16201A]">
+                          {lang === "hi" ? "मोहल्ला / गली / वार्ड" : "Area / Mohalla / Road"} <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="addr-area"
+                          required
+                          placeholder={lang === "hi" ? "उदा. अड्डा बाजार रोड, वार्ड नं. 5" : "e.g. Adda Bazar Road, Ward No. 5"}
+                          value={area}
+                          onChange={(e) => setArea(e.target.value)}
+                          className="rounded-lg border-[#E5E0D5] bg-white"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="addr-landmark" className="text-xs font-semibold text-[#16201A]">
+                          {lang === "hi" ? "नजदीकी लैंडमार्क / पहचान" : "Nearby Landmark"}{" "}
+                          <span className="text-[#5A655F] font-normal">
+                            {lang === "hi" ? "(डिलीवरी में आसानी के लिए)" : "(Helpful for delivery boy)"}
+                          </span>
+                        </Label>
+                        <Input
+                          id="addr-landmark"
+                          placeholder={lang === "hi" ? "उदा. दुर्गा मंदिर के पास / अड्डा चौक" : "e.g. Near Durga Mandir / Adda Chowk"}
+                          value={landmark}
+                          onChange={(e) => setLandmark(e.target.value)}
+                          className="rounded-lg border-[#E5E0D5] bg-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1.5">
+                          <Label htmlFor="addr-city" className="text-xs font-semibold text-[#16201A]">
+                            {lang === "hi" ? "शहर / कस्बा" : "City / Town"}
+                          </Label>
+                          <Input
+                            id="addr-city"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="rounded-lg bg-[#FAF8F2] border-[#E5E0D5]"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="addr-pin" className="text-xs font-semibold text-[#16201A]">
+                            PIN Code
+                          </Label>
+                          <Input
+                            id="addr-pin"
+                            maxLength={6}
+                            value={pincode}
+                            onChange={(e) => setPincode(e.target.value)}
+                            className="rounded-lg border-[#E5E0D5] bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      {user && (isCustomAddress || savedAddresses.length === 0) && (
+                        <div className="flex items-center gap-2 pt-1 sm:col-span-2">
+                          <input
+                            type="checkbox"
+                            id="save-addr-profile"
+                            checked={saveNewAddressToProfile}
+                            onChange={(e) => setSaveNewAddressToProfile(e.target.checked)}
+                            className="size-4 rounded border-[#E5E0D5] text-[#145A45] focus:ring-[#145A45]"
+                          />
+                          <Label htmlFor="save-addr-profile" className="text-xs font-semibold cursor-pointer text-[#16201A]">
+                            {lang === "hi" ? "इस पते को मेरे प्रोफाइल में सहेजें (भविष्य के ऑर्डर्स के लिए)" : "Save this address to my profile for future orders"}
+                          </Label>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                )}
+
+                {/* Special Instructions */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="addr-notes" className="text-xs font-semibold text-[#16201A]">
+                    {lang === "hi" ? "डिलीवरी के लिए विशेष निर्देश" : "Special Delivery Instructions"}{" "}
+                    <span className="text-[#5A655F] font-normal">(Optional)</span>
+                  </Label>
+                  <Textarea
+                    id="addr-notes"
+                    rows={2}
+                    placeholder={lang === "hi" ? "उदा. शाम 5 बजे से पहले पहुंचाएं या आने पर कॉल करें" : "e.g. Please deliver before 5 PM, or call when near Adda Bazar"}
+                    value={instructions}
+                    onChange={(e) => setInstructions(e.target.value)}
+                    className="rounded-lg border-[#E5E0D5] bg-white"
+                  />
                 </div>
               </div>
+
             ) : (
               <div className="mt-4 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-4 text-xs text-[#5A655F]">
                 📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> {t.storeName}, {t.storeAddressShort}.
@@ -598,6 +857,7 @@ function CheckoutPage() {
               </div>
             )}
           </div>
+
 
           {/* Section 3: Payment Method */}
           <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 shadow-xs">

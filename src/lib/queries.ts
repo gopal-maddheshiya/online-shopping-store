@@ -469,4 +469,43 @@ export const adminOrdersQuery = queryOptions({
   staleTime: 10_000,
 });
 
+export type CustomerAddress = {
+  id: string;
+  user_id: string;
+  label?: string | null;
+  name: string;
+  phone: string;
+  house: string | null;
+  area: string | null;
+  landmark: string | null;
+  city: string;
+  pincode: string | null;
+  is_default: boolean;
+  created_at: string;
+};
+
+// Customer saved addresses query
+export function userAddressesQuery(userId?: string | null) {
+  return queryOptions({
+    queryKey: ["user-addresses", userId],
+    queryFn: async (): Promise<CustomerAddress[]> => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", userId)
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.warn("Could not load user addresses:", error);
+        return [];
+      }
+      return (data ?? []) as unknown as CustomerAddress[];
+    },
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+  });
+}
+
+
 
