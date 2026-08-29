@@ -162,6 +162,7 @@ export function broadcastSettingsSync(payload: SettingsSyncPayload = {}) {
 interface RealtimeSyncOptions {
   isAdmin?: boolean;
   onNewOrderNotification?: (order: NewOrderPayload) => void;
+  router?: { invalidate: () => Promise<void> | void };
 }
 
 export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncOptions = {}) {
@@ -199,9 +200,17 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
             });
         });
 
+        // Also invalidate active TanStack Router loaders if router instance is provided
+        try {
+          void optionsRef.current.router?.invalidate();
+        } catch {
+          // Non-blocking
+        }
+
         delete debounceTimers.current[keyPrefix];
       }, delay);
     };
+
 
     const invalidateProductQueries = (slug?: string) => {
       const keys: unknown[][] = [

@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { broadcastProductSync } from "@/lib/realtime-sync";
 import type { Category } from "@/lib/queries";
 
 type AdminCategoriesProps = {
@@ -21,7 +23,9 @@ type AdminCategoriesProps = {
 };
 
 export function AdminCategories({ categories, onRefresh }: AdminCategoriesProps) {
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   // Form State
@@ -104,6 +108,10 @@ export function AdminCategories({ categories, onRefresh }: AdminCategoriesProps)
         toast.success(`Category "${name}" created!`);
       }
 
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      broadcastProductSync({ action: "update" });
+
       setIsModalOpen(false);
       onRefresh();
     } catch (err: unknown) {
@@ -125,8 +133,14 @@ export function AdminCategories({ categories, onRefresh }: AdminCategoriesProps)
       const { error } = await supabase.from("categories").delete().eq("id", cat.id);
       if (error) throw error;
       toast.success(`Category "${cat.name}" deleted`);
+
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      broadcastProductSync({ action: "update" });
+
       onRefresh();
     } catch (err: unknown) {
+
       const msg = err instanceof Error ? err.message : "Delete failed";
       toast.error(msg);
     }

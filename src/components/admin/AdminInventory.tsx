@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
+import { broadcastProductSync } from "@/lib/realtime-sync";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Product, Variant } from "@/lib/queries";
+
 
 type AdminInventoryProps = {
   products: Product[];
@@ -14,6 +17,8 @@ type AdminInventoryProps = {
 };
 
 export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
+  const queryClient = useQueryClient();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "low" | "out">("all");
   const [stockChanges, setStockChanges] = useState<Record<string, number>>({});
@@ -76,8 +81,13 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
 
       if (error) throw error;
       toast.success("Stock updated!");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["featured-products"] });
+      queryClient.invalidateQueries({ queryKey: ["product"] });
+      broadcastProductSync({ action: "update" });
       onRefresh();
     } catch (err: unknown) {
+
       const msg = err instanceof Error ? err.message : "Failed to update stock";
       toast.error(msg);
     } finally {

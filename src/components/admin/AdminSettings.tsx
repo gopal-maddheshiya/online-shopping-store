@@ -7,12 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { broadcastSettingsSync } from "@/lib/realtime-sync";
 import type { StoreSettings } from "@/lib/queries";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
   onRefresh: () => void;
 };
+
 
 const DAYS = [
   { key: "mon", label: "Monday" },
@@ -25,7 +28,9 @@ const DAYS = [
 ];
 
 export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
+  const queryClient = useQueryClient();
   const [storeName, setStoreName] = useState("");
+
   const [tagline, setTagline] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -112,8 +117,11 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
       if (error) throw error;
       toast.success("Store settings & timings updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+      broadcastSettingsSync();
       onRefresh();
     } catch (err: unknown) {
+
       const msg = err instanceof Error ? err.message : "Failed to update store settings";
       toast.error(msg);
     } finally {

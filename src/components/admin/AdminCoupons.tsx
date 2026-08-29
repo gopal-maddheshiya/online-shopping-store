@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { inr } from "@/lib/format";
 import type { Coupon } from "@/lib/queries";
 
@@ -22,7 +23,9 @@ type AdminCouponsProps = {
 };
 
 export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
   const [discountType, setDiscountType] = useState<"percent" | "flat">("percent");
@@ -62,6 +65,7 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
 
       if (error) throw error;
       toast.success(`Coupon code ${code.toUpperCase()} created!`);
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       setIsModalOpen(false);
       onRefresh();
     } catch (err: unknown) {
@@ -80,6 +84,7 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
         .eq("id", c.id);
       if (error) throw error;
       toast.success(`Coupon ${c.code} is now ${!c.is_active ? "Active" : "Inactive"}`);
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       onRefresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Update failed";
@@ -93,8 +98,10 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
       const { error } = await supabase.from("coupons").delete().eq("id", c.id);
       if (error) throw error;
       toast.success(`Deleted coupon ${c.code}`);
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       onRefresh();
     } catch (err: unknown) {
+
       const msg = err instanceof Error ? err.message : "Delete failed";
       toast.error(msg);
     }

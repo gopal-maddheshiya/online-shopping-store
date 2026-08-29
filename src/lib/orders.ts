@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Order } from "@/lib/queries";
-import { broadcastOrderSync } from "@/lib/realtime-sync";
+import { broadcastOrderSync, STORE_SYNC_CHANNEL } from "@/lib/realtime-sync";
+
 
 
 export const ORDER_LIFECYCLE_STEPS = [
@@ -88,27 +89,6 @@ export async function updateOrderStatus(
   });
 
   try {
-    const broadcastChannel = supabase.channel("store-status-broadcast");
-    broadcastChannel.subscribe((subStatus) => {
-      if (subStatus === "SUBSCRIBED") {
-        void broadcastChannel.send({
-          type: "broadcast",
-          event: "STATUS_UPDATE",
-          payload: {
-            orderId,
-            newStatus,
-            note: note || undefined,
-            updatedAt: new Date().toISOString(),
-          },
-        });
-      }
-    });
-  } catch {
-    // Non-blocking
-  }
-
-
-  try {
     // 1. Primary: Try secure database procedure
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "admin_update_order_status" as never,
@@ -179,26 +159,6 @@ export async function updatePaymentStatus(
   });
 
   try {
-    const broadcastChannel = supabase.channel("store-status-broadcast");
-
-    broadcastChannel.subscribe((subStatus) => {
-      if (subStatus === "SUBSCRIBED") {
-        void broadcastChannel.send({
-          type: "broadcast",
-          event: "PAYMENT_UPDATE",
-          payload: {
-            orderId,
-            paymentStatus,
-            updatedAt: new Date().toISOString(),
-          },
-        });
-      }
-    });
-  } catch {
-    // Non-blocking
-  }
-
-  try {
     await supabase.rpc("admin_update_payment_status" as never, {
       _order_id: orderId,
       _payment_status: paymentStatus,
@@ -219,8 +179,6 @@ export async function updatePaymentStatus(
   }
 }
 
-
-
 /**
  * Private Realtime Subscription for a specific Order ID
  * Strictly scoped to that specific order with automatic teardown on unmount
@@ -231,15 +189,44 @@ export function subscribeToOrderRealtime(
 ) {
   if (!orderId) return () => {};
 
-  // 1. Multi-device realtime broadcast listener
+  // 1. Store realtime broadcast listener on shared channel
   const broadcastChannel = supabase
-    .channel("store-status-broadcast")
+    .channel(`order-track-sync-${orderId}`, {
+      config: { broadcast: { self: true } },
+    })
+    .on("broadcast", { event: "ORDER_SYNC" }, (event: Record<string, unknown>) => {
+      const data = (event["payload"] || {}) as {
+        orderId?: string;
+        orderNo?: string;
+        status?: string;
+        paymentStatus?: string;
+        note?: string;
+        updatedAt?: string;
+      };
+      if (data && (data.orderId === orderId || !data.orderId)) {
+        if (data.status) {
+          saveLocalStatusOverride(orderId, data.status, data.note || undefined);
+          onUpdate({
+            id: orderId,
+            status: data.status,
+            notes: data.note ?? null,
+            updated_at: data.updatedAt || new Date().toISOString(),
+          });
+        }
+        if (data.paymentStatus) {
+          saveLocalStatusOverride(orderId, undefined, undefined, data.paymentStatus);
+          onUpdate({
+            id: orderId,
+            payment_status: data.paymentStatus,
+            updated_at: data.updatedAt || new Date().toISOString(),
+          });
+        }
+      }
+    })
     .on("broadcast", { event: "STATUS_UPDATE" }, (payload: Record<string, unknown>) => {
       const data = payload["payload"] as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
       if (data && (data.orderId === orderId || !data.orderId) && data.newStatus) {
-        // Automatically save to this client's persistent cache
         saveLocalStatusOverride(orderId, data.newStatus, data.note || undefined);
-        
         onUpdate({
           id: orderId,
           status: data.newStatus,
@@ -248,20 +235,7 @@ export function subscribeToOrderRealtime(
         });
       }
     })
-    .on("broadcast", { event: "PAYMENT_UPDATE" }, (payload: Record<string, unknown>) => {
-      const data = payload["payload"] as { orderId?: string; paymentStatus?: string; updatedAt?: string } | undefined;
-      if (data && data.orderId === orderId) {
-        saveLocalStatusOverride(orderId, undefined, undefined, data.paymentStatus);
-        
-        onUpdate({
-          id: orderId,
-          payment_status: data.paymentStatus ?? null,
-          updated_at: data.updatedAt || new Date().toISOString(),
-        });
-      }
-    })
     .subscribe();
-
 
   // 2. Direct postgres database changes
   const dbChannel = supabase
@@ -295,10 +269,11 @@ export function subscribeToOrderRealtime(
     .subscribe();
 
   return () => {
-    supabase.removeChannel(broadcastChannel);
-    supabase.removeChannel(dbChannel);
+    void supabase.removeChannel(broadcastChannel);
+    void supabase.removeChannel(dbChannel);
   };
 }
+
 
 
 /**

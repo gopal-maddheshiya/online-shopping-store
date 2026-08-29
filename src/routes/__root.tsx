@@ -202,13 +202,14 @@ function RootDocument({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-
+  const router = useRouter();
   const { queryClient } = Route.useRouteContext();
   const routerState = useRouterState();
   const isAdminRoute = routerState.location.pathname.startsWith("/admin");
 
   // Centralized real-time synchronization across all tabs and database updates
-  useRealtimeSync(queryClient, { isAdmin: isAdminRoute });
+  useRealtimeSync(queryClient, { isAdmin: isAdminRoute, router });
+
 
   return (
     <RootDocument>
