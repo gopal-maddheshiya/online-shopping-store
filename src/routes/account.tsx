@@ -24,6 +24,7 @@ import {
   Smartphone,
   AlertCircle,
   CheckCircle2,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,8 @@ import { customerOrdersQuery, type Order } from "@/lib/queries";
 import { inr, formatDate, ORDER_STATUS_LABEL } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
 import { ProductCard } from "@/components/ProductCard";
+import { InvoiceView } from "@/components/InvoiceView";
+import type { Invoice } from "@/lib/billing";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -124,6 +127,43 @@ function AccountPage() {
   const [newLandmark, setNewLandmark] = useState("");
   const [newPin, setNewPin] = useState("273303");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  // Invoice Modal State
+  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceLoadingId, setInvoiceLoadingId] = useState<string | null>(null);
+
+  async function handleViewInvoice(order: Order) {
+    setInvoiceLoadingId(order.id);
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("order_id", order.id)
+        .maybeSingle();
+
+      if (data && !error) {
+        setActiveInvoice(data as unknown as Invoice);
+        setInvoiceModalOpen(true);
+        return;
+      }
+
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("generate_invoice_for_order", {
+        p_order_id: order.id,
+      });
+
+      if (rpcErr || !rpcData) {
+        throw new Error(rpcErr?.message || "Could not generate invoice");
+      }
+
+      setActiveInvoice(rpcData as unknown as Invoice);
+      setInvoiceModalOpen(true);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to load invoice");
+    } finally {
+      setInvoiceLoadingId(null);
+    }
+  }
 
   // Edit Address State
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
@@ -1377,7 +1417,17 @@ function AccountPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        onClick={() => handleViewInvoice(order)}
+                        disabled={invoiceLoadingId === order.id}
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-xl text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white transition-all"
+                      >
+                        <Receipt className="size-3.5 mr-1" />
+                        {lang === "hi" ? "बिल देखें" : "View Invoice"}
+                      </Button>
                       <Button
                         onClick={() => handleReorder(order)}
                         size="sm"
@@ -1876,6 +1926,14 @@ function AccountPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Customer Official Invoice Modal */}
+      <InvoiceView
+        invoice={activeInvoice}
+        isOpen={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        lang={lang as "hi" | "en"}
+      />
     </div>
   );
 }

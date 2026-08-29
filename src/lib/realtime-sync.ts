@@ -376,6 +376,16 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
           invalidateSettingsQueries();
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "invoices" },
+        (payload) => {
+          const newRow = payload.new as { id?: string; order_id?: string; invoice_no?: string } | undefined;
+          logRealtimeEvent(`POSTGRES_${payload.eventType}`, "invoices", newRow?.id, { orderId: newRow?.order_id, invoiceNo: newRow?.invoice_no });
+          invalidateOrderQueries();
+          void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        }
+      )
       .subscribe((status, err) => {
 
         logRealtime(status, err ? `Error: ${err.message || JSON.stringify(err)}` : "");

@@ -352,5 +352,50 @@
   }
 }
 
+/* =========================================================
+   PRINT STYLES FOR INVOICES & POS RECEIPTS
+   ========================================================= */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-invoice-container,
+  .printable-invoice-container * {
+    visibility: visible !important;
+  }
+
+  .printable-invoice-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .no-print,
+  button,
+  nav,
+  header,
+  footer,
+  aside,
+  .radix-dialog-overlay,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  /* Prevent awkward table row splitting */
+  tr, .invoice-item-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+
 
 

@@ -17,6 +17,9 @@ import {
   FileText,
   CreditCard,
   UserCheck,
+  Receipt,
+  RotateCcw,
+  DollarSign,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +44,11 @@ import type { Order } from "@/lib/queries";
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { updateOrderStatus, updatePaymentStatus, subscribeToOrderRealtime } from "@/lib/orders";
 import { useLanguage } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { InvoiceView } from "@/components/InvoiceView";
+import type { Invoice } from "@/lib/billing";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type AdminOrdersProps = {
   orders: Order[];
@@ -84,6 +92,17 @@ export function AdminOrders({
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(null);
 
+  // Billing & Invoice State
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+
+  // Refund Dialog State
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [refundAmount, setRefundAmount] = useState<number>(0);
+  const [refundReason, setRefundReason] = useState("");
+
   // Queue Counts
   const activeCount = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").length;
   const placedCount = orders.filter((o) => o.status === "placed").length;
@@ -104,6 +123,97 @@ export function AdminOrders({
     });
     return unsub;
   }, [selectedOrder?.id, onRefresh]);
+
+  // Open Invoice Viewer
+  async function handleOpenInvoice(order: Order) {
+    setInvoiceLoading(true);
+    try {
+      // 1. Try to fetch existing invoice snapshot
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("order_id", order.id)
+        .maybeSingle();
+
+      if (data && !error) {
+        setActiveInvoice(data as unknown as Invoice);
+        setInvoiceModalOpen(true);
+        return;
+      }
+
+      // 2. If missing, auto-generate via idempotent procedure
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("generate_invoice_for_order", {
+        p_order_id: order.id,
+      });
+
+      if (rpcErr || !rpcData) {
+        throw new Error(rpcErr?.message || "Could not generate invoice");
+      }
+
+      setActiveInvoice(rpcData as unknown as Invoice);
+      setInvoiceModalOpen(true);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to load invoice");
+    } finally {
+      setInvoiceLoading(false);
+    }
+  }
+
+  // Handle Refund Submission
+  async function handleProcessRefund(e: React.FormEvent) {
+    e.preventDefault();
+    if (!refundOrderId) return;
+    setUpdatingId(refundOrderId);
+    try {
+      const targetOrder = orders.find((o) => o.id === refundOrderId);
+      const refundVal = Number(refundAmount);
+      if (refundVal <= 0) {
+        toast.error("Please enter a valid refund amount greater than 0");
+        return;
+      }
+
+      const maxPaid = targetOrder?.payment_status === "paid" ? targetOrder.total : targetOrder?.total || 0;
+      if (refundVal > maxPaid) {
+        toast.error(`Refund amount cannot exceed ₹${maxPaid}`);
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("admin_update_payment_and_refund", {
+        p_order_id: refundOrderId,
+        p_payment_status: "refunded",
+        p_amount_paid: Math.max(maxPaid - refundVal, 0),
+        p_refund_amount: refundVal,
+        p_refund_reason: refundReason.trim() || "Refund requested by customer",
+      });
+
+      if (error || !data?.success) {
+        throw new Error(error?.message || data?.error || "Failed to record refund");
+      }
+
+      toast.success(`Refund of ₹${refundVal} processed & logged in billing audit!`);
+      setRefundDialogOpen(false);
+      setRefundAmount(0);
+      setRefundReason("");
+      onRefresh();
+
+      if (selectedOrder && selectedOrder.id === refundOrderId) {
+        setSelectedOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                payment_status: "refunded",
+                refund_amount: refundVal,
+                refund_reason: refundReason,
+              }
+            : null
+        );
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Refund submission failed");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   // Filter & Sort orders based on Active Queue Tab and search
   const filteredOrders = orders
@@ -132,7 +242,8 @@ export function AdminOrders({
         const matchNo = o.order_no.toLowerCase().includes(q);
         const matchName = o.customer_name.toLowerCase().includes(q);
         const matchPhone = o.customer_phone.includes(q);
-        return matchNo || matchName || matchPhone;
+        const matchInv = o.invoice_no?.toLowerCase().includes(q) || false;
+        return matchNo || matchName || matchPhone || matchInv;
       }
       return true;
     })
@@ -143,7 +254,6 @@ export function AdminOrders({
       if (sortBy === "lowest") return a.total - b.total;
       return 0;
     });
-
 
   async function handleStatusChange(orderId: string, newStatus: string, note?: string) {
     if (newStatus === "cancelled" && !confirmCancelOpen) {
@@ -183,11 +293,31 @@ export function AdminOrders({
   }
 
   async function handlePaymentStatusChange(orderId: string, paymentStatus: "pending" | "paid" | "failed" | "refunded") {
+    if (paymentStatus === "refunded") {
+      const target = orders.find((o) => o.id === orderId);
+      setRefundOrderId(orderId);
+      setRefundAmount(target?.total ?? 0);
+      setRefundReason("Admin processed refund");
+      setRefundDialogOpen(true);
+      return;
+    }
+
     setUpdatingId(orderId);
-    const targetOrder = orders.find((o) => o.id === orderId);
     try {
-      const res = await updatePaymentStatus(orderId, paymentStatus, targetOrder?.order_no);
-      if (!res.success) throw new Error(res.error || "Failed to update payment status");
+      const { data, error } = await supabase.rpc("admin_update_payment_and_refund", {
+        p_order_id: orderId,
+        p_payment_status: paymentStatus,
+        p_amount_paid: paymentStatus === "paid" ? orders.find((o) => o.id === orderId)?.total : 0,
+        p_refund_amount: 0,
+        p_refund_reason: null,
+      });
+
+      if (error || !data?.success) {
+        // Fallback to updatePaymentStatus
+        const res = await updatePaymentStatus(orderId, paymentStatus);
+        if (!res.success) throw new Error(res.error || "Failed to update payment status");
+      }
+
       toast.success(`Payment status marked as ${paymentStatus.toUpperCase()}`);
       onRefresh();
       if (selectedOrder && selectedOrder.id === orderId) {
@@ -195,7 +325,6 @@ export function AdminOrders({
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Payment update failed");
-
     } finally {
       setUpdatingId(null);
     }
@@ -594,14 +723,26 @@ export function AdminOrders({
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <Button
-                          onClick={() => setSelectedOrder(order)}
-                          variant="outline"
-                          size="sm"
-                          className="h-8 rounded-xl text-xs font-semibold border-[#E8E4DA] text-[#145A45] hover:bg-[#FAF8F2]"
-                        >
-                          <Eye className="mr-1 size-3.5" /> Details
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            onClick={() => handleOpenInvoice(order)}
+                            disabled={invoiceLoading}
+                            variant="outline"
+                            size="sm"
+                            title="View Official Invoice / बिल देखें"
+                            className="h-8 rounded-xl text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white transition-all"
+                          >
+                            <Receipt className="mr-1 size-3.5" /> {language === "hi" ? "बिल" : "Invoice"}
+                          </Button>
+                          <Button
+                            onClick={() => setSelectedOrder(order)}
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-xl text-xs font-semibold border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2]"
+                          >
+                            <Eye className="mr-1 size-3.5" /> Details
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -627,18 +768,24 @@ export function AdminOrders({
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#145A45]/10 text-[#145A45] font-bold">
                       {ORDER_STATUS_LABEL[selectedOrder.status] ?? selectedOrder.status}
                     </span>
+                    {selectedOrder.refund_amount && selectedOrder.refund_amount > 0 ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">
+                        Refunded: {inr(selectedOrder.refund_amount)}
+                      </span>
+                    ) : null}
                   </DialogTitle>
                   <p className="text-xs text-[#6B746F]">
                     Placed on {formatDate(selectedOrder.created_at)}
                   </p>
                 </div>
                 <Button
-                  onClick={() => window.print()}
-                  variant="outline"
+                  onClick={() => handleOpenInvoice(selectedOrder)}
+                  disabled={invoiceLoading}
+                  variant="default"
                   size="sm"
-                  className="rounded-xl gap-1 text-xs border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-8"
+                  className="rounded-xl gap-1.5 text-xs font-bold bg-[#145A45] text-white hover:bg-[#0A3628] shadow-xs h-8.5"
                 >
-                  <Printer className="size-3.5" /> Print Invoice
+                  <Receipt className="size-3.5" /> {language === "hi" ? "इनवॉइस देखें / प्रिंट" : "Official Invoice"}
                 </Button>
               </div>
             </DialogHeader>
@@ -767,27 +914,67 @@ export function AdminOrders({
               </dl>
 
               {/* Payment Status Action */}
-              <div className="flex items-center justify-between p-3 rounded-2xl border border-[#E8E4DA] bg-white text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl border border-[#E8E4DA] bg-white text-xs">
                 <div>
                   <span className="font-bold text-[#1F2924] block">Payment Method & Status</span>
-                  <span className="text-[#6B746F] uppercase">{selectedOrder.payment_method}</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[#6B746F] uppercase font-semibold">{selectedOrder.payment_method}</span>
+                    {selectedOrder.refund_amount && selectedOrder.refund_amount > 0 ? (
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                        Refunded: {inr(selectedOrder.refund_amount)}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  {["pending", "paid", "refunded"].map((pst) => (
-                    <Button
-                      key={pst}
-                      size="sm"
-                      variant={selectedOrder.payment_status === pst ? "default" : "outline"}
-                      onClick={() => handlePaymentStatusChange(selectedOrder.id, pst as "pending" | "paid" | "refunded")}
-                      className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
-                        selectedOrder.payment_status === pst
-                          ? "bg-[#145A45] text-white"
-                          : "border-[#E8E4DA] text-[#6B746F]"
-                      }`}
-                    >
-                      {pst}
-                    </Button>
-                  ))}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    variant={selectedOrder.payment_status === "pending" ? "default" : "outline"}
+                    onClick={() => handlePaymentStatusChange(selectedOrder.id, "pending")}
+                    className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
+                      selectedOrder.payment_status === "pending"
+                        ? "bg-amber-600 text-white"
+                        : "border-[#E8E4DA] text-[#6B746F]"
+                    }`}
+                  >
+                    Pending
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={selectedOrder.payment_status === "paid" ? "default" : "outline"}
+                    onClick={() => handlePaymentStatusChange(selectedOrder.id, "paid")}
+                    className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
+                      selectedOrder.payment_status === "paid"
+                        ? "bg-[#145A45] text-white"
+                        : "border-[#E8E4DA] text-[#6B746F]"
+                    }`}
+                  >
+                    Paid
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={selectedOrder.payment_status === "failed" ? "default" : "outline"}
+                    onClick={() => handlePaymentStatusChange(selectedOrder.id, "failed")}
+                    className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
+                      selectedOrder.payment_status === "failed"
+                        ? "bg-red-600 text-white"
+                        : "border-[#E8E4DA] text-[#6B746F]"
+                    }`}
+                  >
+                    Failed
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={selectedOrder.payment_status === "refunded" ? "default" : "outline"}
+                    onClick={() => handlePaymentStatusChange(selectedOrder.id, "refunded")}
+                    className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
+                      selectedOrder.payment_status === "refunded"
+                        ? "bg-purple-700 text-white"
+                        : "border-[#E8E4DA] text-purple-700 hover:bg-purple-50"
+                    }`}
+                  >
+                    <RotateCcw className="size-3 mr-1" /> Refund
+                  </Button>
                 </div>
               </div>
 
@@ -882,6 +1069,74 @@ export function AdminOrders({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Refund Processing Modal */}
+      <Dialog open={refundDialogOpen} onOpenChange={setRefundDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl border-[#E8E4DA] bg-white p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[#16201A] font-bold text-base">
+              <RotateCcw className="size-5 text-purple-700" /> Process Customer Refund
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleProcessRefund} className="space-y-3.5 pt-2 text-xs">
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-[#1F2924]">Refund Amount (₹)</Label>
+              <Input
+                type="number"
+                min="1"
+                step="1"
+                required
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(Number(e.target.value))}
+                className="rounded-xl border-[#E8E4DA] text-xs font-bold h-9"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="font-semibold text-[#1F2924]">Reason for Refund / Note</Label>
+              <Textarea
+                rows={2}
+                required
+                placeholder="e.g. Item out of stock or customer requested order return"
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+                className="rounded-xl border-[#E8E4DA] text-xs bg-[#FAF8F2]"
+              />
+            </div>
+
+            <p className="text-[11px] text-[#5A655F]">
+              Refund status and amount will be logged into the permanent billing audit history.
+            </p>
+
+            <DialogFooter className="mt-4 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setRefundDialogOpen(false)}
+                className="rounded-xl border-[#E8E4DA] text-xs h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs h-9"
+              >
+                Record Refund
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Official Invoice Modal */}
+      <InvoiceView
+        invoice={activeInvoice}
+        isOpen={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        lang={language as "hi" | "en"}
+      />
     </div>
   );
 }

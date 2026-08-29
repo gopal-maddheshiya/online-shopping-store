@@ -74,6 +74,15 @@ export type StoreSettings = {
   payment_methods: string[];
   business_hours: Record<string, { open: string; close: string; closed: boolean }>;
   social: Record<string, string>;
+  gstin?: string | null;
+  legal_name?: string | null;
+  state?: string | null;
+  state_code?: string | null;
+  tax_enabled?: boolean | null;
+  default_tax_rate?: number | null;
+  invoice_prefix?: string | null;
+  invoice_footer_note?: string | null;
+  terms_and_conditions?: string | null;
 };
 
 export type OrderItem = {
@@ -110,6 +119,7 @@ export type Order = {
     area?: string;
     landmark?: string;
     city?: string;
+    state?: string;
     pincode?: string;
     instructions?: string;
   };
@@ -123,6 +133,10 @@ export type Order = {
   total: number;
   status: string;
   notes: string | null;
+  invoice_no?: string | null;
+  refund_amount?: number | null;
+  refund_reason?: string | null;
+  refunded_at?: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
@@ -506,6 +520,63 @@ export function userAddressesQuery(userId?: string | null) {
     staleTime: 60_000,
   });
 }
+
+// Fetch or generate invoice for an order
+export function invoiceByOrderIdQuery(orderId?: string | null) {
+  return queryOptions({
+    queryKey: ["order-invoice", orderId],
+    queryFn: async () => {
+      if (!orderId) return null;
+      // 1. Try to fetch from invoices table
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("order_id", orderId)
+        .maybeSingle();
+
+      if (!error && data) {
+        return data;
+      }
+
+      // 2. If not yet generated, invoke idempotent generate_invoice_for_order RPC
+      const { data: rpcData, error: rpcError } = await supabase.rpc(
+        "generate_invoice_for_order",
+        { p_order_id: orderId }
+      );
+
+      if (rpcError) {
+        console.warn("Could not auto-generate invoice:", rpcError.message);
+        return null;
+      }
+
+      return rpcData;
+    },
+    enabled: Boolean(orderId),
+    staleTime: 30_000,
+  });
+}
+
+// Lookup verified invoice by order_no and customer phone (Guest + Customer)
+export function lookupInvoiceQuery(orderNo?: string | null, phone?: string | null) {
+  return queryOptions({
+    queryKey: ["lookup-invoice", orderNo, phone],
+    queryFn: async () => {
+      if (!orderNo || !phone) return null;
+      const { data, error } = await supabase.rpc("lookup_order_invoice", {
+        _order_no: orderNo.trim(),
+        _phone: phone.trim(),
+      });
+      if (error) {
+        console.warn("Lookup invoice error:", error.message);
+        return null;
+      }
+      return data;
+    },
+    enabled: Boolean(orderNo && phone),
+    staleTime: 30_000,
+  });
+}
+
 
 
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Store, Clock, Phone, MapPin, Truck, Sparkles, RefreshCw } from "lucide-react";
+import { Save, Store, Clock, Phone, MapPin, Truck, Sparkles, RefreshCw, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,21 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(499);
   const [minOrderValue, setMinOrderValue] = useState(99);
 
+  // Billing & Invoicing Configuration
+  const [legalName, setLegalName] = useState("Arun Gopal Traders");
+  const [gstin, setGstin] = useState("");
+  const [state, setState] = useState("Uttar Pradesh");
+  const [stateCode, setStateCode] = useState("09");
+  const [taxEnabled, setTaxEnabled] = useState(false);
+  const [defaultTaxRate, setDefaultTaxRate] = useState(0);
+  const [invoicePrefix, setInvoicePrefix] = useState("AGT-INV");
+  const [invoiceFooterNote, setInvoiceFooterNote] = useState(
+    "Thank you for shopping with Arun Gopal Traders! For inquiries/support, call +91 6388354988."
+  );
+  const [termsAndConditions, setTermsAndConditions] = useState(
+    "1. Goods once sold can only be returned within 24 hours in original packed condition.\n2. Please retain this invoice for any verification.\n3. All disputes subject to Maharajganj jurisdiction."
+  );
+
   // Business Hours Map
   const [businessHours, setBusinessHours] = useState<
     Record<string, { open: string; close: string; closed: boolean }>
@@ -71,6 +86,23 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setFreeDeliveryThreshold(Number(settings.free_delivery_threshold ?? 499));
       setMinOrderValue(Number(settings.min_order_value ?? 99));
       setBusinessHours(settings.business_hours ?? {});
+
+      // Billing settings
+      setLegalName(settings.legal_name ?? "Arun Gopal Traders");
+      setGstin(settings.gstin ?? "");
+      setState(settings.state ?? "Uttar Pradesh");
+      setStateCode(settings.state_code ?? "09");
+      setTaxEnabled(Boolean(settings.tax_enabled));
+      setDefaultTaxRate(Number(settings.default_tax_rate ?? 0));
+      setInvoicePrefix(settings.invoice_prefix ?? "AGT-INV");
+      setInvoiceFooterNote(
+        settings.invoice_footer_note ??
+          "Thank you for shopping with Arun Gopal Traders! For inquiries/support, call +91 6388354988."
+      );
+      setTermsAndConditions(
+        settings.terms_and_conditions ??
+          "1. Goods once sold can only be returned within 24 hours in original packed condition.\n2. Please retain this invoice for any verification.\n3. All disputes subject to Maharajganj jurisdiction."
+      );
     }
   }, [settings]);
 
@@ -112,16 +144,24 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           free_delivery_threshold: Number(freeDeliveryThreshold),
           min_order_value: Number(minOrderValue),
           business_hours: businessHours,
+          legal_name: legalName.trim() || "Arun Gopal Traders",
+          gstin: gstin.trim() || null,
+          state: state.trim() || "Uttar Pradesh",
+          state_code: stateCode.trim() || "09",
+          tax_enabled: Boolean(taxEnabled),
+          default_tax_rate: Number(defaultTaxRate),
+          invoice_prefix: invoicePrefix.trim() || "AGT-INV",
+          invoice_footer_note: invoiceFooterNote.trim(),
+          terms_and_conditions: termsAndConditions.trim(),
         })
         .eq("id", 1);
 
       if (error) throw error;
-      toast.success("Store settings & timings updated successfully!");
+      toast.success("Store settings & billing configurations updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       broadcastSettingsSync();
       onRefresh();
     } catch (err: unknown) {
-
       const msg = err instanceof Error ? err.message : "Failed to update store settings";
       toast.error(msg);
     } finally {
@@ -297,6 +337,122 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Billing, GST & Invoice Configuration */}
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+        <div>
+          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+            <Receipt className="size-5 text-[#145A45]" /> Billing, Tax (GST) &amp; Invoice Settings
+          </h3>
+          <p className="text-xs text-[#6B746F] mt-1">
+            Configure legal business details, GSTIN, tax calculations, invoice prefix, and return policies.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 pt-1">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Business Legal Name</Label>
+            <Input
+              value={legalName}
+              onChange={(e) => setLegalName(e.target.value)}
+              placeholder="e.g. Arun Gopal Traders"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">
+              GSTIN (Optional / वैकल्पिक)
+            </Label>
+            <Input
+              value={gstin}
+              onChange={(e) => setGstin(e.target.value.toUpperCase())}
+              placeholder="e.g. 09ABCDE1234F1Z5"
+              className="rounded-xl border-[#E8E4DA] text-xs font-mono uppercase h-9"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Store State</Label>
+            <Input
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              placeholder="Uttar Pradesh"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">State Code (e.g. 09 for UP)</Label>
+            <Input
+              value={stateCode}
+              onChange={(e) => setStateCode(e.target.value)}
+              placeholder="09"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Invoice Number Prefix</Label>
+            <Input
+              value={invoicePrefix}
+              onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
+              placeholder="AGT-INV"
+              className="rounded-xl border-[#E8E4DA] text-xs font-mono h-9"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Default Tax Rate (% if enabled)</Label>
+            <Input
+              type="number"
+              min="0"
+              max="28"
+              step="0.5"
+              value={defaultTaxRate}
+              onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
+            />
+          </div>
+        </div>
+
+        {/* GST / Tax Enable Checkbox */}
+        <div className="rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3.5 flex items-center justify-between gap-3">
+          <div>
+            <Label htmlFor="tax-enable-toggle" className="font-bold text-xs text-[#1F2924] cursor-pointer">
+              Enable GST Tax Calculations on Invoices
+            </Label>
+            <p className="text-[11px] text-[#5A655F]">
+              When disabled, invoices act as authorized Retail Cash Memos. When enabled, invoices calculate CGST/SGST/IGST breakdown.
+            </p>
+          </div>
+          <Checkbox
+            id="tax-enable-toggle"
+            checked={taxEnabled}
+            onCheckedChange={(c) => setTaxEnabled(Boolean(c))}
+            className="size-5"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold text-[#1F2924]">Invoice Footer Note (धन्यवाद संदेश)</Label>
+          <Input
+            value={invoiceFooterNote}
+            onChange={(e) => setInvoiceFooterNote(e.target.value)}
+            className="rounded-xl border-[#E8E4DA] text-xs h-9"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold text-[#1F2924]">Terms &amp; Return Policy (बिल की शर्तें)</Label>
+          <Textarea
+            rows={3}
+            value={termsAndConditions}
+            onChange={(e) => setTermsAndConditions(e.target.value)}
+            className="rounded-xl border-[#E8E4DA] text-xs bg-white"
+          />
         </div>
       </div>
 

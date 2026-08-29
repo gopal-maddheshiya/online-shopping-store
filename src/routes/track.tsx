@@ -9,6 +9,7 @@ import {
   Phone,
   MessageCircle,
   Printer,
+  Receipt,
   ArrowRight,
   AlertCircle,
   ShoppingBag,
@@ -25,6 +26,9 @@ import { settingsQuery, type Order } from "@/lib/queries";
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { getProductImage } from "@/lib/product-images";
 import { fetchOrderForTracking, subscribeToOrderRealtime } from "@/lib/orders";
+import { supabase } from "@/integrations/supabase/client";
+import { InvoiceView } from "@/components/InvoiceView";
+import type { Invoice } from "@/lib/billing";
 
 type TrackSearchParams = {
   orderNo?: string | undefined;
@@ -62,8 +66,34 @@ function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Billing Invoice Modal State
+  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+
   const storePhone = settings?.phone ?? "+91 6388354988";
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
+
+  async function handleOpenInvoice(order: Order) {
+    setInvoiceLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("lookup_order_invoice", {
+        _order_no: order.order_no,
+        _phone: order.customer_phone,
+      });
+
+      if (error || !data) {
+        throw new Error(error?.message || "Could not load verified invoice");
+      }
+
+      setActiveInvoice(data as unknown as Invoice);
+      setInvoiceModalOpen(true);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to load receipt");
+    } finally {
+      setInvoiceLoading(false);
+    }
+  }
 
   async function fetchOrder(orderNo: string, phone: string) {
     if (!orderNo.trim() || !phone.trim()) return;
@@ -279,10 +309,12 @@ function TrackPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.print()}
-                  className="rounded-xl gap-1.5 text-xs font-semibold border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-9"
+                  disabled={invoiceLoading}
+                  onClick={() => handleOpenInvoice(searchedOrder)}
+                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white h-9 transition-all"
                 >
-                  <Printer className="size-3.5" /> Print Receipt
+                  <Receipt className="size-3.5" />
+                  {language === "hi" ? "बिल व रसीद देखें / प्रिंट" : "Official Invoice"}
                 </Button>
                 <a
                   href={waHref(
@@ -488,6 +520,14 @@ function TrackPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Official Verified Invoice View Dialog */}
+      <InvoiceView
+        invoice={activeInvoice}
+        isOpen={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        lang={language as "hi" | "en"}
+      />
     </div>
   );
 }
