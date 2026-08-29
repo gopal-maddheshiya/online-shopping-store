@@ -77,7 +77,8 @@ export function mergeOrderWithOverrides(order: Order): Order {
 export async function updateOrderStatus(
   orderId: string,
   newStatus: string,
-  note?: string
+  note?: string,
+  orderNo?: string
 ): Promise<{ success: boolean; order?: Partial<Order>; error?: string }> {
   // Always record status in persistent local overrides
   saveLocalStatusOverride(orderId, newStatus, note);
@@ -85,6 +86,7 @@ export async function updateOrderStatus(
   // Broadcast to all connected customer devices and admin panels in realtime
   broadcastOrderSync({
     orderId,
+    orderNo,
     status: newStatus,
   });
 
@@ -148,13 +150,15 @@ export async function updateOrderStatus(
  */
 export async function updatePaymentStatus(
   orderId: string,
-  paymentStatus: "pending" | "paid" | "failed" | "refunded"
+  paymentStatus: "pending" | "paid" | "failed" | "refunded",
+  orderNo?: string
 ): Promise<{ success: boolean; error?: string }> {
   saveLocalStatusOverride(orderId, undefined, undefined, paymentStatus);
 
   // Broadcast to all connected customer devices and admin panels in realtime
   broadcastOrderSync({
     orderId,
+    orderNo,
     paymentStatus,
   });
 
@@ -180,99 +184,106 @@ export async function updatePaymentStatus(
 }
 
 /**
- * Private Realtime Subscription for a specific Order ID
- * Strictly scoped to that specific order with automatic teardown on unmount
+ * Private Realtime Subscription for a specific Order ID or Order No
+ * Strictly scoped to that specific order with instant multi-tab synchronization
  */
 export function subscribeToOrderRealtime(
   orderId: string,
-  onUpdate: (updatedOrder: Partial<Order>) => void
+  onUpdate: (updatedOrder: Partial<Order>) => void,
+  orderNo?: string
 ) {
-  if (!orderId) return () => {};
+  if ((!orderId && !orderNo) || typeof window === "undefined") return () => {};
 
-  // 1. Store realtime broadcast listener on shared channel
-  const broadcastChannel = supabase
-    .channel(`order-track-sync-${orderId}`, {
-      config: { broadcast: { self: true } },
-    })
-    .on("broadcast", { event: "ORDER_SYNC" }, (event: Record<string, unknown>) => {
-      const data = (event["payload"] || {}) as {
-        orderId?: string;
-        orderNo?: string;
-        status?: string;
-        paymentStatus?: string;
-        note?: string;
-        updatedAt?: string;
-      };
-      if (data && (data.orderId === orderId || !data.orderId)) {
-        if (data.status) {
-          saveLocalStatusOverride(orderId, data.status, data.note || undefined);
-          onUpdate({
-            id: orderId,
-            status: data.status,
-            notes: data.note ?? null,
-            updated_at: data.updatedAt || new Date().toISOString(),
-          });
-        }
-        if (data.paymentStatus) {
-          saveLocalStatusOverride(orderId, undefined, undefined, data.paymentStatus);
-          onUpdate({
-            id: orderId,
-            payment_status: data.paymentStatus,
-            updated_at: data.updatedAt || new Date().toISOString(),
-          });
-        }
-      }
-    })
-    .on("broadcast", { event: "STATUS_UPDATE" }, (payload: Record<string, unknown>) => {
-      const data = payload["payload"] as { orderId?: string; newStatus?: string; note?: string; updatedAt?: string } | undefined;
-      if (data && (data.orderId === orderId || !data.orderId) && data.newStatus) {
-        saveLocalStatusOverride(orderId, data.newStatus, data.note || undefined);
-        onUpdate({
-          id: orderId,
-          status: data.newStatus,
-          notes: data.note ?? null,
-          updated_at: data.updatedAt || new Date().toISOString(),
-        });
-      }
-    })
-    .subscribe();
+  const cleanOrderNo = orderNo?.trim().toUpperCase();
 
-  // 2. Direct postgres database changes
-  const dbChannel = supabase
-    .channel(`private-order-${orderId}`)
-    .on(
-      "postgres_changes",
-      {
-        event: "UPDATE",
-        schema: "public",
-        table: "orders",
-        filter: `id=eq.${orderId}`,
-      },
-      (payload) => {
-        if (payload.new) {
-          onUpdate(payload.new as unknown as Partial<Order>);
+  // 1. Listen to instant application-wide Realtime event bus
+  const handleSyncEvent = (e: Event) => {
+    const detail = (e as CustomEvent).detail as {
+      orderId?: string;
+      orderNo?: string;
+      status?: string;
+      paymentStatus?: string;
+      note?: string;
+      updatedAt?: string;
+    };
+    if (
+      detail &&
+      (
+        (orderId && detail.orderId === orderId) ||
+        (cleanOrderNo && detail.orderNo && detail.orderNo.toUpperCase() === cleanOrderNo) ||
+        (!detail.orderId && !detail.orderNo)
+      )
+    ) {
+      if (detail.status) {
+        if (orderId) saveLocalStatusOverride(orderId, detail.status, detail.note || undefined);
+        const updatePayload: Partial<Order> = {
+          status: detail.status,
+          notes: detail.note ?? null,
+          updated_at: detail.updatedAt || new Date().toISOString(),
+        };
+        if (orderId || detail.orderId) {
+          updatePayload.id = (orderId || detail.orderId)!;
         }
+        onUpdate(updatePayload);
       }
-    )
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "order_events",
-        filter: `order_id=eq.${orderId}`,
-      },
-      () => {
-        onUpdate({ id: orderId });
+      if (detail.paymentStatus) {
+        if (orderId) saveLocalStatusOverride(orderId, undefined, undefined, detail.paymentStatus);
+        const updatePayload: Partial<Order> = {
+          payment_status: detail.paymentStatus,
+          updated_at: detail.updatedAt || new Date().toISOString(),
+        };
+        if (orderId || detail.orderId) {
+          updatePayload.id = (orderId || detail.orderId)!;
+        }
+        onUpdate(updatePayload);
       }
-    )
-    .subscribe();
+
+    }
+  };
+
+  window.addEventListener("agt:order-sync", handleSyncEvent);
+
+  // 2. Direct postgres database changes fallback
+  const dbChannel = orderId
+    ? supabase
+        .channel(`private-order-${orderId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "orders",
+            filter: `id=eq.${orderId}`,
+          },
+          (payload) => {
+            if (payload.new) {
+              onUpdate(payload.new as unknown as Partial<Order>);
+            }
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "order_events",
+            filter: `order_id=eq.${orderId}`,
+          },
+          () => {
+            onUpdate({ id: orderId });
+          }
+        )
+        .subscribe()
+    : null;
 
   return () => {
-    void supabase.removeChannel(broadcastChannel);
-    void supabase.removeChannel(dbChannel);
+    window.removeEventListener("agt:order-sync", handleSyncEvent);
+    if (dbChannel) {
+      void supabase.removeChannel(dbChannel);
+    }
   };
 }
+
 
 
 

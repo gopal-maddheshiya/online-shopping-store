@@ -97,44 +97,58 @@ function TrackPage() {
 
   // Subscribe to Realtime Status updates
   useEffect(() => {
-    if (!searchedOrder?.id) return;
+    if (!searchedOrder?.id && !searchedOrder?.order_no) return;
 
-    const unsub = subscribeToOrderRealtime(searchedOrder.id, (partial) => {
-      setSearchedOrder((prev) => {
-        if (!prev) return null;
-        const newStatus = partial.status ?? prev.status;
-        if (newStatus !== prev.status) {
-          toast.info(
-            language === "hi"
-              ? `🔔 ऑर्डर स्थिति अपडेट: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
-              : `🔔 Order status updated: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
-          );
-        }
-        return { ...prev, ...partial };
-      });
+    const targetId = searchedOrder.id;
+    const targetNo = searchedOrder.order_no;
 
-      // Refetch full order while preserving the latest realtime status
-      if (orderNoInput && phoneInput) {
-        void fetchOrderForTracking(orderNoInput, phoneInput).then(({ order }) => {
-          if (order) {
-            setSearchedOrder((curr) => {
-              if (!curr) return order;
-              return {
-                ...order,
-                status: partial.status || curr.status || order.status,
-                notes: partial.notes !== undefined ? partial.notes : (curr.notes ?? null),
-                payment_status: (partial.payment_status ?? curr.payment_status ?? null) as string | null,
-              };
-            });
+    const unsub = subscribeToOrderRealtime(
+      targetId,
+      (partial) => {
+        setSearchedOrder((prev) => {
+          if (!prev) return null;
+          const newStatus = partial.status ?? prev.status;
+          if (newStatus && newStatus !== prev.status) {
+            toast.info(
+              language === "hi"
+                ? `🔔 ऑर्डर स्थिति अपडेट: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
+                : `🔔 Order status updated: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
+            );
           }
+          return {
+            ...prev,
+            ...partial,
+            status: partial.status || prev.status,
+            notes: partial.notes !== undefined ? partial.notes : prev.notes,
+            payment_status: (partial.payment_status ?? prev.payment_status ?? null) as string | null,
+          };
         });
-      }
-    });
 
-
+        // Refetch full order in background while preserving the latest realtime status
+        const activeOrderNo = targetNo || orderNoInput;
+        const activePhone = phoneInput || searchedOrder.customer_phone;
+        if (activeOrderNo && activePhone) {
+          void fetchOrderForTracking(activeOrderNo, activePhone).then(({ order }) => {
+            if (order) {
+              setSearchedOrder((curr) => {
+                if (!curr) return order;
+                return {
+                  ...order,
+                  status: partial.status || curr.status || order.status,
+                  notes: partial.notes !== undefined ? partial.notes : (curr.notes ?? null),
+                  payment_status: (partial.payment_status ?? curr.payment_status ?? null) as string | null,
+                };
+              });
+            }
+          });
+        }
+      },
+      targetNo
+    );
 
     return unsub;
-  }, [searchedOrder?.id, language, orderNoInput, phoneInput]);
+  }, [searchedOrder?.id, searchedOrder?.order_no, language, orderNoInput, phoneInput]);
+
 
   useEffect(() => {
     if (search.orderNo && search.phone) {

@@ -6,31 +6,32 @@ import { toast } from "sonner";
 export const STORE_SYNC_CHANNEL = "store-realtime-sync";
 
 export type ProductSyncPayload = {
-  productId?: string;
-  slug?: string;
-  action?: "create" | "update" | "delete" | "status" | "image";
-  updatedAt?: string;
+  productId?: string | undefined;
+  slug?: string | undefined;
+  action?: ("create" | "update" | "delete" | "status" | "image") | undefined;
+  updatedAt?: string | undefined;
 };
 
 export type OrderSyncPayload = {
-  orderId?: string;
-  orderNo?: string;
-  status?: string;
-  paymentStatus?: string;
-  updatedAt?: string;
+  orderId?: string | undefined;
+  orderNo?: string | undefined;
+  status?: string | undefined;
+  paymentStatus?: string | undefined;
+  updatedAt?: string | undefined;
 };
 
 export type NewOrderPayload = {
   orderId: string;
   orderNo: string;
   total: number;
-  customerName?: string;
+  customerName?: string | undefined;
   createdAt: string;
 };
 
 export type SettingsSyncPayload = {
-  updatedAt?: string;
+  updatedAt?: string | undefined;
 };
+
 
 // =========================================================================
 // DIAGNOSTIC LOGGING (Development & Live Verification)
@@ -231,6 +232,7 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         [
           ["admin-orders"],
           ["customer-orders"],
+          ["track-order"],
         ],
         40,
       );
@@ -263,11 +265,17 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         const payload = (event["payload"] as OrderSyncPayload) || {};
         logRealtimeEvent("BROADCAST_RECV", "ORDER_SYNC", payload.orderId || payload.orderNo, { status: payload.status, paymentStatus: payload.paymentStatus });
         invalidateOrderQueries();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("agt:order-sync", { detail: payload }));
+        }
       })
       .on("broadcast", { event: "NEW_ORDER_SYNC" }, (event) => {
         const payload = (event["payload"] as NewOrderPayload) || {};
         logRealtimeEvent("BROADCAST_RECV", "NEW_ORDER_SYNC", payload.orderId || payload.orderNo, { total: payload.total });
         invalidateOrderQueries();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("agt:order-sync", { detail: payload }));
+        }
         if (optionsRef.current.isAdmin) {
           if (optionsRef.current.onNewOrderNotification) {
             optionsRef.current.onNewOrderNotification(payload);
@@ -319,10 +327,22 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         "postgres_changes",
         { event: "*", schema: "public", table: "orders" },
         (payload) => {
-          const newRow = payload.new as { id?: string; order_no?: string; status?: string } | undefined;
+          const newRow = payload.new as { id?: string; order_no?: string; status?: string; payment_status?: string } | undefined;
           const id = newRow?.id;
           logRealtimeEvent(`POSTGRES_${payload.eventType}`, "orders", id, { status: newRow?.status });
           invalidateOrderQueries();
+          if (typeof window !== "undefined" && newRow) {
+            window.dispatchEvent(
+              new CustomEvent("agt:order-sync", {
+                detail: {
+                  orderId: newRow.id,
+                  orderNo: newRow.order_no,
+                  status: newRow.status,
+                  paymentStatus: newRow.payment_status,
+                },
+              }),
+            );
+          }
           if (payload.eventType === "INSERT" && optionsRef.current.isAdmin) {
             const orderNo = newRow?.order_no || "AGT";
             toast.success(`🛒 नया ऑर्डर प्राप्त हुआ! (#${orderNo})`, { duration: 5000 });
@@ -333,9 +353,19 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         "postgres_changes",
         { event: "*", schema: "public", table: "order_events" },
         (payload) => {
-          const newRow = payload.new as { id?: string; status?: string } | undefined;
+          const newRow = payload.new as { id?: string; order_id?: string; status?: string } | undefined;
           logRealtimeEvent(`POSTGRES_${payload.eventType}`, "order_events", newRow?.id, { status: newRow?.status });
           invalidateOrderQueries();
+          if (typeof window !== "undefined" && newRow?.order_id) {
+            window.dispatchEvent(
+              new CustomEvent("agt:order-sync", {
+                detail: {
+                  orderId: newRow.order_id,
+                  status: newRow.status,
+                },
+              }),
+            );
+          }
         }
       )
       .on(
@@ -347,6 +377,7 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
         }
       )
       .subscribe((status, err) => {
+
         logRealtime(status, err ? `Error: ${err.message || JSON.stringify(err)}` : "");
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           console.warn(`[REALTIME] Channel status: ${status}. Attempting reconnection...`);

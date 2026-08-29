@@ -153,8 +153,9 @@ export function AdminOrders({
     }
 
     setUpdatingId(orderId);
+    const targetOrder = orders.find((o) => o.id === orderId);
     try {
-      const res = await updateOrderStatus(orderId, newStatus, note);
+      const res = await updateOrderStatus(orderId, newStatus, note, targetOrder?.order_no);
       if (!res.success) {
         throw new Error(res.error || "Failed to update order status in database");
       }
@@ -183,8 +184,9 @@ export function AdminOrders({
 
   async function handlePaymentStatusChange(orderId: string, paymentStatus: "pending" | "paid" | "failed" | "refunded") {
     setUpdatingId(orderId);
+    const targetOrder = orders.find((o) => o.id === orderId);
     try {
-      const res = await updatePaymentStatus(orderId, paymentStatus);
+      const res = await updatePaymentStatus(orderId, paymentStatus, targetOrder?.order_no);
       if (!res.success) throw new Error(res.error || "Failed to update payment status");
       toast.success(`Payment status marked as ${paymentStatus.toUpperCase()}`);
       onRefresh();
@@ -193,6 +195,7 @@ export function AdminOrders({
       }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Payment update failed");
+
     } finally {
       setUpdatingId(null);
     }
