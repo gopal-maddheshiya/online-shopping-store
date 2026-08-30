@@ -110,6 +110,180 @@ export type Translations = {
   sendList: string;
   currentBasketLabel: string;
   cartAutoFormatNote: string;
+
+  // Shop Page Keys
+  categoriesLabel: string;
+  allCategoriesLabel: string;
+  typesLabel: string;
+  priceRangeLabel: string;
+  minPricePlaceholder: string;
+  maxPricePlaceholder: string;
+  inStockOnlyLabel: string;
+  clearAllFiltersBtn: string;
+  filterBtn: string;
+  filterCatalogueTitle: string;
+  sortRelevance: string;
+  sortPriceLowToHigh: string;
+  sortPriceHighToLow: string;
+  sortHighestDiscount: string;
+  sortBestSelling: string;
+  allItemsCountLabel: string;
+  noProductsFoundTitle: string;
+  noProductsFoundDesc: string;
+  resetFiltersBtn: string;
+
+  // Product Detail Keys
+  selectPackSizeLabel: string;
+  onlyLeftInStock: string;
+  inStockMaharajganj: string;
+  freshBadge: string;
+  whatsappOrderBtn: string;
+  callStoreToOrderBtn: string;
+  productDetailsTitle: string;
+  defaultDescription: string;
+  similarItemsTitle: string;
+
+  // Cart Expanded Keys
+  haveCouponPrompt: string;
+  couponPlaceholder: string;
+  applyBtn: string;
+  couponAppliedMsg: string;
+  removeCouponBtn: string;
+  freeDeliveryMeter: string;
+  freeDeliveryUnlocked: string;
+  minOrderWarning: string;
+  clearCartBtn: string;
+  continueShopping: string;
+
+  // Checkout Expanded Keys
+  checkoutPageTitle: string;
+  deliveryMethodLabel: string;
+  homeDeliveryOption: string;
+  storePickupOption: string;
+  homeDeliverySubtitle: string;
+  storePickupSubtitle: string;
+  savedAddressesLabel: string;
+  addNewAddressBtn: string;
+  selectAddressPrompt: string;
+  orderInstructionsLabel: string;
+  orderInstructionsPlaceholder: string;
+  paymentMethodLabel: string;
+  cashOnDelivery: string;
+  cashOnDeliverySub: string;
+  payAtStoreOption: string;
+  payAtStoreSub: string;
+  upiQrOption: string;
+  upiQrSub: string;
+  placeOrderBtn: string;
+  placingOrderBtn: string;
+  orderSuccessTitle: string;
+  orderSuccessSub: string;
+  googleSignInPrompt: string;
+  continueWithGoogle: string;
+
+  // Auth Keys
+  accountTitle: string;
+  signInTab: string;
+  signUpTab: string;
+  mobileNumberLabel: string;
+  passwordLabel: string;
+  fullNameLabel: string;
+  signInBtn: string;
+  signUpBtn: string;
+  orDivider: string;
+  loginSuccessMsg: string;
+  accountCreatedMsg: string;
+
+  // Account Keys
+  profileTitle: string;
+  myOrdersTab: string;
+  savedAddressesTab: string;
+  noOrdersTitle: string;
+  noOrdersSub: string;
+  startShoppingBtn: string;
+  orderNoLabel: string;
+  placedOnLabel: string;
+  trackOrderBtn: string;
+  viewInvoiceBtn: string;
+  reorderBtn: string;
+  editProfileBtn: string;
+  logoutBtn: string;
+  houseFlatLabel: string;
+  areaStreetLabel: string;
+  landmarkLabel: string;
+  cityTownLabel: string;
+  pincodeLabel: string;
+  saveAddressBtn: string;
+  deleteAddressBtn: string;
+  setDefaultBtn: string;
+  defaultBadge: string;
+
+  // Track Keys
+  trackPageTitle: string;
+  trackPageSubtitle: string;
+  orderIdPlaceholder: string;
+  phoneTrackingPlaceholder: string;
+  searchOrderBtn: string;
+  searchingOrderBtn: string;
+  liveStatusTitle: string;
+  statusPlaced: string;
+  statusConfirmed: string;
+  statusPreparing: string;
+  statusOutForDelivery: string;
+  statusDelivered: string;
+  statusCancelled: string;
+  needDeliveryAssistance: string;
+  needDeliveryAssistanceSub: string;
+
+  // Wishlist Keys
+  myWishlistTitle: string;
+  savedItemsCount: string;
+  moveAllToCartBtn: string;
+  emptyWishlistTitle: string;
+  emptyWishlistSub: string;
+  browseCatalogueBtn: string;
+
+  // Additional Domain Keys
+  categories: string;
+  singlePackLabel: string;
+  inCartQtyLabel: string;
+  continueShoppingBtn: string;
+  itemsCountLabel: string;
+  addItemsBtn: string;
+  removeBtn: string;
+  saveForLaterBtn: string;
+  savedForLaterTitle: string;
+  moveToCartBtn: string;
+  orderSummaryTitle: string;
+  cartPaymentNote: string;
+  customerContactDetails: string;
+  customerContactSubtitle: string;
+  fullName: string;
+  mobileNumber10: string;
+  emailAddress: string;
+  optionalInvoiceCopy: string;
+  orderFulfillmentMethod: string;
+  homeDelivery: string;
+  homeDeliveryDesc: string;
+  storePickupDesc: string;
+  freeZeroWaiting: string;
+  selectPackSizeTitle: string;
+  callStoreBtn: string;
+  productDetailsAndPurity: string;
+  similarEssentialsTitle: string;
+  emptyWishlistSubtitle: string;
+  myWishlist: string;
+
+  // Admin Localization Keys
+  missingHindiBadge: string;
+  nameEnLabel: string;
+  nameHiLabel: string;
+  descEnLabel: string;
+  descHiLabel: string;
+  previewHindiTab: string;
+  previewEnglishTab: string;
+  liveCustomerPreview: string;
+  missingTranslationCount: string;
 };
 
 export const translations: Record<Language, Translations> = {
@@ -209,9 +383,182 @@ export const translations: Record<Language, Translations> = {
     instantChatList: "Instant chat & grocery list",
     submitInquiry: "Submit Inquiry",
     sendList: "Send List",
-
     currentBasketLabel: "Current Basket",
     cartAutoFormatNote: "Your cart items will be automatically formatted and sent in the WhatsApp message.",
+
+    // Shop
+    categoriesLabel: "Categories",
+    allCategoriesLabel: "All Categories",
+    typesLabel: "Types",
+    priceRangeLabel: "Price Range (₹)",
+    minPricePlaceholder: "Min",
+    maxPricePlaceholder: "Max",
+    inStockOnlyLabel: "In Stock Only",
+    clearAllFiltersBtn: "Clear All Filters",
+    filterBtn: "Filter",
+    filterCatalogueTitle: "Filter Catalogue",
+    sortRelevance: "Relevance",
+    sortPriceLowToHigh: "Price: Low to High",
+    sortPriceHighToLow: "Price: High to Low",
+    sortHighestDiscount: "Highest Discount",
+    sortBestSelling: "Best Selling",
+    allItemsCountLabel: "All Items",
+    noProductsFoundTitle: "No products found",
+    noProductsFoundDesc: "Try clearing filters or search for another grocery staple.",
+    resetFiltersBtn: "Reset Filters",
+
+    // Product
+    selectPackSizeLabel: "Select Pack Size",
+    onlyLeftInStock: "Only {count} pack(s) left in stock",
+    inStockMaharajganj: "In Stock for Maharajganj Delivery",
+    freshBadge: "Fresh",
+    whatsappOrderBtn: "WhatsApp Order",
+    callStoreToOrderBtn: "Call Store",
+    productDetailsTitle: "Product Details & Purity",
+    defaultDescription: "100% authentic, hygienically packed, and carefully sourced by Arun Gopal Traders for doorstep delivery in Maharajganj.",
+    similarItemsTitle: "Similar Grocery Items",
+
+    // Cart
+    haveCouponPrompt: "Have a promo coupon code?",
+    couponPlaceholder: "Enter coupon (e.g. WELCOME50)",
+    applyBtn: "Apply",
+    couponAppliedMsg: "Coupon applied successfully!",
+    removeCouponBtn: "Remove",
+    freeDeliveryMeter: "Add ₹{amount} more for FREE Delivery",
+    freeDeliveryUnlocked: "🎉 You have unlocked FREE Delivery in Maharajganj!",
+    minOrderWarning: "Minimum order value is ₹{amount}",
+    clearCartBtn: "Clear Cart",
+    continueShopping: "Continue Shopping",
+
+    // Checkout
+    checkoutPageTitle: "Secure Checkout",
+    deliveryMethodLabel: "Fulfillment Method",
+    homeDeliveryOption: "30-Min Doorstep Delivery",
+    storePickupOption: "Store Pickup (Self Collection)",
+    homeDeliverySubtitle: "Delivered to your home or shop in Maharajganj",
+    storePickupSubtitle: "Collect ready packed parcel at Ramnagar, Adda Bazar Road",
+    savedAddressesLabel: "Select Delivery Address",
+    addNewAddressBtn: "+ Add New Address",
+    selectAddressPrompt: "Please choose or add your delivery address",
+    orderInstructionsLabel: "Delivery Instructions / Notes",
+    orderInstructionsPlaceholder: "e.g. Near Shiv Mandir, call before arriving",
+    paymentMethodLabel: "Select Payment Mode",
+    cashOnDelivery: "Cash on Delivery (COD)",
+    cashOnDeliverySub: "Pay in cash or UPI upon delivery at your doorstep",
+    payAtStoreOption: "Pay at Store",
+    payAtStoreSub: "Pay cash or UPI when collecting your order at store",
+    upiQrOption: "Instant UPI / QR Code",
+    upiQrSub: "Scan and pay using PhonePe, Google Pay, or Paytm",
+    placeOrderBtn: "Place Order",
+    placingOrderBtn: "Confirming Your Order...",
+    orderSuccessTitle: "Order Placed Successfully!",
+    orderSuccessSub: "Thank you for shopping with Arun Gopal Traders. Your groceries are being packed.",
+    googleSignInPrompt: "Fast 1-Click Sign In with Google",
+    continueWithGoogle: "Continue with Google",
+
+    // Auth
+    accountTitle: "Customer Account",
+    signInTab: "Sign In",
+    signUpTab: "Create Account",
+    mobileNumberLabel: "10-digit Mobile Number",
+    passwordLabel: "Password",
+    fullNameLabel: "Full Name",
+    signInBtn: "Sign In",
+    signUpBtn: "Create Account",
+    orDivider: "OR",
+    loginSuccessMsg: "Logged in successfully!",
+    accountCreatedMsg: "Account created successfully!",
+
+    // Account
+    profileTitle: "My Account",
+    myOrdersTab: "My Orders",
+    savedAddressesTab: "Saved Addresses",
+    noOrdersTitle: "No Orders Placed Yet",
+    noOrdersSub: "Your past grocery orders and invoices will appear here.",
+    startShoppingBtn: "Browse Groceries",
+    orderNoLabel: "Order ID",
+    placedOnLabel: "Placed on",
+    trackOrderBtn: "Track Order",
+    viewInvoiceBtn: "Official Bill / Invoice",
+    reorderBtn: "Reorder All",
+    editProfileBtn: "Edit Profile",
+    logoutBtn: "Log Out",
+    houseFlatLabel: "House / Flat / Shop No.",
+    areaStreetLabel: "Village / Colony / Area",
+    landmarkLabel: "Landmark (e.g. Near Temple / School)",
+    cityTownLabel: "City / Town / Block",
+    pincodeLabel: "Pincode",
+    saveAddressBtn: "Save Address",
+    deleteAddressBtn: "Delete",
+    setDefaultBtn: "Set as Default",
+    defaultBadge: "Default",
+
+    // Track
+    trackPageTitle: "Live Grocery Tracking",
+    trackPageSubtitle: "Check real-time order status and official invoice",
+    orderIdPlaceholder: "Enter Order ID (e.g. AGT-1001)",
+    phoneTrackingPlaceholder: "Enter 10-digit registered mobile",
+    searchOrderBtn: "Track Order",
+    searchingOrderBtn: "Locating Order...",
+    liveStatusTitle: "Current Order Status",
+    statusPlaced: "Order Placed",
+    statusConfirmed: "Confirmed by Store",
+    statusPreparing: "Packing Groceries",
+    statusOutForDelivery: "Out for Delivery",
+    statusDelivered: "Delivered",
+    statusCancelled: "Cancelled",
+    needDeliveryAssistance: "Need Delivery Assistance?",
+    needDeliveryAssistanceSub: "Call our Maharajganj store team for quick dispatch updates.",
+
+    // Wishlist
+    myWishlistTitle: "My Wishlist",
+    savedItemsCount: "{count} saved items",
+    moveAllToCartBtn: "Move All to Cart",
+    emptyWishlistTitle: "Your wishlist is empty",
+    emptyWishlistSub: "Save your favorite grocery items to buy them regularly.",
+    browseCatalogueBtn: "Browse Catalog →",
+
+    // Additional Domain Keys
+    categories: "Categories",
+    singlePackLabel: "1 pack",
+    inCartQtyLabel: "In Cart",
+    continueShoppingBtn: "Continue Shopping",
+    itemsCountLabel: "items",
+    addItemsBtn: "Add Items",
+    removeBtn: "Remove",
+    saveForLaterBtn: "Save for Later",
+    savedForLaterTitle: "Saved for Later",
+    moveToCartBtn: "Move to Cart",
+    orderSummaryTitle: "Order Summary",
+    cartPaymentNote: "Cash on Delivery & UPI QR available on delivery",
+    customerContactDetails: "Customer Contact Details",
+    customerContactSubtitle: "We use your mobile number to send order updates and identify your delivery history.",
+    fullName: "Full Name",
+    mobileNumber10: "Mobile Number (10 digits)",
+    emailAddress: "Email Address",
+    optionalInvoiceCopy: "(Optional for invoice copy)",
+    orderFulfillmentMethod: "Order Fulfillment Method",
+    homeDelivery: "Home Delivery",
+    homeDeliveryDesc: "Doorstep delivery across Maharajganj town and nearby areas.",
+    storePickupDesc: "Collect ready order at Ramnagar, Adda Bazar Road store.",
+    freeZeroWaiting: "FREE • Zero Waiting",
+    selectPackSizeTitle: "Select Pack Size",
+    callStoreBtn: "Call Store",
+    productDetailsAndPurity: "Product Details & Purity Assurance",
+    similarEssentialsTitle: "Similar Daily Essentials",
+    emptyWishlistSubtitle: "Save your favorite groceries, spices, and daily essentials by clicking the heart icon on any product.",
+    myWishlist: "My Wishlist",
+
+    // Admin Localization
+    missingHindiBadge: "Missing Hindi Translation",
+    nameEnLabel: "Product Name (English)",
+    nameHiLabel: "उत्पाद का नाम (हिंदी / Hindi)",
+    descEnLabel: "Description (English)",
+    descHiLabel: "विवरण (हिंदी / Hindi)",
+    previewHindiTab: "Customer view — Hindi",
+    previewEnglishTab: "Customer view — English",
+    liveCustomerPreview: "Live Customer Preview",
+    missingTranslationCount: "{count} product(s) missing Hindi translation",
   },
   hi: {
     topAlert: "महाराजगंज में ₹499 से अधिक के ऑर्डर पर फ्री होम डिलीवरी",
@@ -311,6 +658,180 @@ export const translations: Record<Language, Translations> = {
     sendList: "लिस्ट भेजें",
     currentBasketLabel: "वर्तमान कार्ट",
     cartAutoFormatNote: "आपके कार्ट का सामान अपने आप व्यवस्थित होकर व्हाट्सएप संदेश में जुड़ जाएगा।",
+
+    // Shop
+    categoriesLabel: "कैटेगरी",
+    allCategoriesLabel: "सभी सामान",
+    typesLabel: "के प्रकार",
+    priceRangeLabel: "मूल्य सीमा (₹)",
+    minPricePlaceholder: "न्यूनतम",
+    maxPricePlaceholder: "अधिकतम",
+    inStockOnlyLabel: "केवल उपलब्ध सामान",
+    clearAllFiltersBtn: "सभी फिल्टर हटाएं",
+    filterBtn: "फिल्टर",
+    filterCatalogueTitle: "किराना फिल्टर",
+    sortRelevance: "लोकप्रियता (Relevance)",
+    sortPriceLowToHigh: "कीमत: कम से ज्यादा",
+    sortPriceHighToLow: "कीमत: ज्यादा से कम",
+    sortHighestDiscount: "ज्यादा छूट पहले",
+    sortBestSelling: "सर्वाधिक बिकने वाले",
+    allItemsCountLabel: "सभी सामान",
+    noProductsFoundTitle: "कोई उत्पाद नहीं मिला",
+    noProductsFoundDesc: "कृपया फिल्टर हटाएं या किसी अन्य किराना सामान को खोजें।",
+    resetFiltersBtn: "फिल्टर साफ़ करें",
+
+    // Product
+    selectPackSizeLabel: "पैकेट साइज चुनें",
+    onlyLeftInStock: "केवल {count} पैकेट शेष",
+    inStockMaharajganj: "महाराजगंज में डिलीवरी हेतु उपलब्ध",
+    freshBadge: "ताज़ा",
+    whatsappOrderBtn: "व्हाट्सएप ऑर्डर",
+    callStoreToOrderBtn: "फोन पर पूछें",
+    productDetailsTitle: "उत्पाद विवरण व शुद्धता",
+    defaultDescription: "महाराजगंज के विश्वसनीय किराना स्टोर 'अरुण गोपाल ट्रेडर्स' द्वारा 100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।",
+    similarItemsTitle: "मिलते-जुलते किराना सामान",
+
+    // Cart
+    haveCouponPrompt: "क्या आपके पास कूपन कोड है?",
+    couponPlaceholder: "कूपन कोड दर्ज करें (उदा. WELCOME50)",
+    applyBtn: "लागू करें",
+    couponAppliedMsg: "कूपन सफलतापूर्वक लागू हो गया!",
+    removeCouponBtn: "हटाएं",
+    freeDeliveryMeter: "फ्री डिलीवरी के लिए ₹{amount} का सामान और जोड़ें",
+    freeDeliveryUnlocked: "🎉 बधाई! महाराजगंज में फ्री डिलीवरी लागू हो गई है।",
+    minOrderWarning: "न्यूनतम ऑर्डर मूल्य ₹{amount} होना चाहिए",
+    clearCartBtn: "कार्ट खाली करें",
+    continueShopping: "शॉपिंग जारी रखें",
+
+    // Checkout
+    checkoutPageTitle: "सुरक्षित चेकआउट",
+    deliveryMethodLabel: "सामान प्राप्ति का तरीका",
+    homeDeliveryOption: "30-मिनट होम डिलीवरी",
+    storePickupOption: "दुकान से पिकअप (स्वयं लें)",
+    homeDeliverySubtitle: "महाराजगंज में आपके घर या दुकान पर सीधे डिलीवरी",
+    storePickupSubtitle: "रामनगर, अड्डा बाजार रोड स्थित दुकान से तैयार पैकेट प्राप्त करें",
+    savedAddressesLabel: "डिलीवरी का पता चुनें",
+    addNewAddressBtn: "+ नया पता जोड़ें",
+    selectAddressPrompt: "कृपया डिलीवरी के लिए अपना पता चुनें या नया जोड़ें",
+    orderInstructionsLabel: "डिलीवरी संबंधी निर्देश / लैंडमार्क",
+    orderInstructionsPlaceholder: "उदा. शिव मंदिर के पास, पहुंचने से पहले कॉल करें",
+    paymentMethodLabel: "भुगतान का तरीका चुनें",
+    cashOnDelivery: "कैश ऑन डिलीवरी (सामान मिलने पर भुगतान)",
+    cashOnDeliverySub: "घर पर सामान पहुंचने के बाद नकद या यूपीआई से भुगतान करें",
+    payAtStoreOption: "दुकान पर भुगतान",
+    payAtStoreSub: "दुकान से सामान लेते समय नकद या यूपीआई से भुगतान करें",
+    upiQrOption: "तुरंत यूपीआई / क्यूआर कोड",
+    upiQrSub: "फोनपे, गूगल पे या पेटीएम से सीधे क्यूआर स्कैन कर भुगतान करें",
+    placeOrderBtn: "ऑर्डर कन्फर्म करें",
+    placingOrderBtn: "ऑर्डर दर्ज किया जा रहा है...",
+    orderSuccessTitle: "ऑर्डर सफलतापूर्वक दर्ज हो गया!",
+    orderSuccessSub: "अरुण गोपाल ट्रेडर्स पर भरोसा करने के लिए धन्यवाद। आपका सामान पैक किया जा रहा है।",
+    googleSignInPrompt: "गूगल के साथ 1-क्लिक में तुरंत लॉगिन करें",
+    continueWithGoogle: "Google के साथ जारी रखें",
+
+    // Auth
+    accountTitle: "ग्राहक खाता",
+    signInTab: "लॉगिन करें",
+    signUpTab: "नया खाता बनाएं",
+    mobileNumberLabel: "10 अंकों का मोबाइल नंबर",
+    passwordLabel: "पासवर्ड",
+    fullNameLabel: "पूरा नाम",
+    signInBtn: "लॉगिन करें",
+    signUpBtn: "खाता बनाएं",
+    orDivider: "या",
+    loginSuccessMsg: "सफलतापूर्वक लॉगिन हो गया!",
+    accountCreatedMsg: "नया खाता सफलतापूर्वक बन गया!",
+
+    // Account
+    profileTitle: "मेरा खाता",
+    myOrdersTab: "मेरे ऑर्डर",
+    savedAddressesTab: "सहेजे गए पते",
+    noOrdersTitle: "अभी तक कोई ऑर्डर नहीं हुआ",
+    noOrdersSub: "आपके द्वारा किए गए सभी किराना ऑर्डर्स और पक्के बिल यहां दिखेंगे।",
+    startShoppingBtn: "किराना सामान देखें",
+    orderNoLabel: "ऑर्डर नंबर",
+    placedOnLabel: "ऑर्डर दिनांक",
+    trackOrderBtn: "ऑर्डर ट्रैक करें",
+    viewInvoiceBtn: "बिल व रसीद देखें",
+    reorderBtn: "पुनः ऑर्डर करें",
+    editProfileBtn: "प्रोफाइल बदलें",
+    logoutBtn: "लॉग आउट",
+    houseFlatLabel: "मकान / दुकान / फ्लैट नं.",
+    areaStreetLabel: "गांव / मोहल्ला / सड़क",
+    landmarkLabel: "लैंडमार्क (उदा. मंदिर / स्कूल के पास)",
+    cityTownLabel: "शहर / कस्बा / ब्लॉक",
+    pincodeLabel: "पिनकोड",
+    saveAddressBtn: "पता सुरक्षित करें",
+    deleteAddressBtn: "हटाएं",
+    setDefaultBtn: "मुख्य पता बनाएं",
+    defaultBadge: "मुख्य पता",
+
+    // Track
+    trackPageTitle: "लाइव किराना ट्रैकिंग",
+    trackPageSubtitle: "ऑर्डर की ताज़ा स्थिति और पक्का बिल जांचें",
+    orderIdPlaceholder: "ऑर्डर आईडी दर्ज करें (उदा. AGT-1001)",
+    phoneTrackingPlaceholder: "पंजीकृत 10 अंकों का मोबाइल नंबर दर्ज करें",
+    searchOrderBtn: "ऑर्डर ट्रैक करें",
+    searchingOrderBtn: "ऑर्डर खोजा जा रहा है...",
+    liveStatusTitle: "वर्तमान स्थिति",
+    statusPlaced: "ऑर्डर प्राप्त हुआ",
+    statusConfirmed: "दुकान द्वारा स्वीकृत",
+    statusPreparing: "सामान पैक हो रहा है",
+    statusOutForDelivery: "डिलीवरी के लिए निकल गया",
+    statusDelivered: "सफलतापूर्वक डिलीवर हुआ",
+    statusCancelled: "रद्द किया गया",
+    needDeliveryAssistance: "त्वरित डिलीवरी सहायता चाहिए?",
+    needDeliveryAssistanceSub: "डिलीवरी की जानकारी के लिए हमारी महाराजगंज दुकान पर तुरंत संपर्क करें।",
+
+    // Wishlist
+    myWishlistTitle: "मेरी पसंदीदा सूची",
+    savedItemsCount: "{count} सहेजे गए सामान",
+    moveAllToCartBtn: "सभी को कार्ट में जोड़ें",
+    emptyWishlistTitle: "आपकी पसंदीदा सूची खाली है",
+    emptyWishlistSub: "नियमित खरीदे जाने वाले जरूरी सामानों को दिल पर क्लिक करके सेव करें।",
+    browseCatalogueBtn: "किराना सामान देखें →",
+
+    // Additional Domain Keys
+    categories: "कैटेगरी",
+    singlePackLabel: "1 पैक",
+    inCartQtyLabel: "कार्ट में",
+    continueShoppingBtn: "खरीदारी जारी रखें",
+    itemsCountLabel: "सामान",
+    addItemsBtn: "सामान जोड़ें",
+    removeBtn: "हटाएं",
+    saveForLaterBtn: "बाद के लिए सहेजें",
+    savedForLaterTitle: "बाद के लिए सहेजे गए",
+    moveToCartBtn: "कार्ट में लाएं",
+    orderSummaryTitle: "ऑर्डर का विवरण",
+    cartPaymentNote: "कैश ऑन डिलीवरी व UPI QR डिलीवरी पर उपलब्ध",
+    customerContactDetails: "ग्राहक का विवरण",
+    customerContactSubtitle: "ऑर्डर अपडेट और डिलीवरी के लिए कृपया सही मोबाइल नंबर दर्ज करें।",
+    fullName: "पूरा नाम",
+    mobileNumber10: "मोबाइल नंबर (10 अंक)",
+    emailAddress: "ईमेल पता",
+    optionalInvoiceCopy: "(वैकल्पिक - बिल कॉपी के लिए)",
+    orderFulfillmentMethod: "डिलीवरी का प्रकार",
+    homeDelivery: "होम डिलीवरी",
+    homeDeliveryDesc: "महाराजगंज नगर व आसपास के क्षेत्रों में 30-मिनट डिलीवरी।",
+    storePickupDesc: "रामनगर, अड्डा बाजार रोड दुकान काउंटर से पैक सामान लें।",
+    freeZeroWaiting: "100% फ्री • तुरंत पैकिंग",
+    selectPackSizeTitle: "पैकिंग का साइज चुनें",
+    callStoreBtn: "दुकान पर कॉल करें",
+    productDetailsAndPurity: "उत्पाद विवरण एवं शुद्धता गारंटी",
+    similarEssentialsTitle: "मिलते-जुलते किराना सामान",
+    emptyWishlistSubtitle: "सामानों पर दिल (Heart) के आइकन पर क्लिक करके अपने पसंदीदा सामान यहां सहेजें।",
+    myWishlist: "मेरी पसंदीदा सूची",
+
+    // Admin Localization
+    missingHindiBadge: "हिंदी अनुवाद शेष",
+    nameEnLabel: "Product Name (English)",
+    nameHiLabel: "उत्पाद का नाम (हिंदी / Hindi)",
+    descEnLabel: "Description (English)",
+    descHiLabel: "विवरण (हिंदी / Hindi)",
+    previewHindiTab: "Customer view — Hindi",
+    previewEnglishTab: "Customer view — English",
+    liveCustomerPreview: "लाइव कस्टमर प्रीव्यू (दोनों भाषाएं)",
+    missingTranslationCount: "{count} उत्पादों का हिंदी अनुवाद बाकी है",
   },
 };
 

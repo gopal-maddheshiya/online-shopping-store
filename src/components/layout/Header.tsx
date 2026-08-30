@@ -70,9 +70,11 @@ export function Header() {
 
   const matchingProducts = term.trim().length >= 2
     ? products.filter((p) => {
-      const hName = getProductName(p.name, p.slug);
+      const hName = getProductName(p);
+      const enName = p.name_en || p.name;
       return (
         p.name.toLowerCase().includes(term.toLowerCase()) ||
+        enName.toLowerCase().includes(term.toLowerCase()) ||
         hName.toLowerCase().includes(term.toLowerCase()) ||
         (p.brand && p.brand.toLowerCase().includes(term.toLowerCase()))
       );

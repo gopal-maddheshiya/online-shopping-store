@@ -6,7 +6,11 @@ export type CartItem = {
   productId: string;
   slug: string;
   name: string;
+  name_en?: string | null;
+  name_hi?: string | null;
   variantLabel: string;
+  variantLabel_en?: string | null;
+  variantLabel_hi?: string | null;
   price: number;
   mrp: number;
   imageUrl: string | null;

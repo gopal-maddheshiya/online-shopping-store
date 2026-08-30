@@ -55,16 +55,16 @@ export function MobileNav() {
   const storeWhatsApp = "916388354988";
 
   const links: NavItem[] = [
-    { to: "/", label: lang === "hi" ? "होम" : "Home", icon: Home },
-    { to: "/shop", label: lang === "hi" ? "कैटेगरी" : "Categories", icon: LayoutGrid },
+    { to: "/", label: t.home, icon: Home },
+    { to: "/shop", label: t.categories, icon: LayoutGrid },
     { to: "/account", label: accountLabel, icon: User },
     {
       to: "/wishlist",
-      label: lang === "hi" ? "पसंद" : "Wishlist",
+      label: t.wishlist,
       icon: Heart,
       badge: wishlistItems.length > 0 ? wishlistItems.length : undefined,
     },
-    { to: "/cart", label: lang === "hi" ? "कार्ट" : "Cart", icon: ShoppingBag, badge: cartCount },
+    { to: "/cart", label: t.cart, icon: ShoppingBag, badge: cartCount },
   ];
 
   return (

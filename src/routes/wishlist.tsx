@@ -43,8 +43,12 @@ function WishlistPage() {
           variantId: v.id,
           productId: p.id,
           slug: p.slug,
-          name: getProductName(p.name, p.slug),
-          variantLabel: getVariantLabel(v.label),
+          name: getProductName(p),
+          name_en: p.name_en || p.name,
+          name_hi: p.name_hi || null,
+          variantLabel: getVariantLabel(v) || "1 pack",
+          variantLabel_en: v.label_en || v.label,
+          variantLabel_hi: v.label_hi || null,
           price: Number(v.price),
           mrp: Number(v.mrp),
           imageUrl: getProductImage(p),
@@ -67,12 +71,10 @@ function WishlistPage() {
           <Heart className="size-10 text-[#145A45]" />
         </div>
         <h1 className="mt-4 font-sans text-2xl font-bold tracking-tight text-[#16201A] sm:text-3xl">
-          {lang === "hi" ? "आपकी पसंदीदा सूची खाली है" : "Your Wishlist is Empty"}
+          {t.emptyWishlistTitle}
         </h1>
         <p className="mx-auto mt-2 max-w-md text-xs sm:text-sm text-[#5A655F]">
-          {lang === "hi"
-            ? "सामानों पर दिल (Heart) के आइकन पर क्लिक करके अपने पसंदीदा सामान यहां सहेजें।"
-            : "Save your favorite groceries, spices, and daily essentials by clicking the heart icon on any product."}
+          {t.emptyWishlistSubtitle}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button
@@ -80,7 +82,7 @@ function WishlistPage() {
             className="rounded-lg bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
           >
             <Link to="/shop">
-              {lang === "hi" ? "किराना सामान देखें →" : "Browse Store Catalogue →"}
+              {t.browseCatalogueBtn}
             </Link>
           </Button>
         </div>
@@ -93,10 +95,10 @@ function WishlistPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E0D5] pb-4">
         <div>
           <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#16201A]">
-            {lang === "hi" ? "मेरी पसंदीदा सूची" : "My Wishlist"}
+            {t.myWishlist}
           </h1>
           <p className="mt-1 text-xs text-[#5A655F]">
-            {items.length} {lang === "hi" ? "सहेजे गए सामान" : "saved items"}
+            {items.length} {t.savedItemsCount}
           </p>
         </div>
 
@@ -106,7 +108,7 @@ function WishlistPage() {
             className="rounded-lg bg-[#145A45] gap-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
           >
             <ShoppingBag className="size-4" />{" "}
-            {lang === "hi" ? "सभी को कार्ट में जोड़ें" : "Move All to Cart"}
+            {t.moveAllToCartBtn}
           </Button>
           <Button
             onClick={clear}

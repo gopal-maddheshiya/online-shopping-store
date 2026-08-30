@@ -124,12 +124,15 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
       <tbody>
         ${invoice.items_snapshot
           .map(
-            (i) => `
+            (i) => {
+              const nameText = lang === "hi" ? (i.name_hi || i.name) : (i.name_en || i.name);
+              return `
           <tr>
-            <td>${i.name}</td>
+            <td>${nameText}</td>
             <td class="text-right">${i.qty} x ${i.price}</td>
             <td class="text-right bold">${i.line_total || i.price * i.qty}</td>
-          </tr>`
+          </tr>`;
+            }
           )
           .join("")}
       </tbody>
@@ -790,9 +793,11 @@ export function InvoiceView({
                             className="size-10 rounded-lg object-contain bg-white p-0.5 border border-[#E8E4DA] shrink-0"
                           />
                           <div className="min-w-0">
-                            <p className="font-bold text-xs text-[#16201A] truncate">{item.name}</p>
+                            <p className="font-bold text-xs text-[#16201A] truncate">
+                              {currentLang === "hi" ? (item.name_hi || item.name) : (item.name_en || item.name)}
+                            </p>
                             <p className="text-[11px] text-[#5A655F]">
-                              {item.variant_label ? `${item.variant_label} • ` : ""}
+                              {(currentLang === "hi" ? (item.variant_label_hi || item.variant_label) : (item.variant_label_en || item.variant_label)) ? `${currentLang === "hi" ? (item.variant_label_hi || item.variant_label) : (item.variant_label_en || item.variant_label)} • ` : ""}
                               <span className="font-semibold">{item.qty} × {formatInr(item.price)}</span>
                             </p>
                           </div>
@@ -823,15 +828,17 @@ export function InvoiceView({
                   <tbody className="divide-y divide-[#E5E0D5]">
                     {invoice.items_snapshot.map((item, idx) => {
                       const lineTotal = item.line_total || item.price * item.qty;
+                      const itemTitle = currentLang === "hi" ? (item.name_hi || item.name) : (item.name_en || item.name);
+                      const itemVariant = currentLang === "hi" ? (item.variant_label_hi || item.variant_label) : (item.variant_label_en || item.variant_label);
 
                       return (
                         <tr key={idx} className="invoice-item-row hover:bg-[#FAF8F2]/50">
                           <td className="py-2 px-3 text-center text-[#5A655F]">{idx + 1}</td>
                           <td className="py-2 px-3 font-semibold text-[#16201A]">
-                            {item.name}
+                            {itemTitle}
                           </td>
                           <td className="py-2 px-3 text-right text-[#5A655F]">
-                            {item.variant_label || "Standard"}
+                            {itemVariant || "Standard"}
                           </td>
                           <td className="py-2 px-3 text-right font-bold text-[#16201A]">
                             {item.qty}

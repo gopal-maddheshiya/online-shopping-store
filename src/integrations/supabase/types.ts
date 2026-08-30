@@ -61,6 +61,8 @@ export type Database = {
           image_url: string | null;
           is_active: boolean;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           parent_id: string | null;
           slug: string;
           sort_order: number;
@@ -72,6 +74,8 @@ export type Database = {
           image_url?: string | null;
           is_active?: boolean;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           parent_id?: string | null;
           slug: string;
           sort_order?: number;
@@ -83,6 +87,8 @@ export type Database = {
           image_url?: string | null;
           is_active?: boolean;
           name?: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           parent_id?: string | null;
           slug?: string;
           sort_order?: number;
@@ -302,36 +308,48 @@ export type Database = {
           image_url: string | null;
           mrp: number;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           order_id: string;
           price: number;
           product_id: string | null;
           qty: number;
           variant_id: string | null;
           variant_label: string | null;
+          variant_label_en?: string | null;
+          variant_label_hi?: string | null;
         };
         Insert: {
           id?: string;
           image_url?: string | null;
           mrp?: number;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           order_id: string;
           price: number;
           product_id?: string | null;
           qty: number;
           variant_id?: string | null;
           variant_label?: string | null;
+          variant_label_en?: string | null;
+          variant_label_hi?: string | null;
         };
         Update: {
           id?: string;
           image_url?: string | null;
           mrp?: number;
           name?: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           order_id?: string;
           price?: number;
           product_id?: string | null;
           qty?: number;
           variant_id?: string | null;
           variant_label?: string | null;
+          variant_label_en?: string | null;
+          variant_label_hi?: string | null;
         };
         Relationships: [
           {
@@ -427,6 +445,8 @@ export type Database = {
           id: string;
           is_active: boolean;
           label: string;
+          label_en?: string | null;
+          label_hi?: string | null;
           low_stock_threshold: number;
           mrp: number;
           price: number;
@@ -442,6 +462,8 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           label: string;
+          label_en?: string | null;
+          label_hi?: string | null;
           low_stock_threshold?: number;
           mrp: number;
           price: number;
@@ -457,6 +479,8 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           label?: string;
+          label_en?: string | null;
+          label_hi?: string | null;
           low_stock_threshold?: number;
           mrp?: number;
           price?: number;
@@ -482,6 +506,8 @@ export type Database = {
           category_id: string | null;
           created_at: string;
           description: string | null;
+          description_en?: string | null;
+          description_hi?: string | null;
           id: string;
           image_url: string | null;
           images: string[];
@@ -489,6 +515,8 @@ export type Database = {
           is_featured: boolean;
           is_popular: boolean;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           slug: string;
           sold_count: number;
           subcategory_id: string | null;
@@ -500,6 +528,8 @@ export type Database = {
           category_id?: string | null;
           created_at?: string;
           description?: string | null;
+          description_en?: string | null;
+          description_hi?: string | null;
           id?: string;
           image_url?: string | null;
           images?: string[];
@@ -507,6 +537,8 @@ export type Database = {
           is_featured?: boolean;
           is_popular?: boolean;
           name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           slug: string;
           sold_count?: number;
           subcategory_id?: string | null;
@@ -518,6 +550,8 @@ export type Database = {
           category_id?: string | null;
           created_at?: string;
           description?: string | null;
+          description_en?: string | null;
+          description_hi?: string | null;
           id?: string;
           image_url?: string | null;
           images?: string[];
@@ -525,6 +559,8 @@ export type Database = {
           is_featured?: boolean;
           is_popular?: boolean;
           name?: string;
+          name_en?: string | null;
+          name_hi?: string | null;
           slug?: string;
           sold_count?: number;
           subcategory_id?: string | null;

@@ -82,7 +82,7 @@ function ProductPage() {
   const { data: product, isLoading } = useQuery(productQuery(slug));
   const { data: all } = useQuery(productsQuery());
   const { add } = useCart();
-  const { lang, t, getProductName, getVariantLabel } = useLanguage();
+  const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
   const [variantId, setVariantId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
 
@@ -113,7 +113,8 @@ function ProductPage() {
 
   if (!product) throw notFound();
 
-  const localizedName = getProductName(product.name, product.slug);
+  const localizedName = getProductName(product);
+  const localizedDescription = getProductDescription(product);
 
   const variants: Variant[] = (product.product_variants ?? [])
     .filter((v) => v.is_active)
@@ -181,7 +182,7 @@ function ProductPage() {
           {/* Pack Size Selector */}
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
-              {lang === "hi" ? "पैकेट साइज चुनें" : "Select Pack Size"}
+              {t.selectPackSizeTitle}
             </p>
             <div className="flex flex-wrap gap-2">
               {variants.map((v) => (
@@ -195,7 +196,7 @@ function ProductPage() {
                       : "border-[#E5E0D5] bg-[#FAF8F2] text-[#16201A] hover:border-[#145A45]"
                   }`}
                 >
-                  {getVariantLabel(v.label)} · {inr(v.price)}
+                  {getVariantLabel(v)} · {inr(v.price)}
                 </button>
               ))}
             </div>
@@ -213,9 +214,7 @@ function ProductPage() {
               ) : (
                 <span className="font-semibold text-[#145A45] flex items-center gap-1">
                   <Check className="size-3.5" />
-                  {lang === "hi"
-                    ? "महाराजगंज में डिलीवरी हेतु उपलब्ध"
-                    : "In Stock for Maharajganj Delivery"}
+                  {t.inStockMaharajganj}
                 </span>
               )
             ) : (
@@ -257,7 +256,11 @@ function ProductPage() {
                       productId: product.id,
                       slug: product.slug,
                       name: localizedName,
-                      variantLabel: getVariantLabel(variant.label),
+                      name_en: product.name_en || product.name,
+                      name_hi: product.name_hi || null,
+                      variantLabel: getVariantLabel(variant) || "1 pack",
+                      variantLabel_en: variant.label_en || variant.label,
+                      variantLabel_hi: variant.label_hi || null,
                       price: Number(variant.price),
                       mrp: Number(variant.mrp),
                       imageUrl: getProductImage(product),
@@ -282,14 +285,14 @@ function ProductPage() {
                 rel="noreferrer"
                 className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#145A45] text-white px-4 text-xs font-bold shadow-xs hover:bg-[#0A3628] active:scale-95 transition-all"
               >
-                <span>{lang === "hi" ? "व्हाट्सएप ऑर्डर" : "WhatsApp Order"}</span>
+                <span>{t.whatsappOrderBtn}</span>
               </a>
 
               <a
                 href="tel:+916388354988"
                 className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-4 text-xs font-bold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] active:scale-95 transition-all"
               >
-                <span>{lang === "hi" ? "फोन पर पूछें" : "Call Store"}</span>
+                <span>{t.callStoreBtn}</span>
               </a>
             </div>
           </div>
@@ -297,13 +300,10 @@ function ProductPage() {
           {/* Product Description & Quality Features */}
           <div className="border-t border-[#E5E0D5] pt-4 space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
-              {lang === "hi" ? "उत्पाद विवरण व शुद्धता" : "Product Details & Purity"}
+              {t.productDetailsAndPurity}
             </h3>
             <p className="text-xs leading-relaxed text-[#5A655F]">
-              {product.description ||
-                (lang === "hi"
-                  ? "महाराजगंज के विश्वसनीय किराना स्टोर 'अरुण गोपाल ट्रेडर्स' द्वारा 100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।"
-                  : "100% authentic, hygienically packed, and carefully sourced by Arun Gopal Traders for doorstep delivery in Maharajganj.")}
+              {localizedDescription}
             </p>
           </div>
 
@@ -330,7 +330,7 @@ function ProductPage() {
         <section className="space-y-4 pt-6 border-t border-[#E5E0D5]">
           <div className="flex items-center justify-between">
             <h2 className="font-sans text-xl font-bold text-[#16201A]">
-              {lang === "hi" ? "मिलते-जुलते किराना सामान" : "Similar Essentials"}
+              {t.similarEssentialsTitle}
             </h2>
             <Link to="/shop" className="text-xs font-bold text-[#145A45] hover:underline">
               {t.viewAll} →
@@ -349,7 +349,7 @@ function ProductPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] text-[#5A655F] truncate">
-              {getVariantLabel(variant?.label ?? "")}
+              {variant ? getVariantLabel(variant) : ""}
             </p>
             <p className="text-sm font-black text-[#16201A]">{inr(variant?.price ?? 0)}</p>
           </div>
@@ -363,7 +363,11 @@ function ProductPage() {
                   productId: product.id,
                   slug: product.slug,
                   name: localizedName,
-                  variantLabel: getVariantLabel(variant.label),
+                  name_en: product.name_en || product.name,
+                  name_hi: product.name_hi || null,
+                  variantLabel: getVariantLabel(variant) || "1 pack",
+                  variantLabel_en: variant.label_en || variant.label,
+                  variantLabel_hi: variant.label_hi || null,
                   price: Number(variant.price),
                   mrp: Number(variant.mrp),
                   imageUrl: getProductImage(product),

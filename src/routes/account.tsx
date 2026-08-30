@@ -81,7 +81,7 @@ function AccountPage() {
   const { user, profile, refreshProfile, loading: authLoading } = useAuth();
   const { add } = useCart();
   const { items: wishlistItems } = useWishlist();
-  const { lang, t } = useLanguage();
+  const { lang, t, getProductName, getVariantLabel } = useLanguage();
 
   // Auth Mode: "signin" | "signup" | "forgot"
   const [authView, setAuthView] = useState<"signin" | "signup" | "forgot">("signin");
@@ -871,7 +871,7 @@ function AccountPage() {
 
   function handleReorder(order: Order) {
     if (!order.order_items || order.order_items.length === 0) {
-      toast.error("No items found in this order to reorder");
+      toast.error(lang === "hi" ? "इस ऑर्डर में कोई सामग्री नहीं मिली" : "No items found in this order to reorder");
       return;
     }
 
@@ -882,8 +882,12 @@ function AccountPage() {
           variantId: item.variant_id ?? `temp-${item.id}`,
           productId: item.product_id ?? item.id,
           slug: item.name.toLowerCase().replace(/\s+/g, "-"),
-          name: item.name,
-          variantLabel: item.variant_label ?? "1 pack",
+          name: getProductName(item),
+          name_en: item.name_en || item.name,
+          name_hi: item.name_hi || null,
+          variantLabel: getVariantLabel(item) || "1 pack",
+          variantLabel_en: item.variant_label_en || item.variant_label || "1 pack",
+          variantLabel_hi: item.variant_label_hi || null,
           price: Number(item.price),
           mrp: Number(item.mrp || item.price),
           imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
@@ -894,7 +898,11 @@ function AccountPage() {
       addedCount++;
     });
 
-    toast.success(`Added ${addedCount} items from Order ${order.order_no} to basket!`);
+    toast.success(
+      lang === "hi"
+        ? `ऑर्डर #${order.order_no} से ${addedCount} सामान बास्केट में जोड़े गए!`
+        : `Added ${addedCount} items from Order #${order.order_no} to basket!`,
+    );
     void navigate({ to: "/cart" });
   }
 
@@ -1569,13 +1577,13 @@ function AccountPage() {
                             name: item.name,
                             image_url: item.image_url,
                           })}
-                          alt={item.name}
+                          alt={getProductName(item)}
                           className="size-9 rounded-md object-contain bg-transparent p-0.5"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-[#16201A]">{item.name}</p>
+                          <p className="truncate font-medium text-[#16201A]">{getProductName(item)}</p>
                           <p className="text-[10px] text-[#5A655F]">
-                            {item.variant_label} × {item.qty} ({inr(item.price * item.qty)})
+                            {getVariantLabel(item)} × {item.qty} ({inr(item.price * item.qty)})
                           </p>
                         </div>
                       </div>
@@ -1584,7 +1592,7 @@ function AccountPage() {
 
                   <div className="flex items-center justify-between border-t border-[#E8E4DA] pt-2 text-xs">
                     <span className="text-[#5A655F] capitalize">
-                      {order.order_type === "delivery" ? "होम डिलीवरी" : "दुकान से पिकअप"} • {order.payment_method?.toUpperCase()}
+                      {order.order_type === "delivery" ? (lang === "hi" ? "होम डिलीवरी" : "Home Delivery") : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")} • {order.payment_method?.toUpperCase()}
                     </span>
                     <span className="font-bold text-[#16201A]">
                       {lang === "hi" ? "कुल राशि: " : "Total: "}

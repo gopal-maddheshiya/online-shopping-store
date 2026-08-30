@@ -7,7 +7,11 @@ export interface InvoiceItem {
   product_id?: string | null;
   variant_id?: string | null;
   name: string;
+  name_en?: string | null;
+  name_hi?: string | null;
   variant_label?: string;
+  variant_label_en?: string | null;
+  variant_label_hi?: string | null;
   mrp: number;
   price: number;
   qty: number;

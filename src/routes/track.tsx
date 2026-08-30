@@ -55,7 +55,7 @@ export const Route = createFileRoute("/track")({
 });
 
 function TrackPage() {
-  const { t, lang, language = lang } = useLanguage();
+  const { t, lang, language = lang, getProductName, getVariantLabel } = useLanguage();
   const search = Route.useSearch();
 
   const { data: settings } = useQuery(settingsQuery);
@@ -470,13 +470,13 @@ function TrackPage() {
                             name: item.name,
                             image_url: item.image_url,
                           })}
-                          alt={item.name}
+                          alt={getProductName(item)}
                           className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E8E4DA]"
                         />
                         <div>
-                          <p className="font-semibold text-[#1F2924]">{item.name}</p>
+                          <p className="font-semibold text-[#1F2924]">{getProductName(item)}</p>
                           <p className="text-[#6B746F]">
-                            {item.variant_label} × {item.qty}
+                            {getVariantLabel(item)} × {item.qty}
                           </p>
                         </div>
                       </div>

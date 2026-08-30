@@ -32,7 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
       ? Math.round(Number(activeVariant.mrp) - Number(activeVariant.price))
       : 0;
   const isWishlisted = inWishlist(product.id);
-  const localizedProductName = getProductName(product.name, product.slug);
+  const localizedProductName = getProductName(product);
 
   return (
     <div
@@ -48,7 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         ) : (
           <span className="rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#0F4A38] shrink-0">
-            {lang === "hi" ? "ताज़ा" : "Fresh"}
+            {t.freshBadge}
           </span>
         )}
 
@@ -145,17 +145,15 @@ export function ProductCard({ product }: { product: Product }) {
                     : "border-[#E5E0D5] bg-[#FAF8F2] text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
                   }`}
               >
-                {getVariantLabel(v.label)}
+                {getVariantLabel(v)}
               </button>
             ))}
           </div>
         ) : (
           <div className="mt-1 text-[10px] sm:text-[11px] font-medium text-[#5A655F] truncate w-full">
             {activeVariant?.label
-              ? getVariantLabel(activeVariant.label)
-              : lang === "hi"
-                ? "1 पैकेट"
-                : "1 pack"}
+              ? getVariantLabel(activeVariant)
+              : t.singlePackLabel}
           </div>
         )}
 
@@ -192,7 +190,7 @@ export function ProductCard({ product }: { product: Product }) {
                   <Minus className="size-3.5" />
                 </button>
                 <span className="text-[11px] sm:text-xs font-black text-[#0F4A38] truncate px-0.5 text-center flex-1">
-                  {inCart.qty} {lang === "hi" ? "कार्ट में" : "in cart"}
+                  {inCart.qty} {t.inCartQtyLabel}
                 </span>
                 <button
                   type="button"
@@ -215,7 +213,11 @@ export function ProductCard({ product }: { product: Product }) {
                     productId: product.id,
                     slug: product.slug,
                     name: localizedProductName,
-                    variantLabel: getVariantLabel(activeVariant.label),
+                    name_en: product.name_en || product.name,
+                    name_hi: product.name_hi || null,
+                    variantLabel: getVariantLabel(activeVariant) || "1 pack",
+                    variantLabel_en: activeVariant.label_en || activeVariant.label,
+                    variantLabel_hi: activeVariant.label_hi || null,
                     price: Number(activeVariant.price),
                     mrp: Number(activeVariant.mrp),
                     imageUrl: getProductImage(product),

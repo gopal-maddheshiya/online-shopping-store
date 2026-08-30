@@ -41,6 +41,7 @@ import { inr, discountPercent } from "@/lib/format";
 import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
 import { uploadProductImage } from "@/lib/image-upload";
 import { broadcastProductSync } from "@/lib/realtime-sync";
+import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } from "@/lib/i18n";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
 
 
@@ -85,14 +86,17 @@ export function AdminProducts({
 
   // Form State for Add / Edit Product
   const [name, setName] = useState("");
+  const [nameHi, setNameHi] = useState("");
   const [slug, setSlug] = useState("");
   const [brand, setBrand] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
   const [subcategoryId, setSubcategoryId] = useState<string>("");
   const [description, setDescription] = useState("");
+  const [descriptionHi, setDescriptionHi] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [previewLang, setPreviewLang] = useState<"hi" | "en">("hi");
 
   // Dedicated Front & Back Image State
   const [frontImageUrl, setFrontImageUrl] = useState("");
@@ -119,11 +123,13 @@ export function AdminProducts({
   function openAddModal() {
     setEditingProduct(null);
     setName("");
+    setNameHi("");
     setSlug("");
     setBrand("");
     setCategoryId(parentCategories[0]?.id ?? "");
     setSubcategoryId("");
     setDescription("");
+    setDescriptionHi("");
     setFrontImageUrl("");
     setFrontImageLabel("Front View");
     setBackImageUrl("");
@@ -132,21 +138,25 @@ export function AdminProducts({
     setIsFeatured(false);
     setIsPopular(false);
     setIsActive(true);
+    setPreviewLang("hi");
     setVariants([{ label: "1 kg", price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 }]);
     setIsAddModalOpen(true);
   }
 
   function openEditModal(prod: Product) {
     setEditingProduct(prod);
-    setName(prod.name);
+    setName(prod.name_en || prod.name);
+    setNameHi(prod.name_hi || "");
     setSlug(prod.slug);
     setBrand(prod.brand ?? "");
     setCategoryId(prod.category_id ?? "");
     setSubcategoryId(prod.subcategory_id ?? "");
-    setDescription(prod.description ?? "");
+    setDescription(prod.description_en || prod.description || "");
+    setDescriptionHi(prod.description_hi || "");
     setIsFeatured(prod.is_featured);
     setIsPopular(prod.is_popular);
     setIsActive(prod.is_active);
+    setPreviewLang("hi");
 
     const parsedImages = getProductImages(prod);
     const front = parsedImages.find((img) => img.type === "front") || parsedImages[0];
@@ -390,11 +400,15 @@ export function AdminProducts({
           .from("products")
           .update({
             name: name.trim(),
+            name_en: name.trim(),
+            name_hi: nameHi.trim() || null,
             slug: slug.trim(),
             brand: brand.trim() || null,
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
+            description_en: description.trim() || null,
+            description_hi: descriptionHi.trim() || null,
             image_url: primaryUrl,
             images: stringifiedImages as unknown as string[],
             is_featured: isFeatured,
@@ -449,11 +463,15 @@ export function AdminProducts({
           .from("products")
           .insert({
             name: name.trim(),
+            name_en: name.trim(),
+            name_hi: nameHi.trim() || null,
             slug: slug.trim(),
             brand: brand.trim() || null,
             category_id: categoryId || null,
             subcategory_id: subcategoryId || null,
             description: description.trim() || null,
+            description_en: description.trim() || null,
+            description_hi: descriptionHi.trim() || null,
             image_url: primaryUrl,
             images: stringifiedImages as unknown as string[],
             is_featured: isFeatured,
@@ -551,8 +569,30 @@ export function AdminProducts({
     return true;
   });
 
+  const missingCount = products.filter(
+    (p) =>
+      !p.name_hi &&
+      !PRODUCT_NAMES_HI[p.slug] &&
+      !PRODUCT_NAMES_BY_NAME_HI[p.name.toLowerCase().trim()],
+  ).length;
+
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Missing Translation Notice for Store Owner */}
+      {missingCount > 0 && (
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs text-amber-900 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="size-4 text-amber-700 shrink-0" />
+            <p>
+              <span className="font-bold">{missingCount} product(s)</span> are missing Hindi translations. You can click <strong>Edit</strong> on any product to enter its Hindi title and description.
+            </p>
+          </div>
+          <span className="rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 shrink-0">
+            हिंदी अनुवाद शेष
+          </span>
+        </div>
+      )}
+
       {/* Top Header Bar */}
       <div className="flex flex-col gap-3 rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
@@ -574,7 +614,7 @@ export function AdminProducts({
               <SelectItem value="all" className="text-xs">All Categories</SelectItem>
               {parentCategories.map((c) => (
                 <SelectItem key={c.id} value={c.id} className="text-xs">
-                  {c.name}
+                  {c.name} {c.name_hi ? `(${c.name_hi})` : ""}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -633,9 +673,25 @@ export function AdminProducts({
                           {totalStock === 0 ? "Out of Stock" : `${totalStock} in stock`}
                         </span>
                       </div>
-                      <p className="font-semibold text-[#1F2924] text-xs leading-snug line-clamp-1">
-                        {p.name}
-                      </p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="font-semibold text-[#1F2924] text-xs leading-snug">
+                          {p.name}
+                        </p>
+                        {!(p.name_hi || PRODUCT_NAMES_HI[p.slug] || PRODUCT_NAMES_BY_NAME_HI[p.name.toLowerCase().trim()]) ? (
+                          <span className="rounded bg-amber-100 px-1 py-0.2 text-[9px] font-bold text-amber-800 border border-amber-300">
+                            ⚠️ हिंदी बाकी
+                          </span>
+                        ) : (
+                          <span className="rounded bg-emerald-50 px-1 py-0.2 text-[9px] font-medium text-emerald-700 border border-emerald-200">
+                            ✓ En/Hi
+                          </span>
+                        )}
+                      </div>
+                      {p.name_hi && (
+                        <p className="text-[11px] text-[#145A45] font-medium truncate">
+                          {p.name_hi}
+                        </p>
+                      )}
                       <p className="font-sans font-extrabold text-[#145A45] text-sm mt-0.5">
                         {minPrice === maxPrice
                           ? inr(minPrice)
@@ -717,6 +773,7 @@ export function AdminProducts({
                     const maxPrice = vars.length
                       ? Math.max(...vars.map((v) => Number(v.price)))
                       : 0;
+                    const hasHindi = Boolean(p.name_hi || PRODUCT_NAMES_HI[p.slug] || PRODUCT_NAMES_BY_NAME_HI[p.name.toLowerCase().trim()]);
 
                     return (
                       <tr key={p.id} className="hover:bg-[#FAF8F2]/50 transition-colors">
@@ -727,8 +784,24 @@ export function AdminProducts({
                               alt={p.name}
                               className="size-11 rounded-xl object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-1"
                             />
-                            <div className="min-w-0 max-w-[200px]">
-                              <p className="truncate font-semibold text-[#1F2924]">{p.name}</p>
+                            <div className="min-w-0 max-w-[220px]">
+                              <div className="flex items-center gap-1.5">
+                                <p className="truncate font-semibold text-[#1F2924]">{p.name}</p>
+                                {!hasHindi ? (
+                                  <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-bold text-amber-800 border border-amber-300 shrink-0">
+                                    ⚠️ हिंदी बाकी
+                                  </span>
+                                ) : (
+                                  <span className="rounded bg-emerald-50 px-1 py-0.2 text-[9px] font-medium text-emerald-700 border border-emerald-200 shrink-0">
+                                    ✓ En/Hi
+                                  </span>
+                                )}
+                              </div>
+                              {p.name_hi && (
+                                <p className="text-[11px] text-[#145A45] font-medium truncate">
+                                  {p.name_hi}
+                                </p>
+                              )}
                               <span className="text-[10px] text-[#6B746F] font-mono">
                                 /{p.slug}
                               </span>
@@ -834,22 +907,44 @@ export function AdminProducts({
           </DialogHeader>
 
           <form onSubmit={handleSaveProduct} className="space-y-4 py-2">
-            {/* Section 1: Basic Info */}
+            {/* Section 1: Basic & Bilingual Info */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
-                1. Basic Information
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
+                  1. Product Details (द्विभाषी नाम / Bilingual Info)
+                </h4>
+                <span className="text-[10px] text-[#5A655F] font-semibold">
+                  English &amp; Hindi Fields
+                </span>
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-xs font-semibold text-[#1F2924]">
-                    Product Name <span className="text-red-500">*</span>
+                {/* English Name */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
+                    <span>Product Name (English) <span className="text-red-500">*</span></span>
+                    <span className="text-[10px] text-[#5A655F]">अंग्रेजी नाम</span>
                   </Label>
                   <Input
                     required
                     placeholder="e.g. Fortune Chakki Fresh Atta"
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9 font-medium"
+                  />
+                </div>
+
+                {/* Hindi Name */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
+                    <span>उत्पाद का नाम (हिंदी / Hindi)</span>
+                    <span className="text-[10px] text-[#145A45] font-semibold">देहात/स्थानीय ग्राहकों हेतु</span>
+                  </Label>
+                  <Input
+                    placeholder="उदा. फॉर्च्यून चक्की फ्रेश शुद्ध आटा"
+                    value={nameHi}
+                    onChange={(e) => setNameHi(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9 font-medium"
                   />
                 </div>
 
@@ -885,7 +980,7 @@ export function AdminProducts({
                     <SelectContent>
                       {parentCategories.map((c) => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">
-                          {c.name}
+                          {c.name} {c.name_hi ? `(${c.name_hi})` : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1244,19 +1339,35 @@ export function AdminProducts({
               </div>
 
 
-              {/* Description / Highlights */}
-              <div className="space-y-1 pt-2 border-t border-[#E5E0D5]/60">
+              {/* Section 3.2: Bilingual Descriptions / Highlights */}
+              <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-[#E5E0D5]/60">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#16201A] flex items-center justify-between">
+                    <span>Description (English)</span>
+                    <span className="text-[10px] text-[#5A655F]">अंग्रेजी विवरण</span>
+                  </Label>
+                  <Textarea
+                    rows={2}
+                    placeholder="Pure stone ground whole wheat flour with natural dietary fiber..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="rounded-xl text-xs border-[#E5E0D5] bg-white"
+                  />
+                </div>
 
-                <Label className="text-xs font-semibold text-[#16201A]">
-                  Description / Product Highlights
-                </Label>
-                <Textarea
-                  rows={2}
-                  placeholder="Pure whole wheat chakki atta with natural dietary fiber, 0% maida..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="rounded-xl text-xs border-[#E5E0D5] bg-white"
-                />
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#16201A] flex items-center justify-between">
+                    <span>उत्पाद विवरण (हिंदी / Hindi)</span>
+                    <span className="text-[10px] text-[#145A45] font-semibold">हिंदी विवरण</span>
+                  </Label>
+                  <Textarea
+                    rows={2}
+                    placeholder="100% शुद्ध संपूर्ण गेहूं के दानों से बना चक्की आटा, पौष्टिक व स्वच्छ पैकिंग..."
+                    value={descriptionHi}
+                    onChange={(e) => setDescriptionHi(e.target.value)}
+                    className="rounded-xl text-xs border-[#E5E0D5] bg-white"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1276,6 +1387,103 @@ export function AdminProducts({
                 <Checkbox checked={isActive} onCheckedChange={(c) => setIsActive(Boolean(c))} />
                 <span>Active &amp; Visible</span>
               </label>
+            </div>
+
+            {/* Section 5: Live Customer View Preview (ग्राहक को कैसा दिखेगा) */}
+            <div className="rounded-2xl border border-[#145A45]/30 bg-[#FAF8F2] p-3.5 sm:p-4 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#145A45] flex items-center gap-1.5">
+                    <Sparkles className="size-3.5 text-[#145A45]" /> 5. Live Customer Preview (ग्राहक को कैसा दिखेगा)
+                  </h4>
+                  <p className="text-[10px] text-[#5A655F]">
+                    Switch tabs to verify how rural Hindi customers vs English visitors will see this product card.
+                  </p>
+                </div>
+
+                <div className="flex items-center rounded-xl bg-white p-0.5 border border-[#E8E4DA] shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLang("hi")}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                      previewLang === "hi"
+                        ? "bg-[#145A45] text-white shadow-2xs"
+                        : "text-[#5A655F] hover:text-[#16201A]"
+                    }`}
+                  >
+                    🇮🇳 Customer view — Hindi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewLang("en")}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${
+                      previewLang === "en"
+                        ? "bg-[#145A45] text-white shadow-2xs"
+                        : "text-[#5A655F] hover:text-[#16201A]"
+                    }`}
+                  >
+                    🇬🇧 Customer view — English
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Card */}
+              <div className="max-w-xs mx-auto rounded-2xl bg-white p-3.5 border border-[#E5E0D5] shadow-xs space-y-2">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="rounded bg-[#E6EFE8] px-1.5 py-0.5 font-bold text-[#0F4A38]">
+                    {previewLang === "hi" ? "ताज़ा" : "Fresh"}
+                  </span>
+                  <span className="text-[#5A655F] uppercase font-bold text-[9px]">
+                    {brand || (previewLang === "hi" ? "दैनिक राशन" : "Grocery")}
+                  </span>
+                </div>
+
+                <div className="h-28 rounded-xl bg-[#FAF8F2] flex items-center justify-center p-1 overflow-hidden border border-[#E5E0D5]/60">
+                  <img
+                    src={frontImageUrl || backImageUrl || "/images/packaged.jpg"}
+                    alt="Preview"
+                    className="h-full w-auto object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <p className="font-bold text-xs text-[#16201A] line-clamp-2">
+                    {previewLang === "hi"
+                      ? nameHi.trim() || name.trim() || "उत्पाद का नाम यहाँ दिखेगा"
+                      : name.trim() || "Product Name Here"}
+                  </p>
+                  <p className="text-[10px] text-[#5A655F] line-clamp-1 mt-0.5">
+                    {previewLang === "hi"
+                      ? descriptionHi.trim() || description.trim() || "100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।"
+                      : description.trim() || "100% authentic, hygienically packed for home delivery."}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-[#E5E0D5]/70">
+                  <div>
+                    <span className="text-xs font-extrabold text-[#145A45]">
+                      {inr(variants[0]?.price ?? 100)}
+                    </span>
+                    {variants[0]?.mrp && variants[0].mrp > variants[0].price && (
+                      <span className="text-[10px] text-[#5A655F] line-through ml-1.5">
+                        {inr(variants[0].mrp)}
+                      </span>
+                    )}
+                    <span className="block text-[9px] text-[#5A655F]">
+                      {previewLang === "hi"
+                        ? translateVariantLabel(variants[0]?.label || "1 kg", "hi")
+                        : variants[0]?.label || "1 kg"}
+                    </span>
+                  </div>
+
+                  <span className="rounded-lg bg-[#145A45] px-2.5 py-1 text-[10px] font-bold text-white shadow-2xs">
+                    {previewLang === "hi" ? "जोड़ें +" : "Add +"}
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-[#E8E4DA]">

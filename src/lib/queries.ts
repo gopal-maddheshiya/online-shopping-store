@@ -5,6 +5,8 @@ export type Variant = {
   id: string;
   product_id: string;
   label: string;
+  label_en?: string | null;
+  label_hi?: string | null;
   mrp: number;
   price: number;
   stock: number;
@@ -27,11 +29,15 @@ export type ProductImage = {
 export type Product = {
   id: string;
   name: string;
+  name_en?: string | null;
+  name_hi?: string | null;
   slug: string;
   brand: string | null;
   category_id: string | null;
   subcategory_id: string | null;
   description: string | null;
+  description_en?: string | null;
+  description_hi?: string | null;
   image_url: string | null;
   images?: (string | ProductImage)[];
   tags: string[];
@@ -49,6 +55,8 @@ export type Category = {
   id: string;
   parent_id: string | null;
   name: string;
+  name_en?: string | null;
+  name_hi?: string | null;
   slug: string;
   icon: string | null;
   image_url: string | null;
@@ -91,7 +99,11 @@ export type OrderItem = {
   product_id: string | null;
   variant_id: string | null;
   name: string;
+  name_en?: string | null;
+  name_hi?: string | null;
   variant_label: string | null;
+  variant_label_en?: string | null;
+  variant_label_hi?: string | null;
   image_url: string | null;
   mrp: number;
   price: number;

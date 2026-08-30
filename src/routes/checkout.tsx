@@ -267,7 +267,11 @@ function CheckoutPage() {
         product_id: item.productId?.startsWith("temp-") ? null : item.productId,
         variant_id: item.variantId?.startsWith("temp-") ? null : item.variantId,
         name: item.name,
+        name_en: item.name_en || item.name,
+        name_hi: item.name_hi || null,
         variant_label: item.variantLabel,
+        variant_label_en: item.variantLabel_en || item.variantLabel,
+        variant_label_hi: item.variantLabel_hi || null,
         image_url: item.imageUrl,
         mrp: item.mrp,
         price: item.price,
@@ -500,18 +504,16 @@ function CheckoutPage() {
               <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
                 1
               </span>
-              {lang === "hi" ? "ग्राहक का विवरण" : "Customer Contact Details"}
+              {t.customerContactDetails}
             </h2>
             <p className="mt-1 text-xs text-[#5A655F]">
-              {lang === "hi"
-                ? "ऑर्डर अपडेट और डिलीवरी के लिए कृपया सही मोबाइल नंबर दर्ज करें।"
-                : "We use your mobile number to send order updates and identify your delivery history."}
+              {t.customerContactSubtitle}
             </p>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="cust-name" className="text-xs font-semibold text-[#16201A]">
-                  {lang === "hi" ? "पूरा नाम" : "Full Name"} <span className="text-red-500">*</span>
+                  {t.fullName} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="cust-name"
@@ -525,7 +527,7 @@ function CheckoutPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="cust-phone" className="text-xs font-semibold text-[#16201A]">
-                  {lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"} <span className="text-red-500">*</span>
+                  {t.mobileNumber10} <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex rounded-lg border border-[#E5E0D5] focus-within:ring-1 focus-within:ring-[#145A45]">
                   <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E5E0D5]">
@@ -546,9 +548,9 @@ function CheckoutPage() {
 
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="cust-email" className="text-xs font-semibold text-[#16201A]">
-                  {lang === "hi" ? "ईमेल पता" : "Email Address"}{" "}
+                  {t.emailAddress}{" "}
                   <span className="text-[#5A655F] font-normal">
-                    {lang === "hi" ? "(वैकल्पिक - बिल कॉपी के लिए)" : "(Optional for invoice copy)"}
+                    {t.optionalInvoiceCopy}
                   </span>
                 </Label>
                 <Input
@@ -569,7 +571,7 @@ function CheckoutPage() {
               <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
                 2
               </span>
-              {lang === "hi" ? "डिलीवरी का प्रकार" : "Order Fulfillment Method"}
+              {t.orderFulfillmentMethod}
             </h2>
 
             <RadioGroup
@@ -591,15 +593,13 @@ function CheckoutPage() {
                     htmlFor="type-delivery"
                     className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
                   >
-                    <Truck className="size-4 text-[#145A45]" /> {lang === "hi" ? "होम डिलीवरी" : "Home Delivery"}
+                    <Truck className="size-4 text-[#145A45]" /> {t.homeDelivery}
                   </Label>
                   <p className="mt-0.5 text-xs text-[#5A655F]">
-                    {lang === "hi"
-                      ? "महाराजगंज नगर व आसपास के क्षेत्रों में 30-मिनट डिलीवरी।"
-                      : "Doorstep delivery across Maharajganj town and nearby areas."}
+                    {t.homeDeliveryDesc}
                   </p>
                   <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#0F4A38]">
-                    {deliveryFee === 0 ? "FREE Delivery" : `Delivery Fee: ₹${standardDeliveryFee}`}
+                    {deliveryFee === 0 ? t.freeDeliveryTitle : `${t.deliveryFee}: ₹${standardDeliveryFee}`}
                   </span>
                 </div>
               </div>
@@ -618,15 +618,13 @@ function CheckoutPage() {
                     htmlFor="type-pickup"
                     className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
                   >
-                    <Store className="size-4 text-[#145A45]" /> {lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}
+                    <Store className="size-4 text-[#145A45]" /> {t.storePickupTitle}
                   </Label>
                   <p className="mt-0.5 text-xs text-[#5A655F]">
-                    {lang === "hi"
-                      ? "रामनगर, अड्डा बाजार रोड दुकान काउंटर से पैक सामान लें।"
-                      : "Collect ready order at Ramnagar, Adda Bazar Road store."}
+                    {t.storePickupDesc}
                   </p>
                   <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#15803D]">
-                    {lang === "hi" ? "100% फ्री • तुरंत पैकिंग" : "FREE • Zero Waiting"}
+                    {t.freeZeroWaiting}
                   </span>
                 </div>
               </div>
@@ -1045,10 +1043,10 @@ function CheckoutPage() {
                 <div key={i.variantId} className="flex items-center justify-between gap-2 text-xs">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-[#16201A]">
-                      {getProductName(i.name, i.slug)}
+                      {getProductName(i)}
                     </p>
                     <p className="text-[11px] text-[#5A655F]">
-                      {getVariantLabel(i.variantLabel)} × {i.qty}
+                      {getVariantLabel(i)} × {i.qty}
                     </p>
                   </div>
                   <span className="font-bold text-[#16201A]">{inr(i.price * i.qty)}</span>

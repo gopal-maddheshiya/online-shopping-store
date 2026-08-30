@@ -133,8 +133,15 @@ function Shop() {
     const q = (search.q ?? "").trim().toLowerCase();
     if (q) {
       list = list.filter((p) => {
-        const hindiName = getProductName(p.name, p.slug);
-        return [p.name, hindiName, p.brand ?? "", p.description ?? "", ...(p.tags ?? [])]
+        const hindiName = getProductName(p);
+        const englishName = p.name_en || p.name;
+        const brand = p.brand ?? "";
+        const desc = p.description ?? "";
+        const descHi = p.description_hi ?? "";
+        const descEn = p.description_en ?? "";
+        const tags = p.tags ?? [];
+        return [p.name, englishName, p.name_hi, hindiName, brand, desc, descHi, descEn, ...tags]
+          .filter(Boolean)
           .join(" ")
           .toLowerCase()
           .includes(q);
@@ -158,14 +165,14 @@ function Shop() {
     else if (search.sort === "discount") sorted.sort((a, b) => disc(b) - disc(a));
     else if (search.sort === "popular") sorted.sort((a, b) => b.sold_count - a.sold_count);
     return sorted;
-  }, [products, categories, activeCategory, search]);
+  }, [products, categories, activeCategory, search, getProductName]);
 
   const filters = (
     <div className="space-y-5">
       {/* Category List */}
       <div>
         <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
-          {lang === "hi" ? "कैटेगरी" : "Categories"}
+          {t.categoriesLabel}
         </h3>
         <div className="space-y-0.5">
           <button
@@ -176,7 +183,7 @@ function Shop() {
                 : "text-[#16201A] hover:bg-[#FAF8F2]"
             }`}
           >
-            <span>{lang === "hi" ? "सभी सामान" : "All Categories"}</span>
+            <span>{t.allCategoriesLabel}</span>
           </button>
           {parents.map((c) => (
             <button
@@ -188,7 +195,7 @@ function Shop() {
                   : "text-[#16201A] hover:bg-[#FAF8F2]"
               }`}
             >
-              <span>{getCategoryName(c.name, c.slug)}</span>
+              <span>{getCategoryName(c)}</span>
             </button>
           ))}
         </div>
@@ -198,8 +205,7 @@ function Shop() {
       {subs.length ? (
         <div>
           <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
-            {activeCategory ? getCategoryName(activeCategory.name, activeCategory.slug) : ""}{" "}
-            {lang === "hi" ? "के प्रकार" : "Types"}
+            {activeCategory ? getCategoryName(activeCategory) : ""} {t.typesLabel}
           </h3>
           <div className="space-y-0.5">
             {subs.map((c) => (
@@ -214,7 +220,7 @@ function Shop() {
                     : "text-[#5A655F] hover:bg-[#FAF8F2]"
                 }`}
               >
-                {c.name}
+                {getCategoryName(c)}
               </button>
             ))}
           </div>
@@ -224,13 +230,13 @@ function Shop() {
       {/* Price Range */}
       <div>
         <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
-          {lang === "hi" ? "मूल्य सीमा (₹)" : "Price Range (₹)"}
+          {t.priceRangeLabel}
         </h3>
         <div className="flex items-center gap-2">
           <Input
             type="number"
             inputMode="numeric"
-            placeholder={lang === "hi" ? "न्यूनतम" : "Min"}
+            placeholder={t.minPricePlaceholder}
             value={search.min ?? ""}
             onChange={(e) => update({ min: e.target.value ? Number(e.target.value) : undefined })}
             className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
@@ -239,7 +245,7 @@ function Shop() {
           <Input
             type="number"
             inputMode="numeric"
-            placeholder={lang === "hi" ? "अधिकतम" : "Max"}
+            placeholder={t.maxPricePlaceholder}
             value={search.max ?? ""}
             onChange={(e) => update({ max: e.target.value ? Number(e.target.value) : undefined })}
             className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
@@ -255,7 +261,7 @@ function Shop() {
           onCheckedChange={(v) => update({ instock: v ? true : undefined })}
         />
         <Label htmlFor="instock" className="text-xs font-semibold text-[#16201A]">
-          {lang === "hi" ? "केवल उपलब्ध सामान" : "In stock only"}
+          {t.inStockOnlyLabel}
         </Label>
       </div>
 
@@ -265,7 +271,7 @@ function Shop() {
         className="w-full rounded-lg text-xs border-[#E5E0D5] hover:bg-[#FAF8F2]"
         onClick={() => void navigate({ search: {} })}
       >
-        {lang === "hi" ? "सभी फिल्टर हटाएं" : "Clear All Filters"}
+        {t.clearAllFiltersBtn}
       </Button>
     </div>
   );
@@ -277,10 +283,8 @@ function Shop() {
         <div>
           <h1 className="font-sans text-2xl font-bold text-[#16201A]">
             {activeCategory
-              ? getCategoryName(activeCategory.name, activeCategory.slug)
-              : lang === "hi"
-                ? "सभी किराना सामान"
-                : "All Groceries"}
+              ? getCategoryName(activeCategory)
+              : t.allGroceries}
           </h1>
           <p className="text-xs text-[#5A655F] mt-0.5">
             {lang === "hi"
@@ -298,13 +302,13 @@ function Shop() {
                 size="sm"
                 className="rounded-lg text-xs lg:hidden border-[#E5E0D5] text-[#0F4A38] bg-white"
               >
-                <Filter className="mr-1.5 size-3.5 text-[#145A45]" /> {lang === "hi" ? "फिल्टर" : "Filter"}
+                <Filter className="mr-1.5 size-3.5 text-[#145A45]" /> {t.filterBtn}
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-5 bg-[#FAF8F2]">
               <SheetHeader className="mb-4 pr-10 text-left">
                 <SheetTitle className="text-base font-bold text-[#0F4A38]">
-                  {lang === "hi" ? "किराना फिल्टर" : "Filter Catalogue"}
+                  {t.filterCatalogueTitle}
                 </SheetTitle>
               </SheetHeader>
               {filters}
@@ -319,21 +323,11 @@ function Shop() {
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="relevance">
-                {lang === "hi" ? "लोकप्रियता (Relevance)" : "Relevance"}
-              </SelectItem>
-              <SelectItem value="price-asc">
-                {lang === "hi" ? "कीमत: कम से ज्यादा" : "Price: Low to High"}
-              </SelectItem>
-              <SelectItem value="price-desc">
-                {lang === "hi" ? "कीमत: ज्यादा से कम" : "Price: High to Low"}
-              </SelectItem>
-              <SelectItem value="discount">
-                {lang === "hi" ? "ज्यादा छूट पहले" : "Highest Discount"}
-              </SelectItem>
-              <SelectItem value="popular">
-                {lang === "hi" ? "सर्वाधिक बिकने वाले" : "Best Selling"}
-              </SelectItem>
+              <SelectItem value="relevance">{t.sortRelevance}</SelectItem>
+              <SelectItem value="price-asc">{t.sortPriceLowToHigh}</SelectItem>
+              <SelectItem value="price-desc">{t.sortPriceHighToLow}</SelectItem>
+              <SelectItem value="discount">{t.sortHighestDiscount}</SelectItem>
+              <SelectItem value="popular">{t.sortBestSelling}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -367,7 +361,7 @@ function Shop() {
                 className="size-4 rounded-full object-cover shrink-0"
               />
               <span>
-                {lang === "hi" ? "सभी सामान" : "All Items"} ({products?.length ?? 0})
+                {t.allItemsCountLabel} ({products?.length ?? 0})
               </span>
             </button>
             {parents.map((c) => {
@@ -389,7 +383,7 @@ function Shop() {
                     alt={c.name}
                     className="size-4 rounded-full object-cover shrink-0 border border-[#E5E0D5]"
                   />
-                  <span>{getCategoryName(c.name, c.slug)}</span>
+                  <span>{getCategoryName(c)}</span>
                   {count > 0 && (
                     <span
                       className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] ${
@@ -414,12 +408,10 @@ function Shop() {
           ) : results.length === 0 ? (
             <div className="card-base p-12 text-center bg-white border border-[#E5E0D5]">
               <p className="font-sans text-base font-bold text-[#16201A]">
-                {lang === "hi" ? "कोई उत्पाद नहीं मिला" : "No products found"}
+                {t.noProductsFoundTitle}
               </p>
               <p className="text-xs text-[#5A655F] mt-1">
-                {lang === "hi"
-                  ? "कृपया अलग शब्द खोजें या फिल्टर साफ़ करें।"
-                  : "Try adjusting your search terms or filters."}
+                {t.noProductsFoundDesc}
               </p>
               <Button
                 variant="outline"
@@ -427,7 +419,7 @@ function Shop() {
                 className="mt-4 rounded-lg text-xs border-[#E5E0D5] text-[#0F4A38]"
                 onClick={() => void navigate({ search: {} })}
               >
-                {lang === "hi" ? "फिल्टर साफ़ करें" : "Reset Filters"}
+                {t.resetFiltersBtn}
               </Button>
             </div>
           ) : (

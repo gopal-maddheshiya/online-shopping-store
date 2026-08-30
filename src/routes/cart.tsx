@@ -121,10 +121,10 @@ function CartPage() {
             to="/shop"
             className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:underline"
           >
-            {lang === "hi" ? "खरीदारी जारी रखें →" : "Continue Shopping →"}
+            {t.continueShoppingBtn}
           </Link>
           <span className="text-xs font-semibold text-[#5A655F] bg-[#FAF8F2] px-2.5 py-1 rounded-full border border-[#E5E0D5]">
-            {items.length} {lang === "hi" ? "सामान" : "item(s)"}
+            {items.length} {t.itemsCountLabel}
           </span>
         </div>
       </div>
@@ -142,23 +142,21 @@ function CartPage() {
                   : `Add ${inr(diffToFree)} more for FREE local delivery!`}
               </span>
               <Link to="/shop" className="text-xs font-bold text-[#145A45] hover:underline">
-                {lang === "hi" ? "सामान जोड़ें →" : "Add Items →"}
+                {t.addItemsBtn}
               </Link>
             </div>
           ) : subtotal >= freeAt ? (
             <div className="card-base bg-[#E6EFE8] border border-[#145A45]/30 p-3.5 flex items-center gap-2 text-xs font-bold text-[#0F4A38]">
               <Truck className="size-4 text-[#145A45]" />
-              {lang === "hi"
-                ? "बधाई हो! आपको महाराजगंज में फ्री होम डिलीवरी मिल रही है।"
-                : "You've unlocked FREE Home Delivery in Maharajganj!"}
+              {t.freeDeliveryUnlocked}
             </div>
           ) : null}
 
           {/* Cart Item Cards */}
           <div className="space-y-3">
             {items.map((i) => {
-              const displayName = getProductName(i.name, i.slug);
-              const displayVariant = getVariantLabel(i.variantLabel);
+              const displayName = getProductName(i);
+              const displayVariant = getVariantLabel(i);
 
               return (
                 <div key={i.variantId} className="card-base flex items-center gap-4 p-4 bg-white border border-[#E5E0D5]">
@@ -222,7 +220,7 @@ function CartPage() {
                       type="button"
                       onClick={() => remove(i.variantId)}
                       className="flex size-7 items-center justify-center rounded-lg text-[#5A655F] hover:bg-[#FAF8F2] hover:text-red-600 transition-colors"
-                      title={lang === "hi" ? "हटाएं" : "Remove"}
+                      title={t.removeBtn}
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -231,7 +229,7 @@ function CartPage() {
                       onClick={() => saveForLater(i.variantId)}
                       className="text-[10px] font-semibold text-[#5A655F] hover:text-[#145A45]"
                     >
-                      {lang === "hi" ? "बाद के लिए" : "Save"}
+                      {t.saveForLaterBtn}
                     </button>
                   </div>
                 </div>
@@ -243,8 +241,7 @@ function CartPage() {
           {savedItems.length > 0 && (
             <div className="mt-8 space-y-3 border-t border-[#E5E0D5] pt-6">
               <h2 className="font-sans text-base font-bold text-[#16201A]">
-                {lang === "hi" ? "बाद के लिए सहेजे गए सामान" : "Saved for Later"} (
-                {savedItems.length})
+                {t.savedForLaterTitle} ({savedItems.length})
               </h2>
               {savedItems.map((i) => (
                 <div
@@ -259,10 +256,10 @@ function CartPage() {
                     />
                     <div>
                       <p className="text-xs font-semibold text-[#16201A]">
-                        {getProductName(i.name, i.slug)}
+                        {getProductName(i)}
                       </p>
                       <p className="text-[11px] text-[#5A655F]">
-                        {getVariantLabel(i.variantLabel)} · {inr(i.price)}
+                        {getVariantLabel(i)} · {inr(i.price)}
                       </p>
                     </div>
                   </div>
@@ -273,13 +270,13 @@ function CartPage() {
                       onClick={() => moveToCart(i.variantId)}
                       className="rounded-lg text-xs font-bold border-[#E5E0D5] text-[#0F4A38]"
                     >
-                      {lang === "hi" ? "कार्ट में लाएं" : "Move to Cart"}
+                      {t.moveToCartBtn}
                     </Button>
                     <button
                       onClick={() => removeSaved(i.variantId)}
                       className="text-xs text-[#5A655F] hover:text-red-600"
                     >
-                      {lang === "hi" ? "हटाएं" : "Remove"}
+                      {t.removeBtn}
                     </button>
                   </div>
                 </div>
@@ -292,7 +289,7 @@ function CartPage() {
         <div className="space-y-4">
           <div className="card-base p-5 space-y-4 bg-white border border-[#E5E0D5]">
             <h2 className="font-sans text-base font-bold text-[#16201A]">
-              {lang === "hi" ? "ऑर्डर का विवरण" : "Order Summary"}
+              {t.orderSummaryTitle}
             </h2>
 
             <div className="space-y-2.5 text-xs text-[#5A655F] border-b border-[#E5E0D5] pb-4">
@@ -333,9 +330,7 @@ function CartPage() {
               <ShieldCheck className="size-4 text-[#145A45]" /> {t.purityTagline} ({t.puritySub})
             </p>
             <p className="text-[11px]">
-              {lang === "hi"
-                ? "महाराजगंज में कैश ऑन डिलीवरी (COD), दुकान पर भुगतान अथवा यूपीआई उपलब्ध है।"
-                : "Cash on Delivery (COD), Store Pickup and UPI payment options available in Maharajganj."}
+              {t.cartPaymentNote}
             </p>
           </div>
         </div>
