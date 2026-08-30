@@ -107,10 +107,8 @@ export function MobileNav() {
             const Icon = link.icon;
             const isCart = link.to === "/cart";
             const isActive =
-              (currentPath === link.to ||
-                (link.to === "/account" && (currentPath === "/account" || currentPath === "/track"))) &&
-              (!link.search ||
-                JSON.stringify(routerState.location.search) === JSON.stringify(link.search));
+              currentPath === link.to ||
+              (link.to === "/account" && (currentPath === "/account" || currentPath === "/track"));
 
             const handleClick = (e: React.MouseEvent) => {
               if (isCart && currentPath === "/cart") {

@@ -563,8 +563,8 @@ export function lookupInvoiceQuery(orderNo?: string | null, phone?: string | nul
     queryFn: async () => {
       if (!orderNo || !phone) return null;
       const { data, error } = await supabase.rpc("lookup_order_invoice", {
-        _order_no: orderNo.trim(),
-        _phone: phone.trim(),
+        p_order_no: orderNo.trim(),
+        p_phone: phone.trim(),
       });
       if (error) {
         console.warn("Lookup invoice error:", error.message);

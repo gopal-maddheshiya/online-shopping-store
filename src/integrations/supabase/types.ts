@@ -210,6 +210,92 @@ export type Database = {
           },
         ];
       };
+      invoices: {
+        Row: {
+          id: string;
+          invoice_no: string;
+          order_id: string;
+          order_no: string;
+          invoice_date: string;
+          customer_name: string;
+          customer_phone: string;
+          customer_email: string | null;
+          billing_address: Json;
+          shipping_address: Json;
+          order_type: string;
+          payment_method: string;
+          payment_status: string;
+          items_snapshot: Json;
+          subtotal: number;
+          discount: number;
+          delivery_fee: number;
+          tax_amount: number;
+          total_amount: number;
+          notes: string | null;
+          is_cancelled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          invoice_no: string;
+          order_id: string;
+          order_no: string;
+          invoice_date?: string;
+          customer_name: string;
+          customer_phone: string;
+          customer_email?: string | null;
+          billing_address?: Json;
+          shipping_address?: Json;
+          order_type?: string;
+          payment_method?: string;
+          payment_status?: string;
+          items_snapshot?: Json;
+          subtotal?: number;
+          discount?: number;
+          delivery_fee?: number;
+          tax_amount?: number;
+          total_amount?: number;
+          notes?: string | null;
+          is_cancelled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          invoice_no?: string;
+          order_id?: string;
+          order_no?: string;
+          invoice_date?: string;
+          customer_name?: string;
+          customer_phone?: string;
+          customer_email?: string | null;
+          billing_address?: Json;
+          shipping_address?: Json;
+          order_type?: string;
+          payment_method?: string;
+          payment_status?: string;
+          items_snapshot?: Json;
+          subtotal?: number;
+          discount?: number;
+          delivery_fee?: number;
+          tax_amount?: number;
+          total_amount?: number;
+          notes?: string | null;
+          is_cancelled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: true;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       order_items: {
         Row: {
           id: string;
@@ -509,6 +595,15 @@ export type Database = {
           tagline: string;
           updated_at: string;
           whatsapp: string;
+          legal_name?: string;
+          gstin?: string | null;
+          state?: string;
+          state_code?: string;
+          tax_enabled?: boolean;
+          default_tax_rate?: number;
+          invoice_prefix?: string;
+          invoice_footer_note?: string;
+          terms_and_conditions?: string;
         };
         Insert: {
           address?: string;
@@ -529,6 +624,15 @@ export type Database = {
           tagline?: string;
           updated_at?: string;
           whatsapp?: string;
+          legal_name?: string;
+          gstin?: string | null;
+          state?: string;
+          state_code?: string;
+          tax_enabled?: boolean;
+          default_tax_rate?: number;
+          invoice_prefix?: string;
+          invoice_footer_note?: string;
+          terms_and_conditions?: string;
         };
         Update: {
           address?: string;
@@ -549,6 +653,15 @@ export type Database = {
           tagline?: string;
           updated_at?: string;
           whatsapp?: string;
+          legal_name?: string;
+          gstin?: string | null;
+          state?: string;
+          state_code?: string;
+          tax_enabled?: boolean;
+          default_tax_rate?: number;
+          invoice_prefix?: string;
+          invoice_footer_note?: string;
+          terms_and_conditions?: string;
         };
         Relationships: [];
       };
@@ -618,6 +731,24 @@ export type Database = {
           total_spent: number;
         }[];
       };
+      admin_update_payment_and_refund: {
+        Args: {
+          p_amount_paid?: number;
+          p_internal_note?: string;
+          p_order_id: string;
+          p_payment_status?: string;
+          p_refund_amount?: number;
+          p_refund_reason?: string | null;
+          p_refund_status?: string;
+        };
+        Returns: Json;
+      };
+      generate_invoice_for_order: {
+        Args: {
+          p_order_id: string;
+        };
+        Returns: Json;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -627,6 +758,13 @@ export type Database = {
       };
       lookup_order: {
         Args: { _order_no: string; _phone: string };
+        Returns: Json;
+      };
+      lookup_order_invoice: {
+        Args: {
+          p_order_no: string;
+          p_phone: string;
+        };
         Returns: Json;
       };
     };

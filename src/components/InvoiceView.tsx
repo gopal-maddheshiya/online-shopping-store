@@ -778,7 +778,7 @@ export function InvoiceView({
                     const lineTotal = item.line_total || item.price * item.qty;
                     const itemThumb = getProductImage({
                       name: item.name,
-                      image_url: item.image_url,
+                      image_url: item.image_url ?? null,
                     });
 
                     return (

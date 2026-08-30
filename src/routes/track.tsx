@@ -78,8 +78,8 @@ function TrackPage() {
     setInvoiceLoading(true);
     try {
       const { data, error } = await supabase.rpc("lookup_order_invoice", {
-        _order_no: order.order_no,
-        _phone: order.customer_phone,
+        p_order_no: order.order_no,
+        p_phone: order.customer_phone,
       });
 
       if (error || !data) {

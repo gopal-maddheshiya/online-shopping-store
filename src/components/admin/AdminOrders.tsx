@@ -186,8 +186,9 @@ export function AdminOrders({
         p_refund_reason: refundReason.trim() || "Refund requested by customer",
       });
 
-      if (error || !data?.success) {
-        throw new Error(error?.message || data?.error || "Failed to record refund");
+      const res = data as { success?: boolean; error?: string } | null;
+      if (error || !res?.success) {
+        throw new Error(error?.message || res?.error || "Failed to record refund");
       }
 
       toast.success(`Refund of ₹${refundVal} processed & logged in billing audit!`);
@@ -307,12 +308,13 @@ export function AdminOrders({
       const { data, error } = await supabase.rpc("admin_update_payment_and_refund", {
         p_order_id: orderId,
         p_payment_status: paymentStatus,
-        p_amount_paid: paymentStatus === "paid" ? orders.find((o) => o.id === orderId)?.total : 0,
+        p_amount_paid: paymentStatus === "paid" ? (orders.find((o) => o.id === orderId)?.total ?? 0) : 0,
         p_refund_amount: 0,
         p_refund_reason: null,
       });
 
-      if (error || !data?.success) {
+      const rpcResult = data as { success?: boolean; error?: string } | null;
+      if (error || !rpcResult?.success) {
         // Fallback to updatePaymentStatus
         const res = await updatePaymentStatus(orderId, paymentStatus);
         if (!res.success) throw new Error(res.error || "Failed to update payment status");
