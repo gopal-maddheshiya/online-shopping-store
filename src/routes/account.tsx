@@ -25,6 +25,9 @@ import {
   AlertCircle,
   CheckCircle2,
   Receipt,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +43,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { customerOrdersQuery, type Order } from "@/lib/queries";
 import { inr, formatDate, ORDER_STATUS_LABEL } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
-import { ProductCard } from "@/components/ProductCard";
 import { InvoiceView } from "@/components/InvoiceView";
 import type { Invoice } from "@/lib/billing";
 
@@ -72,13 +74,10 @@ type CustomerAddress = {
   created_at: string;
 };
 
-// Development-only master recovery key for password reset during testing
-const DEV_RECOVERY_KEY = "AGT-RECOVER-2026";
-
-function AccountPage() {
+export function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user, profile, refreshProfile, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, refreshProfile, loading: authLoading } = useAuth();
   const { add } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
@@ -118,19 +117,6 @@ function AccountPage() {
   const [editPhone, setEditPhone] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Synchronize profile data into edit form
-  useEffect(() => {
-    if (profile) {
-      setEditName(profile.full_name || (user?.user_metadata?.["full_name"] as string) || (user?.user_metadata?.["name"] as string) || "");
-      setEditEmail(profile.email || user?.email || "");
-      setEditPhone(profile.phone ? profile.phone.replace(/\D/g, "").slice(-10) : "");
-    } else if (user) {
-      setEditName((user.user_metadata?.["full_name"] as string) || (user.user_metadata?.["name"] as string) || "");
-      setEditEmail(user.email || "");
-      setEditPhone(user.phone ? user.phone.replace(/\D/g, "").slice(-10) : "");
-    }
-  }, [profile, user]);
-
   // Address State
   const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
   const [addressesLoading, setAddressesLoading] = useState(false);
@@ -143,43 +129,6 @@ function AccountPage() {
   const [newPin, setNewPin] = useState("273303");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
 
-  // Invoice Modal State
-  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
-  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
-  const [invoiceLoadingId, setInvoiceLoadingId] = useState<string | null>(null);
-
-  async function handleViewInvoice(order: Order) {
-    setInvoiceLoadingId(order.id);
-    try {
-      const { data, error } = await supabase
-        .from("invoices")
-        .select("*")
-        .eq("order_id", order.id)
-        .maybeSingle();
-
-      if (data && !error) {
-        setActiveInvoice(data as unknown as Invoice);
-        setInvoiceModalOpen(true);
-        return;
-      }
-
-      const { data: rpcData, error: rpcErr } = await supabase.rpc("generate_invoice_for_order", {
-        p_order_id: order.id,
-      });
-
-      if (rpcErr || !rpcData) {
-        throw new Error(rpcErr?.message || "Could not generate invoice");
-      }
-
-      setActiveInvoice(rpcData as unknown as Invoice);
-      setInvoiceModalOpen(true);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to load invoice");
-    } finally {
-      setInvoiceLoadingId(null);
-    }
-  }
-
   // Edit Address State
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [editRecipientName, setEditRecipientName] = useState("");
@@ -190,15 +139,34 @@ function AccountPage() {
   const [editPin, setEditPin] = useState("273303");
   const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
 
-  // Sync profile details into form
+  // Invoice Modal State
+  const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceLoadingId, setInvoiceLoadingId] = useState<string | null>(null);
+
+  // Synchronize profile data into edit form
   useEffect(() => {
     if (profile) {
-      setEditName(profile.full_name ?? "");
-      setEditEmail(profile.email ?? user?.email ?? "");
+      setEditName(
+        profile.full_name ||
+          (user?.user_metadata?.["full_name"] as string) ||
+          (user?.user_metadata?.["name"] as string) ||
+          "",
+      );
+      setEditEmail(profile.email || user?.email || "");
+      setEditPhone(profile.phone ? profile.phone.replace(/\D/g, "").slice(-10) : "");
+    } else if (user) {
+      setEditName(
+        (user.user_metadata?.["full_name"] as string) ||
+          (user.user_metadata?.["name"] as string) ||
+          "",
+      );
+      setEditEmail(user.email || "");
+      setEditPhone(user.phone ? user.phone.replace(/\D/g, "").slice(-10) : "");
     }
   }, [profile, user]);
 
-  // Fetch customer saved addresses strictly for the authenticated user
+  // Fetch customer saved addresses strictly for authenticated user
   const loadAddresses = async (userId: string) => {
     setAddressesLoading(true);
     try {
@@ -225,11 +193,10 @@ function AccountPage() {
     }
   }, [user?.id]);
 
-  // Customer Orders Query strictly scoped to the authenticated user ID
-  const {
-    data: orders,
-    isLoading: ordersLoading,
-  } = useQuery(customerOrdersQuery(user?.id, user?.phone || profile?.phone));
+  // Customer Orders Query strictly scoped to user
+  const { data: orders, isLoading: ordersLoading } = useQuery(
+    customerOrdersQuery(user?.id, user?.phone || profile?.phone),
+  );
 
   // Extract unique purchased items for Buy Again tab
   const uniquePurchasedItems = useMemo(() => {
@@ -264,8 +231,40 @@ function AccountPage() {
     return Array.from(map.values());
   }, [orders]);
 
+  async function handleViewInvoice(order: Order) {
+    setInvoiceLoadingId(order.id);
+    try {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("order_id", order.id)
+        .maybeSingle();
+
+      if (data && !error) {
+        setActiveInvoice(data as unknown as Invoice);
+        setInvoiceModalOpen(true);
+        return;
+      }
+
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("generate_invoice_for_order", {
+        p_order_id: order.id,
+      });
+
+      if (rpcErr || !rpcData) {
+        throw new Error(rpcErr?.message || "Could not generate invoice");
+      }
+
+      setActiveInvoice(rpcData as unknown as Invoice);
+      setInvoiceModalOpen(true);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to load invoice");
+    } finally {
+      setInvoiceLoadingId(null);
+    }
+  }
+
   // ==========================================
-  // 0. GOOGLE OAUTH SIGN IN
+  // GOOGLE OAUTH SIGN IN
   // ==========================================
   async function handleGoogleSignIn() {
     setAuthErrorMessage(null);
@@ -284,7 +283,6 @@ function AccountPage() {
       });
 
       if (error) {
-        console.error("Google OAuth error:", error);
         setAuthErrorMessage(
           lang === "hi"
             ? `Google लॉगिन विफल: ${error.message}`
@@ -293,7 +291,6 @@ function AccountPage() {
         setIsGoogleSigningIn(false);
       }
     } catch (err: unknown) {
-      console.error("Google sign in exception:", err);
       const msg = err instanceof Error ? err.message : "Google authentication failed";
       setAuthErrorMessage(msg);
       setIsGoogleSigningIn(false);
@@ -301,7 +298,7 @@ function AccountPage() {
   }
 
   // ==========================================
-  // 1. SIGN IN (Phone + Password)
+  // SIGN IN
   // ==========================================
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -333,11 +330,10 @@ function AccountPage() {
       });
 
       if (error) {
-        // Clear message for incorrect password or invalid credentials
         setAuthErrorMessage(
           lang === "hi"
             ? "गलत पासवर्ड या मोबाइल नंबर। कृपया सही पासवर्ड डालें या पासवर्ड रीसेट करें।"
-            : "Incorrect password or mobile number. Please check your credentials or reset your password.",
+            : "Incorrect password or mobile number. Please verify your credentials or reset password.",
         );
         return;
       }
@@ -361,7 +357,7 @@ function AccountPage() {
   }
 
   // ==========================================
-  // 2. SIGN UP (Name + Phone + Password)
+  // SIGN UP
   // ==========================================
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
@@ -405,7 +401,6 @@ function AccountPage() {
     try {
       const fullPhone = `+91${clean}`;
 
-      // Sign up via Supabase Auth Phone + Password
       const { data, error } = await supabase.auth.signUp({
         phone: fullPhone,
         password: signUpPassword,
@@ -418,7 +413,10 @@ function AccountPage() {
       });
 
       if (error) {
-        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("exists")) {
+        if (
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("exists")
+        ) {
           setAuthErrorMessage(
             lang === "hi"
               ? "यह मोबाइल नंबर पहले से पंजीकृत है। कृपया लॉगिन करें।"
@@ -431,7 +429,6 @@ function AccountPage() {
       }
 
       if (data.user) {
-        // Upsert user profile linked to auth.uid()
         try {
           await supabase.from("profiles").upsert(
             {
@@ -463,6 +460,9 @@ function AccountPage() {
     }
   }
 
+  // ==========================================
+  // FORGOT PASSWORD
+  // ==========================================
   async function handleSendRecoveryCode() {
     setAuthErrorMessage(null);
     const clean = forgotPhone.replace(/\D/g, "").slice(-10);
@@ -511,9 +511,6 @@ function AccountPage() {
     }
   }
 
-  // ==========================================
-  // 3. FORGOT PASSWORD (Supabase Auth updateUser)
-  // ==========================================
   async function handleResetPassword(e: React.FormEvent) {
     e.preventDefault();
     setAuthErrorMessage(null);
@@ -556,13 +553,16 @@ function AccountPage() {
     try {
       const fullPhone = `+91${clean}`;
 
-      // Method A: Check if dev_reset_password RPC is available with user input code
+      // Method A: Check if dev_reset_password RPC is available
       if (code && code.trim().length >= 4) {
-        const { data: rpcRes, error: rpcErr } = await supabase.rpc("dev_reset_password" as never, {
-          p_phone: fullPhone,
-          p_code: code.trim(),
-          p_new_password: newPassword,
-        } as never);
+        const { data: rpcRes, error: rpcErr } = await supabase.rpc(
+          "dev_reset_password" as never,
+          {
+            p_phone: fullPhone,
+            p_code: code.trim(),
+            p_new_password: newPassword,
+          } as never,
+        );
 
         if (!rpcErr && rpcRes && typeof rpcRes === "object") {
           const resObj = rpcRes as { success?: boolean; error?: string; message?: string };
@@ -588,81 +588,36 @@ function AccountPage() {
       }
 
       // Method B: Supabase Auth verifyOtp + updateUser
-      let authSessionActive = false;
-
       const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
         phone: fullPhone,
         token: code,
         type: "sms",
       });
 
-      if (!verifyErr && verifyData?.session) {
-        authSessionActive = true;
-      } else {
-        const { data: recData, error: recErr } = await supabase.auth.verifyOtp({
-          phone: fullPhone,
-          token: code,
-          type: "recovery",
-        });
-        if (!recErr && recData?.session) {
-          authSessionActive = true;
-        } else {
-          console.error("Supabase verifyOtp failed:", verifyErr || recErr);
-          setAuthErrorMessage(
-            lang === "hi"
-              ? "अमान्य या समाप्त सत्यापन कोड। कृपया सही कोड दर्ज करें।"
-              : "Invalid or expired verification code. Please check and try again.",
-          );
-          return;
-        }
-      }
-
-
-      if (!authSessionActive) {
+      if (verifyErr || !verifyData?.session) {
         setAuthErrorMessage(
-          lang === "hi"
-            ? "रिकवरी सत्र स्थापित नहीं हो सका।"
-            : "Could not establish recovery session.",
+          lang === "hi" ? "अमान्य या समाप्त कोड।" : "Invalid or expired recovery code.",
         );
         return;
       }
 
-      // Call supabase.auth.updateUser({ password: newPassword })
-      const { data: updateData, error: updateErr } = await supabase.auth.updateUser({
+      const { error: updateErr } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (updateErr) {
-        console.error("Supabase auth.updateUser error:", updateErr);
-        setAuthErrorMessage(
-          lang === "hi"
-            ? `पासवर्ड अपडेट त्रुटि: ${updateErr.message}`
-            : `Password update failed: ${updateErr.message}`,
-        );
+        setAuthErrorMessage(updateErr.message);
         await supabase.auth.signOut();
         return;
       }
 
-      if (!updateData || !updateData.user) {
-        setAuthErrorMessage(
-          lang === "hi"
-            ? "पासवर्ड अपडेट की पुष्टि नहीं हो सकी।"
-            : "Password update could not be confirmed.",
-        );
-        await supabase.auth.signOut();
-        return;
-      }
-
-      // Confirmed by Supabase Auth!
       await supabase.auth.signOut();
-
       toast.success(
         lang === "hi"
           ? "पासवर्ड सफलतापूर्वक बदल गया! कृपया नए पासवर्ड के साथ लॉगिन करें।"
           : "Password successfully changed. Please login with your new password.",
       );
 
-      // Redirect to sign in view with phone prefilled
       setAuthView("signin");
       setSignInPhone(clean);
       setSignInPassword("");
@@ -670,7 +625,6 @@ function AccountPage() {
       setNewPassword("");
       setConfirmNewPassword("");
     } catch (err: unknown) {
-      console.error("Password reset error:", err);
       const msg = err instanceof Error ? err.message : "Password reset failed";
       setAuthErrorMessage(msg);
     } finally {
@@ -679,7 +633,7 @@ function AccountPage() {
   }
 
   // ==========================================
-  // 4. LOGOUT
+  // LOGOUT
   // ==========================================
   async function handleLogout() {
     try {
@@ -698,7 +652,7 @@ function AccountPage() {
   }
 
   // ==========================================
-  // 5. PROFILE & ADDRESS MUTATIONS
+  // PROFILE MUTATION
   // ==========================================
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -711,7 +665,6 @@ function AccountPage() {
         email: editEmail.trim() || null,
       };
 
-      // If customer did not have phone (e.g. Google OAuth sign-in) and enters one, save it
       if (!profile?.phone && editPhone.trim()) {
         const cleanPhone = editPhone.replace(/\D/g, "").slice(-10);
         if (cleanPhone.length === 10) {
@@ -719,10 +672,7 @@ function AccountPage() {
         }
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", user.id);
+      const { error } = await supabase.from("profiles").update(updates).eq("id", user.id);
 
       if (error) throw error;
       await refreshProfile();
@@ -737,6 +687,9 @@ function AccountPage() {
     }
   }
 
+  // ==========================================
+  // ADDRESS MUTATIONS
+  // ==========================================
   async function handleAddAddress(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -871,7 +824,9 @@ function AccountPage() {
 
   function handleReorder(order: Order) {
     if (!order.order_items || order.order_items.length === 0) {
-      toast.error(lang === "hi" ? "इस ऑर्डर में कोई सामग्री नहीं मिली" : "No items found in this order to reorder");
+      toast.error(
+        lang === "hi" ? "इस ऑर्डर में कोई सामग्री नहीं मिली" : "No items found in this order to reorder",
+      );
       return;
     }
 
@@ -906,498 +861,457 @@ function AccountPage() {
     void navigate({ to: "/cart" });
   }
 
+  // ==========================================
   // 1. LOADING STATE
+  // ==========================================
   if (authLoading) {
     return (
       <div className="container-page py-12 max-w-lg mx-auto space-y-4">
-        <Skeleton className="h-12 w-full rounded-2xl" />
+        <Skeleton className="h-16 w-full rounded-2xl" />
         <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
   }
 
-  // 2. UNAUTHENTICATED GUEST AUTHENTICATION PORTAL (Sign In / Sign Up / Forgot Password)
+  // ==========================================
+  // 2. GUEST / UNAUTHENTICATED PORTAL (CLEAN & MODERN)
+  // ==========================================
   if (!user) {
     return (
-      <div className="container-page py-8 sm:py-12 max-w-md mx-auto space-y-6">
-        {/* Header Branding */}
-        <div className="text-center space-y-1.5">
-          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/20 shadow-2xs">
-            {authView === "signup" ? (
-              <UserPlus className="size-6 text-[#0F4A38]" />
-            ) : authView === "forgot" ? (
-              <KeyRound className="size-6 text-[#0F4A38]" />
-            ) : (
-              <Smartphone className="size-6 text-[#0F4A38]" />
-            )}
+      <div className="min-h-[80vh] flex flex-col justify-center items-center py-8 sm:py-14 px-4">
+        <div className="w-full max-w-md space-y-5">
+          {/* Brand Header */}
+          <div className="text-center space-y-1">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#145A45]/10 px-3 py-1 text-xs font-bold text-[#145A45] mb-1">
+              <Sparkles className="size-3.5" />
+              <span>{lang === "hi" ? "ग्राहक खाता पोर्टल" : "Customer Portal"}</span>
+            </div>
+            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#16201A] tracking-tight">
+              {authView === "signup"
+                ? lang === "hi"
+                  ? "नया खाता बनाएं"
+                  : "Create Account"
+                : authView === "forgot"
+                  ? lang === "hi"
+                    ? "पासवर्ड रीसेट करें"
+                    : "Reset Password"
+                  : lang === "hi"
+                    ? "खाते में लॉगिन करें"
+                    : "Welcome Back"}
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5A655F]">
+              {authView === "signup"
+                ? lang === "hi"
+                  ? "ऑर्डर हिस्ट्री और 1-क्लिक रीऑर्डर का लाभ उठाएं"
+                  : "Track orders, reorder staples, and manage addresses"
+                : authView === "forgot"
+                  ? lang === "hi"
+                    ? "मोबाइल नंबर पर प्राप्त कोड से पासवर्ड बदलें"
+                    : "Enter your mobile number to reset your password"
+                  : lang === "hi"
+                    ? "अपने राशन ऑर्डर और पते प्रबंधित करें"
+                    : "Sign in to access your orders and saved details"}
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#16201A]">
-            {authView === "signup"
-              ? (lang === "hi" ? "नया ग्राहक खाता बनाएं" : "Create Customer Account")
-              : authView === "forgot"
-                ? (lang === "hi" ? "पासवर्ड रीसेट करें" : "Reset Password")
-                : (lang === "hi" ? "मोबाइल नंबर से लॉगिन करें" : "Sign In with Mobile")}
-          </h1>
-          <p className="text-xs text-[#5A655F] max-w-xs mx-auto">
-            {authView === "signup"
-              ? (lang === "hi"
-                  ? "ऑर्डर हिस्ट्री, 1-क्लिक राशन रीऑर्डर और पते सुरक्षित करने के लिए रजिस्टर करें"
-                  : "Register for order tracking, 1-click reorder, and saved addresses")
-              : authView === "forgot"
-                ? (lang === "hi"
-                    ? "सत्यापन कोड डालकर नया पासवर्ड सेट करें"
-                    : "Enter your mobile number and verification code to set a new password")
-                : (lang === "hi"
 
-                    ? "अपने ऑर्डर, रीऑर्डर हिस्ट्री और सेव्ड पते देखने के लिए जारी रखें"
-                    : "Access your order history, instant grocery reordering, and saved addresses")}
-          </p>
-        </div>
-
-        {/* Main Authentication Card */}
-        <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 sm:p-6 shadow-xs space-y-4">
-          {/* Navigation Toggle Tabs */}
-          {authView !== "forgot" && (
-            <div className="flex rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("signin");
-                  setAuthErrorMessage(null);
-                }}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
-                  authView === "signin"
-                    ? "bg-[#145A45] text-white shadow-2xs"
-                    : "text-[#5A655F] hover:text-[#16201A]"
-                }`}
-              >
-                <LogIn className="size-3.5" />
-                <span>{lang === "hi" ? "लॉगिन करें" : "Sign In"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthView("signup");
-                  setAuthErrorMessage(null);
-                }}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
-                  authView === "signup"
-                    ? "bg-[#145A45] text-white shadow-2xs"
-                    : "text-[#5A655F] hover:text-[#16201A]"
-                }`}
-              >
-                <UserPlus className="size-3.5" />
-                <span>{lang === "hi" ? "नया खाता बनाएं" : "Create Account"}</span>
-              </button>
-            </div>
-          )}
-
-          {/* Google OAuth Login Button */}
-          {authView !== "forgot" && (
-            <div className="space-y-3 pt-1">
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isGoogleSigningIn || isSigningIn || isSigningUp}
-                className="w-full flex items-center justify-center gap-3 h-11 px-4 rounded-xl border border-[#E5E0D5] bg-white text-[#16201A] font-bold text-xs sm:text-sm hover:bg-[#FAF8F2] hover:border-[#145A45]/40 active:scale-98 transition-all shadow-2xs cursor-pointer disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {isGoogleSigningIn ? (
-                  <div className="size-4 animate-spin rounded-full border-2 border-[#145A45] border-t-transparent" />
-                ) : (
-                  <svg className="size-4.5 shrink-0" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                    />
-                  </svg>
-                )}
-                <span>
-                  {isGoogleSigningIn
-                    ? (lang === "hi" ? "Google से जुड़ रहे हैं..." : "Connecting to Google…")
-                    : (lang === "hi" ? "Google से जारी रखें (Continue with Google)" : "Continue with Google")}
-                </span>
-              </button>
-
-              {/* Divider */}
-              <div className="relative my-3 flex items-center justify-center">
-                <div className="w-full border-t border-[#E5E0D5]" />
-                <span className="absolute bg-white px-3 text-[10px] sm:text-[11px] font-bold text-[#7A8680] uppercase tracking-wider">
-                  {lang === "hi" ? "या मोबाइल नंबर से" : "OR WITH MOBILE"}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Error Banner */}
-          {authErrorMessage && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in duration-150">
-              <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
-              <div>
-                <p className="font-bold">{lang === "hi" ? "त्रुटि (Notice)" : "Authentication Notice"}</p>
-                <p className="text-[11px] leading-relaxed mt-0.5">{authErrorMessage}</p>
-              </div>
-            </div>
-          )}
-
-          {/* VIEW 1: SIGN IN */}
-          {authView === "signin" && (
-            <form onSubmit={handleSignIn} className="space-y-4 animate-in fade-in duration-150">
-              <div className="space-y-1.5">
-                <Label htmlFor="signin-phone" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "Mobile Number"}
-                </Label>
-                <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
-                  <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
-                    +91
-                  </span>
-                  <Input
-                    id="signin-phone"
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    maxLength={10}
-                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
-                    value={signInPhone}
-                    onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-11 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="signin-password" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "पासवर्ड" : "Password"}
-                  </Label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthView("forgot");
-                      setForgotPhone(signInPhone);
-                      setAuthErrorMessage(null);
-                    }}
-                    className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer"
-                  >
-                    {lang === "hi" ? "पासवर्ड भूल गए?" : "Forgot Password?"}
-                  </button>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="signin-password"
-                    required
-                    type={showSignInPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder={lang === "hi" ? "अपना पासवर्ड दर्ज करें" : "Enter your password"}
-                    value={signInPassword}
-                    onChange={(e) => setSignInPassword(e.target.value)}
-                    className="h-11 rounded-xl border-[#E5E0D5] pr-10 text-sm font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignInPassword(!showSignInPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
-                  >
-                    {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSigningIn || signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword}
-                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer"
-              >
-                {isSigningIn
-                  ? (lang === "hi" ? "लॉगिन हो रहा है..." : "Signing in…")
-                  : (lang === "hi" ? "लॉगिन करें (Sign In) →" : "Sign In →")}
-              </Button>
-
-              <div className="text-center pt-1 text-xs text-[#5A655F]">
-                <span>{lang === "hi" ? "खाता नहीं है?" : "Don't have an account?"}{" "}</span>
+          {/* Clean Auth Card */}
+          <div className="rounded-3xl border border-[#E8E4DA] bg-white p-6 sm:p-7 shadow-xs space-y-5">
+            {/* Segmented Switcher */}
+            {authView !== "forgot" && (
+              <div className="flex rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthView("signin");
+                    setAuthErrorMessage(null);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 transition-all cursor-pointer ${
+                    authView === "signin"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#5A655F] hover:text-[#16201A]"
+                  }`}
+                >
+                  <LogIn className="size-3.5" />
+                  <span>{lang === "hi" ? "लॉगिन करें" : "Sign In"}</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => {
                     setAuthView("signup");
                     setAuthErrorMessage(null);
                   }}
-                  className="font-bold text-[#145A45] underline hover:text-[#0A3628] cursor-pointer"
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 transition-all cursor-pointer ${
+                    authView === "signup"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#5A655F] hover:text-[#16201A]"
+                  }`}
                 >
-                  {lang === "hi" ? "नया खाता बनाएं" : "Create Account"}
+                  <UserPlus className="size-3.5" />
+                  <span>{lang === "hi" ? "नया खाता" : "Sign Up"}</span>
                 </button>
               </div>
-            </form>
-          )}
+            )}
 
-          {/* VIEW 2: SIGN UP */}
-          {authView === "signup" && (
-            <form onSubmit={handleSignUp} className="space-y-3.5 animate-in fade-in duration-150">
-              <div className="space-y-1">
-                <Label htmlFor="signup-name" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "पूरा नाम" : "Full Name"}
-                </Label>
-                <Input
-                  id="signup-name"
-                  required
-                  placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
-                  value={signUpName}
-                  onChange={(e) => setSignUpName(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium placeholder:text-[#A8B2AC] placeholder:font-normal"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="signup-phone" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-Digit Mobile Number"}
-                </Label>
-                <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
-                    +91
-                  </span>
-                  <Input
-                    id="signup-phone"
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    maxLength={10}
-                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
-                    value={signUpPhone}
-                    onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="signup-password" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "पासवर्ड (कम से कम 6 अक्षर)" : "Password (min. 6 characters)"}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    required
-                    type={showSignUpPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    placeholder={lang === "hi" ? "नया पासवर्ड बनाएं (कम से कम 6)" : "Create a password (min. 6)"}
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    className="h-10 rounded-xl border-[#E5E0D5] pr-10 text-xs font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
-                  >
-                    {showSignUpPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "पासवर्ड कन्फर्म करें" : "Confirm Password"}
-                </Label>
-                <Input
-                  id="signup-confirm-password"
-                  required
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={lang === "hi" ? "पासवर्ड दोबारा दर्ज करें" : "Re-enter password"}
-                  value={signUpConfirmPassword}
-                  onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs font-medium focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:font-normal"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
-                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer mt-2"
-              >
-                {isSigningUp
-                  ? (lang === "hi" ? "खाता बन रहा है..." : "Creating account…")
-                  : (lang === "hi" ? "खाता बनाएं (Create Account) →" : "Create Account →")}
-              </Button>
-
-              <div className="text-center pt-1 text-xs text-[#5A655F]">
-                <span>{lang === "hi" ? "पहले से खाता है?" : "Already registered?"}{" "}</span>
+            {/* Fast 1-Tap Google Login */}
+            {authView !== "forgot" && (
+              <div className="space-y-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    setAuthView("signin");
-                    setAuthErrorMessage(null);
-                  }}
-                  className="font-bold text-[#145A45] underline hover:text-[#0A3628] cursor-pointer"
+                  onClick={handleGoogleSignIn}
+                  disabled={isGoogleSigningIn || isSigningIn || isSigningUp}
+                  className="w-full flex items-center justify-center gap-2.5 h-11 px-4 rounded-2xl border border-[#E8E4DA] bg-white text-[#16201A] font-bold text-xs sm:text-sm hover:bg-[#FAF8F2] hover:border-[#145A45]/40 active:scale-[0.99] transition-all shadow-2xs cursor-pointer disabled:opacity-60"
                 >
-                  {lang === "hi" ? "लॉगिन करें" : "Sign In"}
+                  {isGoogleSigningIn ? (
+                    <div className="size-4 animate-spin rounded-full border-2 border-[#145A45] border-t-transparent" />
+                  ) : (
+                    <svg className="size-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                  )}
+                  <span>
+                    {isGoogleSigningIn
+                      ? lang === "hi"
+                        ? "Google से जुड़ रहे हैं..."
+                        : "Connecting..."
+                      : lang === "hi"
+                        ? "Google के साथ जारी रखें"
+                        : "Continue with Google"}
+                  </span>
                 </button>
+
+                {/* Subtle Divider */}
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-[#E8E4DA]" />
+                  <span className="absolute bg-white px-2.5 text-[10px] font-bold text-[#7A8680] uppercase tracking-wider">
+                    {lang === "hi" ? "या मोबाइल द्वारा" : "OR WITH MOBILE"}
+                  </span>
+                </div>
               </div>
-            </form>
-          )}
+            )}
 
-          {/* VIEW 3: FORGOT PASSWORD */}
-          {authView === "forgot" && (
-            <form onSubmit={handleResetPassword} className="space-y-3.5 animate-in fade-in duration-150">
-              <div className="rounded-xl bg-[#FAF8F2] border border-[#145A45]/20 p-3 text-xs text-[#0F4A38] space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <KeyRound className="size-3.5 text-[#145A45]" />
-                  <span>{lang === "hi" ? "पासवर्ड रीसेट" : "Password Recovery"}</span>
-                </p>
-                <p className="text-[11px] text-[#5A655F] leading-relaxed">
-                  {lang === "hi"
-                    ? "अपना 10 अंकों का मोबाइल नंबर और प्राप्त सत्यापन कोड दर्ज करके नया पासवर्ड सेट करें।"
-                    : "Enter your 10-digit mobile number and verification code to set a new password."}
-                </p>
+            {/* Error Message */}
+            {authErrorMessage && (
+              <div className="rounded-2xl bg-red-50/80 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in duration-150">
+                <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
+                <p className="text-[11px] leading-relaxed font-medium">{authErrorMessage}</p>
               </div>
+            )}
 
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
+            {/* VIEW 1: SIGN IN */}
+            {authView === "signin" && (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="signin-phone" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "मोबाइल नंबर" : "Mobile Number"}
                   </Label>
-                  <button
-                    type="button"
-                    disabled={isSendingRecoveryOtp || forgotPhone.replace(/\D/g, "").length !== 10}
-                    onClick={handleSendRecoveryCode}
-                    className="text-[11px] font-bold text-[#145A45] hover:underline disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSendingRecoveryOtp
-                      ? (lang === "hi" ? "भेज रहा है..." : "Sending...")
-                      : (lang === "hi" ? "कोड भेजें (Send Code)" : "Send Code")}
-                  </button>
+                  <div className="flex rounded-2xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden transition-all">
+                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E8E4DA]">
+                      +91
+                    </span>
+                    <Input
+                      id="signin-phone"
+                      required
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
+                      value={signInPhone}
+                      onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10.5 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
+                    />
+                  </div>
                 </div>
-                <div className="flex rounded-xl border border-[#E5E0D5] bg-white overflow-hidden shadow-2xs">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-black text-[#0F4A38] border-r border-[#E5E0D5]">
-                    +91
-                  </span>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="signin-password" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "पासवर्ड" : "Password"}
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthView("forgot");
+                        setForgotPhone(signInPhone);
+                        setAuthErrorMessage(null);
+                      }}
+                      className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer"
+                    >
+                      {lang === "hi" ? "पासवर्ड भूल गए?" : "Forgot?"}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="signin-password"
+                      required
+                      type={showSignInPassword ? "text" : "password"}
+                      placeholder={lang === "hi" ? "पासवर्ड दर्ज करें" : "Enter password"}
+                      value={signInPassword}
+                      onChange={(e) => setSignInPassword(e.target.value)}
+                      className="h-10.5 rounded-2xl border-[#E8E4DA] pr-10 text-sm focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignInPassword(!showSignInPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
+                    >
+                      {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSigningIn || signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword}
+                  className="w-full h-11 rounded-2xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm"
+                >
+                  {isSigningIn
+                    ? lang === "hi"
+                      ? "लॉगिन हो रहा है..."
+                      : "Signing in…"
+                    : lang === "hi"
+                      ? "लॉगिन करें"
+                      : "Sign In"}
+                </Button>
+              </form>
+            )}
+
+            {/* VIEW 2: SIGN UP */}
+            {authView === "signup" && (
+              <form onSubmit={handleSignUp} className="space-y-3.5">
+                <div className="space-y-1">
+                  <Label htmlFor="signup-name" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "पूरा नाम" : "Full Name"}
+                  </Label>
                   <Input
-                    id="forgot-phone"
+                    id="signup-name"
                     required
-                    type="tel"
-                    maxLength={10}
-                    placeholder={lang === "hi" ? "10 अंकों का नंबर दर्ज करें" : "Enter 10-digit number"}
-                    value={forgotPhone}
-                    onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-none focus-visible:ring-0 text-sm font-bold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs"
+                    placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
+                    value={signUpName}
+                    onChange={(e) => setSignUpName(e.target.value)}
+                    className="h-10 rounded-2xl border-[#E8E4DA] text-xs font-medium placeholder:text-[#A8B2AC]"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="recovery-code" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "रिकवरी कोड (Recovery OTP / Code)" : "Recovery Code"}
-                </Label>
-                <Input
-                  id="recovery-code"
-                  required
-                  placeholder={lang === "hi" ? "6 अंकों का कोड (उदा. 638858)" : "6-digit code (e.g. 638858)"}
-                  value={recoveryCode}
-                  onChange={(e) => setRecoveryCode(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] font-mono text-xs font-bold placeholder:text-[#A8B2AC] placeholder:font-normal"
-                />
-              </div>
+                <div className="space-y-1">
+                  <Label htmlFor="signup-phone" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "Mobile Number"}
+                  </Label>
+                  <div className="flex rounded-2xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden transition-all">
+                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E8E4DA]">
+                      +91
+                    </span>
+                    <Input
+                      id="signup-phone"
+                      required
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
+                      value={signUpPhone}
+                      onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:text-xs"
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="new-password" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "नया पासवर्ड (कम से कम 6 अक्षर)" : "New Password"}
-                </Label>
-                <Input
-                  id="new-password"
-                  required
-                  type="password"
-                  placeholder={lang === "hi" ? "नया पासवर्ड दर्ज करें" : "Enter new password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs placeholder:text-[#A8B2AC] placeholder:font-normal"
-                />
-              </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="signup-password" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "पासवर्ड (min 6)" : "Password (min 6)"}
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        required
+                        type={showSignUpPassword ? "text" : "password"}
+                        placeholder="••••••"
+                        value={signUpPassword}
+                        onChange={(e) => setSignUpPassword(e.target.value)}
+                        className="h-10 rounded-2xl border-[#E8E4DA] pr-8 text-xs font-medium placeholder:text-[#A8B2AC]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5A655F]"
+                      >
+                        {showSignUpPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="confirm-new-password" className="text-xs font-bold text-[#16201A]">
-                  {lang === "hi" ? "नया पासवर्ड कन्फर्म करें" : "Confirm New Password"}
-                </Label>
-                <Input
-                  id="confirm-new-password"
-                  required
-                  type="password"
-                  placeholder={lang === "hi" ? "पासवर्ड दोबारा दर्ज करें" : "Re-enter password"}
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="h-10 rounded-xl border-[#E5E0D5] text-xs placeholder:text-[#A8B2AC] placeholder:font-normal"
-                />
-              </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "कन्फर्म पासवर्ड" : "Confirm"}
+                    </Label>
+                    <Input
+                      id="signup-confirm-password"
+                      required
+                      type="password"
+                      placeholder="••••••"
+                      value={signUpConfirmPassword}
+                      onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                      className="h-10 rounded-2xl border-[#E8E4DA] text-xs font-medium placeholder:text-[#A8B2AC]"
+                    />
+                  </div>
+                </div>
 
-              <Button
-                type="submit"
-                disabled={isResettingPassword || forgotPhone.replace(/\D/g, "").length !== 10 || !newPassword}
-                className="w-full h-11 rounded-xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98 transition-all cursor-pointer mt-2"
-              >
-                {isResettingPassword
-                  ? (lang === "hi" ? "पासवर्ड अपडेट हो रहा है..." : "Updating password…")
-                  : (lang === "hi" ? "पासवर्ड अपडेट करें (Save Password)" : "Update Password")}
-              </Button>
-
-              <div className="text-center pt-1 text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthView("signin");
-                    setAuthErrorMessage(null);
-                  }}
-                  className="font-bold text-[#145A45] hover:underline cursor-pointer"
+                <Button
+                  type="submit"
+                  disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
+                  className="w-full h-11 rounded-2xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
                 >
-                  {lang === "hi" ? "← वापस लॉगिन पर जाएं (Back to Sign In)" : "← Back to Sign In"}
-                </button>
-              </div>
-            </form>
-          )}
+                  {isSigningUp
+                    ? lang === "hi"
+                      ? "खाता बन रहा है..."
+                      : "Creating account…"
+                    : lang === "hi"
+                      ? "खाता बनाएं"
+                      : "Create Account"}
+                </Button>
+              </form>
+            )}
 
-          <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#5A655F]">
-            <ShieldCheck className="size-3.5 text-[#145A45]" />
-            <span>
-              {lang === "hi"
-                ? "सुरक्षित Supabase Phone & Password प्रमाणीकरण"
-                : "Protected by Supabase Auth with RLS isolation"}
-            </span>
+            {/* VIEW 3: FORGOT PASSWORD */}
+            {authView === "forgot" && (
+              <form onSubmit={handleResetPassword} className="space-y-3.5">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Mobile Number"}
+                    </Label>
+                    <button
+                      type="button"
+                      disabled={isSendingRecoveryOtp || forgotPhone.replace(/\D/g, "").length !== 10}
+                      onClick={handleSendRecoveryCode}
+                      className="text-[11px] font-bold text-[#145A45] hover:underline disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSendingRecoveryOtp
+                        ? lang === "hi"
+                          ? "भेज रहा है..."
+                          : "Sending..."
+                        : lang === "hi"
+                          ? "OTP भेजें"
+                          : "Send OTP"}
+                    </button>
+                  </div>
+                  <div className="flex rounded-2xl border border-[#E8E4DA] bg-white overflow-hidden">
+                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E8E4DA]">
+                      +91
+                    </span>
+                    <Input
+                      id="forgot-phone"
+                      required
+                      type="tel"
+                      maxLength={10}
+                      placeholder="10-digit number"
+                      value={forgotPhone}
+                      onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10 placeholder:text-[#A8B2AC] placeholder:text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="recovery-code" className="text-xs font-bold text-[#16201A]">
+                    {lang === "hi" ? "रिकवरी कोड (OTP)" : "Recovery OTP"}
+                  </Label>
+                  <Input
+                    id="recovery-code"
+                    required
+                    placeholder="6-digit code"
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value)}
+                    className="h-10 rounded-2xl border-[#E8E4DA] font-mono text-xs font-bold"
+                  />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="new-password" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "नया पासवर्ड" : "New Password"}
+                    </Label>
+                    <Input
+                      id="new-password"
+                      required
+                      type="password"
+                      placeholder="••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="h-10 rounded-2xl border-[#E8E4DA] text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="confirm-new-password" className="text-xs font-bold text-[#16201A]">
+                      {lang === "hi" ? "कन्फर्म करें" : "Confirm"}
+                    </Label>
+                    <Input
+                      id="confirm-new-password"
+                      required
+                      type="password"
+                      placeholder="••••••"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="h-10 rounded-2xl border-[#E8E4DA] text-xs"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isResettingPassword || forgotPhone.replace(/\D/g, "").length !== 10 || !newPassword}
+                  className="w-full h-11 rounded-2xl font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0E4333] active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
+                >
+                  {isResettingPassword
+                    ? lang === "hi"
+                      ? "अपडेट हो रहा है..."
+                      : "Updating…"
+                    : lang === "hi"
+                      ? "पासवर्ड अपडेट करें"
+                      : "Update Password"}
+                </Button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthView("signin");
+                      setAuthErrorMessage(null);
+                    }}
+                    className="text-xs font-bold text-[#145A45] hover:underline cursor-pointer"
+                  >
+                    {lang === "hi" ? "← लॉगिन पर वापस जाएं" : "← Back to Sign In"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
-        </div>
 
-        {/* Guest Order Tracking Independent Option */}
-        <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 text-center space-y-1.5">
-          <p className="text-xs font-bold text-[#16201A] flex items-center justify-center gap-1.5">
-            <Package className="size-4 text-[#145A45]" />
-            <span>{lang === "hi" ? "क्या आपको केवल ऑर्डर ट्रैक करना है?" : "Looking to track an order?"}</span>
-          </p>
-          <p className="text-[11px] text-[#5A655F]">
-            {lang === "hi"
-              ? "बिना लॉगिन केवल ऑर्डर नंबर व मोबाइल नंबर डालकर लाइव स्टेटस देखें।"
-              : "Guest order tracking is available without needing to sign in."}
-          </p>
-          <div className="pt-1">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="rounded-lg border-[#145A45] text-[#145A45] font-bold text-xs hover:bg-[#E6EFE8]"
+          {/* Subdued Guest Tracking Link */}
+          <div className="text-center pt-1">
+            <Link
+              to="/track"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A655F] hover:text-[#145A45] transition-colors"
             >
-              <Link to="/track">
-                {lang === "hi" ? "📦 बिना लॉगिन ऑर्डर ट्रैक करें →" : "Track Order as Guest →"}
-              </Link>
-            </Button>
+              <Package className="size-3.5" />
+              <span>
+                {lang === "hi" ? "बिना लॉगिन केवल ऑर्डर ट्रैक करें →" : "Looking to track an order as guest? →"}
+              </span>
+            </Link>
           </div>
         </div>
       </div>
@@ -1405,10 +1319,12 @@ function AccountPage() {
   }
 
   // ==========================================
+  // 3. AUTHENTICATED CUSTOMER DASHBOARD (CLEAN & MODERN)
+  // ==========================================
   const customerName =
     profile?.full_name ||
     (user.user_metadata?.["full_name"] as string) ||
-    (lang === "hi" ? "किराना ग्राहक" : "Valued Customer");
+    (lang === "hi" ? "सम्मानित ग्राहक" : "Valued Customer");
 
   const rawPhone =
     user.phone ||
@@ -1426,649 +1342,657 @@ function AccountPage() {
     "";
 
   return (
-    <div className="container-page py-4 sm:py-6 pb-24 lg:pb-10">
-      {/* Customer Header Card */}
-      <div className="rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-5 shadow-2xs">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-[#145A45] font-sans text-lg sm:text-xl font-black text-white shadow-2xs shrink-0">
+    <div className="container-page py-4 sm:py-8 pb-24 lg:pb-12 max-w-4xl mx-auto space-y-6">
+      {/* Sleek Profile Header Card */}
+      <div className="rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-gradient-to-br from-[#145A45] to-[#0A3628] font-sans text-xl sm:text-2xl font-black text-white shadow-xs shrink-0">
               {customerName.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                <h1 className="font-sans text-base sm:text-lg font-black text-[#16201A] truncate">
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <div className="flex items-center gap-2">
+                <h1 className="font-sans text-lg sm:text-xl font-black text-[#16201A] truncate">
                   {customerName}
                 </h1>
-                <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#145A45] shrink-0">
-                  {lang === "hi" ? "सत्यापित ग्राहक" : "Verified Customer"}
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
+                  <ShieldCheck className="size-3" />
+                  <span>{lang === "hi" ? "सत्यापित" : "Verified"}</span>
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5A655F] mt-1">
-                {customerPhone ? (
-                  <span className="flex items-center gap-1 font-semibold text-[#16201A] shrink-0">
-                    <Phone className="size-3.5 text-[#145A45]" />
-                    <span>{customerPhone}</span>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5A655F]">
+                {customerPhone && (
+                  <span className="flex items-center gap-1 font-semibold text-[#16201A]">
+                    <Phone className="size-3 text-[#145A45]" />
+                    <span>+91 {customerPhone}</span>
                   </span>
-                ) : null}
-                {customerEmail ? (
-                  <span className="flex items-center gap-1 font-medium text-[#16201A] truncate max-w-full">
-                    <Mail className="size-3.5 text-[#145A45] shrink-0" />
+                )}
+                {customerEmail && (
+                  <span className="flex items-center gap-1 font-normal text-[#5A655F] truncate max-w-xs">
+                    <Mail className="size-3 text-[#145A45]" />
                     <span className="truncate">{customerEmail}</span>
                   </span>
-                ) : null}
+                )}
               </div>
             </div>
           </div>
 
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="rounded-xl gap-1 text-xs font-bold border-[#E5E0D5] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors cursor-pointer h-8 px-2.5 shrink-0"
-          >
-            <LogOut className="size-3.5" />
-            <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
-          </Button>
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            {isAdmin && (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/50 hover:bg-[#145A45] hover:text-white font-bold text-xs h-8.5 px-3"
+              >
+                <Link to="/admin">
+                  <span>{lang === "hi" ? "दुकान एडमिन" : "Admin Panel"}</span>
+                </Link>
+              </Button>
+            )}
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="sm"
+              className="rounded-xl gap-1.5 text-xs font-bold border-[#E8E4DA] text-[#5A655F] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors h-8.5 px-3"
+            >
+              <LogOut className="size-3.5" />
+              <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Customer Tabs */}
-      <div className="mt-4">
-        <Tabs defaultValue="orders" className="space-y-4">
-          <TabsList className="grid grid-cols-4 h-11 w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 gap-1 shadow-2xs">
-            <TabsTrigger
-              value="orders"
-              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
-            >
-              <Package className="mr-1 size-3.5 hidden sm:inline" />
-              {lang === "hi" ? "ऑर्डर" : "Orders"} ({orders?.length ?? 0})
-            </TabsTrigger>
-            <TabsTrigger
-              value="buy-again"
-              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
-            >
-              <RotateCcw className="mr-1 size-3.5 hidden sm:inline" />
-              {lang === "hi" ? "रीऑर्डर" : "Reorder"} ({uniquePurchasedItems.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="addresses"
-              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
-            >
-              <MapPin className="mr-1 size-3.5 hidden sm:inline" />
-              {lang === "hi" ? "पते" : "Address"} ({addresses.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="profile"
-              className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
-            >
-              <User className="mr-1 size-3.5 hidden sm:inline" />
-              {lang === "hi" ? "प्रोफ़ाइल" : "Profile"}
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Tabbed Sections */}
+      <Tabs defaultValue="orders" className="space-y-5">
+        <TabsList className="grid grid-cols-4 h-11 w-full rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 gap-1 shadow-2xs">
+          <TabsTrigger
+            value="orders"
+            className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+          >
+            <Package className="mr-1 size-3.5 hidden sm:inline" />
+            <span>{lang === "hi" ? "ऑर्डर" : "Orders"}</span>
+            <span className="ml-1 opacity-80 text-[10px]">({orders?.length ?? 0})</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="buy-again"
+            className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+          >
+            <RotateCcw className="mr-1 size-3.5 hidden sm:inline" />
+            <span>{lang === "hi" ? "रीऑर्डर" : "Reorder"}</span>
+            <span className="ml-1 opacity-80 text-[10px]">({uniquePurchasedItems.length})</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="addresses"
+            className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+          >
+            <MapPin className="mr-1 size-3.5 hidden sm:inline" />
+            <span>{lang === "hi" ? "पते" : "Address"}</span>
+            <span className="ml-1 opacity-80 text-[10px]">({addresses.length})</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="profile"
+            className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-[#145A45] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-xs"
+          >
+            <User className="mr-1 size-3.5 hidden sm:inline" />
+            <span>{lang === "hi" ? "प्रोफ़ाइल" : "Profile"}</span>
+          </TabsTrigger>
+        </TabsList>
 
-          {/* TAB 1: MY ORDERS (Isolated strictly by auth.uid()) */}
-          <TabsContent value="orders" className="space-y-4">
-            {ordersLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-28 w-full rounded-2xl" />
-                <Skeleton className="h-28 w-full rounded-2xl" />
-              </div>
-            ) : orders && orders.length > 0 ? (
-              orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="rounded-2xl border border-[#E8E4DA] bg-white p-5 shadow-xs transition-all space-y-3"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8E4DA] pb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-sans font-black text-sm text-[#16201A]">
-                          #{order.order_no}
-                        </span>
-                        <span className="rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
-                          {ORDER_STATUS_LABEL[order.status] ?? order.status}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-[#5A655F]">
-                        {formatDate(order.created_at)}
+        {/* TAB 1: ORDERS (CLEAN STREAMLINED CARDS) */}
+        <TabsContent value="orders" className="space-y-4">
+          {ordersLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-32 w-full rounded-3xl" />
+              <Skeleton className="h-32 w-full rounded-3xl" />
+            </div>
+          ) : orders && orders.length > 0 ? (
+            orders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all space-y-3.5"
+              >
+                {/* Card Top: Order No, Date & Status Pill */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E8E4DA]/80 pb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-black text-sm text-[#16201A]">
+                        #{order.order_no}
+                      </span>
+                      <span className="rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
+                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
                       </span>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button
-                        onClick={() => handleViewInvoice(order)}
-                        disabled={invoiceLoadingId === order.id}
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-xl text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white transition-all"
-                      >
-                        <Receipt className="size-3.5 mr-1" />
-                        {lang === "hi" ? "बिल देखें" : "View Invoice"}
-                      </Button>
-                      <Button
-                        onClick={() => handleReorder(order)}
-                        size="sm"
-                        className="h-8 rounded-xl gap-1 text-xs font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628]"
-                      >
-                        <RotateCcw className="size-3.5" /> {lang === "hi" ? "पुनः खरीदें" : "Buy Again"}
-                      </Button>
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="h-8 rounded-xl text-xs font-semibold border-[#E5E0D5] text-[#16201A] hover:bg-[#FAF8F2]"
-                      >
-                        <Link
-                          to="/track"
-                          search={{ orderNo: order.order_no, phone: order.customer_phone } as never}
-                        >
-                          {lang === "hi" ? "ट्रैक करें" : "Track Live"}
-                        </Link>
-                      </Button>
-                    </div>
+                    <p className="text-[11px] text-[#5A655F] mt-0.5">
+                      {formatDate(order.created_at)} •{" "}
+                      {order.order_type === "delivery"
+                        ? lang === "hi"
+                          ? "होम डिलीवरी"
+                          : "Delivery"
+                        : lang === "hi"
+                          ? "दुकान से पिकअप"
+                          : "Store Pickup"}
+                    </p>
                   </div>
 
-                  {/* Order items preview */}
-                  <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    {(order.order_items ?? []).map((item) => (
-                      <div key={item.id} className="flex items-center gap-2 text-xs">
-                        <img
-                          src={getProductImage({
-                            name: item.name,
-                            image_url: item.image_url,
-                          })}
-                          alt={getProductName(item)}
-                          className="size-9 rounded-md object-contain bg-transparent p-0.5"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-[#16201A]">{getProductName(item)}</p>
-                          <p className="text-[10px] text-[#5A655F]">
-                            {getVariantLabel(item)} × {item.qty} ({inr(item.price * item.qty)})
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-[#E8E4DA] pt-2 text-xs">
-                    <span className="text-[#5A655F] capitalize">
-                      {order.order_type === "delivery" ? (lang === "hi" ? "होम डिलीवरी" : "Home Delivery") : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")} • {order.payment_method?.toUpperCase()}
+                  <div className="text-right">
+                    <span className="text-[11px] text-[#5A655F] block">
+                      {lang === "hi" ? "कुल राशि" : "Grand Total"}
                     </span>
-                    <span className="font-bold text-[#16201A]">
-                      {lang === "hi" ? "कुल राशि: " : "Total: "}
-                      <span className="text-[#145A45] font-black text-sm">{inr(order.total)}</span>
+                    <span className="font-sans font-black text-base text-[#145A45]">
+                      {inr(order.total)}
                     </span>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
-                <ShoppingBag className="mx-auto size-12 text-[#5A655F]" />
-                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
+
+                {/* Card Middle: Clean Compact Items List */}
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 bg-[#FAF8F2]/60 rounded-2xl p-2.5 border border-[#E8E4DA]/60">
+                  {(order.order_items ?? []).map((item) => (
+                    <div key={item.id} className="flex items-center gap-2 min-w-0">
+                      <img
+                        src={getProductImage({
+                          name: item.name,
+                          image_url: item.image_url,
+                        })}
+                        alt={getProductName(item)}
+                        className="size-8 rounded-lg object-contain bg-white p-0.5 border border-[#E8E4DA]/50 shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-[#16201A]">
+                          {getProductName(item)}
+                        </p>
+                        <p className="text-[10px] text-[#5A655F]">
+                          {getVariantLabel(item)} × {item.qty} ({inr(item.price * item.qty)})
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Card Bottom: Clean Action Buttons */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <span className="text-[11px] font-medium text-[#5A655F] uppercase tracking-wide">
+                    {order.payment_method?.toUpperCase()} • {order.payment_status === "paid" ? "PAID" : "PENDING"}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleViewInvoice(order)}
+                      disabled={invoiceLoadingId === order.id}
+                      size="sm"
+                      variant="outline"
+                      className="h-8 rounded-xl text-xs font-bold border-[#E8E4DA] text-[#16201A] hover:bg-[#FAF8F2] cursor-pointer"
+                    >
+                      <Receipt className="size-3.5 mr-1 text-[#145A45]" />
+                      <span>{lang === "hi" ? "बिल देखें" : "Invoice"}</span>
+                    </Button>
+
+                    <Button
+                      onClick={() => handleReorder(order)}
+                      size="sm"
+                      variant="outline"
+                      className="h-8 rounded-xl text-xs font-bold border-[#E8E4DA] text-[#16201A] hover:bg-[#FAF8F2] cursor-pointer"
+                    >
+                      <RotateCcw className="size-3 mr-1 text-[#145A45]" />
+                      <span>{lang === "hi" ? "रीऑर्डर" : "Reorder"}</span>
+                    </Button>
+
+                    <Button
+                      asChild
+                      size="sm"
+                      className="h-8 rounded-xl text-xs font-bold bg-[#145A45] text-white hover:bg-[#0E4333] shadow-2xs"
+                    >
+                      <Link
+                        to="/track"
+                        search={{ orderNo: order.order_no, phone: order.customer_phone } as never}
+                      >
+                        <span>{lang === "hi" ? "ट्रैक करें →" : "Track →"}</span>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-3xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white space-y-3">
+              <ShoppingBag className="mx-auto size-12 text-[#A8B2AC]" />
+              <div className="space-y-1">
+                <h3 className="font-sans text-base font-bold text-[#16201A]">
                   {lang === "hi" ? "अभी तक कोई ऑर्डर नहीं" : "No orders found"}
                 </h3>
-                <p className="mt-1 text-xs text-[#5A655F]">
+                <p className="text-xs text-[#5A655F]">
                   {lang === "hi"
                     ? "आपके खाते में अभी कोई पुराना ऑर्डर दर्ज नहीं है।"
                     : "You haven't placed any orders with this account yet."}
                 </p>
-                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
-                  <Link to="/shop">{lang === "hi" ? "दुकान देखें" : "Start Shopping"}</Link>
-                </Button>
               </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 2: BUY AGAIN (Previously Purchased Items) */}
-          <TabsContent value="buy-again" className="space-y-4">
-            <div>
-              <h3 className="font-sans text-base font-bold text-[#16201A]">
-                {lang === "hi" ? "आपने पहले ये सामान मंगाया था" : "Previously Purchased Staples"}
-              </h3>
-              <p className="text-xs text-[#5A655F]">
-                {lang === "hi"
-                  ? "अपने पसंदीदा दैनिक राशन को 1-क्लिक में दोबारा कार्ट में जोड़ें।"
-                  : "Easily reorder your daily grocery essentials with a single click."}
-              </p>
-            </div>
-
-            {uniquePurchasedItems.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {uniquePurchasedItems.map((item, idx) => (
-                  <div
-                    key={item.variantId || idx}
-                    className="card-base flex flex-col justify-between overflow-hidden bg-white p-3 border border-[#E8E4DA] rounded-2xl"
-                  >
-                    <div className="flex aspect-square w-full items-center justify-center p-2">
-                      <img
-                        src={getProductImage({
-                          name: item.name,
-                          image_url: item.imageUrl,
-                        })}
-                        alt={item.name}
-                        className="size-full max-h-[110px] object-contain"
-                      />
-                    </div>
-                    <div className="mt-2 flex flex-1 flex-col justify-between space-y-1">
-                      <div>
-                        <h4 className="line-clamp-2 text-xs font-bold text-[#16201A]">{item.name}</h4>
-                        <p className="text-[11px] text-[#5A655F]">{item.variantLabel}</p>
-                      </div>
-                      <div className="pt-2 flex items-center justify-between">
-                        <span className="text-xs font-black text-[#16201A]">{inr(item.price)}</span>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            add({
-                              variantId: item.variantId,
-                              productId: item.productId,
-                              slug: item.name.toLowerCase().replace(/\s+/g, "-"),
-                              name: item.name,
-                              variantLabel: item.variantLabel,
-                              price: item.price,
-                              mrp: item.mrp,
-                              imageUrl: item.imageUrl ?? null,
-                              stock: 99,
-                            });
-                            toast.success(`${item.name} ${t.added.toLowerCase()}`);
-                          }}
-                          className="h-8 rounded-xl bg-[#145A45] px-3 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0A3628] active:scale-95"
-                        >
-                          <Plus className="mr-1 size-3" /> {lang === "hi" ? "खरीदें" : "Buy"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white">
-                <RotateCcw className="mx-auto size-12 text-[#5A655F]" />
-                <h3 className="mt-3 font-sans text-base font-bold text-[#16201A]">
-                  {lang === "hi" ? "कोई पिछला ऑर्डर नहीं मिला" : "No purchase history yet"}
-                </h3>
-                <p className="mt-1 text-xs text-[#5A655F]">
-                  {lang === "hi"
-                    ? "जब आप राशन ऑर्डर करेंगे, तो वे सामान यहाँ तुरंत दिखाई देंगे।"
-                    : "Items you order in the future will automatically appear here for fast reordering."}
-                </p>
-                <Button asChild className="mt-4 rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]">
-                  <Link to="/shop">{lang === "hi" ? "सामान खरीदें" : "Start Shopping"}</Link>
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 3: SAVED ADDRESSES (Isolated by user_id = auth.uid()) */}
-          <TabsContent value="addresses" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-sans text-base font-bold text-[#16201A]">
-                  {lang === "hi" ? "डिलीवरी पते" : "Saved Delivery Addresses"}
-                </h3>
-                <p className="text-xs text-[#5A655F]">
-                  {lang === "hi"
-                    ? "महाराजगंज में अपने घर, दुकान या दफ्तर का पता प्रबंधित करें।"
-                    : "Manage your delivery addresses in Maharajganj, UP."}
-                </p>
-              </div>
-              <Button
-                onClick={() => setShowAddAddress(!showAddAddress)}
-                size="sm"
-                className="rounded-xl gap-1 text-xs font-bold bg-[#145A45] text-white hover:bg-[#0A3628]"
-              >
-                <Plus className="size-3.5" /> {lang === "hi" ? "नया पता जोड़ें" : "Add Address"}
+              <Button asChild className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333]">
+                <Link to="/shop">{lang === "hi" ? "सामान खरीदें →" : "Start Shopping →"}</Link>
               </Button>
             </div>
+          )}
+        </TabsContent>
 
-            {showAddAddress && (
-              <form
-                onSubmit={handleAddAddress}
-                className="rounded-2xl border border-[#145A45]/30 bg-[#FAF8F2] p-5 space-y-3.5 animate-in fade-in duration-150"
-              >
-                <h4 className="font-bold text-xs sm:text-sm text-[#0F4A38] flex items-center gap-1.5">
-                  <MapPin className="size-4 text-[#145A45]" />
-                  <span>{lang === "hi" ? "नया डिलीवरी पता दर्ज करें" : "Enter New Delivery Address"}</span>
-                </h4>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Input
-                    required
-                    placeholder={lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Full Name"}
-                    value={newRecipientName}
-                    onChange={(e) => setNewRecipientName(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                  <Input
-                    required
-                    type="tel"
-                    maxLength={10}
-                    placeholder={lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"}
-                    value={newRecipientPhone}
-                    onChange={(e) => setNewRecipientPhone(e.target.value.replace(/\D/g, ""))}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                  <Input
-                    required
-                    placeholder={lang === "hi" ? "मकान / दुकान नं." : "House / Shop / Flat No."}
-                    value={newHouse}
-                    onChange={(e) => setNewHouse(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                  <Input
-                    required
-                    placeholder={lang === "hi" ? "मोहल्ला / गली / सड़क" : "Area / Mohalla / Road Name"}
-                    value={newArea}
-                    onChange={(e) => setNewArea(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                  <Input
-                    placeholder={lang === "hi" ? "नजदीकी लैंडमार्क (वैकल्पिक)" : "Nearby Landmark (Optional)"}
-                    value={newLandmark}
-                    onChange={(e) => setNewLandmark(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                  <Input
-                    placeholder="पिन कोड (273303)"
-                    value={newPin}
-                    onChange={(e) => setNewPin(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    type="submit"
-                    disabled={isSavingAddress}
-                    size="sm"
-                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628]"
-                  >
-                    {isSavingAddress ? "सहेज रहा है..." : "पता सहेजें (Save Address)"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => setShowAddAddress(false)}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl border-[#E5E0D5] text-[#5A655F]"
-                  >
-                    रद्द करें (Cancel)
-                  </Button>
-                </div>
-              </form>
-            )}
+        {/* TAB 2: BUY AGAIN (CLEAN STAPLES GRID) */}
+        <TabsContent value="buy-again" className="space-y-4">
+          <div>
+            <h3 className="font-sans text-base font-bold text-[#16201A]">
+              {lang === "hi" ? "पिछले पसंदीदा राशन" : "Frequently Ordered Staples"}
+            </h3>
+            <p className="text-xs text-[#5A655F]">
+              {lang === "hi"
+                ? "1-क्लिक में अपने दैनिक जरूरी सामान दोबारा बास्केट में जोड़ें।"
+                : "Quickly add your daily groceries back to your basket."}
+            </p>
+          </div>
 
-            {addressesLoading ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-              </div>
-            ) : addresses.length > 0 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {addresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-xs flex flex-col justify-between space-y-3"
-                  >
-                    {editingAddressId === addr.id ? (
-                      <form onSubmit={handleUpdateAddress} className="space-y-3">
-                        <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-2">
-                          <span className="text-xs font-bold text-[#145A45] flex items-center gap-1.5">
-                            <Pencil className="size-3.5" />
-                            {lang === "hi" ? "पता एडिट करें" : "Edit Address"}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={cancelEditAddress}
-                            className="text-xs text-[#5A655F] hover:text-[#16201A] cursor-pointer"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className="grid gap-2.5 sm:grid-cols-2">
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Name"}
-                            </Label>
-                            <Input
-                              required
-                              placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "Full Name"}
-                              value={editRecipientName}
-                              onChange={(e) => setEditRecipientName(e.target.value)}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "मोबाइल नंबर" : "Mobile Number"}
-                            </Label>
-                            <Input
-                              required
-                              type="tel"
-                              maxLength={10}
-                              placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
-                              value={editRecipientPhone}
-                              onChange={(e) => setEditRecipientPhone(e.target.value.replace(/\D/g, ""))}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "मकान / दुकान नं." : "House / Shop No."}
-                            </Label>
-                            <Input
-                              required
-                              placeholder={lang === "hi" ? "मकान नं." : "House/Shop No."}
-                              value={editHouse}
-                              onChange={(e) => setEditHouse(e.target.value)}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "मोहल्ला / गली / सड़क" : "Area / Road"}
-                            </Label>
-                            <Input
-                              required
-                              placeholder={lang === "hi" ? "मोहल्ला / सड़क" : "Area / Road"}
-                              value={editArea}
-                              onChange={(e) => setEditArea(e.target.value)}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "लैंडमार्क (वैकल्पिक)" : "Landmark (Optional)"}
-                            </Label>
-                            <Input
-                              placeholder={lang === "hi" ? "लैंडमार्क" : "Landmark"}
-                              value={editLandmark}
-                              onChange={(e) => setEditLandmark(e.target.value)}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-[11px] font-bold text-[#16201A] mb-1 block">
-                              {lang === "hi" ? "पिन कोड" : "Pincode"}
-                            </Label>
-                            <Input
-                              placeholder="273303"
-                              value={editPin}
-                              onChange={(e) => setEditPin(e.target.value)}
-                              className="rounded-xl border-[#E5E0D5] bg-white text-xs h-9"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-2 pt-1">
-                          <Button
-                            type="submit"
-                            disabled={isUpdatingAddress}
-                            size="sm"
-                            className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] text-xs h-8 cursor-pointer"
-                          >
-                            {isUpdatingAddress
-                              ? (lang === "hi" ? "सहेज रहा है..." : "Saving...")
-                              : (lang === "hi" ? "बदलाव सहेजें (Save)" : "Save Changes")}
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={cancelEditAddress}
-                            variant="outline"
-                            size="sm"
-                            className="rounded-xl border-[#E5E0D5] text-[#5A655F] text-xs h-8 cursor-pointer"
-                          >
-                            {lang === "hi" ? "रद्द करें" : "Cancel"}
-                          </Button>
-                        </div>
-                      </form>
-                    ) : (
-                      <>
-                        <div>
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
-                              <MapPin className="size-4 text-[#145A45]" />
-                              <span>{addr.name}</span>
-                              <span className="font-normal text-[#5A655F]">({addr.phone})</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => startEditAddress(addr)}
-                                className="text-[#5A655F] hover:text-[#145A45] hover:bg-[#E6EFE8] p-1.5 rounded-lg transition-colors cursor-pointer"
-                                title="Edit address"
-                              >
-                                <Pencil className="size-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteAddress(addr.id)}
-                                className="text-[#5A655F] hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
-                                title="Delete address"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          <p className="mt-2 text-xs leading-relaxed text-[#16201A]">
-                            {addr.house}, {addr.area}
-                            {addr.landmark ? `, लैंडमार्क: ${addr.landmark}` : ""}
-                            <br />
-                            {addr.city}, UP - {addr.pincode || "273303"}
-                          </p>
-                        </div>
-                      </>
-                    )}
+          {uniquePurchasedItems.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {uniquePurchasedItems.map((item, idx) => (
+                <div
+                  key={item.variantId || idx}
+                  className="flex flex-col justify-between overflow-hidden bg-white p-3 border border-[#E8E4DA] rounded-3xl shadow-2xs hover:shadow-xs transition-all"
+                >
+                  <div className="flex aspect-square w-full items-center justify-center p-2 bg-[#FAF8F2]/50 rounded-2xl">
+                    <img
+                      src={getProductImage({
+                        name: item.name,
+                        image_url: item.imageUrl,
+                      })}
+                      alt={item.name}
+                      className="size-full max-h-[100px] object-contain"
+                    />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-[#E8E4DA] p-8 text-center bg-white">
-                <MapPin className="mx-auto size-10 text-[#5A655F]" />
-                <p className="mt-2 text-xs text-[#5A655F]">
-                  {lang === "hi"
-                    ? "कोई सहेजा गया पता नहीं मिला। ऊपर दिए बटन से नया पता जोड़ें।"
-                    : "No saved addresses. Click Add Address to save your location."}
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 5: PROFILE SETTINGS */}
-          <TabsContent value="profile">
-            <div className="max-w-xl rounded-2xl border border-[#E8E4DA] bg-white p-6 shadow-xs space-y-4">
-              <div>
+                  <div className="mt-2 flex flex-1 flex-col justify-between space-y-1.5">
+                    <div>
+                      <h4 className="line-clamp-2 text-xs font-bold text-[#16201A]">{item.name}</h4>
+                      <p className="text-[10px] text-[#5A655F]">{item.variantLabel}</p>
+                    </div>
+                    <div className="pt-1 flex items-center justify-between">
+                      <span className="text-xs font-black text-[#145A45]">{inr(item.price)}</span>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          add({
+                            variantId: item.variantId,
+                            productId: item.productId,
+                            slug: item.name.toLowerCase().replace(/\s+/g, "-"),
+                            name: item.name,
+                            variantLabel: item.variantLabel,
+                            price: item.price,
+                            mrp: item.mrp,
+                            imageUrl: item.imageUrl ?? null,
+                            stock: 99,
+                          });
+                          toast.success(`${item.name} ${t.added.toLowerCase()}`);
+                        }}
+                        className="h-7.5 rounded-xl bg-[#145A45] px-2.5 text-[11px] font-bold text-white shadow-2xs hover:bg-[#0E4333]"
+                      >
+                        <Plus className="mr-0.5 size-3" /> {lang === "hi" ? "जोड़ें" : "Add"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-[#E8E4DA] p-10 text-center bg-white space-y-3">
+              <RotateCcw className="mx-auto size-12 text-[#A8B2AC]" />
+              <div className="space-y-1">
                 <h3 className="font-sans text-base font-bold text-[#16201A]">
-                  {lang === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
+                  {lang === "hi" ? "कोई पिछला ऑर्डर नहीं" : "No purchase history yet"}
                 </h3>
                 <p className="text-xs text-[#5A655F]">
                   {lang === "hi"
-                    ? "अपना नाम और संपर्क ईमेल अपडेट करें।"
-                    : "Update your customer name and contact email."}
+                    ? "जब आप राशन ऑर्डर करेंगे, तो वे सामान यहाँ तुरंत दिखाई देंगे।"
+                    : "Items you order will automatically appear here for fast reordering."}
                 </p>
               </div>
+              <Button asChild className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333]">
+                <Link to="/shop">{lang === "hi" ? "दुकान देखें →" : "Shop Catalogue →"}</Link>
+              </Button>
+            </div>
+          )}
+        </TabsContent>
 
-              <form onSubmit={handleSaveProfile} className="space-y-3.5">
-                <div className="space-y-1">
-                  <Label htmlFor="prof-name" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "पूरा नाम" : "Full Name"}
-                  </Label>
-                  <Input
-                    id="prof-name"
-                    required
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    placeholder="उदा. रमेश कुमार"
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs font-medium"
-                  />
-                </div>
+        {/* TAB 3: SAVED ADDRESSES */}
+        <TabsContent value="addresses" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-sans text-base font-bold text-[#16201A]">
+                {lang === "hi" ? "सहेजे गए पते" : "Delivery Addresses"}
+              </h3>
+              <p className="text-xs text-[#5A655F]">
+                {lang === "hi" ? "महाराजगंज में अपने डिलीवरी पते प्रबंधित करें" : "Manage delivery locations"}
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowAddAddress(!showAddAddress)}
+              size="sm"
+              className="rounded-xl gap-1 text-xs font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-8.5"
+            >
+              <Plus className="size-3.5" />
+              <span>{lang === "hi" ? "नया पता" : "Add Address"}</span>
+            </Button>
+          </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="prof-phone" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"}
-                  </Label>
-                  {profile?.phone ? (
-                    <>
-                      <Input
-                        id="prof-phone"
-                        disabled
-                        value={customerPhone}
-                        className="rounded-xl border-[#E5E0D5] bg-[#FAF8F2] text-xs font-bold text-[#145A45]"
-                      />
-                      <p className="text-[10px] text-[#5A655F]">
-                        {lang === "hi"
-                          ? "पंजीकृत मोबाइल नंबर आपके खाते की सुरक्षित पहचान है।"
-                          : "Registered mobile number is your secure login identity."}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex rounded-xl border border-[#E5E0D5] focus-within:ring-2 focus-within:ring-[#145A45]/30 focus-within:border-[#145A45] bg-white overflow-hidden shadow-2xs transition-all">
-                        <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#0F4A38] border-r border-[#E5E0D5]">
-                          +91
+          {/* Add Address Form */}
+          {showAddAddress && (
+            <form
+              onSubmit={handleAddAddress}
+              className="rounded-3xl border border-[#145A45]/30 bg-[#FAF8F2] p-5 space-y-3.5 animate-in fade-in duration-150"
+            >
+              <h4 className="font-bold text-xs sm:text-sm text-[#0F4A38] flex items-center gap-1.5">
+                <MapPin className="size-4 text-[#145A45]" />
+                <span>{lang === "hi" ? "नया डिलीवरी पता जोड़ें" : "New Address Details"}</span>
+              </h4>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  required
+                  placeholder={lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Full Name"}
+                  value={newRecipientName}
+                  onChange={(e) => setNewRecipientName(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+                <Input
+                  required
+                  type="tel"
+                  maxLength={10}
+                  placeholder={lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "10-digit Phone"}
+                  value={newRecipientPhone}
+                  onChange={(e) => setNewRecipientPhone(e.target.value.replace(/\D/g, ""))}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+                <Input
+                  required
+                  placeholder={lang === "hi" ? "मकान / दुकान नं." : "House/Flat No."}
+                  value={newHouse}
+                  onChange={(e) => setNewHouse(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+                <Input
+                  required
+                  placeholder={lang === "hi" ? "मोहल्ला / सड़क" : "Area / Road"}
+                  value={newArea}
+                  onChange={(e) => setNewArea(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+                <Input
+                  placeholder={lang === "hi" ? "लैंडमार्क (वैकल्पिक)" : "Landmark (Optional)"}
+                  value={newLandmark}
+                  onChange={(e) => setNewLandmark(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+                <Input
+                  placeholder="273303"
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] bg-white text-xs"
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="submit"
+                  disabled={isSavingAddress}
+                  size="sm"
+                  className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] text-xs h-8.5"
+                >
+                  {isSavingAddress ? "सहेज रहा है..." : lang === "hi" ? "सहेजें" : "Save Address"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowAddAddress(false)}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-[#E8E4DA] text-[#5A655F] text-xs h-8.5"
+                >
+                  {lang === "hi" ? "रद्द करें" : "Cancel"}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Address Cards Grid */}
+          {addressesLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Skeleton className="h-28 w-full rounded-3xl" />
+              <Skeleton className="h-28 w-full rounded-3xl" />
+            </div>
+          ) : addresses.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {addresses.map((addr) => (
+                <div
+                  key={addr.id}
+                  className="rounded-3xl border border-[#E8E4DA] bg-white p-4 shadow-2xs flex flex-col justify-between space-y-2.5"
+                >
+                  {editingAddressId === addr.id ? (
+                    <form onSubmit={handleUpdateAddress} className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-1.5">
+                        <span className="text-xs font-bold text-[#145A45] flex items-center gap-1.5">
+                          <Pencil className="size-3.5" />
+                          <span>{lang === "hi" ? "पता बदलें" : "Edit Address"}</span>
                         </span>
+                        <button
+                          type="button"
+                          onClick={cancelEditAddress}
+                          className="text-xs text-[#5A655F] hover:text-[#16201A]"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
                         <Input
-                          id="prof-phone"
+                          required
+                          value={editRecipientName}
+                          onChange={(e) => setEditRecipientName(e.target.value)}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="Recipient Name"
+                        />
+                        <Input
+                          required
                           type="tel"
                           maxLength={10}
-                          value={editPhone}
-                          onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ""))}
-                          placeholder={lang === "hi" ? "10 अंकों का मोबाइल नंबर जोड़ें" : "Add 10-digit mobile number"}
-                          className="border-0 rounded-none focus-visible:ring-0 text-xs font-semibold text-[#16201A] h-9"
+                          value={editRecipientPhone}
+                          onChange={(e) => setEditRecipientPhone(e.target.value.replace(/\D/g, ""))}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="Phone"
+                        />
+                        <Input
+                          required
+                          value={editHouse}
+                          onChange={(e) => setEditHouse(e.target.value)}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="House No."
+                        />
+                        <Input
+                          required
+                          value={editArea}
+                          onChange={(e) => setEditArea(e.target.value)}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="Area / Road"
+                        />
+                        <Input
+                          value={editLandmark}
+                          onChange={(e) => setEditLandmark(e.target.value)}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="Landmark"
+                        />
+                        <Input
+                          value={editPin}
+                          onChange={(e) => setEditPin(e.target.value)}
+                          className="rounded-xl border-[#E8E4DA] bg-white text-xs h-8.5"
+                          placeholder="Pin"
                         />
                       </div>
-                      <p className="text-[10px] text-[#145A45] font-medium">
-                        {lang === "hi"
-                          ? "ऑर्डर डिलीवरी व WhatsApp अपडेट के लिए अपना मोबाइल नंबर जोड़ें।"
-                          : "Add your mobile number for fast delivery coordination and updates."}
-                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          type="submit"
+                          disabled={isUpdatingAddress}
+                          size="sm"
+                          className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] text-xs h-8"
+                        >
+                          {isUpdatingAddress ? "सहेज रहा है..." : "बदलाव सहेजें"}
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={cancelEditAddress}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl border-[#E8E4DA] text-[#5A655F] text-xs h-8"
+                        >
+                          रद्द करें
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
+                            <MapPin className="size-3.5 text-[#145A45]" />
+                            <span>{addr.name}</span>
+                            <span className="font-normal text-[#5A655F]">({addr.phone})</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => startEditAddress(addr)}
+                              className="text-[#5A655F] hover:text-[#145A45] p-1.5 rounded-lg hover:bg-[#E6EFE8] transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddress(addr.id)}
+                              className="text-[#5A655F] hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="mt-1.5 text-xs leading-relaxed text-[#5A655F]">
+                          {addr.house}, {addr.area}
+                          {addr.landmark ? `, ${addr.landmark}` : ""}
+                          <br />
+                          {addr.city}, UP - {addr.pincode || "273303"}
+                        </p>
+                      </div>
                     </>
                   )}
                 </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="prof-email" className="text-xs font-bold text-[#16201A]">
-                    {lang === "hi" ? "ईमेल आईडी (वैकल्पिक)" : "Email Address (Optional)"}
-                  </Label>
-                  <Input
-                    id="prof-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="rounded-xl border-[#E5E0D5] bg-white text-xs"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isSavingProfile}
-                  className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0A3628] shadow-xs cursor-pointer"
-                >
-                  {isSavingProfile ? "सहेज रहा है..." : "बदलाव सहेजें (Save Changes)"}
-                </Button>
-              </form>
+              ))}
             </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-[#E8E4DA] p-8 text-center bg-white space-y-2">
+              <MapPin className="mx-auto size-10 text-[#A8B2AC]" />
+              <p className="text-xs text-[#5A655F]">
+                {lang === "hi"
+                  ? "कोई सहेजा गया पता नहीं मिला। ऊपर दिए बटन से नया पता जोड़ें।"
+                  : "No saved addresses. Click Add Address to save your location."}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* TAB 4: PROFILE & SETTINGS */}
+        <TabsContent value="profile">
+          <div className="max-w-xl rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="font-sans text-base font-bold text-[#16201A]">
+                {lang === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
+              </h3>
+              <p className="text-xs text-[#5A655F]">
+                {lang === "hi"
+                  ? "अपना नाम और संपर्क ईमेल अपडेट करें।"
+                  : "Update your customer name and contact email."}
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="prof-name" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "पूरा नाम" : "Full Name"}
+                </Label>
+                <Input
+                  id="prof-name"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Full Name"
+                  className="rounded-2xl border-[#E8E4DA] bg-white text-xs h-10 font-medium"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="prof-phone" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"}
+                </Label>
+                {profile?.phone ? (
+                  <>
+                    <Input
+                      id="prof-phone"
+                      disabled
+                      value={customerPhone}
+                      className="rounded-2xl border-[#E8E4DA] bg-[#FAF8F2] text-xs font-bold text-[#145A45] h-10"
+                    />
+                    <p className="text-[10px] text-[#5A655F]">
+                      {lang === "hi"
+                        ? "पंजीकृत मोबाइल नंबर आपके खाते की सुरक्षित पहचान है।"
+                        : "Registered mobile number is your secure login identity."}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex rounded-2xl border border-[#E8E4DA] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden">
+                      <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E8E4DA]">
+                        +91
+                      </span>
+                      <Input
+                        id="prof-phone"
+                        type="tel"
+                        maxLength={10}
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ""))}
+                        placeholder="Add 10-digit mobile number"
+                        className="border-0 rounded-none focus-visible:ring-0 text-xs font-semibold text-[#16201A] h-10"
+                      />
+                    </div>
+                    <p className="text-[10px] text-[#145A45] font-medium">
+                      {lang === "hi"
+                        ? "ऑर्डर डिलीवरी व WhatsApp अपडेट के लिए मोबाइल नंबर जोड़ें।"
+                        : "Add your mobile number for delivery updates."}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="prof-email" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "ईमेल आईडी (वैकल्पिक)" : "Email Address (Optional)"}
+                </Label>
+                <Input
+                  id="prof-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  className="rounded-2xl border-[#E8E4DA] bg-white text-xs h-10"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSavingProfile}
+                className="rounded-2xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] shadow-xs cursor-pointer text-xs h-10 px-6"
+              >
+                {isSavingProfile ? "सहेज रहा है..." : lang === "hi" ? "बदलाव सहेजें" : "Save Changes"}
+              </Button>
+            </form>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Customer Official Invoice Modal */}
       <InvoiceView
