@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Truck,
   Store,
@@ -19,12 +19,26 @@ import {
   Pencil,
   ChevronDown,
   ChevronUp,
+  Smartphone,
+  Copy,
+  ExternalLink,
+  Lock,
+  RefreshCw,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
@@ -40,6 +54,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { inr, telHref } from "@/lib/format";
 import { registerPlacedOrder } from "@/lib/orders";
 import { broadcastNewOrder } from "@/lib/realtime-sync";
+import {
+  loadRazorpayScript,
+  getPublicRazorpayKey,
+  generateUpiUri,
+  generateQrCodeUrl,
+  recordPaymentAttemptOnServer,
+  verifyPaymentWithServer,
+  recordPaymentFailureOnServer,
+  type PaymentMethod,
+  type RazorpayOptions,
+} from "@/lib/payment-gateway";
 
 
 
@@ -90,8 +115,21 @@ function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
 
-  // Loading state
+  // Loading & Payment States
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [dynamicQrModalOpen, setDynamicQrModalOpen] = useState(false);
+  const [upiModalOpen, setUpiModalOpen] = useState(false);
+  const [activeOrderForPayment, setActiveOrderForPayment] = useState<{
+    id: string;
+    orderNo: string;
+    amount: number;
+    cleanPhone: string;
+    gatewayOrderId?: string;
+  } | null>(null);
+  const [activeUpiUri, setActiveUpiUri] = useState<string>("");
+  const [upiCopied, setUpiCopied] = useState(false);
+  const [isVerifyingQrPayment, setIsVerifyingQrPayment] = useState(false);
 
   // Prefill customer details if user is authenticated or has stored info
   useEffect(() => {
@@ -173,6 +211,32 @@ function CheckoutPage() {
 
   const grandTotal = Math.max(0, subtotal - couponDiscount + deliveryFee);
 
+  // Dynamic Payment Methods allowed by Admin settings
+  const onlinePaymentsEnabled = settings?.online_payment_enabled !== false;
+  const enabledMethods: string[] =
+    settings?.enabled_payment_methods && Array.isArray(settings.enabled_payment_methods)
+      ? settings.enabled_payment_methods
+      : ["upi", "card", "qr", "cod", "pay_at_store"];
+
+  const isUpiAllowed = onlinePaymentsEnabled && enabledMethods.includes("upi");
+  const isCardAllowed = onlinePaymentsEnabled && enabledMethods.includes("card");
+  const isQrAllowed = onlinePaymentsEnabled && enabledMethods.includes("qr");
+  const isCodAllowed = enabledMethods.includes("cod");
+  const isPayAtStoreAllowed = orderType === "pickup" && enabledMethods.includes("pay_at_store");
+
+  useEffect(() => {
+    const validMethods: string[] = [];
+    if (isUpiAllowed) validMethods.push("upi");
+    if (isCardAllowed) validMethods.push("card");
+    if (isQrAllowed) validMethods.push("qr");
+    if (isCodAllowed) validMethods.push("cod");
+    if (isPayAtStoreAllowed) validMethods.push("pay_at_store");
+
+    if (validMethods.length > 0 && !validMethods.includes(paymentMethod)) {
+      setPaymentMethod(validMethods[0] || "cod");
+    }
+  }, [isUpiAllowed, isCardAllowed, isQrAllowed, isCodAllowed, isPayAtStoreAllowed, paymentMethod]);
+
   function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
     const code = couponCode.trim().toUpperCase();
@@ -215,18 +279,20 @@ function CheckoutPage() {
   async function handlePlaceOrder(e: React.FormEvent) {
     e.preventDefault();
 
+    if (isSubmitting || isProcessingPayment) return;
+
     // Validation
     const cleanPhone = phone.replace(/\D/g, "").slice(-10);
     if (cleanPhone.length !== 10) {
-      toast.error("Please enter a valid 10-digit Indian mobile number");
+      toast.error(lang === "hi" ? "कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें" : "Please enter a valid 10-digit Indian mobile number");
       return;
     }
     if (!name.trim()) {
-      toast.error("Please provide your full name");
+      toast.error(lang === "hi" ? "कृपया अपना पूरा नाम दर्ज करें" : "Please provide your full name");
       return;
     }
     if (orderType === "delivery" && (!area.trim() || !house.trim())) {
-      toast.error("Please provide your delivery address (house/shop no and area)");
+      toast.error(lang === "hi" ? "कृपया अपना डिलीवरी पता दर्ज करें" : "Please provide your delivery address (house/shop no and area)");
       return;
     }
     if (subtotal < minOrderValue) {
@@ -279,6 +345,7 @@ function CheckoutPage() {
       }));
 
       let orderNo = `AGT-${Date.now().toString().slice(-4)}`;
+      let orderId = "";
 
       // 1. Try atomic place_order RPC procedure first
       const { data: rpcRes, error: rpcErr } = await (supabase.rpc as Function)("place_order", {
@@ -288,6 +355,7 @@ function CheckoutPage() {
 
       if (!rpcErr && rpcRes && typeof rpcRes === "object" && "order_no" in rpcRes) {
         orderNo = String((rpcRes as { order_no: string }).order_no);
+        orderId = String((rpcRes as { order_id?: string }).order_id || "");
       } else {
         // Fallback: Direct table insertion
         const { data: orderData, error: orderError } = await supabase
@@ -298,6 +366,7 @@ function CheckoutPage() {
 
         if (orderError) throw orderError;
         if (orderData?.order_no) orderNo = orderData.order_no;
+        if (orderData?.id) orderId = orderData.id;
 
         if (orderData?.id) {
           const itemsWithOrderId = itemsPayload.map((it) => ({
@@ -309,16 +378,14 @@ function CheckoutPage() {
       }
 
       // Register order for admin manifest and broadcast in realtime
-      registerPlacedOrder({ order_no: orderNo, phone: cleanPhone });
+      registerPlacedOrder({ order_no: orderNo, phone: cleanPhone, id: orderId });
       broadcastNewOrder({
-        orderId: orderNo,
+        orderId: orderId || orderNo,
         orderNo,
         total: grandTotal,
         customerName: name.trim(),
         createdAt: new Date().toISOString(),
       });
-
-
 
       // Save customer info locally for instant future checkout
       localStorage.setItem("agt.last_phone", cleanPhone);
@@ -371,27 +438,284 @@ function CheckoutPage() {
         }
       }
 
+      // ==========================================
+      // PAYMENT PROCESSING FLOW
+      // ==========================================
+      if (paymentMethod === "cod" || paymentMethod === "pay_at_store") {
+        clear();
+        toast.success(
+          lang === "hi"
+            ? `ऑर्डर सफलतापूर्वक दर्ज हो गया! (ऑर्डर नं. ${orderNo})`
+            : `Order Placed Successfully! (Order No. ${orderNo})`,
+        );
+        void navigate({
+          to: "/track",
+          search: { orderNo, phone: cleanPhone } as never,
+        });
+        return;
+      }
 
-      // Clear the shopping cart
-      clear();
-
-      toast.success(
-        lang === "hi"
-          ? `ऑर्डर सफलतापूर्वक दर्ज हो गया! (ऑर्डर नं. ${orderNo})`
-          : `Order Placed Successfully! (Order No. ${orderNo})`,
-      );
-
-      // Navigate to order confirmation / tracking page
-      void navigate({
-        to: "/track",
-        search: { orderNo, phone: cleanPhone } as never,
+      const upiVpa = (settings?.upi_vpa || "6388354988@okbizaxis").trim();
+      const payeeName = (settings?.upi_merchant_name || "Arun Gopal Traders").trim();
+      const qrNote = (settings?.qr_custom_note || `Order ${orderNo}`).trim();
+      const upiUri = generateUpiUri({
+        vpa: upiVpa,
+        payeeName,
+        amount: grandTotal,
+        orderNo,
+        note: qrNote,
       });
+
+      // Flow 1: Dynamic QR Code Flow (ONLY when customer selects Dynamic QR)
+      if (paymentMethod === "qr") {
+        setIsSubmitting(false);
+        setActiveOrderForPayment({
+          id: orderId,
+          orderNo,
+          amount: grandTotal,
+          cleanPhone,
+        });
+        setActiveUpiUri(upiUri);
+        setDynamicQrModalOpen(true);
+
+        void recordPaymentAttemptOnServer({
+          orderId,
+          orderNo,
+          method: "qr",
+          amount: grandTotal,
+          metadata: { vpa: upiVpa, uri: upiUri },
+        });
+        return;
+      }
+
+      // Flow 2: Direct UPI App Intent Launch on Mobile
+      const isMobileDevice = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (paymentMethod === "upi" && isMobileDevice) {
+        setIsSubmitting(false);
+        setIsProcessingPayment(false);
+
+        void recordPaymentAttemptOnServer({
+          orderId,
+          orderNo,
+          method: "upi",
+          amount: grandTotal,
+          metadata: { vpa: upiVpa, uri: upiUri, mode: "direct_mobile_intent" },
+        });
+
+        // Trigger native UPI deep link directly to launch installed Google Pay / PhonePe / Paytm / BHIM
+        window.location.href = upiUri;
+        clear();
+        toast.success(
+          lang === "hi"
+            ? "UPI ऐप खोला जा रहा है... भुगतान पूरा करें।"
+            : "Opening UPI app to complete payment...",
+        );
+        void navigate({
+          to: "/track",
+          search: { orderNo, phone: cleanPhone } as never,
+        });
+        return;
+      }
+
+      // Flow 3: Online Gateway Flow (UPI or Card)
+      setIsProcessingPayment(true);
+
+      let gatewayOrderId = `order_agt_${orderNo}_${Date.now().toString(36)}`;
+      let keyId = (settings?.razorpay_key_id || "").trim() || getPublicRazorpayKey();
+
+      try {
+        const createRes = await fetch("/api/payment/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            orderNo,
+            amount: grandTotal,
+            currency: "INR",
+            customerName: name.trim(),
+            customerPhone: cleanPhone,
+            customerEmail: email.trim() || undefined,
+          }),
+        });
+
+        if (createRes.ok) {
+          const createData = (await createRes.json()) as { gatewayOrderId?: string; keyId?: string };
+          if (createData.gatewayOrderId) gatewayOrderId = createData.gatewayOrderId;
+          if (createData.keyId) keyId = createData.keyId;
+        }
+      } catch (orderErr) {
+        console.warn("Server order creation warning:", orderErr);
+      }
+
+      void recordPaymentAttemptOnServer({
+        orderId,
+        orderNo,
+        method: paymentMethod as PaymentMethod,
+        gateway: "razorpay",
+        gatewayOrderId,
+        amount: grandTotal,
+      });
+
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (scriptLoaded && window.Razorpay && keyId && keyId !== "rzp_test_fallback") {
+        const isServerOrder = gatewayOrderId.startsWith("order_") && !gatewayOrderId.startsWith("order_agt_");
+        const rzpOptions: RazorpayOptions = {
+          key: keyId,
+          amount: Math.round(grandTotal * 100),
+          currency: "INR",
+          name: "Arun Gopal Traders",
+          description: `Order ${orderNo} • ₹${grandTotal}`,
+          ...(isServerOrder ? { order_id: gatewayOrderId } : {}),
+          prefill: {
+            name: name.trim(),
+            contact: cleanPhone,
+            ...(email.trim() ? { email: email.trim() } : {}),
+          },
+          theme: {
+            color: "#145A45",
+          },
+          config: {
+            display: {
+              blocks: {
+                upi: {
+                  name: "Pay via UPI",
+                  instruments: [
+                    {
+                      method: "upi",
+                      flows: ["intent", "collect"],
+                    },
+                  ],
+                },
+                card: {
+                  name: "Pay via Cards",
+                  instruments: [
+                    {
+                      method: "card",
+                    },
+                  ],
+                },
+              },
+              sequence: paymentMethod === "upi" ? ["block.upi"] : ["block.card"],
+              preferences: {
+                show_default_blocks: false,
+              },
+            },
+          },
+          handler: async (resp: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
+            setIsProcessingPayment(true);
+            toast.info(t.verifyingPaymentWithServer);
+
+            const verifyRes = await verifyPaymentWithServer({
+              orderId,
+              orderNo,
+              gatewayOrderId: resp.razorpay_order_id || gatewayOrderId,
+              gatewayPaymentId: resp.razorpay_payment_id,
+              signature: resp.razorpay_signature || "",
+              amount: grandTotal,
+              paymentMethod: paymentMethod as PaymentMethod,
+            });
+
+            setIsProcessingPayment(false);
+
+            if (verifyRes.success) {
+              clear();
+              toast.success(t.paymentSuccess);
+              void navigate({
+                to: "/track",
+                search: { orderNo, phone: cleanPhone } as never,
+              });
+            } else {
+              toast.error(t.paymentFailedMessage);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsSubmitting(false);
+              setIsProcessingPayment(false);
+              void recordPaymentFailureOnServer({
+                orderId,
+                gatewayOrderId,
+                errorCode: "MODAL_DISMISSED",
+                errorDescription: "Payment modal closed by user",
+              });
+              toast.warning(t.paymentCancelledMessage);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(rzpOptions);
+        rzp.open();
+      } else {
+        // Fallback when Gateway SDK is not configured
+        setIsProcessingPayment(false);
+        setIsSubmitting(false);
+        setActiveOrderForPayment({
+          id: orderId,
+          orderNo,
+          amount: grandTotal,
+          cleanPhone,
+          gatewayOrderId,
+        });
+        setActiveUpiUri(upiUri);
+
+        if (paymentMethod === "upi") {
+          // Open UPI Direct Intent Modal (NO QR CODE)
+          setUpiModalOpen(true);
+        } else if (paymentMethod === "qr") {
+          // Open Dynamic QR Modal (ONLY FOR QR)
+          setDynamicQrModalOpen(true);
+        } else {
+          toast.error(
+            lang === "hi"
+              ? "कार्ड गेटवे वर्तमान में सक्रिय नहीं है। कृपया UPI या कैश ऑन डिलीवरी चुनें।"
+              : "Card gateway is currently offline. Please choose UPI or Cash on Delivery."
+          );
+        }
+      }
     } catch (err: unknown) {
       console.error("Order placement failed:", err);
       const msg = err instanceof Error ? err.message : "Could not place order";
       toast.error(`Order failed: ${msg}. You can also call us at +91 6388354988 to place it.`);
     } finally {
       setIsSubmitting(false);
+      setIsProcessingPayment(false);
+    }
+  }
+
+  async function handleConfirmDynamicQrPayment() {
+    if (!activeOrderForPayment) return;
+    setIsVerifyingQrPayment(true);
+
+    try {
+      const verifyRes = await verifyPaymentWithServer({
+        orderId: activeOrderForPayment.id,
+        orderNo: activeOrderForPayment.orderNo,
+        gatewayOrderId: activeOrderForPayment.gatewayOrderId || `qr_${activeOrderForPayment.orderNo}`,
+        gatewayPaymentId: `upi_qr_${Date.now().toString(36)}`,
+        signature: "verified_dynamic_qr",
+        amount: activeOrderForPayment.amount,
+        paymentMethod: "qr",
+      });
+
+      if (verifyRes.success) {
+        setDynamicQrModalOpen(false);
+        clear();
+        toast.success(t.paymentSuccess);
+        void navigate({
+          to: "/track",
+          search: {
+            orderNo: activeOrderForPayment.orderNo,
+            phone: activeOrderForPayment.cleanPhone,
+          } as never,
+        });
+      } else {
+        toast.error(t.paymentFailedMessage);
+      }
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Payment verification failed");
+    } finally {
+      setIsVerifyingQrPayment(false);
     }
   }
 
@@ -939,7 +1263,7 @@ function CheckoutPage() {
               <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
                 3
               </span>
-              {lang === "hi" ? "भुगतान का तरीका" : "Payment Method"}
+              {t.paymentMethodLabel}
             </h2>
 
             <RadioGroup
@@ -947,84 +1271,215 @@ function CheckoutPage() {
               onValueChange={setPaymentMethod}
               className="mt-4 space-y-3"
             >
-              <div
-                onClick={() => setPaymentMethod("cod")}
-                className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
-                  paymentMethod === "cod"
-                    ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
-                    : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="cod" id="pay-cod" className="text-[#145A45]" />
-                  <Label
-                    htmlFor="pay-cod"
-                    className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                  >
-                    <Banknote className="size-4 text-[#15803D]" /> {lang === "hi" ? "कैश ऑन डिलीवरी (COD)" : "Cash on Delivery (COD)"}
-                  </Label>
-                </div>
-                <span className="text-xs text-[#5A655F]">
-                  {lang === "hi" ? "सामान मिलने पर नकद दें" : "Pay cash to delivery person"}
-                </span>
-              </div>
-
-              <div
-                onClick={() => setPaymentMethod("upi")}
-                className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
-                  paymentMethod === "upi"
-                    ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
-                    : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="upi" id="pay-upi" className="text-[#145A45]" />
-                  <Label
-                    htmlFor="pay-upi"
-                    className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                  >
-                    <QrCode className="size-4 text-[#145A45]" /> {lang === "hi" ? "UPI / गूगल पे / फोनपे / पेटीएम" : "UPI / Google Pay / PhonePe / Paytm"}
-                  </Label>
-                </div>
-                <span className="text-xs text-[#5A655F]">
-                  {lang === "hi" ? "डिलीवरी पर QR स्कैन करें" : "Pay via UPI QR on delivery/pickup"}
-                </span>
-              </div>
-
-              {orderType === "pickup" ? (
+              {/* Option 1: Direct UPI (GPay, PhonePe, Paytm, BHIM) */}
+              {isUpiAllowed && (
                 <div
-                  onClick={() => setPaymentMethod("pay_at_store")}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${
-                    paymentMethod === "pay_at_store"
-                      ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
-                      : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
+                  onClick={() => setPaymentMethod("upi")}
+                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                    paymentMethod === "upi"
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <RadioGroupItem value="pay_at_store" id="pay-store" className="text-[#145A45]" />
-                    <Label
-                      htmlFor="pay-store"
-                      className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                    >
-                      <Store className="size-4 text-[#145A45]" /> {lang === "hi" ? "दुकान काउंटर पर भुगतान" : "Pay at Store Counter"}
-                    </Label>
+                  <div className="flex items-start gap-3">
+                    <RadioGroupItem value="upi" id="pay-upi" className="mt-0.5 text-[#145A45]" />
+                    <div>
+                      <Label
+                        htmlFor="pay-upi"
+                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
+                      >
+                        <Smartphone className="size-4 text-[#145A45]" /> {t.upiOptionTitle}
+                      </Label>
+                      <p className="mt-0.5 text-xs text-[#5A655F]">
+                        {t.upiOptionSub}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          Google Pay
+                        </span>
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          PhonePe
+                        </span>
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          Paytm
+                        </span>
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          BHIM UPI
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-[#15803D]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#15803D] shrink-0">
+                    {lang === "hi" ? "तेज़ व सुरक्षित" : "Instant"}
+                  </span>
+                </div>
+              )}
+
+              {/* Option 2: Credit / Debit Card */}
+              {isCardAllowed && (
+                <div
+                  onClick={() => setPaymentMethod("card")}
+                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                    paymentMethod === "card"
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <RadioGroupItem value="card" id="pay-card" className="mt-0.5 text-[#145A45]" />
+                    <div>
+                      <Label
+                        htmlFor="pay-card"
+                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
+                      >
+                        <CreditCard className="size-4 text-[#145A45]" /> {t.cardOptionTitle}
+                      </Label>
+                      <p className="mt-0.5 text-xs text-[#5A655F]">
+                        {t.cardOptionSub}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          Visa
+                        </span>
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          Mastercard
+                        </span>
+                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
+                          RuPay
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
+                    {lang === "hi" ? "100% सुरक्षित" : "Secure"}
+                  </span>
+                </div>
+              )}
+
+              {/* Option 3: Dynamic UPI QR Code */}
+              {isQrAllowed && (
+                <div
+                  onClick={() => setPaymentMethod("qr")}
+                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                    paymentMethod === "qr"
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <RadioGroupItem value="qr" id="pay-qr" className="mt-0.5 text-[#145A45]" />
+                    <div>
+                      <Label
+                        htmlFor="pay-qr"
+                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
+                      >
+                        <QrCode className="size-4 text-[#145A45]" /> {t.qrOptionTitle}
+                      </Label>
+                      <p className="mt-0.5 text-xs text-[#5A655F]">
+                        {t.qrOptionSub}
+                      </p>
+                      <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#145A45]">
+                        {t.qrExactAmountNotice.replace("{amount}", inr(grandTotal))}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 shrink-0">
+                    {lang === "hi" ? "डायनामिक QR" : "Dynamic QR"}
+                  </span>
+                </div>
+              )}
+
+              {/* Option 4: Cash on Delivery (COD) */}
+              {isCodAllowed && (
+                <div
+                  onClick={() => setPaymentMethod("cod")}
+                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                    paymentMethod === "cod"
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <RadioGroupItem value="cod" id="pay-cod" className="mt-0.5 text-[#145A45]" />
+                    <div>
+                      <Label
+                        htmlFor="pay-cod"
+                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
+                      >
+                        <Banknote className="size-4 text-[#15803D]" /> {t.cashOnDeliveryTitle}
+                      </Label>
+                      <p className="mt-0.5 text-xs text-[#5A655F]">
+                        {t.cashOnDeliveryDesc}
+                      </p>
+                    </div>
                   </div>
                   <span className="text-xs text-[#5A655F]">
-                    {lang === "hi" ? "नकद या UPI दुकान पर" : "Cash/UPI at shop counter"}
+                    {lang === "hi" ? "सामान मिलने पर" : "At Doorstep"}
+                  </span>
+                </div>
+              )}
+
+              {/* Option 5: Pay at Store (Only for Store Pickup) */}
+              {isPayAtStoreAllowed ? (
+                <div
+                  onClick={() => setPaymentMethod("pay_at_store")}
+                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                    paymentMethod === "pay_at_store"
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
+                    : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <RadioGroupItem value="pay_at_store" id="pay-store" className="mt-0.5 text-[#145A45]" />
+                    <div>
+                      <Label
+                        htmlFor="pay-store"
+                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
+                      >
+                        <Store className="size-4 text-[#145A45]" /> {t.payAtStoreTitle}
+                      </Label>
+                      <p className="mt-0.5 text-xs text-[#5A655F]">
+                        {t.payAtStoreDesc}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-[#5A655F]">
+                    {lang === "hi" ? "काउंटर पर" : "At Store"}
                   </span>
                 </div>
               ) : null}
             </RadioGroup>
           </div>
 
-          <Button
-            type="submit"
-            size="lg"
-            disabled={isSubmitting || items.length === 0}
-            className="w-full rounded-lg py-4 text-base font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0A3628] lg:hidden"
-          >
-            {isSubmitting ? "Placing Order…" : `Place Order • ${inr(grandTotal)}`}
-          </Button>
+          {/* Mobile Full-Width Place Order / Pay Button */}
+          <div className="lg:hidden">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSubmitting || isProcessingPayment || items.length === 0}
+              className="w-full rounded-xl py-4 text-base font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0A3628]"
+            >
+              {isSubmitting || isProcessingPayment ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="size-4 animate-spin" /> {t.paymentProcessing}
+                </span>
+              ) : paymentMethod === "upi" ? (
+                `${t.payWithUpi} • ${inr(grandTotal)}`
+              ) : paymentMethod === "card" ? (
+                `${t.payWithCard} • ${inr(grandTotal)}`
+              ) : paymentMethod === "qr" ? (
+                `${t.payWithQr} • ${inr(grandTotal)}`
+              ) : paymentMethod === "cod" ? (
+                t.placeOrderCod.replace("{amount}", inr(grandTotal))
+              ) : (
+                `${t.placeOrderBtn} • ${inr(grandTotal)}`
+              )}
+            </Button>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#5A655F] mt-2.5 text-center">
+              <Lock className="size-3 text-[#15803D] shrink-0" />
+              <span>{t.securityBadgeText}</span>
+            </div>
+          </div>
         </form>
 
         {/* Right Order Summary Column */}
@@ -1129,16 +1584,38 @@ function CheckoutPage() {
               </div>
             </dl>
 
+            {/* Desktop Pay Now Button */}
             <Button
               onClick={handlePlaceOrder}
-              disabled={isSubmitting || items.length === 0}
+              disabled={isSubmitting || isProcessingPayment || items.length === 0}
               size="lg"
-              className="mt-5 hidden w-full rounded-full py-6 font-bold shadow-md lg:flex bg-[#145A45] text-white hover:bg-[#0E4333]"
+              className="mt-5 hidden w-full rounded-xl py-6 font-bold shadow-md lg:flex bg-[#145A45] text-white hover:bg-[#0E4333]"
             >
-              {isSubmitting ? "Placing Order…" : `Confirm & Place Order • ${inr(grandTotal)}`}
+              {isSubmitting || isProcessingPayment ? (
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="size-4 animate-spin" /> {t.paymentProcessing}
+                </span>
+              ) : paymentMethod === "upi" ? (
+                `${t.payWithUpi} • ${inr(grandTotal)}`
+              ) : paymentMethod === "card" ? (
+                `${t.payWithCard} • ${inr(grandTotal)}`
+              ) : paymentMethod === "qr" ? (
+                `${t.payWithQr} • ${inr(grandTotal)}`
+              ) : paymentMethod === "cod" ? (
+                t.placeOrderCod.replace("{amount}", inr(grandTotal))
+              ) : (
+                `${t.placeOrderBtn} • ${inr(grandTotal)}`
+              )}
             </Button>
 
-            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#6B746F]">
+            <div className="mt-3 text-center">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#5A655F]">
+                <Lock className="size-3 text-[#15803D] shrink-0" />
+                <span>{t.securityBadgeText}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#6B746F] border-t border-[#E5E0D5] pt-3">
               <p className="flex items-center justify-center gap-1">
                 <ShieldCheck className="size-3.5 text-[#145A45]" /> 100% शुद्ध राशन • अरुण गोपाल ट्रेडर्स
               </p>
@@ -1155,6 +1632,257 @@ function CheckoutPage() {
           </div>
         </aside>
       </div>
+
+      {/* Dynamic UPI Payment QR Dialog (Strictly for Dynamic QR method) */}
+      <Dialog
+        open={dynamicQrModalOpen}
+        onOpenChange={(open) => {
+          if (!open && !isVerifyingQrPayment) {
+            setDynamicQrModalOpen(false);
+            if (activeOrderForPayment) {
+              void recordPaymentFailureOnServer({
+                orderId: activeOrderForPayment.id,
+                errorCode: "QR_MODAL_CLOSED",
+                errorDescription: "Dynamic QR modal closed by user",
+              });
+            }
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl bg-white p-5 sm:p-6">
+          <DialogHeader className="text-center">
+            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#145A45] shadow-2xs mb-2">
+              <QrCode className="size-6" />
+            </div>
+            <DialogTitle className="text-lg sm:text-xl font-bold text-[#16201A]">
+              {t.qrOptionTitle}
+            </DialogTitle>
+            <p className="text-xs text-[#5A655F]">
+              {t.dynamicQrNotice}
+            </p>
+          </DialogHeader>
+
+          {activeOrderForPayment && (
+            <div className="mt-4 flex flex-col items-center space-y-4">
+              {/* Exact Amount Banner */}
+              <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
+                <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
+                <div className="font-sans text-2xl font-black text-[#0F4A38]">
+                  {inr(activeOrderForPayment.amount)}
+                </div>
+                <span className="text-[11px] font-medium text-[#5A655F]">
+                  {lang === "hi" ? `ऑर्डर नं. ${activeOrderForPayment.orderNo}` : `Order ID: ${activeOrderForPayment.orderNo}`}
+                </span>
+              </div>
+
+              {/* Dynamic QR Code Canvas */}
+              <div className="relative rounded-2xl bg-white p-3 border border-[#E5E0D5] shadow-md flex items-center justify-center">
+                <img
+                  src={generateQrCodeUrl(activeUpiUri, 220)}
+                  alt="Dynamic UPI QR"
+                  className="size-52 rounded-xl object-contain"
+                />
+              </div>
+
+              {/* Mobile App Intent Link & Copy VPA */}
+              <div className="w-full space-y-2">
+                <a
+                  href={activeUpiUri}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#145A45] px-4 text-xs font-bold text-white shadow-md hover:bg-[#0E4333] transition-all"
+                >
+                  <Smartphone className="size-4" /> {t.openUpiAppBtn}
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const vpa = (settings?.upi_vpa || "6388354988@okbizaxis").trim();
+                    void navigator.clipboard.writeText(vpa);
+                    setUpiCopied(true);
+                    toast.success(t.upiIdCopied);
+                    setTimeout(() => setUpiCopied(false), 3000);
+                  }}
+                  className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] px-3 text-xs font-semibold text-[#16201A] hover:bg-[#E6EFE8] transition-all cursor-pointer"
+                >
+                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#5A655F]" />}
+                  <span>{upiCopied ? t.upiIdCopied : `${t.copyUpiIdBtn} (${settings?.upi_vpa || "6388354988@okbizaxis"})`}</span>
+                </button>
+              </div>
+
+              {/* Confirmation Action */}
+              <div className="w-full pt-2 border-t border-[#E5E0D5]">
+                <Button
+                  type="button"
+                  onClick={handleConfirmDynamicQrPayment}
+                  disabled={isVerifyingQrPayment}
+                  className="w-full h-11 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-md cursor-pointer"
+                >
+                  {isVerifyingQrPayment ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="size-3.5 animate-spin" /> {t.verifyingPaymentWithServer}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="size-4" /> {lang === "hi" ? "मैंने भुगतान कर दिया है (पुष्टि करें)" : "I Have Completed Payment (Verify)"}
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Direct UPI Payment Intent Dialog (Strictly for UPI method - Zero QR Code Displayed) */}
+      <Dialog
+        open={upiModalOpen}
+        onOpenChange={(open) => {
+          if (!open && !isVerifyingQrPayment) {
+            setUpiModalOpen(false);
+            if (activeOrderForPayment) {
+              void recordPaymentFailureOnServer({
+                orderId: activeOrderForPayment.id,
+                errorCode: "UPI_MODAL_CLOSED",
+                errorDescription: "UPI modal closed by user",
+              });
+            }
+          }
+        }}
+      >
+        <DialogContent className="max-w-md rounded-2xl bg-white p-5 sm:p-6">
+          <DialogHeader className="text-center">
+            <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#145A45] shadow-2xs mb-2">
+              <Smartphone className="size-6" />
+            </div>
+            <DialogTitle className="text-lg sm:text-xl font-bold text-[#16201A]">
+              {t.upiOptionTitle}
+            </DialogTitle>
+            <p className="text-xs text-[#5A655F]">
+              {lang === "hi"
+                ? "नीचे दिए गए UPI ऐप बटन पर टैप करके तुरंत सुरक्षित भुगतान करें"
+                : "Tap your preferred UPI app below to complete instant secure payment"}
+            </p>
+          </DialogHeader>
+
+          {activeOrderForPayment && (
+            <div className="mt-4 flex flex-col items-center space-y-4">
+              {/* Exact Amount Banner */}
+              <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
+                <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
+                <div className="font-sans text-2xl font-black text-[#0F4A38]">
+                  {inr(activeOrderForPayment.amount)}
+                </div>
+                <span className="text-[11px] font-medium text-[#5A655F]">
+                  {lang === "hi" ? `ऑर्डर नं. ${activeOrderForPayment.orderNo}` : `Order ID: ${activeOrderForPayment.orderNo}`}
+                </span>
+              </div>
+
+              {/* Direct UPI Apps 1-Click Launchers (ZERO QR CODE) */}
+              <div className="w-full space-y-2.5">
+                <a
+                  href={activeUpiUri}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#145A45] px-4 text-xs font-bold text-white shadow-md hover:bg-[#0E4333] transition-all"
+                >
+                  <Smartphone className="size-4" /> {lang === "hi" ? "UPI ऐप खोलें (Google Pay / PhonePe / Paytm)" : "Open UPI App (GPay / PhonePe / Paytm)"}
+                </a>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`gpay://upi/pay?pa=${encodeURIComponent((settings?.upi_vpa || "6388354988@okbizaxis").trim())}&pn=${encodeURIComponent((settings?.upi_merchant_name || "Arun Gopal Traders").trim())}&am=${activeOrderForPayment.amount}&cu=INR&tr=${activeOrderForPayment.orderNo}&tn=${encodeURIComponent((settings?.qr_custom_note || "Arun Gopal Traders").trim())}`}
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-white px-3 text-xs font-bold text-[#16201A] shadow-2xs hover:bg-[#FAF8F2] hover:border-[#145A45]"
+                  >
+                    <span>Google Pay</span>
+                  </a>
+                  <a
+                    href={`phonepe://pay?pa=${encodeURIComponent((settings?.upi_vpa || "6388354988@okbizaxis").trim())}&pn=${encodeURIComponent((settings?.upi_merchant_name || "Arun Gopal Traders").trim())}&am=${activeOrderForPayment.amount}&cu=INR&tr=${activeOrderForPayment.orderNo}&tn=${encodeURIComponent((settings?.qr_custom_note || "Arun Gopal Traders").trim())}`}
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-white px-3 text-xs font-bold text-[#16201A] shadow-2xs hover:bg-[#FAF8F2] hover:border-[#145A45]"
+                  >
+                    <span>PhonePe</span>
+                  </a>
+                  <a
+                    href={`paytmmp://pay?pa=${encodeURIComponent((settings?.upi_vpa || "6388354988@okbizaxis").trim())}&pn=${encodeURIComponent((settings?.upi_merchant_name || "Arun Gopal Traders").trim())}&am=${activeOrderForPayment.amount}&cu=INR&tr=${activeOrderForPayment.orderNo}&tn=${encodeURIComponent((settings?.qr_custom_note || "Arun Gopal Traders").trim())}`}
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-white px-3 text-xs font-bold text-[#16201A] shadow-2xs hover:bg-[#FAF8F2] hover:border-[#145A45]"
+                  >
+                    <span>Paytm</span>
+                  </a>
+                  <a
+                    href={`bhim://pay?pa=${encodeURIComponent((settings?.upi_vpa || "6388354988@okbizaxis").trim())}&pn=${encodeURIComponent((settings?.upi_merchant_name || "Arun Gopal Traders").trim())}&am=${activeOrderForPayment.amount}&cu=INR&tr=${activeOrderForPayment.orderNo}&tn=${encodeURIComponent((settings?.qr_custom_note || "Arun Gopal Traders").trim())}`}
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-white px-3 text-xs font-bold text-[#16201A] shadow-2xs hover:bg-[#FAF8F2] hover:border-[#145A45]"
+                  >
+                    <span>BHIM UPI</span>
+                  </a>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const vpa = (settings?.upi_vpa || "6388354988@okbizaxis").trim();
+                    void navigator.clipboard.writeText(vpa);
+                    setUpiCopied(true);
+                    toast.success(t.upiIdCopied);
+                    setTimeout(() => setUpiCopied(false), 3000);
+                  }}
+                  className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] px-3 text-xs font-semibold text-[#16201A] hover:bg-[#E6EFE8] transition-all cursor-pointer"
+                >
+                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#5A655F]" />}
+                  <span>{upiCopied ? t.upiIdCopied : `${t.copyUpiIdBtn} (${settings?.upi_vpa || "6388354988@okbizaxis"})`}</span>
+                </button>
+              </div>
+
+              {/* Confirmation Action */}
+              <div className="w-full pt-2 border-t border-[#E5E0D5]">
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    if (!activeOrderForPayment) return;
+                    setIsVerifyingQrPayment(true);
+                    try {
+                      const verifyRes = await verifyPaymentWithServer({
+                        orderId: activeOrderForPayment.id,
+                        orderNo: activeOrderForPayment.orderNo,
+                        gatewayOrderId: activeOrderForPayment.gatewayOrderId || `upi_${activeOrderForPayment.orderNo}`,
+                        gatewayPaymentId: `upi_direct_${Date.now().toString(36)}`,
+                        signature: "verified_upi_direct",
+                        amount: activeOrderForPayment.amount,
+                        paymentMethod: "upi",
+                      });
+
+                      if (verifyRes.success) {
+                        setUpiModalOpen(false);
+                        clear();
+                        toast.success(t.paymentSuccess);
+                        void navigate({
+                          to: "/track",
+                          search: { orderNo: activeOrderForPayment.orderNo, phone: activeOrderForPayment.cleanPhone } as never,
+                        });
+                      } else {
+                        toast.error(t.paymentFailedMessage);
+                      }
+                    } catch (err: unknown) {
+                      const msg = err instanceof Error ? err.message : "Verification failed";
+                      toast.error(`Verification error: ${msg}`);
+                    } finally {
+                      setIsVerifyingQrPayment(false);
+                    }
+                  }}
+                  disabled={isVerifyingQrPayment}
+                  className="w-full h-11 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-md cursor-pointer"
+                >
+                  {isVerifyingQrPayment ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="size-3.5 animate-spin" /> {t.verifyingPaymentWithServer}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="size-4" /> {lang === "hi" ? "मैंने भुगतान कर दिया है (पुष्टि करें)" : "I Have Completed Payment (Verify)"}
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

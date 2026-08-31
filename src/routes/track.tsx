@@ -402,17 +402,42 @@ function TrackPage() {
 
             {/* Payment & Summary */}
             <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 shadow-2xs">
-              <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
-                <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
+                  <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
+                </h3>
+                {searchedOrder.payment_status === "paid" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                    <CheckCircle2 className="size-3" /> {t.paymentStatusPaid}
+                  </span>
+                ) : searchedOrder.payment_status === "failed" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-bold text-red-700">
+                    <AlertCircle className="size-3" /> {t.paymentStatusFailed}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
+                    <Clock className="size-3" /> {t.paymentStatusPending}
+                  </span>
+                )}
+              </div>
 
               <dl className="mt-4 space-y-2 text-xs">
                 <div className="flex justify-between text-[#6B746F]">
-                  <dt>Payment Method:</dt>
+                  <dt>Payment Mode:</dt>
                   <dd className="font-semibold text-[#1F2924]">
-                    {PAYMENT_LABEL[searchedOrder.payment_method] ?? searchedOrder.payment_method}
+                    {PAYMENT_LABEL[searchedOrder.payment_method] ?? searchedOrder.payment_method.toUpperCase()}
                   </dd>
                 </div>
+
+                {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id ? (
+                  <div className="flex justify-between text-[#6B746F]">
+                    <dt>Transaction Ref:</dt>
+                    <dd className="font-mono text-[11px] font-bold text-[#0F4A38]">
+                      {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id}
+                    </dd>
+                  </div>
+                ) : null}
+
                 <div className="flex justify-between text-[#6B746F]">
                   <dt>Items Subtotal:</dt>
                   <dd className="font-medium text-[#1F2924]">{inr(searchedOrder.subtotal)}</dd>

@@ -380,6 +380,7 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
     <div><strong>${lang === "hi" ? "ऑर्डर नं:" : "Order No:"}</strong> <span style="font-family: monospace; font-weight: bold; color: #145A45;">#${invoice.order_no}</span></div>
     <div><strong>${lang === "hi" ? "भुगतान विधि:" : "Payment Mode:"}</strong> <span style="text-transform: uppercase; font-weight: bold;">${invoice.payment_method}</span></div>
     <div><strong>${lang === "hi" ? "स्थिति:" : "Status:"}</strong> <span style="font-weight: bold; color: ${isPaid ? "#15803D" : "#D97706"};">${statusLabel}</span></div>
+    ${invoice.transaction_id ? `<div><strong>${lang === "hi" ? "लेनदेन आईडी:" : "Txn Ref:"}</strong> <span style="font-family: monospace; font-size: 10px; font-weight: bold;">${invoice.transaction_id}</span></div>` : ""}
   </div>
 
   <table>
@@ -416,8 +417,8 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
     <div class="summary-left">
       <div class="card" style="font-size: 10px;">
         <div class="card-title">${lang === "hi" ? "डिजिटल भुगतान व सहायता" : "Digital Payment & Support"}</div>
-        <div>UPI ID: <strong>6388354988@upi</strong></div>
-        <div>WhatsApp / Phone: <strong>+91 6388354988</strong></div>
+        <div>UPI ID: <strong>${invoice.store_upi_vpa || "6388354988@okbizaxis"}</strong></div>
+        <div>WhatsApp / Phone: <strong>${invoice.store_phone || "+91 6388354988"}</strong></div>
       </div>
       ${invoice.notes ? `<div style="margin-top: 6px; font-size: 10px; color: #5A655F;"><em>Note: ${invoice.notes}</em></div>` : ""}
     </div>

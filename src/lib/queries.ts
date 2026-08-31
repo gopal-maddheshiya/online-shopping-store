@@ -91,6 +91,18 @@ export type StoreSettings = {
   invoice_prefix?: string | null;
   invoice_footer_note?: string | null;
   terms_and_conditions?: string | null;
+  upi_vpa?: string | null;
+  upi_merchant_name?: string | null;
+  upi_registered_phone?: string | null;
+  bank_account_holder?: string | null;
+  bank_name?: string | null;
+  bank_account_number?: string | null;
+  bank_ifsc?: string | null;
+  qr_code_mode?: string | null;
+  qr_custom_note?: string | null;
+  enabled_payment_methods?: string[] | null;
+  razorpay_key_id?: string | null;
+  online_payment_enabled?: boolean | null;
 };
 
 export type OrderItem = {
@@ -138,6 +150,13 @@ export type Order = {
   payment_method: string;
   payment_status?: string | null;
   paid_at?: string | null;
+  transaction_id?: string | null;
+  gateway_order_id?: string | null;
+  gateway_payment_id?: string | null;
+  amount_paid?: number | null;
+  payment_attempts?: number | null;
+  payment_error?: string | null;
+  payment_metadata?: Record<string, unknown> | null;
   coupon_code: string | null;
   subtotal: number;
   discount: number;

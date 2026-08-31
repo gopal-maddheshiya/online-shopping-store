@@ -181,6 +181,44 @@ export type Translations = {
   googleSignInPrompt: string;
   continueWithGoogle: string;
 
+  // Production Payment Gateway Keys
+  payWithUpi: string;
+  payWithCard: string;
+  payWithQr: string;
+  upiOptionTitle: string;
+  upiOptionSub: string;
+  cardOptionTitle: string;
+  cardOptionSub: string;
+  qrOptionTitle: string;
+  qrOptionSub: string;
+  cashOnDeliveryTitle: string;
+  cashOnDeliveryDesc: string;
+  payAtStoreTitle: string;
+  payAtStoreDesc: string;
+  paymentProcessing: string;
+  paymentSuccess: string;
+  paymentFailed: string;
+  retryPayment: string;
+  changePaymentMethod: string;
+  payNowAmount: string;
+  placeOrderCod: string;
+  securityBadgeText: string;
+  dynamicQrNotice: string;
+  paymentVerificationNotice: string;
+  openUpiAppBtn: string;
+  copyUpiIdBtn: string;
+  upiIdCopied: string;
+  qrExactAmountNotice: string;
+  scanToPay: string;
+  verifyingPaymentWithServer: string;
+  paymentFailedMessage: string;
+  paymentCancelledMessage: string;
+  retryNowBtn: string;
+  downloadInvoiceReceipt: string;
+  paymentStatusPaid: string;
+  paymentStatusPending: string;
+  paymentStatusFailed: string;
+
   // Auth Keys
   accountTitle: string;
   signInTab: string;
@@ -456,6 +494,44 @@ export const translations: Record<Language, Translations> = {
     googleSignInPrompt: "Fast 1-Click Sign In with Google",
     continueWithGoogle: "Continue with Google",
 
+    // Production Payment Gateway
+    payWithUpi: "Pay with UPI",
+    payWithCard: "Pay with Card",
+    payWithQr: "Scan & Pay with QR",
+    upiOptionTitle: "UPI (Google Pay, PhonePe, Paytm, BHIM)",
+    upiOptionSub: "Direct 1-click app payment on mobile or UPI intent",
+    cardOptionTitle: "Credit / Debit Card",
+    cardOptionSub: "Visa, Mastercard, RuPay, Maestro (100% Secure)",
+    qrOptionTitle: "Dynamic UPI QR Code",
+    qrOptionSub: "Scan dynamic QR for exact payable amount from any UPI app",
+    cashOnDeliveryTitle: "Cash on Delivery (COD)",
+    cashOnDeliveryDesc: "Pay cash upon arrival of your groceries",
+    payAtStoreTitle: "Pay at Store Counter",
+    payAtStoreDesc: "Pay cash or UPI at Ramnagar store counter",
+    paymentProcessing: "Verifying payment securely with gateway...",
+    paymentSuccess: "Payment Verified & Successful!",
+    paymentFailed: "Payment Failed or Cancelled",
+    retryPayment: "Retry Payment",
+    changePaymentMethod: "Change Payment Method",
+    payNowAmount: "Pay {amount}",
+    placeOrderCod: "Place COD Order • {amount}",
+    securityBadgeText: "100% RBI & PCI-DSS 256-Bit Encrypted Secure Checkout",
+    dynamicQrNotice: "Scan using PhonePe, Google Pay, Paytm, BHIM or any banking UPI app",
+    paymentVerificationNotice: "Please wait while we verify your transaction with the bank...",
+    openUpiAppBtn: "Open Supported UPI App",
+    copyUpiIdBtn: "Copy UPI ID",
+    upiIdCopied: "UPI ID copied to clipboard!",
+    qrExactAmountNotice: "Dynamic QR is generated for exact order amount of {amount}",
+    scanToPay: "Scan to Pay",
+    verifyingPaymentWithServer: "Verifying signature and payment proof with server...",
+    paymentFailedMessage: "The payment could not be completed or was cancelled. Your basket is safe. You can retry with another method.",
+    paymentCancelledMessage: "Payment was cancelled. You can retry paying now or switch to Cash on Delivery.",
+    retryNowBtn: "Retry Payment Now",
+    downloadInvoiceReceipt: "Download Bill / Receipt",
+    paymentStatusPaid: "Paid (Verified)",
+    paymentStatusPending: "Pending Verification",
+    paymentStatusFailed: "Payment Failed",
+
     // Auth
     accountTitle: "Customer Account",
     signInTab: "Sign In",
@@ -728,6 +804,44 @@ export const translations: Record<Language, Translations> = {
     orderSuccessSub: "अरुण गोपाल ट्रेडर्स पर भरोसा करने के लिए धन्यवाद। आपका सामान पैक किया जा रहा है।",
     googleSignInPrompt: "गूगल के साथ 1-क्लिक में तुरंत लॉगिन करें",
     continueWithGoogle: "Google के साथ जारी रखें",
+
+    // Production Payment Gateway
+    payWithUpi: "UPI से भुगतान करें",
+    payWithCard: "कार्ड से भुगतान करें",
+    payWithQr: "QR स्कैन करके भुगतान करें",
+    upiOptionTitle: "UPI (गूगल पे / फोनपे / पेटीएम / भीम)",
+    upiOptionSub: "मोबाइल पर सीधे 1-क्लिक UPI ऐप अथवा UPI इंटेंट से भुगतान",
+    cardOptionTitle: "क्रेडिट / डेबिट कार्ड",
+    cardOptionSub: "वीज़ा, मास्टरकार्ड, रुपे, मेस्ट्रो (100% सुरक्षित भुगतान)",
+    qrOptionTitle: "डायनामिक UPI QR कोड",
+    qrOptionSub: "किसी भी UPI ऐप से स्कैन करके सटीक बिल राशि का भुगतान करें",
+    cashOnDeliveryTitle: "कैश ऑन डिलीवरी (COD)",
+    cashOnDeliveryDesc: "घर पर सामान प्राप्त होने पर नकद भुगतान करें",
+    payAtStoreTitle: "दुकान काउंटर पर भुगतान",
+    payAtStoreDesc: "रामनगर दुकान काउंटर पर नकद या UPI द्वारा भुगतान करें",
+    paymentProcessing: "गेटवे के साथ भुगतान सुरक्षित रूप से सत्यापित हो रहा है...",
+    paymentSuccess: "भुगतान सफलतापूर्वक सत्यापित हो गया!",
+    paymentFailed: "भुगतान विफल या रद्द हो गया",
+    retryPayment: "पुनः भुगतान का प्रयास करें",
+    changePaymentMethod: "भुगतान का तरीका बदलें",
+    payNowAmount: "भुगतान करें {amount}",
+    placeOrderCod: "COD ऑर्डर दर्ज करें • {amount}",
+    securityBadgeText: "100% RBI व PCI-DSS प्रमाणित 256-बिट सुरक्षित एन्क्रिप्टेड भुगतान",
+    dynamicQrNotice: "फोनपे, गूगल पे, पेटीएम, भीम अथवा किसी भी बैंकिंग ऐप से स्कैन करें",
+    paymentVerificationNotice: "कृपया प्रतीक्षा करें, बैंक के साथ आपका लेनदेन सत्यापित किया जा रहा है...",
+    openUpiAppBtn: "समर्थित UPI ऐप खोलें",
+    copyUpiIdBtn: "UPI ID कॉपी करें",
+    upiIdCopied: "UPI ID क्लिपबोर्ड पर कॉपी हो गई!",
+    qrExactAmountNotice: "यह QR कोड आपके कुल {amount} के ऑर्डर के लिए जनरेट किया गया है",
+    scanToPay: "स्कैन करके भुगतान करें",
+    verifyingPaymentWithServer: "सर्वर द्वारा हस्ताक्षर और भुगतान प्रमाण का सत्यापन किया जा रहा है...",
+    paymentFailedMessage: "भुगतान पूरा नहीं हो सका या रद्द कर दिया गया। आपकी कार्ट सुरक्षित है, आप पुनः प्रयास कर सकते हैं।",
+    paymentCancelledMessage: "भुगतान रद्द कर दिया गया। आप दोबारा ऑनलाइन भुगतान कर सकते हैं या कैश ऑन डिलीवरी चुन सकते हैं।",
+    retryNowBtn: "अभी पुनः भुगतान करें",
+    downloadInvoiceReceipt: "पक्का बिल / रसीद डाउनलोड करें",
+    paymentStatusPaid: "सत्यापित भुगतान प्राप्त (Paid)",
+    paymentStatusPending: "सत्यापन लंबित (Pending)",
+    paymentStatusFailed: "भुगतान विफल (Failed)",
 
     // Auth
     accountTitle: "ग्राहक खाता",

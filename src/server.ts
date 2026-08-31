@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { dispatchPaymentApiRoute } from "./lib/server-payment-api";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -47,6 +48,13 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      // 1. Intercept backend Payment Gateway API routes (/api/payment/*)
+      const paymentApiResponse = await dispatchPaymentApiRoute(request, env);
+      if (paymentApiResponse) {
+        return paymentApiResponse;
+      }
+
+      // 2. Main SSR & TanStack Start Request Handler
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

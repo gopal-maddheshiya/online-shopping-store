@@ -1,5 +1,25 @@
 import { useState, useEffect } from "react";
-import { Save, Store, Clock, Phone, MapPin, Truck, Sparkles, RefreshCw, Receipt } from "lucide-react";
+import {
+  Save,
+  Store,
+  Clock,
+  Phone,
+  MapPin,
+  Truck,
+  Sparkles,
+  RefreshCw,
+  Receipt,
+  CreditCard,
+  QrCode,
+  Smartphone,
+  Banknote,
+  ShieldCheck,
+  Check,
+  Copy,
+  ExternalLink,
+  Lock,
+  Landmark,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +30,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { broadcastSettingsSync } from "@/lib/realtime-sync";
 import type { StoreSettings } from "@/lib/queries";
+import { generateUpiUri, generateQrCodeUrl } from "@/lib/payment-gateway";
+import { inr } from "@/lib/format";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -59,6 +81,27 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
     "1. Goods once sold can only be returned within 24 hours in original packed condition.\n2. Please retain this invoice for any verification.\n3. All disputes subject to Maharajganj jurisdiction."
   );
 
+  // Payment Gateway & Receiving Accounts Configuration
+  const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(true);
+  const [enabledPaymentMethods, setEnabledPaymentMethods] = useState<string[]>([
+    "upi",
+    "card",
+    "qr",
+    "cod",
+    "pay_at_store",
+  ]);
+  const [upiVpa, setUpiVpa] = useState("6388354988@okbizaxis");
+  const [upiMerchantName, setUpiMerchantName] = useState("Arun Gopal Traders");
+  const [upiRegisteredPhone, setUpiRegisteredPhone] = useState("6388354988");
+  const [bankAccountHolder, setBankAccountHolder] = useState("Arun Gopal Traders");
+  const [bankName, setBankName] = useState("State Bank of India");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankIfsc, setBankIfsc] = useState("");
+  const [qrCodeMode, setQrCodeMode] = useState("dynamic");
+  const [qrCustomNote, setQrCustomNote] = useState("Arun Gopal Traders Grocery Order");
+  const [razorpayKeyId, setRazorpayKeyId] = useState("");
+  const [testQrCopied, setTestQrCopied] = useState(false);
+
   // Business Hours Map
   const [businessHours, setBusinessHours] = useState<
     Record<string, { open: string; close: string; closed: boolean }>
@@ -103,8 +146,30 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         settings.terms_and_conditions ??
           "1. Goods once sold can only be returned within 24 hours in original packed condition.\n2. Please retain this invoice for any verification.\n3. All disputes subject to Maharajganj jurisdiction."
       );
+
+      // Payment Gateway & Receiving Accounts
+      setOnlinePaymentEnabled(settings.online_payment_enabled !== false);
+      if (settings.enabled_payment_methods && Array.isArray(settings.enabled_payment_methods)) {
+        setEnabledPaymentMethods(settings.enabled_payment_methods);
+      }
+      setUpiVpa(settings.upi_vpa ?? "6388354988@okbizaxis");
+      setUpiMerchantName(settings.upi_merchant_name ?? "Arun Gopal Traders");
+      setUpiRegisteredPhone(settings.upi_registered_phone ?? "6388354988");
+      setBankAccountHolder(settings.bank_account_holder ?? "");
+      setBankName(settings.bank_name ?? "");
+      setBankAccountNumber(settings.bank_account_number ?? "");
+      setBankIfsc(settings.bank_ifsc ?? "");
+      setQrCodeMode(settings.qr_code_mode ?? "dynamic");
+      setQrCustomNote(settings.qr_custom_note ?? "Arun Gopal Traders Grocery Order");
+      setRazorpayKeyId(settings.razorpay_key_id ?? "");
     }
   }, [settings]);
+
+  function togglePaymentMethod(methodKey: string) {
+    setEnabledPaymentMethods((prev) =>
+      prev.includes(methodKey) ? prev.filter((m) => m !== methodKey) : [...prev, methodKey]
+    );
+  }
 
   function updateDayHour(
     dayKey: string,
@@ -153,11 +218,24 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           invoice_prefix: invoicePrefix.trim() || "AGT-INV",
           invoice_footer_note: invoiceFooterNote.trim(),
           terms_and_conditions: termsAndConditions.trim(),
-        })
+          // Payment & Receiving Accounts
+          online_payment_enabled: Boolean(onlinePaymentEnabled),
+          enabled_payment_methods: enabledPaymentMethods,
+          upi_vpa: upiVpa.trim() || "6388354988@okbizaxis",
+          upi_merchant_name: upiMerchantName.trim() || "Arun Gopal Traders",
+          upi_registered_phone: upiRegisteredPhone.trim() || "6388354988",
+          bank_account_holder: bankAccountHolder.trim() || null,
+          bank_name: bankName.trim() || null,
+          bank_account_number: bankAccountNumber.trim() || null,
+          bank_ifsc: bankIfsc.trim().toUpperCase() || null,
+          qr_code_mode: qrCodeMode.trim() || "dynamic",
+          qr_custom_note: qrCustomNote.trim() || "Arun Gopal Traders Grocery Order",
+          razorpay_key_id: razorpayKeyId.trim() || null,
+        } as never)
         .eq("id", 1);
 
       if (error) throw error;
-      toast.success("Store settings & billing configurations updated successfully!");
+      toast.success("Store settings, payment gateway & receiving accounts updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       broadcastSettingsSync();
       onRefresh();
@@ -339,6 +417,288 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           </div>
         </div>
       </div>
+
+      {/* Payment Gateway & Receiving Accounts Configuration */}
+      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#E8E4DA] pb-4">
+          <div>
+            <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+              <Smartphone className="size-5 text-[#145A45]" /> Payment Gateway &amp; Receiving Accounts
+            </h3>
+            <p className="text-xs text-[#6B746F] mt-1">
+              Control your UPI receiving ID, dynamic QR code, merchant name, bank account, and active payment methods without touching any code.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-[#1F2924] bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1.5 rounded-xl">
+              <Checkbox
+                checked={onlinePaymentEnabled}
+                onCheckedChange={(c) => setOnlinePaymentEnabled(Boolean(c))}
+              />
+              <span>Online Payments Enabled</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Enabled Payment Methods Checkboxes */}
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-[#1F2924] uppercase tracking-wider">
+            Customer Checkout Payment Methods
+          </Label>
+          <p className="text-[11px] text-[#6B746F]">
+            Uncheck any method to instantly remove it from the customer checkout screen.
+          </p>
+
+          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 pt-1">
+            <label
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                enabledPaymentMethods.includes("upi")
+                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+              }`}
+            >
+              <Checkbox
+                checked={enabledPaymentMethods.includes("upi")}
+                onCheckedChange={() => togglePaymentMethod("upi")}
+              />
+              <Smartphone className="size-4" />
+              <span>Direct UPI (GPay/PhonePe)</span>
+            </label>
+
+            <label
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                enabledPaymentMethods.includes("card")
+                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+              }`}
+            >
+              <Checkbox
+                checked={enabledPaymentMethods.includes("card")}
+                onCheckedChange={() => togglePaymentMethod("card")}
+              />
+              <CreditCard className="size-4" />
+              <span>Credit / Debit Card</span>
+            </label>
+
+            <label
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                enabledPaymentMethods.includes("qr")
+                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+              }`}
+            >
+              <Checkbox
+                checked={enabledPaymentMethods.includes("qr")}
+                onCheckedChange={() => togglePaymentMethod("qr")}
+              />
+              <QrCode className="size-4" />
+              <span>Dynamic UPI QR Code</span>
+            </label>
+
+            <label
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                enabledPaymentMethods.includes("cod")
+                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+              }`}
+            >
+              <Checkbox
+                checked={enabledPaymentMethods.includes("cod")}
+                onCheckedChange={() => togglePaymentMethod("cod")}
+              />
+              <Banknote className="size-4" />
+              <span>Cash on Delivery (COD)</span>
+            </label>
+
+            <label
+              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                enabledPaymentMethods.includes("pay_at_store")
+                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+              }`}
+            >
+              <Checkbox
+                checked={enabledPaymentMethods.includes("pay_at_store")}
+                onCheckedChange={() => togglePaymentMethod("pay_at_store")}
+              />
+              <Store className="size-4" />
+              <span>Pay at Store (Pickup)</span>
+            </label>
+          </div>
+        </div>
+
+        {/* 2-Column Grid: UPI Details + Live Test QR Preview */}
+        <div className="grid gap-4 lg:grid-cols-3 pt-2">
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
+              <QrCode className="size-4 text-[#145A45]" /> UPI Receiving Details (Direct Customer Settlements)
+            </h4>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  UPI ID / VPA <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  required
+                  value={upiVpa}
+                  onChange={(e) => setUpiVpa(e.target.value)}
+                  placeholder="e.g. 6388354988@okbizaxis"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+                <span className="text-[10px] text-[#6B746F]">
+                  Where money is instantly deposited when customer scans or pays.
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  Merchant / Payee Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  required
+                  value={upiMerchantName}
+                  onChange={(e) => setUpiMerchantName(e.target.value)}
+                  placeholder="e.g. Arun Gopal Traders"
+                  className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+                <span className="text-[10px] text-[#6B746F]">
+                  Business name shown inside Google Pay / PhonePe apps.
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  Registered UPI Mobile No.
+                </Label>
+                <Input
+                  value={upiRegisteredPhone}
+                  onChange={(e) => setUpiRegisteredPhone(e.target.value)}
+                  placeholder="e.g. 6388354988"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  Razorpay Public Key ID (Frontend SDK)
+                </Label>
+                <Input
+                  value={razorpayKeyId}
+                  onChange={(e) => setRazorpayKeyId(e.target.value)}
+                  placeholder="rzp_live_... or rzp_test_..."
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+                <span className="text-[10px] text-[#6B746F]">
+                  Public client key. Private secret keys remain server-side only.
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-1 pt-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">
+                QR Payment Transaction Note
+              </Label>
+              <Input
+                value={qrCustomNote}
+                onChange={(e) => setQrCustomNote(e.target.value)}
+                placeholder="e.g. Arun Gopal Traders Grocery Order"
+                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+              />
+            </div>
+          </div>
+
+          {/* Live Test QR Box */}
+          <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-4 text-center space-y-2.5 flex flex-col items-center justify-center">
+            <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
+              Live Dynamic QR Test
+            </span>
+            <div className="relative rounded-xl bg-white p-2 border border-[#E8E4DA] shadow-xs">
+              <img
+                src={generateQrCodeUrl(
+                  generateUpiUri({
+                    vpa: upiVpa || "6388354988@okbizaxis",
+                    payeeName: upiMerchantName || "Arun Gopal Traders",
+                    amount: 100,
+                    orderNo: "TEST-LIVE",
+                    note: qrCustomNote || "Test payment to Arun Gopal Traders",
+                  }),
+                  130
+                )}
+                alt="Live UPI QR Preview"
+                className="size-32 rounded-lg object-contain"
+              />
+            </div>
+            <div className="text-left w-full space-y-0.5">
+              <p className="font-mono text-[11px] font-bold text-[#1F2924] truncate text-center">
+                {upiVpa || "6388354988@okbizaxis"}
+              </p>
+              <p className="text-[10px] text-[#6B746F] text-center">
+                Scan with PhonePe/GPay to test your UPI VPA
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bank Account Details Card (Protected) */}
+        <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2]/60 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
+              <Landmark className="size-4 text-[#145A45]" /> Bank Account Details (NEFT / RTGS / Settlement Records)
+            </h4>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-2 py-0.5 rounded-full">
+              <Lock className="size-3" /> Admin Protected
+            </span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Account Holder Name</Label>
+              <Input
+                value={bankAccountHolder}
+                onChange={(e) => setBankAccountHolder(e.target.value)}
+                placeholder="e.g. Arun Gopal Traders"
+                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Bank Name</Label>
+              <Input
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="e.g. State Bank of India"
+                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Account Number</Label>
+              <Input
+                value={bankAccountNumber}
+                onChange={(e) => setBankAccountNumber(e.target.value)}
+                placeholder="e.g. 123456789012"
+                className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">IFSC Code</Label>
+              <Input
+                value={bankIfsc}
+                onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
+                placeholder="e.g. SBIN0001234"
+                className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white uppercase"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-[#6B746F]">
+            🛡️ <strong>Security Assurance:</strong> Bank account numbers are stored securely for accounting and invoice verification and are never exposed in public customer storefront scripts.
+          </p>
+        </div>
+      </div>
+
 
       {/* Billing, GST & Invoice Configuration */}
       <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">

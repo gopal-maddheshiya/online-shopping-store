@@ -59,6 +59,7 @@ export interface Invoice {
   store_gstin?: string | null;
   store_state: string;
   store_state_code: string;
+  store_upi_vpa?: string | null;
 
   // Frozen line items
   items_snapshot: InvoiceItem[];
