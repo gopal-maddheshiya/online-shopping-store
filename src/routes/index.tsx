@@ -257,12 +257,12 @@ function PremiumStoreHome() {
   );
 
   return (
-    <div className="space-y-10 sm:space-y-14 pb-28 overflow-x-hidden">
+    <div className="space-y-6 sm:space-y-8 pb-24 overflow-x-hidden">
       {/* ═══════════════════════════════════════════════════════
           1. HERO BANNER IMAGE (1920×1080 / 16:9)
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page pt-3 sm:pt-5">
-        <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+      <section className="container-page pt-2 sm:pt-3">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
           {settings?.hero_image_url ? (
             <img
               src={settings.hero_image_url}
@@ -284,7 +284,7 @@ function PremiumStoreHome() {
             <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1]">
               {settings?.store_name || "Arun Gopal Traders"}
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-white/70 max-w-md">
+            <p className="mt-2.5 text-xs sm:text-sm text-white/75 max-w-md">
               {settings?.tagline || "Your Trusted Local Grocery Store"}
             </p>
           </div>
@@ -292,45 +292,54 @@ function PremiumStoreHome() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          2. GROUPED CATEGORIES — By Type
+          2. GROUPED CATEGORIES — Open Layout with Prominent Text
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page space-y-8">
+      <section className="container-page space-y-6 sm:space-y-8">
         <SectionHeader
           icon={<Store className="size-4.5 text-[#145A45]" />}
           title={lang === "hi" ? "कैटेगरी के अनुसार खरीदारी" : "Shop by Category"}
           subtitle={
             lang === "hi"
-              ? "अपनी ज़रूरत के अनुसार कैटेगरी चुनें"
-              : "Browse all categories organized for you"
+              ? "सभी ज़रूरी किराना उत्पाद श्रेणियों में व्यवस्थित"
+              : "All grocery essentials neatly organized for you"
           }
           linkTo="/shop"
           linkLabel={`${t.viewAll} (${parentCategories.length})`}
         />
 
         {catLoading ? (
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
-            {Array.from({ length: 12 }).map((_, i) => (
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center gap-2">
-                <Skeleton className="size-[4.5rem] sm:size-20 rounded-2xl" />
-                <Skeleton className="h-3 w-14" />
+                <Skeleton className="size-16 sm:size-20 md:size-[5.25rem] rounded-2xl" />
+                <Skeleton className="h-4 w-14" />
               </div>
             ))}
           </div>
         ) : (
-          <>
-            {/* ── 🍽️ Food & Kitchen ── */}
+          <div className="space-y-7 sm:space-y-9">
+            {/* ── 🍽️ Group 1: Food & Kitchen ── */}
             {foodCategories.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
-                    <UtensilsCrossed className="size-4 text-[#145A45]" />
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
+                      <UtensilsCrossed className="size-4 sm:size-4.5 text-[#145A45]" />
+                    </div>
+                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
+                      {lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen Essentials"}
+                    </h3>
                   </div>
-                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
-                    {lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen"}
-                  </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                  <Link
+                    to="/shop"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
+                  >
+                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                    <span className="text-[11px] font-semibold text-[#145A45]">({foodCategories.length})</span>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
                   {foodCategories.map((c) => (
                     <Link
                       key={c.id}
@@ -338,15 +347,15 @@ function PremiumStoreHome() {
                       search={{ category: c.slug }}
                       className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
                     >
-                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
                         <img
                           src={getCategoryThumbnail(c)}
                           alt={c.name}
                           loading="lazy"
-                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
                         />
                       </div>
-                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
                         {getCategoryName(c.name, c.slug)}
                       </span>
                     </Link>
@@ -355,19 +364,28 @@ function PremiumStoreHome() {
               </div>
             )}
 
-            {/* ── 🏠 Household & Cleaning ── */}
+            {/* ── 🏠 Group 2: Household & Cleaning ── */}
             {householdCategories.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
-                    <Home className="size-4 text-[#145A45]" />
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
+                      <Home className="size-4 sm:size-4.5 text-[#145A45]" />
+                    </div>
+                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
+                      {lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning"}
+                    </h3>
                   </div>
-                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
-                    {lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning"}
-                  </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                  <Link
+                    to="/shop"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
+                  >
+                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                    <span className="text-[11px] font-semibold text-[#145A45]">({householdCategories.length})</span>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
                   {householdCategories.map((c) => (
                     <Link
                       key={c.id}
@@ -375,15 +393,15 @@ function PremiumStoreHome() {
                       search={{ category: c.slug }}
                       className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
                     >
-                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
                         <img
                           src={getCategoryThumbnail(c)}
                           alt={c.name}
                           loading="lazy"
-                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
                         />
                       </div>
-                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
                         {getCategoryName(c.name, c.slug)}
                       </span>
                     </Link>
@@ -392,19 +410,28 @@ function PremiumStoreHome() {
               </div>
             )}
 
-            {/* ── 💆 Personal Care & Beauty ── */}
+            {/* ── 💆 Group 3: Personal Care & Beauty ── */}
             {personalCategories.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
-                    <Heart className="size-4 text-[#145A45]" />
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
+                      <Heart className="size-4 sm:size-4.5 text-[#145A45]" />
+                    </div>
+                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
+                      {lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty"}
+                    </h3>
                   </div>
-                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
-                    {lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty"}
-                  </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                  <Link
+                    to="/shop"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
+                  >
+                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                    <span className="text-[11px] font-semibold text-[#145A45]">({personalCategories.length})</span>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
                   {personalCategories.map((c) => (
                     <Link
                       key={c.id}
@@ -412,15 +439,15 @@ function PremiumStoreHome() {
                       search={{ category: c.slug }}
                       className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
                     >
-                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
                         <img
                           src={getCategoryThumbnail(c)}
                           alt={c.name}
                           loading="lazy"
-                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
                         />
                       </div>
-                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
                         {getCategoryName(c.name, c.slug)}
                       </span>
                     </Link>
@@ -429,72 +456,46 @@ function PremiumStoreHome() {
               </div>
             )}
 
-            {/* ── 📦 Pooja, Stationery & More ── */}
-            {otherGroupCategories.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
-                    <Package className="size-4 text-[#145A45]" />
+            {/* ── 📦 Group 4: Pooja, Stationery & More ── */}
+            {(otherGroupCategories.length > 0 || uncategorizedCategories.length > 0) && (
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
+                      <Package className="size-4 sm:size-4.5 text-[#145A45]" />
+                    </div>
+                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
+                      {lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More"}
+                    </h3>
                   </div>
-                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
-                    {lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More"}
-                  </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                  <Link
+                    to="/shop"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
+                  >
+                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                    <span className="text-[11px] font-semibold text-[#145A45]">
+                      ({otherGroupCategories.length + uncategorizedCategories.length})
+                    </span>
+                  </Link>
                 </div>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {otherGroupCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug }}
-                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                    >
-                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={c.name}
-                          loading="lazy"
-                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
-                        {getCategoryName(c.name, c.slug)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* ── 🛒 Uncategorized (catch-all) ── */}
-            {uncategorizedCategories.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
-                    <ShoppingCart className="size-4 text-[#145A45]" />
-                  </div>
-                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
-                    {lang === "hi" ? "अन्य कैटेगरी" : "More Categories"}
-                  </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
-                </div>
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {uncategorizedCategories.map((c) => (
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
+                  {[...otherGroupCategories, ...uncategorizedCategories].map((c) => (
                     <Link
                       key={c.id}
                       to="/shop"
                       search={{ category: c.slug }}
                       className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
                     >
-                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
                         <img
                           src={getCategoryThumbnail(c)}
                           alt={c.name}
                           loading="lazy"
-                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
                         />
                       </div>
-                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
                         {getCategoryName(c.name, c.slug)}
                       </span>
                     </Link>
@@ -502,7 +503,7 @@ function PremiumStoreHome() {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </section>
 
@@ -574,6 +575,13 @@ function PremiumStoreHome() {
         </div>
       </section>
 
+      {/* Subtle Section Divider */}
+      {attaRiceProducts.length > 0 && (
+        <div className="container-page">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════════════
           5. 🌾 ATTA, RICE & GRAINS
           ═══════════════════════════════════════════════════════ */}
@@ -603,6 +611,13 @@ function PremiumStoreHome() {
         </section>
       )}
 
+      {/* Subtle Section Divider */}
+      {dalPulsesProducts.length > 0 && (
+        <div className="container-page">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════════════
           6. 🫘 PULSES & DAL
           ═══════════════════════════════════════════════════════ */}
@@ -626,6 +641,13 @@ function PremiumStoreHome() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Subtle Section Divider */}
+      {oilGheeProducts.length > 0 && (
+        <div className="container-page">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
+        </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════

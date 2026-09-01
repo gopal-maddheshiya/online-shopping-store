@@ -20,6 +20,7 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Toaster } from "@/components/ui/sonner";
 import { useRealtimeSync } from "@/lib/realtime-sync";
+import { GoogleAuthPromptModal } from "@/components/GoogleAuthPromptModal";
 
 
 function NotFoundComponent() {
@@ -232,6 +233,7 @@ function RootComponent() {
                   {!isAdminRoute && <MobileNav />}
                 </div>
                 <Toaster position="top-center" richColors />
+                <GoogleAuthPromptModal />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Plus, Minus, Heart, Check, Sparkles } from "lucide-react";
+import { Plus, Minus, Heart, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
@@ -36,21 +36,23 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className={`card-interactive group relative flex flex-col justify-between overflow-hidden bg-white p-3 sm:p-3.5 w-full max-w-full min-w-0 transition-all duration-200 ${inCart ? "border-[#145A45] ring-1 ring-[#145A45]/20 shadow-xs" : "border-[#E5E0D5]"
-        }`}
+      className="group relative flex flex-col justify-between w-full max-w-full min-w-0 pb-3 sm:pb-3.5 transition-all duration-200"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* Top Bar: Compact Discount Tag & Aligned Wishlist */}
-      <div className="flex items-center justify-between gap-1 w-full min-w-0">
-        {off > 0 ? (
-          <span className="rounded-md bg-[#D97706] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white tracking-tight shrink-0 shadow-2xs">
-            {off}% {t.off}
-          </span>
-        ) : (
-          <span className="rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#0F4A38] shrink-0">
-            {t.freshBadge}
-          </span>
-        )}
+      {/* Product Image Canvas on crisp tile */}
+      <div className="relative w-full aspect-square rounded-2xl bg-white border border-[#EAE6DC] p-2 flex items-center justify-center overflow-hidden group-hover:border-[#145A45]/40 group-hover:shadow-md transition-all duration-300">
+        {/* Top Floating Badge & Wishlist Button */}
+        <div className="absolute top-2 left-2 z-10">
+          {off > 0 ? (
+            <span className="rounded-md bg-[#D97706] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white tracking-tight shadow-xs">
+              {off}% {t.off}
+            </span>
+          ) : (
+            <span className="rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#0F4A38]">
+              {t.freshBadge}
+            </span>
+          )}
+        </div>
 
         <button
           type="button"
@@ -60,65 +62,42 @@ export function ProductCard({ product }: { product: Product }) {
             toggleWishlist(product);
           }}
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          className="flex size-7 shrink-0 items-center justify-center rounded-full text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#DC2626] transition-colors"
+          className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-xs text-[#5A655F] hover:text-[#DC2626] hover:bg-white shadow-2xs transition-all cursor-pointer"
         >
           <Heart
-            className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
-              }`}
+            className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${
+              isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
+            }`}
           />
         </button>
-      </div>
 
-      {/* Product Image Canvas - Native transparent PNG/WebP/SVG cutout support with prominent scale */}
-      <Link
-        to="/product/$slug"
-        params={{ slug: product.slug }}
-        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden rounded-2xl bg-transparent p-1 transition-all duration-200 shrink-0 select-none"
-        style={{
-          height: "152px",
-          maxHeight: "152px",
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "transparent",
-          boxSizing: "border-box",
-          overflow: "hidden",
-          borderRadius: "16px",
-        }}
-      >
-        <img
-          src={getProductImage(product)}
-          alt={localizedProductName}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = "/images/packaged.jpg";
-          }}
+        <Link
+          to="/product/$slug"
+          params={{ slug: product.slug }}
+          className="size-full flex items-center justify-center"
+        >
+          <img
+            src={getProductImage(product)}
+            alt={localizedProductName}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "/images/packaged.jpg";
+            }}
+            className="size-full object-contain mx-auto transition-transform duration-300 group-hover:scale-108 drop-shadow-xs select-none"
+          />
+        </Link>
 
-          className="h-[140px] sm:h-[146px] max-h-full max-w-full w-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-105 select-none"
-          style={{
-            maxHeight: "146px",
-            maxWidth: "100%",
-            width: "auto",
-            height: "auto",
-            objectFit: "contain",
-            margin: "0 auto",
-            display: "block",
-          }}
-        />
         {stock <= 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-2xs rounded-2xl">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs rounded-2xl">
             <span className="rounded-md bg-[#FAF8F2] border border-[#E5E0D5] px-2 py-0.5 text-[10px] font-bold text-[#5A655F]">
               {t.outOfStock}
             </span>
           </div>
         )}
-      </Link>
+      </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col min-w-0 w-full max-w-full">
+      {/* Content Section (Open, Unboxed) */}
+      <div className="flex flex-1 flex-col min-w-0 w-full pt-2">
         <span className="text-[9px] sm:text-[10px] font-semibold text-[#5A655F] tracking-wider uppercase truncate w-full">
           {product.brand || (lang === "hi" ? "दैनिक राशन" : "Fresh Staples")}
         </span>
@@ -126,80 +105,71 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 mt-0.5 min-h-[2.3rem] sm:min-h-[2.6rem] text-xs sm:text-sm font-bold text-[#16201A] hover:text-[#145A45] transition-colors leading-snug break-words w-full"
+          className="line-clamp-2 mt-0.5 min-h-[2.3rem] sm:min-h-[2.5rem] text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-snug break-words w-full"
           title={localizedProductName}
         >
           {localizedProductName}
         </Link>
 
-        {/* Variant / Pack Selector */}
+        {/* Variant Chips */}
         {variants.length > 1 ? (
-          <div className="mt-1.5 flex flex-wrap gap-1 min-w-0 w-full">
+          <div className="mt-1 flex flex-wrap gap-1 min-w-0 w-full">
             {variants.slice(0, 3).map((v) => (
               <button
                 key={v.id}
                 type="button"
                 onClick={() => setSelectedVariantId(v.id)}
-                className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate ${v.id === activeVariant?.id
+                className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate cursor-pointer ${
+                  v.id === activeVariant?.id
                     ? "border-[#145A45] bg-[#145A45] text-white shadow-2xs"
-                    : "border-[#E5E0D5] bg-[#FAF8F2] text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
-                  }`}
+                    : "border-[#E5E0D5] bg-white text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
+                }`}
               >
                 {getVariantLabel(v)}
               </button>
             ))}
           </div>
         ) : (
-          <div className="mt-1 text-[10px] sm:text-[11px] font-medium text-[#5A655F] truncate w-full">
-            {activeVariant?.label
-              ? getVariantLabel(activeVariant)
-              : t.singlePackLabel}
+          <div className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-[#5A655F] truncate w-full">
+            {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
           </div>
         )}
 
-        {/* Price & Action Row */}
-        <div className="mt-auto pt-2.5 flex flex-col gap-1.5 w-full min-w-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-1.5 gap-y-0.5 w-full min-w-0">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              <span className="text-sm sm:text-base font-black text-[#0F4A38]">
-                {inr(activeVariant?.price ?? 0)}
-              </span>
-              {off > 0 && activeVariant?.mrp ? (
-                <span className="text-[10px] sm:text-xs text-[#5A655F] line-through font-medium">
-                  {inr(activeVariant.mrp)}
-                </span>
-              ) : null}
-            </div>
-            {saveAmount > 0 ? (
-              <span className="text-[9px] sm:text-[10px] font-bold text-[#15803D] shrink-0">
-                {t.save} ₹{saveAmount}
+        {/* Price & Add to Cart Action */}
+        <div className="mt-auto pt-2 flex items-center justify-between gap-1.5 w-full min-w-0">
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base font-black text-[#0F4A38] leading-tight">
+              {inr(activeVariant?.price ?? 0)}
+            </span>
+            {off > 0 && activeVariant?.mrp ? (
+              <span className="text-[10px] text-[#5A655F] line-through font-medium leading-none">
+                {inr(activeVariant.mrp)}
               </span>
             ) : null}
           </div>
 
-          {/* Add / Stepper Button */}
-          <div className="w-full min-w-0">
+          <div className="shrink-0">
             {inCart ? (
-              <div className="flex h-9 sm:h-9.5 w-full min-w-0 items-center justify-between rounded-lg border border-[#145A45] bg-[#E6EFE8] px-1 sm:px-1.5 shadow-2xs">
+              <div className="flex h-8 sm:h-8.5 items-center rounded-xl border border-[#145A45] bg-[#E6EFE8] px-1 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-[#0F4A38] hover:bg-white active:scale-95 transition-all"
+                  className="flex size-6 items-center justify-center rounded-lg text-[#0F4A38] hover:bg-white active:scale-95 transition-all cursor-pointer"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="size-3.5" />
+                  <Minus className="size-3" />
                 </button>
-                <span className="text-[11px] sm:text-xs font-black text-[#0F4A38] truncate px-0.5 text-center flex-1">
-                  {inCart.qty} {t.inCartQtyLabel}
+                <span className="text-xs font-black text-[#0F4A38] px-2 text-center">
+                  {inCart.qty}
                 </span>
                 <button
                   type="button"
                   disabled={inCart.qty >= stock}
                   onClick={() => setQty(inCart.variantId, inCart.qty + 1)}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-[#0F4A38] hover:bg-white active:scale-95 transition-all disabled:opacity-40"
+                  className="flex size-6 items-center justify-center rounded-lg text-[#0F4A38] hover:bg-white active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-3" />
                 </button>
               </div>
             ) : (
@@ -227,15 +197,21 @@ export function ProductCard({ product }: { product: Product }) {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="flex h-9 sm:h-9.5 w-full min-w-0 items-center justify-center gap-1 rounded-lg border border-[#145A45] bg-white px-2 text-xs font-bold text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden"
+                className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-xl border border-[#145A45] bg-white px-3 sm:px-3.5 text-xs font-black text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Plus className="size-3.5 shrink-0" />
-                <span className="truncate">{t.add}</span>
+                <span>{t.add}</span>
               </button>
             )}
           </div>
         </div>
       </div>
+
+      {/* Right Vertical Divider (Between adjacent items) */}
+      <div className="absolute top-2 -right-1.5 sm:-right-2 md:-right-2.5 bottom-2 w-px bg-gradient-to-b from-transparent via-[#EAE6DC] to-transparent pointer-events-none" />
+
+      {/* Subtle Bottom Divider */}
+      <div className="w-full h-px bg-gradient-to-r from-[#EAE6DC]/20 via-[#EAE6DC] to-[#EAE6DC]/20 mt-3 sm:mt-3.5" />
     </div>
   );
 }
@@ -243,48 +219,21 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div
-      className="card-base flex flex-col justify-between overflow-hidden bg-white p-3 sm:p-3.5 border border-[#E5E0D5] w-full max-w-full min-w-0"
+      className="group relative flex flex-col justify-between w-full max-w-full min-w-0 pb-3 sm:pb-3.5"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* Top Bar Skeleton */}
-      <div className="flex items-center justify-between gap-1 w-full min-w-0">
-        <Skeleton className="h-4 w-12 rounded-md bg-[#FAF8F2]" />
-        <Skeleton className="size-7 rounded-full bg-[#FAF8F2]" />
-      </div>
-
-      {/* Image Skeleton Box */}
-      <div
-        className="relative my-2 flex w-full min-w-0 max-w-full items-center justify-center overflow-hidden p-1 shrink-0"
-        style={{
-          height: "152px",
-          maxHeight: "152px",
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 0,
-        }}
-      >
-        <Skeleton className="size-24 rounded-2xl bg-[#FAF8F2]" />
-      </div>
-
-      {/* Content Skeleton */}
-      <div className="flex flex-1 flex-col min-w-0 w-full max-w-full space-y-1.5">
+      <Skeleton className="w-full aspect-square rounded-2xl bg-[#FAF8F2]" />
+      <div className="flex flex-1 flex-col min-w-0 w-full pt-2 space-y-1.5">
         <Skeleton className="h-3 w-16 bg-[#FAF8F2]" />
-        <div className="min-h-[2.3rem] sm:min-h-[2.6rem] space-y-1">
-          <Skeleton className="h-3.5 w-full bg-[#FAF8F2]" />
-          <Skeleton className="h-3.5 w-3/4 bg-[#FAF8F2]" />
-        </div>
-        <Skeleton className="h-4 w-14 rounded-md bg-[#FAF8F2]" />
-
-        {/* Price & Button skeleton */}
-        <div className="mt-auto pt-2.5 flex flex-col gap-1.5 w-full min-w-0">
-          <div className="flex items-baseline justify-between gap-2">
-            <Skeleton className="h-4 w-16 bg-[#FAF8F2]" />
-            <Skeleton className="h-3 w-10 bg-[#FAF8F2]" />
-          </div>
-          <Skeleton className="h-9 sm:h-9.5 w-full rounded-lg bg-[#E6EFE8]/60" />
+        <Skeleton className="h-4 w-full bg-[#FAF8F2]" />
+        <Skeleton className="h-4 w-3/4 bg-[#FAF8F2]" />
+        <div className="mt-auto pt-2 flex items-center justify-between gap-2 w-full">
+          <Skeleton className="h-5 w-16 bg-[#FAF8F2]" />
+          <Skeleton className="h-8 w-16 rounded-xl bg-[#E6EFE8]/60" />
         </div>
       </div>
+      <div className="absolute top-2 -right-1.5 sm:-right-2 md:-right-2.5 bottom-2 w-px bg-[#EAE6DC]" />
+      <div className="w-full h-px bg-[#EAE6DC] mt-3" />
     </div>
   );
 }
-
