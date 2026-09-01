@@ -289,7 +289,7 @@ export const settingsQuery = queryOptions({
       DEFAULT_STORE_SETTINGS,
     );
   },
-  staleTime: 1000 * 60 * 10, // 10 minutes
+  staleTime: 1000 * 60 * 2, // 2 minutes (shorter so hero image updates appear quickly)
 });
 
 export const categoriesQuery = queryOptions({

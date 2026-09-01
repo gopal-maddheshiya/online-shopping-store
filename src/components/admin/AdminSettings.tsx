@@ -112,17 +112,41 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Auto-save hero_image_url directly to DB
+  // Auto-save hero_image_url directly to DB via REST API (bypasses typed client)
   async function saveHeroImageToDb(url: string | null) {
     try {
-      await supabase
-        .from('store_settings')
-        .update({ hero_image_url: url } as never)
-        .eq('id', 1);
+      const supabaseUrl = import.meta.env["VITE_SUPABASE_URL"] || "https://rvpskkgrobztgcfznawl.supabase.co";
+      const supabaseKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2cHNra2dyb2J6dGdjZnpuYXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NDc0MzAsImV4cCI6MjEwMzQyMzQzMH0.FCO6H2AWcHQ_QznsOVBsAuJxOUjMLs_qTjvrnsCxK4k";
+      
+      // Get current session token for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      
+      const res = await fetch(`${supabaseUrl}/rest/v1/store_settings?id=eq.1`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${accessToken || supabaseKey}`,
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({ hero_image_url: url }),
+      });
+      
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Hero image save failed:", res.status, errText);
+        toast.error("Failed to save hero image to database");
+        return false;
+      }
+      
       // Invalidate cache so homepage picks it up immediately
-      queryClient.invalidateQueries({ queryKey: ['store-settings'] });
-    } catch {
-      // Silently fail — will be saved with main Save button anyway
+      queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+      return true;
+    } catch (err) {
+      console.error("Hero image save error:", err);
+      toast.error("Failed to save hero image");
+      return false;
     }
   }
 
