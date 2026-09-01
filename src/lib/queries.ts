@@ -255,7 +255,7 @@ export async function withTimeout<T>(
   });
 }
 
-import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "./catalog-data";
+import { ADDITIONAL_CATEGORIES } from "./catalog-data";
 
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
@@ -325,11 +325,6 @@ export const categoriesQuery = queryOptions({
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {
-  const fallback =
-    opts.activeOnly === false
-      ? ADDITIONAL_PRODUCTS
-      : ADDITIONAL_PRODUCTS.filter((p) => p.is_active);
-
   return queryOptions({
     queryKey: ["products", opts.activeOnly !== false],
     queryFn: async (): Promise<Product[]> => {
@@ -343,24 +338,13 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
             if (opts.activeOnly !== false) q = q.eq("is_active", true);
             const { data, error } = await q;
             if (error) throw error;
-            const remote = (data ?? []) as unknown as Product[];
-            const existingSlugs = new Set(remote.map((p) => p.slug));
-            const merged = [...remote];
-            for (const p of ADDITIONAL_PRODUCTS) {
-              if (!existingSlugs.has(p.slug)) {
-                if (opts.activeOnly === false || p.is_active) {
-                  merged.push(p);
-                  existingSlugs.add(p.slug);
-                }
-              }
-            }
-            return merged;
+            return (data ?? []) as unknown as Product[];
           } catch {
-            return fallback;
+            return [];
           }
         })(),
         10000,
-        fallback,
+        [],
       );
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -368,17 +352,6 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
 }
 
 export function featuredProductsQuery(limit: number = 12) {
-  const fallback = ADDITIONAL_PRODUCTS
-    .filter((p) => p.is_active)
-    .sort((a, b) => {
-      const featDiff = (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
-      if (featDiff !== 0) return featDiff;
-      const soldA = a.sold_count ?? 0;
-      const soldB = b.sold_count ?? 0;
-      return soldB - soldA;
-    })
-    .slice(0, limit);
-
   return queryOptions({
     queryKey: ["featured-products", limit],
     queryFn: async (): Promise<Product[]> => {
@@ -395,26 +368,13 @@ export function featuredProductsQuery(limit: number = 12) {
               .limit(limit);
 
             if (error) throw error;
-            const remote = (data ?? []) as unknown as Product[];
-            if (remote.length >= limit) return remote;
-
-            // Fill remaining slots up to limit if database has fewer items
-            const existingSlugs = new Set(remote.map((p) => p.slug));
-            const merged = [...remote];
-            for (const p of fallback) {
-              if (merged.length >= limit) break;
-              if (!existingSlugs.has(p.slug)) {
-                merged.push(p);
-                existingSlugs.add(p.slug);
-              }
-            }
-            return merged;
+            return (data ?? []) as unknown as Product[];
           } catch {
-            return fallback;
+            return [];
           }
         })(),
         10000,
-        fallback,
+        [],
       );
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -422,8 +382,6 @@ export function featuredProductsQuery(limit: number = 12) {
 }
 
 export function productQuery(slug: string) {
-  const fallback = ADDITIONAL_PRODUCTS.find((p) => p.slug === slug) ?? null;
-
   return queryOptions({
     queryKey: ["product", slug],
     queryFn: async (): Promise<Product | null> => {
@@ -437,12 +395,12 @@ export function productQuery(slug: string) {
               .maybeSingle();
             if (!error && data) return data as unknown as Product;
           } catch {
-            // Fall back to additional products
+            // Database error
           }
-          return fallback;
+          return null;
         })(),
         10000,
-        fallback,
+        null,
       );
     },
     staleTime: 1000 * 60 * 5, // 5 minutes

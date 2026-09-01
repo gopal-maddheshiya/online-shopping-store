@@ -19,7 +19,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { useLanguage } from "@/lib/i18n";
 import { getCategoryThumbnail } from "@/lib/product-images";
 import { categoriesQuery, cheapestVariant, productsQuery, totalStock } from "@/lib/queries";
-import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "@/lib/catalog-data";
+import { ADDITIONAL_CATEGORIES } from "@/lib/catalog-data";
 
 type ShopSearch = {
   q?: string | undefined;
@@ -91,7 +91,7 @@ function Shop() {
   const [term, setTerm] = useState(search.q ?? "");
 
   const allCategories = categories && categories.length > 0 ? categories : ADDITIONAL_CATEGORIES;
-  const allProducts = products && products.length > 0 ? products : ADDITIONAL_PRODUCTS;
+  const allProducts = products ?? [];
 
   const parents = allCategories.filter((c) => !c.parent_id);
   const activeCategory = parents.find((c) => c.slug === search.category);

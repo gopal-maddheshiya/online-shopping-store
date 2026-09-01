@@ -35,7 +35,7 @@ import {
   settingsQuery,
   isOpenNow,
 } from "@/lib/queries";
-import { ADDITIONAL_CATEGORIES, ADDITIONAL_PRODUCTS } from "@/lib/catalog-data";
+import { ADDITIONAL_CATEGORIES } from "@/lib/catalog-data";
 import { waHref } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 
@@ -157,8 +157,8 @@ function PremiumStoreHome() {
   const otherGroupCategories = parentCategories.filter(c => otherSlugs.includes(c.slug));
   const uncategorizedCategories = parentCategories.filter(c => !allKnownSlugs.includes(c.slug));
 
-  // Products with fallback
-  const allDisplayProducts = products && products.length > 0 ? products : ADDITIONAL_PRODUCTS;
+  // Use only database products
+  const allDisplayProducts = products ?? [];
 
   // Category-based product groups
   const attaRiceProducts = allDisplayProducts.filter(
