@@ -447,45 +447,25 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
       return (rpcOrders as unknown as Order[]).map(mergeOrderWithOverrides);
     }
 
-    // 2. Direct query with active admin token
-    const { data: directOrders } = await supabase
+    // 2. Fallback: Direct query - fetch ALL orders from database
+    const { data: directOrders, error: directErr } = await supabase
       .from("orders")
       .select("*, order_items(*), order_events(*)")
       .order("created_at", { ascending: false });
 
-    const ordersMap = new Map<string, Order>();
+    if (directErr) {
+      console.error("Failed to fetch orders from database:", directErr);
+      return [];
+    }
 
-    // Add direct query results
+    // Only use database results - no localStorage mixing
     if (directOrders && Array.isArray(directOrders)) {
-      for (const ord of directOrders) {
-        ordersMap.set(ord.id, mergeOrderWithOverrides(ord as unknown as Order));
-      }
+      return directOrders.map((ord) => mergeOrderWithOverrides(ord as unknown as Order));
     }
 
-    // 3. Fetch all registered orders via SECURITY DEFINER procedure lookup_order
-    const registeredList = getRegisteredOrders();
-    for (const reg of registeredList) {
-      if (!reg.order_no || !reg.phone) continue;
-      try {
-        const { data: lookedUp } = await supabase.rpc("lookup_order" as never, {
-          _order_no: reg.order_no,
-          _phone: reg.phone,
-        } as never);
-
-        if (lookedUp && typeof lookedUp === "object" && "id" in (lookedUp as Record<string, unknown>)) {
-          const ord = lookedUp as unknown as Order;
-          ordersMap.set(ord.id, mergeOrderWithOverrides(ord));
-        }
-      } catch {
-        // Continue
-      }
-    }
-
-    const allOrders = Array.from(ordersMap.values());
-    allOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    return allOrders;
+    return [];
   } catch (err: unknown) {
-    console.error("Failed to load comprehensive admin orders:", err);
+    console.error("Failed to load admin orders:", err);
     return [];
   }
 }

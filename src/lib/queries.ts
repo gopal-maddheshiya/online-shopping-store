@@ -303,25 +303,16 @@ export const categoriesQuery = queryOptions({
             .select("*")
             .order("sort_order", { ascending: true });
           if (error) throw error;
-          const remote = (data ?? []) as Category[];
-          const existingSlugs = new Set(remote.map((c) => c.slug));
-          const merged = [...remote];
-          for (const cat of ADDITIONAL_CATEGORIES) {
-            if (!existingSlugs.has(cat.slug)) {
-              merged.push(cat);
-              existingSlugs.add(cat.slug);
-            }
-          }
-          return merged;
+          return (data ?? []) as Category[];
         } catch {
-          return ADDITIONAL_CATEGORIES;
+          return [];
         }
       })(),
       2500,
-      ADDITIONAL_CATEGORIES,
+      [],
     );
   },
-  staleTime: 1000 * 60 * 10, // 10 minutes
+  staleTime: 1000 * 60, // 1 minute (faster refresh for admin changes)
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {

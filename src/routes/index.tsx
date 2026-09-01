@@ -35,7 +35,6 @@ import {
   settingsQuery,
   isOpenNow,
 } from "@/lib/queries";
-import { ADDITIONAL_CATEGORIES } from "@/lib/catalog-data";
 import { waHref } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 
@@ -142,9 +141,8 @@ function PremiumStoreHome() {
 
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
-  // Categories with fallback
-  const rawCategories = categories && categories.length > 0 ? categories : ADDITIONAL_CATEGORIES;
-  const parentCategories = rawCategories.filter((c) => !c.parent_id);
+  // Use only database categories
+  const parentCategories = categories.filter((c) => !c.parent_id);
   const foodSlugs = ["atta-flour","rice-grains","rice","pulses-dal","oil-ghee","spices-masala","salt-sugar","dry-fruits","tea-coffee","biscuits","namkeen-snacks","chocolates","noodles-pasta","sauces-spreads","dairy","beverages","packaged-foods","breakfast"];
   const householdSlugs = ["household-cleaning","laundry","kitchen-essentials","utensils-cookware"];
   const personalSlugs = ["personal-care","hair-care","skin-care","oral-care","baby-products"];
@@ -294,7 +292,7 @@ function PremiumStoreHome() {
       {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Open Layout with Prominent Text
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page space-y-6 sm:space-y-8">
+      <section className="container-page space-y-8 sm:space-y-10">
         <SectionHeader
           icon={<Store className="size-4.5 text-[#145A45]" />}
           title={lang === "hi" ? "कैटेगरी के अनुसार खरीदारी" : "Shop by Category"}
@@ -304,7 +302,7 @@ function PremiumStoreHome() {
               : "All grocery essentials neatly organized for you"
           }
           linkTo="/shop"
-          linkLabel={`${t.viewAll} (${parentCategories.length})`}
+          linkLabel={t.viewAll}
         />
 
         {catLoading ? (
@@ -335,7 +333,6 @@ function PremiumStoreHome() {
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
                   >
                     <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                    <span className="text-[11px] font-semibold text-[#145A45]">({foodCategories.length})</span>
                   </Link>
                 </div>
 
@@ -381,7 +378,6 @@ function PremiumStoreHome() {
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
                   >
                     <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                    <span className="text-[11px] font-semibold text-[#145A45]">({householdCategories.length})</span>
                   </Link>
                 </div>
 
@@ -427,7 +423,6 @@ function PremiumStoreHome() {
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
                   >
                     <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                    <span className="text-[11px] font-semibold text-[#145A45]">({personalCategories.length})</span>
                   </Link>
                 </div>
 
@@ -473,9 +468,6 @@ function PremiumStoreHome() {
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
                   >
                     <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                    <span className="text-[11px] font-semibold text-[#145A45]">
-                      ({otherGroupCategories.length + uncategorizedCategories.length})
-                    </span>
                   </Link>
                 </div>
 
