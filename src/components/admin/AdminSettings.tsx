@@ -112,6 +112,20 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Auto-save hero_image_url directly to DB
+  async function saveHeroImageToDb(url: string | null) {
+    try {
+      await supabase
+        .from('store_settings')
+        .update({ hero_image_url: url } as never)
+        .eq('id', 1);
+      // Invalidate cache so homepage picks it up immediately
+      queryClient.invalidateQueries({ queryKey: ['store-settings'] });
+    } catch {
+      // Silently fail — will be saved with main Save button anyway
+    }
+  }
+
   useEffect(() => {
     if (settings) {
       setStoreName(settings.store_name ?? "Arun Gopal Traders");
@@ -457,14 +471,16 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                           .getPublicUrl(filePath);
                         if (pubData?.publicUrl) {
                           setHeroImageUrl(pubData.publicUrl);
-                          toast.success("Hero banner uploaded!", { id: "hero-upload" });
+                          await saveHeroImageToDb(pubData.publicUrl);
+                          toast.success("Hero banner uploaded & saved!", { id: "hero-upload" });
                           return;
                         }
                       }
                       
                       // Fallback to data URL
                       setHeroImageUrl(dataUrl);
-                      toast.success("Hero banner set! (local preview)", { id: "hero-upload" });
+                      await saveHeroImageToDb(dataUrl);
+                      toast.success("Hero banner saved!", { id: "hero-upload" });
                     } catch {
                       toast.error("Failed to upload image", { id: "hero-upload" });
                     }
@@ -487,7 +503,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               {heroImageUrl && (
                 <button
                   type="button"
-                  onClick={() => setHeroImageUrl("")}
+                  onClick={async () => { setHeroImageUrl(""); await saveHeroImageToDb(null); toast.success("Hero banner removed!"); }}
                   className="rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 p-2 text-red-500 transition-all"
                   title="Remove image"
                 >

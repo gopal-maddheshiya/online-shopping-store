@@ -263,11 +263,31 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page pt-3 sm:pt-5">
         <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-          <img
-            src={settings?.hero_image_url || "/images/hero-banner.jpg"}
-            alt={settings?.store_name || "Arun Gopal Traders"}
-            className="w-full aspect-video object-cover"
-          />
+          {settings?.hero_image_url ? (
+            <img
+              src={settings.hero_image_url}
+              alt={settings?.store_name || "Arun Gopal Traders"}
+              className="w-full aspect-video object-cover"
+              onError={(e) => {
+                // If image fails to load, hide it and show fallback
+                (e.target as HTMLImageElement).style.display = "none";
+                const fallback = (e.target as HTMLImageElement).nextElementSibling;
+                if (fallback) (fallback as HTMLElement).style.display = "flex";
+              }}
+            />
+          ) : null}
+          {/* Fallback gradient banner — shown when no hero image or image fails */}
+          <div
+            className="w-full aspect-video bg-gradient-to-br from-[#062A1E] via-[#0B4232] to-[#041F16] flex flex-col items-center justify-center text-white text-center px-6"
+            style={{ display: settings?.hero_image_url ? "none" : "flex" }}
+          >
+            <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1]">
+              {settings?.store_name || "Arun Gopal Traders"}
+            </h1>
+            <p className="mt-3 text-sm sm:text-base text-white/70 max-w-md">
+              {settings?.tagline || "Your Trusted Local Grocery Store"}
+            </p>
+          </div>
         </div>
       </section>
 
