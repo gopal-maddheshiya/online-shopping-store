@@ -32,6 +32,8 @@ import { broadcastSettingsSync } from "@/lib/realtime-sync";
 import type { StoreSettings } from "@/lib/queries";
 import { generateUpiUri, generateQrCodeUrl } from "@/lib/payment-gateway";
 import { inr } from "@/lib/format";
+import { compressAndOptimizeImage } from "@/lib/image-upload";
+import { Upload, ImageIcon, Trash2 } from "lucide-react";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -419,25 +421,100 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image URL (1920×1080 / 16:9)</Label>
-            <Input
-              value={heroImageUrl}
-              onChange={(e) => setHeroImageUrl(e.target.value)}
-              placeholder="https://example.com/hero-banner.jpg or /images/hero-banner.jpg"
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-            <p className="text-[10px] text-[#6B746F] mt-0.5">
-              Recommended: 1920×1080px (16:9 widescreen). Use a direct image URL or upload to Supabase Storage.
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image (1920×1080 / 16:9)</Label>
+            
+            {/* Upload from device */}
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-[#145A45]/20 bg-[#E6EFE8] hover:bg-[#D4E8DC] px-4 py-2 text-xs font-bold text-[#145A45] transition-all">
+                <Upload className="size-3.5" />
+                <span>{heroImageUrl ? "Change Image" : "Upload from Device"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      toast.loading("Uploading hero banner...", { id: "hero-upload" });
+                      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
+                      
+                      // Try Supabase Storage
+                      const fileName = `hero_banner_${Date.now()}.webp`;
+                      const filePath = `hero/${fileName}`;
+                      const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from("product-images")
+                        .upload(filePath, blob, {
+                          cacheControl: "31536000",
+                          upsert: true,
+                          contentType: blob.type || "image/webp",
+                        });
+                      
+                      if (!uploadError && uploadData) {
+                        const { data: pubData } = supabase.storage
+                          .from("product-images")
+                          .getPublicUrl(filePath);
+                        if (pubData?.publicUrl) {
+                          setHeroImageUrl(pubData.publicUrl);
+                          toast.success("Hero banner uploaded!", { id: "hero-upload" });
+                          return;
+                        }
+                      }
+                      
+                      // Fallback to data URL
+                      setHeroImageUrl(dataUrl);
+                      toast.success("Hero banner set! (local preview)", { id: "hero-upload" });
+                    } catch {
+                      toast.error("Failed to upload image", { id: "hero-upload" });
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              
+              <span className="text-[10px] text-[#6B746F]">or</span>
+              
+              <div className="flex-1">
+                <Input
+                  value={heroImageUrl}
+                  onChange={(e) => setHeroImageUrl(e.target.value)}
+                  placeholder="Paste image URL here..."
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+              
+              {heroImageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setHeroImageUrl("")}
+                  className="rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 p-2 text-red-500 transition-all"
+                  title="Remove image"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
+            </div>
+            
+            <p className="text-[10px] text-[#6B746F]">
+              Upload from your phone/computer or paste a direct image URL. Recommended: 1920×1080px (16:9).
             </p>
-            {heroImageUrl && (
-              <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs">
+            
+            {/* Preview */}
+            {heroImageUrl ? (
+              <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative">
                 <img
                   src={heroImageUrl}
                   alt="Hero banner preview"
                   className="w-full aspect-video object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
+              </div>
+            ) : (
+              <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center py-8 gap-2">
+                <ImageIcon className="size-8 text-[#C5BEA8]" />
+                <p className="text-xs text-[#9B9585] font-medium">No hero banner image set</p>
+                <p className="text-[10px] text-[#C5BEA8]">Upload or paste a URL above</p>
               </div>
             )}
           </div>
