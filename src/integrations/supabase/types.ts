@@ -640,6 +640,7 @@ export type Database = {
           invoice_prefix?: string;
           invoice_footer_note?: string;
           terms_and_conditions?: string;
+          hero_image_url?: string | null;
         };
         Insert: {
           address?: string;
@@ -669,6 +670,7 @@ export type Database = {
           invoice_prefix?: string;
           invoice_footer_note?: string;
           terms_and_conditions?: string;
+          hero_image_url?: string | null;
         };
         Update: {
           address?: string;
@@ -698,6 +700,7 @@ export type Database = {
           invoice_prefix?: string;
           invoice_footer_note?: string;
           terms_and_conditions?: string;
+          hero_image_url?: string | null;
         };
         Relationships: [];
       };
