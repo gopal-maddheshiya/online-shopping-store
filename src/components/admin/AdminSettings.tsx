@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,7 +40,6 @@ type AdminSettingsProps = {
   settings: StoreSettings | undefined;
   onRefresh: () => void;
 };
-
 
 const DAYS = [
   { key: "mon", label: "Monday" },
@@ -112,21 +112,17 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Auto-save hero_image_url directly to DB via REST API and Supabase Client
   async function saveHeroImageToDb(url: string | null) {
     try {
-      // 1. Optimistically update local TanStack Query cache immediately
       queryClient.setQueryData(["store-settings"], (old: StoreSettings | undefined) => {
         if (!old) return old;
         return { ...old, hero_image_url: url };
       });
 
-      // 2. Direct Supabase Client Upsert
       await supabase
         .from("store_settings")
         .upsert({ id: 1, hero_image_url: url } as never, { onConflict: "id" });
 
-      // 3. Fallback REST API Patch
       const supabaseUrl = import.meta.env["VITE_SUPABASE_URL"] || "https://rvpskkgrobztgcfznawl.supabase.co";
       const supabaseKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2cHNra2dyb2J6dGdjZnpuYXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NDc0MzAsImV4cCI6MjEwMzQyMzQzMH0.FCO6H2AWcHQ_QznsOVBsAuJxOUjMLs_qTjvrnsCxK4k";
       const { data: { session } } = await supabase.auth.getSession();
@@ -143,7 +139,6 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         body: JSON.stringify({ hero_image_url: url }),
       });
       
-      // 4. Invalidate cache to ensure background sync with DB
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       return true;
     } catch (err) {
@@ -174,7 +169,6 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setMinOrderValue(Number(settings.min_order_value ?? 99));
       setBusinessHours(settings.business_hours ?? {});
 
-      // Billing settings
       setLegalName(settings.legal_name ?? "Arun Gopal Traders");
       setGstin(settings.gstin ?? "");
       setState(settings.state ?? "Uttar Pradesh");
@@ -191,7 +185,6 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           "1. Goods once sold can only be returned within 24 hours in original packed condition.\n2. Please retain this invoice for any verification.\n3. All disputes subject to Maharajganj jurisdiction."
       );
 
-      // Payment Gateway & Receiving Accounts
       setOnlinePaymentEnabled(settings.online_payment_enabled !== false);
       if (settings.enabled_payment_methods && Array.isArray(settings.enabled_payment_methods)) {
         setEnabledPaymentMethods(settings.enabled_payment_methods);
@@ -263,7 +256,6 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           invoice_prefix: invoicePrefix.trim() || "AGT-INV",
           invoice_footer_note: invoiceFooterNote.trim(),
           terms_and_conditions: termsAndConditions.trim(),
-          // Payment & Receiving Accounts
           online_payment_enabled: Boolean(onlinePaymentEnabled),
           enabled_payment_methods: enabledPaymentMethods,
           upi_vpa: upiVpa.trim() || "6388354988@okbizaxis",
@@ -293,723 +285,752 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   }
 
   return (
-    <form onSubmit={handleSaveSettings} className="space-y-4 sm:space-y-6 max-w-4xl">
-      {/* Basic Store Information */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-            <Store className="size-5 text-[#145A45]" /> Store Identity &amp; Contact Details
-          </h3>
-          <p className="text-xs text-[#6B746F] mt-1">
-            Displayed across the website header, footer, contact page, and receipt bills.
-          </p>
-        </div>
+    <form onSubmit={handleSaveSettings} className="w-full">
+      <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+        <TabsList className="!flex !flex-nowrap !items-center !justify-start gap-2 w-full !overflow-x-auto no-scrollbar !h-auto !bg-transparent !px-2 !py-2 !rounded-none !border-0 !shadow-none">
+          <TabsTrigger value="profile" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Store className="size-4" />
+            <span>Store Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="delivery" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Truck className="size-4" />
+            <span>Delivery</span>
+          </TabsTrigger>
+          <TabsTrigger value="homepage" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Sparkles className="size-4" />
+            <span>Homepage</span>
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Smartphone className="size-4" />
+            <span>Payments</span>
+          </TabsTrigger>
+          <TabsTrigger value="billing" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Receipt className="size-4" />
+            <span>Billing</span>
+          </TabsTrigger>
+        </TabsList>
 
-        <div className="grid gap-3 sm:grid-cols-2 pt-1">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Store Name</Label>
-            <Input
-              required
-              value={storeName}
-              onChange={(e) => setStoreName(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Store Tagline / Slogan</Label>
-            <Input
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Primary Phone Number</Label>
-            <Input
-              required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">
-              WhatsApp Number (with country code, no +)
-            </Label>
-            <Input
-              required
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-xs font-semibold text-[#1F2924]">Store Email</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-xs font-semibold text-[#1F2924]">Physical Store Address</Label>
-            <Input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-xs font-semibold text-[#1F2924]">Google Maps URL / Location Link</Label>
-            <Input
-              value={mapsLink}
-              onChange={(e) => setMapsLink(e.target.value)}
-              className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Delivery & Pricing Rules */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-            <Truck className="size-5 text-[#145A45]" /> Delivery Charges &amp; Thresholds
-          </h3>
-          <p className="text-xs text-[#6B746F] mt-1">
-            Rules applied automatically at cart and checkout for Maharajganj deliveries.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3 pt-1">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Standard Delivery Fee (₹)</Label>
-            <Input
-              type="number"
-              value={deliveryFee}
-              onChange={(e) => setDeliveryFee(Number(e.target.value))}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Free Delivery Above (₹)</Label>
-            <Input
-              type="number"
-              value={freeDeliveryThreshold}
-              onChange={(e) => setFreeDeliveryThreshold(Number(e.target.value))}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Minimum Order Value (₹)</Label>
-            <Input
-              type="number"
-              value={minOrderValue}
-              onChange={(e) => setMinOrderValue(Number(e.target.value))}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Homepage & Announcement Banner */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-            <Sparkles className="size-5 text-[#145A45]" /> Homepage Content &amp; Announcement Bar
-          </h3>
-          <p className="text-xs text-[#6B746F] mt-1">
-            Custom banners and hero slogans displayed to customers.
-          </p>
-        </div>
-
-        <div className="grid gap-3 pt-1">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Top Announcement Bar Text</Label>
-            <Input
-              value={announcement}
-              onChange={(e) => setAnnouncement(e.target.value)}
-              className="rounded-xl text-xs border-[#E8E4DA] h-9"
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Hero Heading</Label>
-              <Input
-                value={heroTitle}
-                onChange={(e) => setHeroTitle(e.target.value)}
-                className="rounded-xl border-[#E8E4DA] text-xs h-9"
-              />
+        {/* Store Profile Tab */}
+        <TabsContent value="profile" className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <Store className="size-5 text-[#145A45]" /> Store Identity &amp; Contact Details
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                Displayed across the website header, footer, contact page, and receipt bills.
+              </p>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Hero Subtitle</Label>
-              <Input
-                value={heroSubtitle}
-                onChange={(e) => setHeroSubtitle(e.target.value)}
-                className="rounded-xl border-[#E8E4DA] text-xs h-9"
-              />
-            </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image (1920×1080 / 16:9)</Label>
-            
-            {/* Upload from device */}
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-[#145A45]/20 bg-[#E6EFE8] hover:bg-[#D4E8DC] px-4 py-2 text-xs font-bold text-[#145A45] transition-all">
-                <Upload className="size-3.5" />
-                <span>{heroImageUrl ? "Change Image" : "Upload from Device"}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    try {
-                      toast.loading("Uploading hero banner...", { id: "hero-upload" });
-                      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
-                      
-                      // Try Supabase Storage
-                      const fileName = `hero_banner_${Date.now()}.webp`;
-                      const filePath = `hero/${fileName}`;
-                      const { data: uploadData, error: uploadError } = await supabase.storage
-                        .from("product-images")
-                        .upload(filePath, blob, {
-                          cacheControl: "31536000",
-                          upsert: true,
-                          contentType: blob.type || "image/webp",
-                        });
-                      
-                      if (!uploadError && uploadData) {
-                        const { data: pubData } = supabase.storage
-                          .from("product-images")
-                          .getPublicUrl(filePath);
-                        if (pubData?.publicUrl) {
-                          setHeroImageUrl(pubData.publicUrl);
-                          await saveHeroImageToDb(pubData.publicUrl);
-                          toast.success("Hero banner uploaded & saved!", { id: "hero-upload" });
-                          return;
-                        }
-                      }
-                      
-                      // Fallback to data URL
-                      setHeroImageUrl(dataUrl);
-                      await saveHeroImageToDb(dataUrl);
-                      toast.success("Hero banner saved!", { id: "hero-upload" });
-                    } catch {
-                      toast.error("Failed to upload image", { id: "hero-upload" });
-                    }
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              
-              <span className="text-[10px] text-[#6B746F]">or</span>
-              
-              <div className="flex-1">
+            <div className="grid gap-3 sm:grid-cols-2 pt-1">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Store Name</Label>
                 <Input
-                  value={heroImageUrl}
-                  onChange={(e) => setHeroImageUrl(e.target.value)}
-                  placeholder="Paste image URL here..."
+                  required
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
                   className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
               </div>
-              
-              {heroImageUrl && (
-                <button
-                  type="button"
-                  onClick={async () => { setHeroImageUrl(""); await saveHeroImageToDb(null); toast.success("Hero banner removed!"); }}
-                  className="rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 p-2 text-red-500 transition-all"
-                  title="Remove image"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              )}
-            </div>
-            
-            <p className="text-[10px] text-[#6B746F]">
-              Upload from your phone/computer or paste a direct image URL. Recommended: 1920×1080px (16:9).
-            </p>
-            
-            {/* Preview */}
-            {heroImageUrl ? (
-              <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative">
-                <img
-                  src={heroImageUrl}
-                  alt="Hero banner preview"
-                  className="w-full aspect-video object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Store Tagline / Slogan</Label>
+                <Input
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
               </div>
-            ) : (
-              <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center py-8 gap-2">
-                <ImageIcon className="size-8 text-[#C5BEA8]" />
-                <p className="text-xs text-[#9B9585] font-medium">No hero banner image set</p>
-                <p className="text-[10px] text-[#C5BEA8]">Upload or paste a URL above</p>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Primary Phone Number</Label>
+                <Input
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
               </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Payment Gateway & Receiving Accounts Configuration */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#E8E4DA] pb-4">
-          <div>
-            <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-              <Smartphone className="size-5 text-[#145A45]" /> Payment Gateway &amp; Receiving Accounts
-            </h3>
-            <p className="text-xs text-[#6B746F] mt-1">
-              Control your UPI receiving ID, dynamic QR code, merchant name, bank account, and active payment methods without touching any code.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-[#1F2924] bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1.5 rounded-xl">
-              <Checkbox
-                checked={onlinePaymentEnabled}
-                onCheckedChange={(c) => setOnlinePaymentEnabled(Boolean(c))}
-              />
-              <span>Online Payments Enabled</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Enabled Payment Methods Checkboxes */}
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-[#1F2924] uppercase tracking-wider">
-            Customer Checkout Payment Methods
-          </Label>
-          <p className="text-[11px] text-[#6B746F]">
-            Uncheck any method to instantly remove it from the customer checkout screen.
-          </p>
-
-          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 pt-1">
-            <label
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
-                enabledPaymentMethods.includes("upi")
-                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
-                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
-              }`}
-            >
-              <Checkbox
-                checked={enabledPaymentMethods.includes("upi")}
-                onCheckedChange={() => togglePaymentMethod("upi")}
-              />
-              <Smartphone className="size-4" />
-              <span>Direct UPI (GPay/PhonePe)</span>
-            </label>
-
-            <label
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
-                enabledPaymentMethods.includes("card")
-                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
-                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
-              }`}
-            >
-              <Checkbox
-                checked={enabledPaymentMethods.includes("card")}
-                onCheckedChange={() => togglePaymentMethod("card")}
-              />
-              <CreditCard className="size-4" />
-              <span>Credit / Debit Card</span>
-            </label>
-
-            <label
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
-                enabledPaymentMethods.includes("qr")
-                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
-                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
-              }`}
-            >
-              <Checkbox
-                checked={enabledPaymentMethods.includes("qr")}
-                onCheckedChange={() => togglePaymentMethod("qr")}
-              />
-              <QrCode className="size-4" />
-              <span>Dynamic UPI QR Code</span>
-            </label>
-
-            <label
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
-                enabledPaymentMethods.includes("cod")
-                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
-                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
-              }`}
-            >
-              <Checkbox
-                checked={enabledPaymentMethods.includes("cod")}
-                onCheckedChange={() => togglePaymentMethod("cod")}
-              />
-              <Banknote className="size-4" />
-              <span>Cash on Delivery (COD)</span>
-            </label>
-
-            <label
-              className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
-                enabledPaymentMethods.includes("pay_at_store")
-                  ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
-                  : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
-              }`}
-            >
-              <Checkbox
-                checked={enabledPaymentMethods.includes("pay_at_store")}
-                onCheckedChange={() => togglePaymentMethod("pay_at_store")}
-              />
-              <Store className="size-4" />
-              <span>Pay at Store (Pickup)</span>
-            </label>
-          </div>
-        </div>
-
-        {/* 2-Column Grid: UPI Details + Live Test QR Preview */}
-        <div className="grid gap-4 lg:grid-cols-3 pt-2">
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
-              <QrCode className="size-4 text-[#145A45]" /> UPI Receiving Details (Direct Customer Settlements)
-            </h4>
-
-            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-[#1F2924]">
-                  UPI ID / VPA <span className="text-red-500">*</span>
+                  WhatsApp Number (with country code, no +)
                 </Label>
                 <Input
                   required
-                  value={upiVpa}
-                  onChange={(e) => setUpiVpa(e.target.value)}
-                  placeholder="e.g. 6388354988@okbizaxis"
-                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
-                <span className="text-[10px] text-[#6B746F]">
-                  Where money is instantly deposited when customer scans or pays.
-                </span>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">
-                  Merchant / Payee Name <span className="text-red-500">*</span>
-                </Label>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Store Email</Label>
                 <Input
-                  required
-                  value={upiMerchantName}
-                  onChange={(e) => setUpiMerchantName(e.target.value)}
-                  placeholder="e.g. Arun Gopal Traders"
-                  className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
-                <span className="text-[10px] text-[#6B746F]">
-                  Business name shown inside Google Pay / PhonePe apps.
-                </span>
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">
-                  Registered UPI Mobile No.
-                </Label>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Physical Store Address</Label>
                 <Input
-                  value={upiRegisteredPhone}
-                  onChange={(e) => setUpiRegisteredPhone(e.target.value)}
-                  placeholder="e.g. 6388354988"
-                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">
-                  Razorpay Public Key ID (Frontend SDK)
-                </Label>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Google Maps URL / Location Link</Label>
                 <Input
-                  value={razorpayKeyId}
-                  onChange={(e) => setRazorpayKeyId(e.target.value)}
-                  placeholder="rzp_live_... or rzp_test_..."
-                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                  value={mapsLink}
+                  onChange={(e) => setMapsLink(e.target.value)}
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
                 />
-                <span className="text-[10px] text-[#6B746F]">
-                  Public client key. Private secret keys remain server-side only.
-                </span>
               </div>
-            </div>
-
-            <div className="space-y-1 pt-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">
-                QR Payment Transaction Note
-              </Label>
-              <Input
-                value={qrCustomNote}
-                onChange={(e) => setQrCustomNote(e.target.value)}
-                placeholder="e.g. Arun Gopal Traders Grocery Order"
-                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
-              />
             </div>
           </div>
 
-          {/* Live Test QR Box */}
-          <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-4 text-center space-y-2.5 flex flex-col items-center justify-center">
-            <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
-              Live Dynamic QR Test
-            </span>
-            <div className="relative rounded-xl bg-white p-2 border border-[#E8E4DA] shadow-xs">
-              <img
-                src={generateQrCodeUrl(
-                  generateUpiUri({
-                    vpa: upiVpa || "6388354988@okbizaxis",
-                    payeeName: upiMerchantName || "Arun Gopal Traders",
-                    amount: 100,
-                    orderNo: "TEST-LIVE",
-                    note: qrCustomNote || "Test payment to Arun Gopal Traders",
-                  }),
-                  130
-                )}
-                alt="Live UPI QR Preview"
-                className="size-32 rounded-lg object-contain"
-              />
-            </div>
-            <div className="text-left w-full space-y-0.5">
-              <p className="font-mono text-[11px] font-bold text-[#1F2924] truncate text-center">
-                {upiVpa || "6388354988@okbizaxis"}
-              </p>
-              <p className="text-[10px] text-[#6B746F] text-center">
-                Scan with PhonePe/GPay to test your UPI VPA
+          {/* Business Hours Schedule */}
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <Clock className="size-5 text-[#145A45]" /> Weekly Business Timings
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                Store opening and closing times shown to customers on the Contact page.
               </p>
             </div>
-          </div>
-        </div>
 
-        {/* Bank Account Details Card (Protected) */}
-        <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2]/60 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
-              <Landmark className="size-4 text-[#145A45]" /> Bank Account Details (NEFT / RTGS / Settlement Records)
-            </h4>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-2 py-0.5 rounded-full">
-              <Lock className="size-3" /> Admin Protected
-            </span>
-          </div>
+            <div className="divide-y divide-[#E8E4DA] pt-1 text-xs">
+              {DAYS.map(({ key, label }) => {
+                const h = businessHours[key] ?? { open: "07:00", close: "21:00", closed: false };
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Account Holder Name</Label>
-              <Input
-                value={bankAccountHolder}
-                onChange={(e) => setBankAccountHolder(e.target.value)}
-                placeholder="e.g. Arun Gopal Traders"
-                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
-              />
-            </div>
+                return (
+                  <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 py-3">
+                    <span className="w-24 font-bold text-[#1F2924]">{label}</span>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Bank Name</Label>
-              <Input
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="e.g. State Bank of India"
-                className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
-              />
-            </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        disabled={h.closed}
+                        value={h.open}
+                        onChange={(e) => updateDayHour(key, "open", e.target.value)}
+                        className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
+                      />
+                      <span className="text-[#6B746F]">to</span>
+                      <Input
+                        type="time"
+                        disabled={h.closed}
+                        value={h.close}
+                        onChange={(e) => updateDayHour(key, "close", e.target.value)}
+                        className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
+                      />
+                    </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Account Number</Label>
-              <Input
-                value={bankAccountNumber}
-                onChange={(e) => setBankAccountNumber(e.target.value)}
-                placeholder="e.g. 123456789012"
-                className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">IFSC Code</Label>
-              <Input
-                value={bankIfsc}
-                onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
-                placeholder="e.g. SBIN0001234"
-                className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white uppercase"
-              />
+                    <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#1F2924]">
+                      <Checkbox
+                        checked={h.closed}
+                        onCheckedChange={(c) => updateDayHour(key, "closed", Boolean(c))}
+                      />
+                      <span>Closed on this day</span>
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <p className="text-[10px] text-[#6B746F]">
-            🛡️ <strong>Security Assurance:</strong> Bank account numbers are stored securely for accounting and invoice verification and are never exposed in public customer storefront scripts.
-          </p>
-        </div>
-      </div>
+        </TabsContent>
 
+        {/* Delivery Tab */}
+        <TabsContent value="delivery" className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <Truck className="size-5 text-[#145A45]" /> Delivery Charges &amp; Thresholds
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                Rules applied automatically at cart and checkout for Maharajganj deliveries.
+              </p>
+            </div>
 
-      {/* Billing, GST & Invoice Configuration */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-            <Receipt className="size-5 text-[#145A45]" /> Billing, Tax (GST) &amp; Invoice Settings
-          </h3>
-          <p className="text-xs text-[#6B746F] mt-1">
-            Configure legal business details, GSTIN, tax calculations, invoice prefix, and return policies.
-          </p>
-        </div>
+            <div className="grid gap-3 sm:grid-cols-3 pt-1">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Standard Delivery Fee (₹)</Label>
+                <Input
+                  type="number"
+                  value={deliveryFee}
+                  onChange={(e) => setDeliveryFee(Number(e.target.value))}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 pt-1">
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Business Legal Name</Label>
-            <Input
-              value={legalName}
-              onChange={(e) => setLegalName(e.target.value)}
-              placeholder="e.g. Arun Gopal Traders"
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Free Delivery Above (₹)</Label>
+                <Input
+                  type="number"
+                  value={freeDeliveryThreshold}
+                  onChange={(e) => setFreeDeliveryThreshold(Number(e.target.value))}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Minimum Order Value (₹)</Label>
+                <Input
+                  type="number"
+                  value={minOrderValue}
+                  onChange={(e) => setMinOrderValue(Number(e.target.value))}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+            </div>
           </div>
+        </TabsContent>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">
-              GSTIN (Optional / वैकल्पिक)
-            </Label>
-            <Input
-              value={gstin}
-              onChange={(e) => setGstin(e.target.value.toUpperCase())}
-              placeholder="e.g. 09ABCDE1234F1Z5"
-              className="rounded-xl border-[#E8E4DA] text-xs font-mono uppercase h-9"
-            />
-          </div>
+        {/* Homepage & Branding Tab */}
+        <TabsContent value="homepage" className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <Sparkles className="size-5 text-[#145A45]" /> Homepage Content &amp; Announcement Bar
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                Custom banners and hero slogans displayed to customers.
+              </p>
+            </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Store State</Label>
-            <Input
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              placeholder="Uttar Pradesh"
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
+            <div className="grid gap-3 pt-1">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Top Announcement Bar Text</Label>
+                <Input
+                  value={announcement}
+                  onChange={(e) => setAnnouncement(e.target.value)}
+                  className="rounded-xl text-xs border-[#E8E4DA] h-9"
+                />
+              </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">State Code (e.g. 09 for UP)</Label>
-            <Input
-              value={stateCode}
-              onChange={(e) => setStateCode(e.target.value)}
-              placeholder="09"
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Invoice Number Prefix</Label>
-            <Input
-              value={invoicePrefix}
-              onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
-              placeholder="AGT-INV"
-              className="rounded-xl border-[#E8E4DA] text-xs font-mono h-9"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-[#1F2924]">Default Tax Rate (% if enabled)</Label>
-            <Input
-              type="number"
-              min="0"
-              max="28"
-              step="0.5"
-              value={defaultTaxRate}
-              onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
-              className="rounded-xl border-[#E8E4DA] text-xs h-9"
-            />
-          </div>
-        </div>
-
-        {/* GST / Tax Enable Checkbox */}
-        <div className="rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3.5 flex items-center justify-between gap-3">
-          <div>
-            <Label htmlFor="tax-enable-toggle" className="font-bold text-xs text-[#1F2924] cursor-pointer">
-              Enable GST Tax Calculations on Invoices
-            </Label>
-            <p className="text-[11px] text-[#5A655F]">
-              When disabled, invoices act as authorized Retail Cash Memos. When enabled, invoices calculate CGST/SGST/IGST breakdown.
-            </p>
-          </div>
-          <Checkbox
-            id="tax-enable-toggle"
-            checked={taxEnabled}
-            onCheckedChange={(c) => setTaxEnabled(Boolean(c))}
-            className="size-5"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-[#1F2924]">Invoice Footer Note (धन्यवाद संदेश)</Label>
-          <Input
-            value={invoiceFooterNote}
-            onChange={(e) => setInvoiceFooterNote(e.target.value)}
-            className="rounded-xl border-[#E8E4DA] text-xs h-9"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-[#1F2924]">Terms &amp; Return Policy (बिल की शर्तें)</Label>
-          <Textarea
-            rows={3}
-            value={termsAndConditions}
-            onChange={(e) => setTermsAndConditions(e.target.value)}
-            className="rounded-xl border-[#E8E4DA] text-xs bg-white"
-          />
-        </div>
-      </div>
-
-      {/* Business Hours Schedule */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-            <Clock className="size-5 text-[#145A45]" /> Weekly Business Timings
-          </h3>
-          <p className="text-xs text-[#6B746F] mt-1">
-            Store opening and closing times shown to customers on the Contact page.
-          </p>
-        </div>
-
-        <div className="divide-y divide-[#E8E4DA] pt-1 text-xs">
-          {DAYS.map(({ key, label }) => {
-            const h = businessHours[key] ?? { open: "07:00", close: "21:00", closed: false };
-
-            return (
-              <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 py-3">
-                <span className="w-24 font-bold text-[#1F2924]">{label}</span>
-
-                <div className="flex items-center gap-2">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">Hero Heading</Label>
                   <Input
-                    type="time"
-                    disabled={h.closed}
-                    value={h.open}
-                    onChange={(e) => updateDayHour(key, "open", e.target.value)}
-                    className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
+                    value={heroTitle}
+                    onChange={(e) => setHeroTitle(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
                   />
-                  <span className="text-[#6B746F]">to</span>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">Hero Subtitle</Label>
                   <Input
-                    type="time"
-                    disabled={h.closed}
-                    value={h.close}
-                    onChange={(e) => updateDayHour(key, "close", e.target.value)}
-                    className="h-8 w-26 rounded-lg text-xs border-[#E8E4DA]"
+                    value={heroSubtitle}
+                    onChange={(e) => setHeroSubtitle(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image (1920×1080 / 16:9)</Label>
+                
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-[#145A45]/20 bg-[#E6EFE8] hover:bg-[#D4E8DC] px-4 py-2 text-xs font-bold text-[#145A45] transition-all">
+                    <Upload className="size-3.5" />
+                    <span>{heroImageUrl ? "Change Image" : "Upload from Device"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          toast.loading("Uploading hero banner...", { id: "hero-upload" });
+                          const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
+                          
+                          const fileName = `hero_banner_${Date.now()}.webp`;
+                          const filePath = `hero/${fileName}`;
+                          const { data: uploadData, error: uploadError } = await supabase.storage
+                            .from("product-images")
+                            .upload(filePath, blob, {
+                              cacheControl: "31536000",
+                              upsert: true,
+                              contentType: blob.type || "image/webp",
+                            });
+                          
+                          if (!uploadError && uploadData) {
+                            const { data: pubData } = supabase.storage
+                              .from("product-images")
+                              .getPublicUrl(filePath);
+                            if (pubData?.publicUrl) {
+                              setHeroImageUrl(pubData.publicUrl);
+                              await saveHeroImageToDb(pubData.publicUrl);
+                              toast.success("Hero banner uploaded & saved!", { id: "hero-upload" });
+                              return;
+                            }
+                          }
+                          
+                          setHeroImageUrl(dataUrl);
+                          await saveHeroImageToDb(dataUrl);
+                          toast.success("Hero banner saved!", { id: "hero-upload" });
+                        } catch {
+                          toast.error("Failed to upload image", { id: "hero-upload" });
+                        }
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  
+                  <span className="text-[10px] text-[#6B746F]">or</span>
+                  
+                  <div className="flex-1">
+                    <Input
+                      value={heroImageUrl}
+                      onChange={(e) => setHeroImageUrl(e.target.value)}
+                      placeholder="Paste image URL here..."
+                      className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                    />
+                  </div>
+                  
+                  {heroImageUrl && (
+                    <button
+                      type="button"
+                      onClick={async () => { setHeroImageUrl(""); await saveHeroImageToDb(null); toast.success("Hero banner removed!"); }}
+                      className="rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 p-2 text-red-500 transition-all"
+                      title="Remove image"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  )}
+                </div>
+                
+                <p className="text-[10px] text-[#6B746F]">
+                  Upload from your phone/computer or paste a direct image URL. Recommended: 1920×1080px (16:9).
+                </p>
+                
+                {heroImageUrl ? (
+                  <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative">
+                    <img
+                      src={heroImageUrl}
+                      alt="Hero banner preview"
+                      className="w-full aspect-video object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center py-8 gap-2">
+                    <ImageIcon className="size-8 text-[#C5BEA8]" />
+                    <p className="text-xs text-[#9B9585] font-medium">No hero banner image set</p>
+                    <p className="text-[10px] text-[#C5BEA8]">Upload or paste a URL above</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Payments Tab */}
+        <TabsContent value="payments" className="space-y-4 sm:space-y-6">
+          {/* Payment Methods */}
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                  <Smartphone className="size-5 text-[#145A45]" /> Payment Gateway &amp; Receiving Accounts
+                </h3>
+                <p className="text-xs text-[#6B746F] mt-1">
+                  Control your UPI receiving ID, dynamic QR code, merchant name, bank account, and active payment methods without touching any code.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-[#1F2924] bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1.5 rounded-xl">
+                  <Checkbox
+                    checked={onlinePaymentEnabled}
+                    onCheckedChange={(c) => setOnlinePaymentEnabled(Boolean(c))}
+                  />
+                  <span>Online Payments Enabled</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#1F2924] uppercase tracking-wider">
+                Customer Checkout Payment Methods
+              </Label>
+              <p className="text-[11px] text-[#6B746F]">
+                Uncheck any method to instantly remove it from the customer checkout screen.
+              </p>
+
+              <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 pt-1">
+                <label
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                    enabledPaymentMethods.includes("upi")
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                      : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+                  }`}
+                >
+                  <Checkbox
+                    checked={enabledPaymentMethods.includes("upi")}
+                    onCheckedChange={() => togglePaymentMethod("upi")}
+                  />
+                  <Smartphone className="size-4" />
+                  <span>Direct UPI (GPay/PhonePe)</span>
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                    enabledPaymentMethods.includes("card")
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                      : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+                  }`}
+                >
+                  <Checkbox
+                    checked={enabledPaymentMethods.includes("card")}
+                    onCheckedChange={() => togglePaymentMethod("card")}
+                  />
+                  <CreditCard className="size-4" />
+                  <span>Credit / Debit Card</span>
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                    enabledPaymentMethods.includes("qr")
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                      : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+                  }`}
+                >
+                  <Checkbox
+                    checked={enabledPaymentMethods.includes("qr")}
+                    onCheckedChange={() => togglePaymentMethod("qr")}
+                  />
+                  <QrCode className="size-4" />
+                  <span>Dynamic UPI QR Code</span>
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                    enabledPaymentMethods.includes("cod")
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                      : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+                  }`}
+                >
+                  <Checkbox
+                    checked={enabledPaymentMethods.includes("cod")}
+                    onCheckedChange={() => togglePaymentMethod("cod")}
+                  />
+                  <Banknote className="size-4" />
+                  <span>Cash on Delivery (COD)</span>
+                </label>
+
+                <label
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-xl border p-3 text-xs font-semibold transition-all ${
+                    enabledPaymentMethods.includes("pay_at_store")
+                      ? "border-[#145A45] bg-[#E6EFE8]/50 text-[#145A45]"
+                      : "border-[#E8E4DA] bg-[#FAF8F2]/50 text-[#6B746F]"
+                  }`}
+                >
+                  <Checkbox
+                    checked={enabledPaymentMethods.includes("pay_at_store")}
+                    onCheckedChange={() => togglePaymentMethod("pay_at_store")}
+                  />
+                  <Store className="size-4" />
+                  <span>Pay at Store (Pickup)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* UPI Details + Live QR Test */}
+          <div className="grid gap-4 lg:grid-cols-5">
+            <div className="lg:col-span-3 rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-3">
+              <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
+                <QrCode className="size-4 text-[#145A45]" /> UPI Receiving Details (Direct Customer Settlements)
+              </h4>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    UPI ID / VPA <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    value={upiVpa}
+                    onChange={(e) => setUpiVpa(e.target.value)}
+                    placeholder="e.g. 6388354988@okbizaxis"
+                    className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                  />
+                  <span className="text-[10px] text-[#6B746F]">
+                    Where money is instantly deposited when customer scans or pays.
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    Merchant / Payee Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    required
+                    value={upiMerchantName}
+                    onChange={(e) => setUpiMerchantName(e.target.value)}
+                    placeholder="e.g. Arun Gopal Traders"
+                    className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                  />
+                  <span className="text-[10px] text-[#6B746F]">
+                    Business name shown inside Google Pay / PhonePe apps.
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    Registered UPI Mobile No.
+                  </Label>
+                  <Input
+                    value={upiRegisteredPhone}
+                    onChange={(e) => setUpiRegisteredPhone(e.target.value)}
+                    placeholder="e.g. 6388354988"
+                    className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
                   />
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer font-semibold text-[#1F2924]">
-                  <Checkbox
-                    checked={h.closed}
-                    onCheckedChange={(c) => updateDayHour(key, "closed", Boolean(c))}
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924]">
+                    Razorpay Public Key ID (Frontend SDK)
+                  </Label>
+                  <Input
+                    value={razorpayKeyId}
+                    onChange={(e) => setRazorpayKeyId(e.target.value)}
+                    placeholder="rzp_live_... or rzp_test_..."
+                    className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
                   />
-                  <span>Closed on this day</span>
-                </label>
+                  <span className="text-[10px] text-[#6B746F]">
+                    Public client key. Private secret keys remain server-side only.
+                  </span>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+
+              <div className="space-y-1 pt-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  QR Payment Transaction Note
+                </Label>
+                <Input
+                  value={qrCustomNote}
+                  onChange={(e) => setQrCustomNote(e.target.value)}
+                  placeholder="e.g. Arun Gopal Traders Grocery Order"
+                  className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Live Test QR Box */}
+            <div className="lg:col-span-2 rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-4 text-center space-y-2.5 flex flex-col items-center justify-center">
+              <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
+                Live Dynamic QR Test
+              </span>
+              <div className="relative rounded-xl bg-white p-2 border border-[#E8E4DA] shadow-xs">
+                <img
+                  src={generateQrCodeUrl(
+                    generateUpiUri({
+                      vpa: upiVpa || "6388354988@okbizaxis",
+                      payeeName: upiMerchantName || "Arun Gopal Traders",
+                      amount: 100,
+                      orderNo: "TEST-LIVE",
+                      note: qrCustomNote || "Test payment to Arun Gopal Traders",
+                    }),
+                    130
+                  )}
+                  alt="Live UPI QR Preview"
+                  className="size-32 rounded-lg object-contain"
+                />
+              </div>
+              <div className="text-left w-full space-y-0.5">
+                <p className="font-mono text-[11px] font-bold text-[#1F2924] truncate text-center">
+                  {upiVpa || "6388354988@okbizaxis"}
+                </p>
+                <p className="text-[10px] text-[#6B746F] text-center">
+                  Scan with PhonePe/GPay to test your UPI VPA
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bank Account Details Card (Protected) */}
+          <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2]/60 p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-xs text-[#1F2924] flex items-center gap-1.5">
+                <Landmark className="size-4 text-[#145A45]" /> Bank Account Details (NEFT / RTGS / Settlement Records)
+              </h4>
+              <span className="flex items-center gap-1 text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-2 py-0.5 rounded-full">
+                <Lock className="size-3" /> Admin Protected
+              </span>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Account Holder Name</Label>
+                <Input
+                  value={bankAccountHolder}
+                  onChange={(e) => setBankAccountHolder(e.target.value)}
+                  placeholder="e.g. Arun Gopal Traders"
+                  className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Bank Name</Label>
+                <Input
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="e.g. State Bank of India"
+                  className="rounded-xl text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Account Number</Label>
+                <Input
+                  value={bankAccountNumber}
+                  onChange={(e) => setBankAccountNumber(e.target.value)}
+                  placeholder="e.g. 123456789012"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">IFSC Code</Label>
+                <Input
+                  value={bankIfsc}
+                  onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
+                  placeholder="e.g. SBIN0001234"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white uppercase"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-[#6B746F]">
+              🛡️ <strong>Security Assurance:</strong> Bank account numbers are stored securely for accounting and invoice verification and are never exposed in public customer storefront scripts.
+            </p>
+          </div>
+        </TabsContent>
+
+        {/* Billing Tab */}
+        <TabsContent value="billing" className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-5">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <Receipt className="size-5 text-[#145A45]" /> Billing, Tax (GST) &amp; Invoice Settings
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                Configure legal business details, GSTIN, tax calculations, invoice prefix, and return policies.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Business Legal Name</Label>
+                <Input
+                  value={legalName}
+                  onChange={(e) => setLegalName(e.target.value)}
+                  placeholder="e.g. Arun Gopal Traders"
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">
+                  GSTIN (Optional / वैकल्पिक)
+                </Label>
+                <Input
+                  value={gstin}
+                  onChange={(e) => setGstin(e.target.value.toUpperCase())}
+                  placeholder="e.g. 09ABCDE1234F1Z5"
+                  className="rounded-xl border-[#E8E4DA] text-xs font-mono uppercase h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Store State</Label>
+                <Input
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  placeholder="Uttar Pradesh"
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">State Code (e.g. 09 for UP)</Label>
+                <Input
+                  value={stateCode}
+                  onChange={(e) => setStateCode(e.target.value)}
+                  placeholder="09"
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Invoice Number Prefix</Label>
+                <Input
+                  value={invoicePrefix}
+                  onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
+                  placeholder="AGT-INV"
+                  className="rounded-xl border-[#E8E4DA] text-xs font-mono h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-[#1F2924]">Default Tax Rate (% if enabled)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="28"
+                  step="0.5"
+                  value={defaultTaxRate}
+                  onChange={(e) => setDefaultTaxRate(Number(e.target.value))}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-3.5 flex items-center justify-between gap-3">
+              <div>
+                <Label htmlFor="tax-enable-toggle" className="font-bold text-xs text-[#1F2924] cursor-pointer">
+                  Enable GST Tax Calculations on Invoices
+                </Label>
+                <p className="text-[11px] text-[#5A655F]">
+                  When disabled, invoices act as authorized Retail Cash Memos. When enabled, invoices calculate CGST/SGST/IGST breakdown.
+                </p>
+              </div>
+              <Checkbox
+                id="tax-enable-toggle"
+                checked={taxEnabled}
+                onCheckedChange={(c) => setTaxEnabled(Boolean(c))}
+                className="size-5"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Invoice Footer Note (धन्यवाद संदेश)</Label>
+              <Input
+                value={invoiceFooterNote}
+                onChange={(e) => setInvoiceFooterNote(e.target.value)}
+                className="rounded-xl border-[#E8E4DA] text-xs h-9"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-[#1F2924]">Terms &amp; Return Policy (बिल की शर्तें)</Label>
+              <Textarea
+                rows={3}
+                value={termsAndConditions}
+                onChange={(e) => setTermsAndConditions(e.target.value)}
+                className="rounded-xl border-[#E8E4DA] text-xs bg-white"
+              />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <div className="flex justify-end pt-2 pb-6">
         <Button
@@ -1025,4 +1046,3 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
     </form>
   );
 }
-
