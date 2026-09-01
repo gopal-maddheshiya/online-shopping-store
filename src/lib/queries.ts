@@ -104,6 +104,9 @@ export type StoreSettings = {
   razorpay_key_id?: string | null;
   online_payment_enabled?: boolean | null;
   hero_image_url?: string | null;
+  hero2_image_url?: string | null;
+  hero3_image_url?: string | null;
+  hero4_image_url?: string | null;
 };
 
 export type OrderItem = {

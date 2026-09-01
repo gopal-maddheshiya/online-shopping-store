@@ -1,186 +1,19 @@
 import type { Product, ProductImage, ProductImageType } from "./queries";
 
-// Category-specific photo-realistic images map
+// Database-driven category thumbnail. Returns whatever the admin uploaded,
+// or a clean placeholder if no image is set. No hardcoded mapping.
 export function getCategoryThumbnail(category: {
   slug?: string;
   name?: string;
   image_url?: string | null;
   icon?: string | null;
 }): string {
-  if (
-    category.image_url &&
-    category.image_url.startsWith("/images/") &&
-    category.image_url.endsWith(".jpg")
-  ) {
-    return category.image_url;
+  const url = (category.image_url ?? "").trim();
+  if (url.length > 0) {
+    return url;
   }
-  const slug = (category.slug ?? "").toLowerCase();
-  const name = (category.name ?? "").toLowerCase();
-
-  if (
-    slug.includes("atta") ||
-    slug.includes("flour") ||
-    name.includes("atta") ||
-    name.includes("flour") ||
-    name.includes("आटा")
-  )
-    return "/images/atta.jpg";
-  if (
-    slug.includes("rice") ||
-    name.includes("rice") ||
-    name.includes("chawal") ||
-    name.includes("चावल")
-  )
-    return "/images/rice.jpg";
-  if (
-    slug.includes("dal") ||
-    slug.includes("pulse") ||
-    name.includes("dal") ||
-    name.includes("lentil") ||
-    name.includes("दाल")
-  )
-    return "/images/dal.jpg";
-  if (
-    slug.includes("oil") ||
-    slug.includes("ghee") ||
-    name.includes("oil") ||
-    name.includes("ghee") ||
-    name.includes("tel") ||
-    name.includes("तेल") ||
-    name.includes("घी")
-  )
-    return "/images/oil.jpg";
-  if (
-    slug.includes("spice") ||
-    slug.includes("masala") ||
-    name.includes("spice") ||
-    name.includes("masala") ||
-    name.includes("मसाला")
-  )
-    return "/images/spices.jpg";
-  if (
-    slug.includes("salt") ||
-    slug.includes("sugar") ||
-    name.includes("salt") ||
-    name.includes("sugar") ||
-    name.includes("नमक") ||
-    name.includes("चीनी")
-  )
-    return "/images/products/tata-salt.jpg";
-  if (
-    slug.includes("dry-fruit") ||
-    slug.includes("dryfruit") ||
-    name.includes("dry fruit") ||
-    name.includes("kaju") ||
-    name.includes("badam") ||
-    name.includes("मेवे")
-  )
-    return "/images/dryfruits.jpg";
-  if (
-    slug.includes("tea") ||
-    slug.includes("coffee") ||
-    name.includes("tea") ||
-    name.includes("coffee") ||
-    name.includes("chai") ||
-    name.includes("चाय")
-  )
-    return "/images/tea.jpg";
-  if (
-    slug.includes("biscuit") ||
-    slug.includes("cookie") ||
-    name.includes("biscuit") ||
-    name.includes("बिस्कुट")
-  )
-    return "/images/biscuits.jpg";
-  if (
-    slug.includes("snack") ||
-    slug.includes("namkeen") ||
-    name.includes("snack") ||
-    name.includes("namkeen") ||
-    name.includes("bhujia") ||
-    name.includes("नमकीन")
-  )
-    return "/images/snacks.jpg";
-  if (
-    slug.includes("dairy") ||
-    name.includes("dairy") ||
-    name.includes("milk") ||
-    name.includes("paneer") ||
-    name.includes("dahi") ||
-    name.includes("डेयरी") ||
-    name.includes("पनीर")
-  )
-    return "/images/dairy.jpg";
-  if (
-    slug.includes("breakfast") ||
-    name.includes("breakfast") ||
-    name.includes("bread") ||
-    name.includes("egg") ||
-    name.includes("नाश्ता")
-  )
-    return "/images/packaged.jpg";
-  if (
-    slug.includes("chocolate") ||
-    slug.includes("sweet") ||
-    name.includes("chocolate") ||
-    name.includes("mithai") ||
-    name.includes("चॉकलेट")
-  )
-    return "/images/products/cadbury-dairy-milk.jpg";
-  if (
-    slug.includes("instant") ||
-    slug.includes("noodle") ||
-    name.includes("maggi") ||
-    name.includes("मैगी")
-  )
-    return "/images/products/maggi-noodles.jpg";
-  if (
-    slug.includes("beverage") ||
-    slug.includes("drink") ||
-    slug.includes("juice") ||
-    name.includes("juice") ||
-    name.includes("पेय")
-  )
-    return "/images/beverages.jpg";
-  if (slug.includes("baby") || name.includes("baby") || name.includes("diaper"))
-    return "/images/baby.jpg";
-  if (
-    slug.includes("personal") ||
-    slug.includes("soap") ||
-    slug.includes("shampoo") ||
-    name.includes("care") ||
-    name.includes("साबुन")
-  )
-    return "/images/personal.jpg";
-  if (
-    slug.includes("clean") ||
-    slug.includes("detergent") ||
-    slug.includes("household") ||
-    name.includes("clean") ||
-    name.includes("detergent") ||
-    name.includes("सफाई")
-  )
-    return "/images/products/surf-excel.jpg";
-  if (
-    slug.includes("utensil") ||
-    slug.includes("cookware") ||
-    name.includes("cooker") ||
-    name.includes("utensil") ||
-    name.includes("बर्तन")
-  )
-    return "/images/household.jpg";
-  if (slug.includes("pooja") || name.includes("pooja") || name.includes("पूजा"))
-    return "/images/pooja.jpg";
-  if (
-    slug.includes("stationery") ||
-    slug.includes("misc") ||
-    name.includes("misc") ||
-    name.includes("stationery") ||
-    name.includes("विविध")
-  )
-    return "/images/stationery.jpg";
-
-  return category.image_url || "/images/packaged.jpg";
+  // Simple default placeholder when admin has not uploaded any image yet
+  return "/images/packaged.jpg";
 }
 
 export const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {

@@ -17,6 +17,8 @@ import {
   Languages,
   X,
   ArrowLeft,
+  Sparkles,
+  Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,17 +103,30 @@ export function Header() {
 
   return (
     <>
-      {/* 1. Top Announcement Bar */}
-      <div className="border-b border-[#145A45]/30 bg-[#0F4A38] text-white">
-        <div className="container-page flex items-center justify-between py-1.5 text-xs gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="flex size-2 shrink-0 rounded-full bg-[#E3B341]" />
-            <p className="font-medium tracking-wide text-white/90 text-[11px] sm:text-xs truncate">
+      {/* 1. Premium Top Announcement Bar */}
+      <div className="relative overflow-hidden border-b border-[#0A3628] bg-gradient-to-r from-[#0F4A38] via-[#145A45] to-[#0F4A38] text-white shadow-sm">
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#0F4A38] to-transparent pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#0F4A38] to-transparent pointer-events-none" />
+        <div className="container-page relative flex items-center justify-between py-2 text-xs gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="grid size-5 place-items-center rounded-md bg-[#E3B341]/15 border border-[#E3B341]/30">
+                <Truck className="size-3 text-[#E3B341]" />
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E3B341]/90">
+                Live
+              </span>
+            </span>
+            <p
+              className="font-medium tracking-wide text-white/95 text-[11px] sm:text-xs truncate"
+              style={{ letterSpacing: "0.005em" }}
+            >
               <span className="hidden md:inline">
                 {lang === "hi"
-                  ? "महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी • "
-                  : "30-Min Express Delivery in Maharajganj • "}
+                  ? "महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी"
+                  : "30-Min Express Delivery in Maharajganj"}
               </span>
+              <span className="hidden md:inline mx-1.5 text-white/40">•</span>
               <span className="text-[#E3B341] font-bold">
                 {lang === "hi" ? "₹499+ के ऑर्डर पर फ्री डिलीवरी" : "Free Delivery on ₹499+"}
               </span>
@@ -120,43 +135,53 @@ export function Header() {
 
           <div className="flex items-center gap-2.5 sm:gap-4 text-xs font-medium shrink-0">
             {/* Language Switcher */}
-            <div className="flex items-center rounded-md bg-black/20 border border-white/20 p-0.5 shadow-2xs">
+            <div className="flex items-center rounded-md bg-black/25 border border-white/15 p-0.5">
               <button
                 type="button"
                 onClick={() => setLang("en")}
-                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${lang === "en"
-                    ? "bg-white text-[#0F4A38] shadow-2xs"
+                className={`rounded px-2.5 py-0.5 text-[10px] font-bold tracking-wider transition-colors ${
+                  lang === "en"
+                    ? "bg-white text-[#0F4A38]"
                     : "text-white/80 hover:text-white"
-                  }`}
+                }`}
               >
                 EN
               </button>
               <button
                 type="button"
                 onClick={() => setLang("hi")}
-                className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all ${lang === "hi"
-                    ? "bg-white text-[#0F4A38] shadow-2xs"
+                className={`rounded px-2.5 py-0.5 text-[10px] font-bold tracking-wider transition-colors ${
+                  lang === "hi"
+                    ? "bg-white text-[#0F4A38]"
                     : "text-white/80 hover:text-white"
-                  }`}
+                }`}
               >
                 हिन्दी
               </button>
             </div>
 
-            <span className="hidden sm:inline opacity-30 text-white">|</span>
+            <span className="hidden sm:inline opacity-25 text-white">|</span>
 
-            <span className="hidden sm:flex items-center gap-1.5 text-white/90 text-[11px]">
-              <Clock className="size-3 text-[#E3B341]" /> {formatStatus(status)}
+            <span className="hidden sm:flex items-center gap-1.5 text-white/90 text-[11px] font-medium">
+              <span className="relative flex size-1.5">
+                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${status.open ? "bg-emerald-400" : "bg-rose-400"}`} />
+                <span className={`relative inline-flex size-1.5 rounded-full ${status.open ? "bg-emerald-400" : "bg-rose-400"}`} />
+              </span>
+              <Clock className="size-3 text-[#E3B341]" />
+              {formatStatus(status)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Sticky Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md">
-        <div className="container-page flex h-16 items-center justify-between gap-4 md:gap-8">
+      {/* 2. Main Sticky Header — clean premium */}
+      <header
+        className="sticky top-0 z-40 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md"
+        style={{ fontFeatureSettings: '"ss01", "cv11"' }}
+      >
+        <div className="container-page flex h-16 items-center justify-between gap-3 md:gap-6">
           {/* Mobile Menu & Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <button
@@ -169,7 +194,7 @@ export function Header() {
               <SheetContent side="left" className="w-80 p-0 text-[#16201A]">
                 <SheetHeader className="border-b border-[#E5E0D5] bg-[#FAF8F2] p-4.5 pr-14 text-left">
                   <div className="flex flex-col gap-1">
-                    <SheetTitle className="text-lg font-black text-[#0F4A38] tracking-tight flex items-center gap-1.5">
+                    <SheetTitle className="text-lg font-bold text-[#0F4A38] tracking-tight flex items-center gap-1.5">
                       <span className="text-base">🌾</span> {t.storeName}
                     </SheetTitle>
                     <p className="text-[11px] text-[#5A655F]">
@@ -177,20 +202,22 @@ export function Header() {
                     </p>
 
                     {/* Mobile Lang Selector */}
-                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-lg bg-white border border-[#E5E0D5] p-0.5 shadow-2xs">
+                    <div className="mt-2.5 flex items-center gap-1 self-start rounded-md bg-white border border-[#E5E0D5] p-0.5">
                       <button
                         type="button"
                         onClick={() => setLang("en")}
-                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${lang === "en" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
-                          }`}
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-colors ${
+                          lang === "en" ? "bg-[#145A45] text-white" : "text-[#5A655F]"
+                        }`}
                       >
                         English
                       </button>
                       <button
                         type="button"
                         onClick={() => setLang("hi")}
-                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-all ${lang === "hi" ? "bg-[#145A45] text-white shadow-2xs" : "text-[#5A655F]"
-                          }`}
+                        className={`rounded px-2.5 py-0.5 text-[10px] font-bold transition-colors ${
+                          lang === "hi" ? "bg-[#145A45] text-white" : "text-[#5A655F]"
+                        }`}
                       >
                         हिन्दी
                       </button>
@@ -266,7 +293,7 @@ export function Header() {
                   <div className="p-4 border-t border-[#E5E0D5] bg-[#FAF8F2] mt-auto">
                     <a
                       href={telHref(cleanPhone)}
-                      className="flex items-center justify-center gap-2 rounded-lg bg-[#145A45] py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] transition-colors"
+                      className="flex items-center justify-center gap-2 rounded-lg bg-[#145A45] py-2.5 text-xs font-bold text-white hover:bg-[#0A3628] transition-colors"
                     >
                       <Phone className="size-4" /> {t.callStore} ({storePhone})
                     </a>
@@ -275,12 +302,18 @@ export function Header() {
               </SheetContent>
             </Sheet>
 
-            {/* Brand Logo */}
+            {/* Clean Brand Logo */}
             <Link to="/" className="flex flex-col group shrink-0">
-              <span className="font-sans text-lg sm:text-xl md:text-2xl font-black tracking-tight text-[#0F4A38] flex items-center gap-1.5 whitespace-nowrap">
+              <span
+                className="font-sans text-lg sm:text-xl md:text-2xl font-bold text-[#0F4A38] flex items-center gap-1.5 whitespace-nowrap"
+                style={{ letterSpacing: "-0.02em", fontFeatureSettings: '"ss01"' }}
+              >
                 <span className="text-base sm:text-lg">🌾</span> {t.storeName}
               </span>
-              <span className="hidden md:block text-[11px] font-medium text-[#5A655F] group-hover:text-[#145A45] transition-colors whitespace-nowrap">
+              <span
+                className="hidden md:block text-[11px] font-medium text-[#5A655F] group-hover:text-[#145A45] transition-colors whitespace-nowrap"
+                style={{ letterSpacing: "0.01em" }}
+              >
                 {lang === "hi"
                   ? "रामनगर, महाराजगंज • शुद्ध किराना एवं राशन"
                   : "Maharajganj • Trusted Local Kirana Store"}
@@ -388,12 +421,12 @@ export function Header() {
             )}
           </div>
 
-          {/* Desktop Right Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Clean Right Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Quick Call Button */}
             <a
               href={telHref(cleanPhone)}
-              className="hidden lg:flex items-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-3 py-1.5 text-xs font-semibold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-colors shadow-2xs"
+              className="hidden lg:flex items-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] px-3 py-1.5 text-xs font-semibold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-colors"
             >
               <Phone className="size-3.5 text-[#145A45]" />
               <span>{storePhone}</span>
@@ -434,7 +467,7 @@ export function Header() {
               to="/cart"
               onClick={handleCartClick}
               title={t.cart}
-              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer ${
                 isOnCart
                   ? "bg-[#0A3628] text-white ring-2 ring-[#145A45]/40"
                   : "bg-[#145A45] text-white hover:bg-[#0A3628]"
@@ -443,12 +476,12 @@ export function Header() {
               <div className="relative flex items-center">
                 <ShoppingBag className="size-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[10px] font-extrabold text-white shadow-2xs">
+                  <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[10px] font-extrabold text-white">
                     {cartCount}
                   </span>
                 )}
               </div>
-              <span className="hidden sm:inline font-black">
+              <span className="hidden sm:inline font-bold">
                 {cartCount > 0 ? inr(subtotal) : t.cart}
               </span>
             </Link>

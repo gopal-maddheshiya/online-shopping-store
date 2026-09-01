@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Edit2, Trash2, FolderPlus, Layers, ArrowUpDown } from "lucide-react";
+import { Plus, Edit2, Trash2, FolderPlus, Layers, ArrowUpDown, Upload, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { broadcastProductSync } from "@/lib/realtime-sync";
+import { compressAndOptimizeImage } from "@/lib/image-upload";
 import type { Category } from "@/lib/queries";
 
 type AdminCategoriesProps = {
@@ -325,14 +326,87 @@ export function AdminCategories({ categories, onRefresh }: AdminCategoriesProps)
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Image URL / Asset</Label>
-              <Input
-                placeholder="/images/oil.jpg"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="rounded-xl text-xs border-[#E8E4DA] h-9"
-              />
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-[#1F2924]">Category Image</Label>
+
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-[#145A45]/20 bg-[#E6EFE8] hover:bg-[#D4E8DC] px-3 py-1.5 text-[11px] font-bold text-[#145A45] transition-all">
+                  <Upload className="size-3.5" />
+                  <span>{imageUrl && imageUrl !== "/images/packaged.jpg" ? "Change Image" : "Upload from Device"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        toast.loading("Uploading category image...", { id: "cat-img-upload" });
+                        const { dataUrl, blob } = await compressAndOptimizeImage(file, 800, 800, 0.9);
+
+                        const fileName = `cat_${Date.now()}.webp`;
+                        const filePath = `categories/${fileName}`;
+                        const { data: uploadData, error: uploadError } = await supabase.storage
+                          .from("product-images")
+                          .upload(filePath, blob, {
+                            cacheControl: "31536000",
+                            upsert: true,
+                            contentType: blob.type || "image/webp",
+                          });
+
+                        if (!uploadError && uploadData) {
+                          const { data: pubData } = supabase.storage
+                            .from("product-images")
+                            .getPublicUrl(filePath);
+                          if (pubData?.publicUrl) {
+                            setImageUrl(pubData.publicUrl);
+                            toast.success("Image uploaded!", { id: "cat-img-upload" });
+                            return;
+                          }
+                        }
+
+                        setImageUrl(dataUrl);
+                        toast.success("Image saved (fallback)!", { id: "cat-img-upload" });
+                      } catch {
+                        toast.error("Failed to upload image", { id: "cat-img-upload" });
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+
+                <span className="text-[10px] text-[#6B746F]">or</span>
+
+                <div className="flex-1">
+                  <Input
+                    placeholder="Paste image URL here..."
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    className="rounded-xl text-xs border-[#E8E4DA] h-8"
+                  />
+                </div>
+              </div>
+
+              <p className="text-[10px] text-[#6B746F]">
+                Upload from your device or paste any image URL. Square images (1:1) work best.
+              </p>
+
+              {imageUrl && imageUrl !== "/images/packaged.jpg" ? (
+                <div className="mt-1 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative size-20 bg-white p-1.5">
+                  <img
+                    src={imageUrl}
+                    alt="Category preview"
+                    className="w-full h-full object-contain rounded-lg"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="mt-1 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] size-20 flex flex-col items-center justify-center gap-1">
+                  <ImageIcon className="size-5 text-[#C5BEA8]" />
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-[#E8E4DA]">

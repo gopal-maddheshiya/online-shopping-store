@@ -259,242 +259,135 @@ function PremiumStoreHome() {
       {/* ═══════════════════════════════════════════════════════
           1. HERO BANNER IMAGE (1920×1080 / 16:9)
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page pt-2 sm:pt-3">
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
-          {settings?.hero_image_url ? (
+      {settings?.hero_image_url && (
+        <section className="container-page pt-2 sm:pt-3">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
             <img
               src={settings.hero_image_url}
               alt={settings?.store_name || "Arun Gopal Traders"}
               className="w-full aspect-video object-cover"
               onError={(e) => {
-                // If image fails to load, hide it and show fallback
                 (e.target as HTMLImageElement).style.display = "none";
-                const fallback = (e.target as HTMLImageElement).nextElementSibling;
-                if (fallback) (fallback as HTMLElement).style.display = "flex";
               }}
             />
-          ) : null}
-          {/* Fallback gradient banner — shown when no hero image or image fails */}
-          <div
-            className="w-full aspect-video bg-gradient-to-br from-[#062A1E] via-[#0B4232] to-[#041F16] flex flex-col items-center justify-center text-white text-center px-6"
-            style={{ display: settings?.hero_image_url ? "none" : "flex" }}
-          >
-            <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1]">
-              {settings?.store_name || "Arun Gopal Traders"}
-            </h1>
-            <p className="mt-2.5 text-xs sm:text-sm text-white/75 max-w-md">
-              {settings?.tagline || "Your Trusted Local Grocery Store"}
-            </p>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Open Layout with Prominent Text
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page space-y-8 sm:space-y-10">
-        <SectionHeader
-          icon={<Store className="size-4.5 text-[#145A45]" />}
-          title={lang === "hi" ? "कैटेगरी के अनुसार खरीदारी" : "Shop by Category"}
-          subtitle={
-            lang === "hi"
-              ? "सभी ज़रूरी किराना उत्पाद श्रेणियों में व्यवस्थित"
-              : "All grocery essentials neatly organized for you"
-          }
-          linkTo="/shop"
-          linkLabel={t.viewAll}
-        />
-
+      <section className="container-page space-y-6 sm:space-y-8 pt-6 sm:pt-8 pb-8 sm:pb-10">
         {catLoading ? (
           <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <Skeleton className="size-16 sm:size-20 md:size-[5.25rem] rounded-2xl" />
-                <Skeleton className="h-4 w-14" />
+              <div key={i} className="flex flex-col items-center gap-2.5">
+                <Skeleton className="size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl" />
+                <Skeleton className="h-4 w-16" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-7 sm:space-y-9">
-            {/* ── 🍽️ Group 1: Food & Kitchen ── */}
-            {foodCategories.length > 0 && (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
-                      <UtensilsCrossed className="size-4 sm:size-4.5 text-[#145A45]" />
-                    </div>
-                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
-                      {lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen Essentials"}
-                    </h3>
-                  </div>
-                  <Link
-                    to="/shop"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
-                  >
-                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
-                  {foodCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug }}
-                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                    >
-                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={c.name}
-                          loading="lazy"
-                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
-                        />
+          <div className="space-y-12 sm:space-y-16">
+            {[
+              {
+                key: "food",
+                title: lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen Essentials",
+                items: foodCategories,
+                icon: <UtensilsCrossed className="size-5 text-[#145A45]" />,
+                bannerBefore: null,
+                bannerAlt: "",
+              },
+              {
+                key: "household",
+                title: lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning",
+                items: householdCategories,
+                icon: <Home className="size-5 text-[#145A45]" />,
+                bannerBefore: settings?.hero2_image_url,
+                bannerAlt: "Banner above Household & Cleaning",
+              },
+              {
+                key: "personal",
+                title: lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty",
+                items: personalCategories,
+                icon: <Heart className="size-5 text-[#145A45]" />,
+                bannerBefore: settings?.hero3_image_url,
+                bannerAlt: "Banner above Personal Care & Beauty",
+              },
+              {
+                key: "other",
+                title: lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More",
+                items: [...otherGroupCategories, ...uncategorizedCategories],
+                icon: <Package className="size-5 text-[#145A45]" />,
+                bannerBefore: settings?.hero4_image_url,
+                bannerAlt: "Banner above Pooja, Stationery & More",
+              },
+            ].filter((g) => g.items.length > 0 || g.bannerBefore).map((group) => (
+              <div key={group.key} className="contents">
+                <div className="space-y-5 pt-2 pb-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-sm">
+                        {group.icon}
                       </div>
-                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                        {getCategoryName(c.name, c.slug)}
-                      </span>
+                      <div className="space-y-0.5">
+                        <h3 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
+                          {group.title}
+                        </h3>
+                        <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
+                          {group.items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      to="/shop"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3.5 py-1.5 rounded-full border border-[#145A45]/20 transition-all shrink-0"
+                    >
+                      <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                      <ChevronRight className="size-3.5" />
                     </Link>
-                  ))}
+                  </div>
+
+                  {group.bannerBefore && (
+                    <div className="my-6 sm:my-8 relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl group/banner">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
+                      <img
+                        src={group.bannerBefore}
+                        alt={group.bannerAlt}
+                        className="w-full aspect-[21/9] sm:aspect-video object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+                    {group.items.map((c) => (
+                      <Link
+                        key={c.id}
+                        to="/shop"
+                        search={{ category: c.slug }}
+                        className="group flex flex-col items-center gap-2.5 text-center"
+                      >
+                        <div className="relative size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl p-2.5 group-hover:-translate-y-1.5 transition-all duration-300 flex items-center justify-center overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#FAF8F2] via-white to-[#E6EFE8]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <img
+                            src={getCategoryThumbnail(c)}
+                            alt={c.name}
+                            loading="lazy"
+                            className="relative size-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-110 drop-shadow-sm"
+                          />
+                        </div>
+                        <span className="text-xs sm:text-sm font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
+                          {getCategoryName(c.name, c.slug)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
-            )}
-
-            {/* ── 🏠 Group 2: Household & Cleaning ── */}
-            {householdCategories.length > 0 && (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
-                      <Home className="size-4 sm:size-4.5 text-[#145A45]" />
-                    </div>
-                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
-                      {lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning"}
-                    </h3>
-                  </div>
-                  <Link
-                    to="/shop"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
-                  >
-                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
-                  {householdCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug }}
-                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                    >
-                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={c.name}
-                          loading="lazy"
-                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
-                        />
-                      </div>
-                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                        {getCategoryName(c.name, c.slug)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── 💆 Group 3: Personal Care & Beauty ── */}
-            {personalCategories.length > 0 && (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
-                      <Heart className="size-4 sm:size-4.5 text-[#145A45]" />
-                    </div>
-                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
-                      {lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty"}
-                    </h3>
-                  </div>
-                  <Link
-                    to="/shop"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
-                  >
-                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
-                  {personalCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug }}
-                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                    >
-                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={c.name}
-                          loading="lazy"
-                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
-                        />
-                      </div>
-                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                        {getCategoryName(c.name, c.slug)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── 📦 Group 4: Pooja, Stationery & More ── */}
-            {(otherGroupCategories.length > 0 || uncategorizedCategories.length > 0) && (
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-8 sm:size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 text-[#145A45] shadow-2xs">
-                      <Package className="size-4 sm:size-4.5 text-[#145A45]" />
-                    </div>
-                    <h3 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight">
-                      {lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More"}
-                    </h3>
-                  </div>
-                  <Link
-                    to="/shop"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-3 py-1 rounded-full border border-[#145A45]/15 transition-all shrink-0"
-                  >
-                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-4">
-                  {[...otherGroupCategories, ...uncategorizedCategories].map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug }}
-                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                    >
-                      <div className="relative size-16 sm:size-20 md:size-[5.25rem] rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-2xs group-hover:border-[#145A45] group-hover:shadow-md transition-all flex items-center justify-center">
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={c.name}
-                          loading="lazy"
-                          className="size-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-110 drop-shadow-xs"
-                        />
-                      </div>
-                      <span className="text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                        {getCategoryName(c.name, c.slug)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         )}
       </section>

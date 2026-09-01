@@ -641,6 +641,9 @@ export type Database = {
           invoice_footer_note?: string;
           terms_and_conditions?: string;
           hero_image_url?: string | null;
+          hero2_image_url?: string | null;
+          hero3_image_url?: string | null;
+          hero4_image_url?: string | null;
         };
         Insert: {
           address?: string;
@@ -671,6 +674,9 @@ export type Database = {
           invoice_footer_note?: string;
           terms_and_conditions?: string;
           hero_image_url?: string | null;
+          hero2_image_url?: string | null;
+          hero3_image_url?: string | null;
+          hero4_image_url?: string | null;
         };
         Update: {
           address?: string;

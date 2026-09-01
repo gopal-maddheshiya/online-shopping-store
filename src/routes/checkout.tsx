@@ -1259,59 +1259,56 @@ function CheckoutPage() {
 
           {/* Section 3: Payment Method */}
           <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 shadow-xs">
-            <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
-              <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
-                3
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
+                <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
+                  3
+                </span>
+                {t.paymentMethodLabel}
+              </h2>
+              <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-[#5A655F]">
+                <Lock className="size-3 text-[#15803D]" />
+                {lang === "hi" ? "सुरक्षित चेकआउट" : "Secure Checkout"}
               </span>
-              {t.paymentMethodLabel}
-            </h2>
+            </div>
 
             <RadioGroup
               value={paymentMethod}
               onValueChange={setPaymentMethod}
-              className="mt-4 space-y-3"
+              className="mt-4 grid gap-2.5 sm:grid-cols-2"
             >
               {/* Option 1: Direct UPI (GPay, PhonePe, Paytm, BHIM) */}
               {isUpiAllowed && (
                 <div
                   onClick={() => setPaymentMethod("upi")}
-                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                  className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "upi"
-                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
-                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
+                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem value="upi" id="pay-upi" className="mt-0.5 text-[#145A45]" />
-                    <div>
-                      <Label
-                        htmlFor="pay-upi"
-                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                      >
-                        <Smartphone className="size-4 text-[#145A45]" /> {t.upiOptionTitle}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <RadioGroupItem value="upi" id="pay-upi" className="text-[#145A45]" />
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                        <Smartphone className="size-4 text-[#145A45]" />
+                      </span>
+                      <Label htmlFor="pay-upi" className="font-bold cursor-pointer text-sm text-[#16201A]">
+                        {t.upiOptionTitle}
                       </Label>
-                      <p className="mt-0.5 text-xs text-[#5A655F]">
-                        {t.upiOptionSub}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          Google Pay
-                        </span>
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          PhonePe
-                        </span>
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          Paytm
-                        </span>
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          BHIM UPI
-                        </span>
-                      </div>
                     </div>
+                    {paymentMethod === "upi" && (
+                      <CheckCircle2 className="size-4 text-[#145A45]" />
+                    )}
                   </div>
-                  <span className="rounded-full bg-[#15803D]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#15803D] shrink-0">
-                    {lang === "hi" ? "तेज़ व सुरक्षित" : "Instant"}
-                  </span>
+                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                    {t.upiOptionSub}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-1 pl-9">
+                    <span className="rounded text-[10px] font-semibold text-[#5A655F]">
+                      {lang === "hi" ? "GPay • PhonePe • Paytm • BHIM" : "GPay • PhonePe • Paytm • BHIM"}
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -1319,40 +1316,34 @@ function CheckoutPage() {
               {isCardAllowed && (
                 <div
                   onClick={() => setPaymentMethod("card")}
-                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                  className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "card"
-                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
-                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
+                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem value="card" id="pay-card" className="mt-0.5 text-[#145A45]" />
-                    <div>
-                      <Label
-                        htmlFor="pay-card"
-                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                      >
-                        <CreditCard className="size-4 text-[#145A45]" /> {t.cardOptionTitle}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <RadioGroupItem value="card" id="pay-card" className="text-[#145A45]" />
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                        <CreditCard className="size-4 text-[#145A45]" />
+                      </span>
+                      <Label htmlFor="pay-card" className="font-bold cursor-pointer text-sm text-[#16201A]">
+                        {t.cardOptionTitle}
                       </Label>
-                      <p className="mt-0.5 text-xs text-[#5A655F]">
-                        {t.cardOptionSub}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          Visa
-                        </span>
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          Mastercard
-                        </span>
-                        <span className="rounded-md bg-white border border-[#E5E0D5] px-1.5 py-0.5 text-[10px] font-bold text-[#16201A] shadow-2xs">
-                          RuPay
-                        </span>
-                      </div>
                     </div>
+                    {paymentMethod === "card" && (
+                      <CheckCircle2 className="size-4 text-[#145A45]" />
+                    )}
                   </div>
-                  <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
-                    {lang === "hi" ? "100% सुरक्षित" : "Secure"}
-                  </span>
+                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                    {t.cardOptionSub}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-1 pl-9">
+                    <span className="rounded text-[10px] font-semibold text-[#5A655F]">
+                      {lang === "hi" ? "Visa • Mastercard • RuPay" : "Visa • Mastercard • RuPay"}
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -1360,32 +1351,32 @@ function CheckoutPage() {
               {isQrAllowed && (
                 <div
                   onClick={() => setPaymentMethod("qr")}
-                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                  className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "qr"
-                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
-                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
+                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem value="qr" id="pay-qr" className="mt-0.5 text-[#145A45]" />
-                    <div>
-                      <Label
-                        htmlFor="pay-qr"
-                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                      >
-                        <QrCode className="size-4 text-[#145A45]" /> {t.qrOptionTitle}
-                      </Label>
-                      <p className="mt-0.5 text-xs text-[#5A655F]">
-                        {t.qrOptionSub}
-                      </p>
-                      <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#145A45]">
-                        {t.qrExactAmountNotice.replace("{amount}", inr(grandTotal))}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <RadioGroupItem value="qr" id="pay-qr" className="text-[#145A45]" />
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                        <QrCode className="size-4 text-[#145A45]" />
                       </span>
+                      <Label htmlFor="pay-qr" className="font-bold cursor-pointer text-sm text-[#16201A]">
+                        {t.qrOptionTitle}
+                      </Label>
                     </div>
+                    {paymentMethod === "qr" && (
+                      <CheckCircle2 className="size-4 text-[#145A45]" />
+                    )}
                   </div>
-                  <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 shrink-0">
-                    {lang === "hi" ? "डायनामिक QR" : "Dynamic QR"}
-                  </span>
+                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                    {t.qrOptionSub}
+                  </p>
+                  <p className="mt-1.5 text-[11px] font-semibold text-[#145A45] pl-9">
+                    {t.qrExactAmountNotice.replace("{amount}", inr(grandTotal))}
+                  </p>
                 </div>
               )}
 
@@ -1393,29 +1384,29 @@ function CheckoutPage() {
               {isCodAllowed && (
                 <div
                   onClick={() => setPaymentMethod("cod")}
-                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                  className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "cod"
-                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
-                      : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
+                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem value="cod" id="pay-cod" className="mt-0.5 text-[#145A45]" />
-                    <div>
-                      <Label
-                        htmlFor="pay-cod"
-                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                      >
-                        <Banknote className="size-4 text-[#15803D]" /> {t.cashOnDeliveryTitle}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <RadioGroupItem value="cod" id="pay-cod" className="text-[#145A45]" />
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#15803D]/10">
+                        <Banknote className="size-4 text-[#15803D]" />
+                      </span>
+                      <Label htmlFor="pay-cod" className="font-bold cursor-pointer text-sm text-[#16201A]">
+                        {t.cashOnDeliveryTitle}
                       </Label>
-                      <p className="mt-0.5 text-xs text-[#5A655F]">
-                        {t.cashOnDeliveryDesc}
-                      </p>
                     </div>
+                    {paymentMethod === "cod" && (
+                      <CheckCircle2 className="size-4 text-[#145A45]" />
+                    )}
                   </div>
-                  <span className="text-xs text-[#5A655F]">
-                    {lang === "hi" ? "सामान मिलने पर" : "At Doorstep"}
-                  </span>
+                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                    {t.cashOnDeliveryDesc}
+                  </p>
                 </div>
               )}
 
@@ -1423,29 +1414,29 @@ function CheckoutPage() {
               {isPayAtStoreAllowed ? (
                 <div
                   onClick={() => setPaymentMethod("pay_at_store")}
-                  className={`flex cursor-pointer items-start justify-between rounded-xl border p-4 transition-all ${
+                  className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "pay_at_store"
-                      ? "border-[#145A45] bg-[#E6EFE8]/50 ring-2 ring-[#145A45] shadow-xs"
-                    : "border-[#E5E0D5] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
+                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    <RadioGroupItem value="pay_at_store" id="pay-store" className="mt-0.5 text-[#145A45]" />
-                    <div>
-                      <Label
-                        htmlFor="pay-store"
-                        className="flex items-center gap-2 font-bold cursor-pointer text-[#16201A]"
-                      >
-                        <Store className="size-4 text-[#145A45]" /> {t.payAtStoreTitle}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <RadioGroupItem value="pay_at_store" id="pay-store" className="text-[#145A45]" />
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                        <Store className="size-4 text-[#145A45]" />
+                      </span>
+                      <Label htmlFor="pay-store" className="font-bold cursor-pointer text-sm text-[#16201A]">
+                        {t.payAtStoreTitle}
                       </Label>
-                      <p className="mt-0.5 text-xs text-[#5A655F]">
-                        {t.payAtStoreDesc}
-                      </p>
                     </div>
+                    {paymentMethod === "pay_at_store" && (
+                      <CheckCircle2 className="size-4 text-[#145A45]" />
+                    )}
                   </div>
-                  <span className="text-xs text-[#5A655F]">
-                    {lang === "hi" ? "काउंटर पर" : "At Store"}
-                  </span>
+                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                    {t.payAtStoreDesc}
+                  </p>
                 </div>
               ) : null}
             </RadioGroup>

@@ -35,6 +35,7 @@ import { generateUpiUri, generateQrCodeUrl } from "@/lib/payment-gateway";
 import { inr } from "@/lib/format";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
 import { Upload, ImageIcon, Trash2 } from "lucide-react";
+import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -65,6 +66,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [hero2ImageUrl, setHero2ImageUrl] = useState("");
+  const [hero3ImageUrl, setHero3ImageUrl] = useState("");
+  const [hero4ImageUrl, setHero4ImageUrl] = useState("");
   const [deliveryFee, setDeliveryFee] = useState(30);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(499);
   const [minOrderValue, setMinOrderValue] = useState(99);
@@ -113,21 +117,28 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [isSaving, setIsSaving] = useState(false);
 
   async function saveHeroImageToDb(url: string | null) {
+    return saveHeroImageFieldToDb("hero_image_url", url);
+  }
+
+  async function saveHeroImageFieldToDb(
+    field: "hero_image_url" | "hero2_image_url" | "hero3_image_url" | "hero4_image_url",
+    url: string | null,
+  ) {
     try {
       queryClient.setQueryData(["store-settings"], (old: StoreSettings | undefined) => {
         if (!old) return old;
-        return { ...old, hero_image_url: url };
+        return { ...old, [field]: url };
       });
 
       await supabase
         .from("store_settings")
-        .upsert({ id: 1, hero_image_url: url } as never, { onConflict: "id" });
+        .upsert({ id: 1, [field]: url } as never, { onConflict: "id" });
 
       const supabaseUrl = import.meta.env["VITE_SUPABASE_URL"] || "https://rvpskkgrobztgcfznawl.supabase.co";
       const supabaseKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2cHNra2dyb2J6dGdjZnpuYXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NDc0MzAsImV4cCI6MjEwMzQyMzQzMH0.FCO6H2AWcHQ_QznsOVBsAuJxOUjMLs_qTjvrnsCxK4k";
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
-      
+
       await fetch(`${supabaseUrl}/rest/v1/store_settings?id=eq.1`, {
         method: "PATCH",
         headers: {
@@ -136,13 +147,13 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           "Authorization": `Bearer ${accessToken || supabaseKey}`,
           "Prefer": "return=minimal",
         },
-        body: JSON.stringify({ hero_image_url: url }),
+        body: JSON.stringify({ [field]: url }),
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       return true;
     } catch (err) {
-      console.error("Hero image save error:", err);
+      console.error(`Hero image ${field} save error:`, err);
       return false;
     }
   }
@@ -164,6 +175,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         settings.hero_subtitle ?? "Quality products • Genuine prices • Easy ordering",
       );
       setHeroImageUrl(settings.hero_image_url ?? "");
+      setHero2ImageUrl(settings.hero2_image_url ?? "");
+      setHero3ImageUrl(settings.hero3_image_url ?? "");
+      setHero4ImageUrl(settings.hero4_image_url ?? "");
       setDeliveryFee(Number(settings.delivery_fee ?? 30));
       setFreeDeliveryThreshold(Number(settings.free_delivery_threshold ?? 499));
       setMinOrderValue(Number(settings.min_order_value ?? 99));
@@ -243,6 +257,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           hero_title: heroTitle.trim() || null,
           hero_subtitle: heroSubtitle.trim() || null,
           hero_image_url: heroImageUrl.trim() || null,
+          hero2_image_url: hero2ImageUrl.trim() || null,
+          hero3_image_url: hero3ImageUrl.trim() || null,
+          hero4_image_url: hero4ImageUrl.trim() || null,
           delivery_fee: Number(deliveryFee),
           free_delivery_threshold: Number(freeDeliveryThreshold),
           min_order_value: Number(minOrderValue),
@@ -627,6 +644,48 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Additional Hero Banners (between category sections) */}
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div>
+              <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                <ImageIcon className="size-5 text-[#145A45]" /> Category Section Banners
+              </h3>
+              <p className="text-xs text-[#6B746F] mt-1">
+                These banners appear between category groups on the homepage. Each banner is the same size as the main hero (1920×1080 / 16:9). Leave empty to hide.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <HeroImageUploader
+                label="Banner 1 (After Food & Essentials)"
+                description="Shown below खाने-पीने का सामान category"
+                fieldKey="hero2"
+                value={hero2ImageUrl}
+                onChange={setHero2ImageUrl}
+                onSave={(url) => saveHeroImageFieldToDb("hero2_image_url", url)}
+                onRefresh={onRefresh}
+              />
+              <HeroImageUploader
+                label="Banner 2 (After Household & Cleaning)"
+                description="Shown below घर की सफ़ाई व बर्तन category"
+                fieldKey="hero3"
+                value={hero3ImageUrl}
+                onChange={setHero3ImageUrl}
+                onSave={(url) => saveHeroImageFieldToDb("hero3_image_url", url)}
+                onRefresh={onRefresh}
+              />
+              <HeroImageUploader
+                label="Banner 3 (After Personal Care & Beauty)"
+                description="Shown below पर्सनल केयर व ब्यूटी category"
+                fieldKey="hero4"
+                value={hero4ImageUrl}
+                onChange={setHero4ImageUrl}
+                onSave={(url) => saveHeroImageFieldToDb("hero4_image_url", url)}
+                onRefresh={onRefresh}
+              />
             </div>
           </div>
         </TabsContent>
