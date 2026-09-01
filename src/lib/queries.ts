@@ -103,6 +103,7 @@ export type StoreSettings = {
   enabled_payment_methods?: string[] | null;
   razorpay_key_id?: string | null;
   online_payment_enabled?: boolean | null;
+  hero_image_url?: string | null;
 };
 
 export type OrderItem = {

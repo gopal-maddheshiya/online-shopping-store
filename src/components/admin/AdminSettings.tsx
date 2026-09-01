@@ -62,6 +62,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [announcement, setAnnouncement] = useState("");
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
   const [deliveryFee, setDeliveryFee] = useState(30);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(499);
   const [minOrderValue, setMinOrderValue] = useState(99);
@@ -125,6 +126,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setHeroSubtitle(
         settings.hero_subtitle ?? "Quality products • Genuine prices • Easy ordering",
       );
+      setHeroImageUrl(settings.hero_image_url ?? "");
       setDeliveryFee(Number(settings.delivery_fee ?? 30));
       setFreeDeliveryThreshold(Number(settings.free_delivery_threshold ?? 499));
       setMinOrderValue(Number(settings.min_order_value ?? 99));
@@ -205,6 +207,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           announcement: announcement.trim() || null,
           hero_title: heroTitle.trim() || null,
           hero_subtitle: heroSubtitle.trim() || null,
+          hero_image_url: heroImageUrl.trim() || null,
           delivery_fee: Number(deliveryFee),
           free_delivery_threshold: Number(freeDeliveryThreshold),
           min_order_value: Number(minOrderValue),
@@ -414,6 +417,29 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 className="rounded-xl border-[#E8E4DA] text-xs h-9"
               />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image URL (1920×1080 / 16:9)</Label>
+            <Input
+              value={heroImageUrl}
+              onChange={(e) => setHeroImageUrl(e.target.value)}
+              placeholder="https://example.com/hero-banner.jpg or /images/hero-banner.jpg"
+              className="rounded-xl border-[#E8E4DA] text-xs h-9"
+            />
+            <p className="text-[10px] text-[#6B746F] mt-0.5">
+              Recommended: 1920×1080px (16:9 widescreen). Use a direct image URL or upload to Supabase Storage.
+            </p>
+            {heroImageUrl && (
+              <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs">
+                <img
+                  src={heroImageUrl}
+                  alt="Hero banner preview"
+                  className="w-full aspect-video object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

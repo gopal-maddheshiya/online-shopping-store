@@ -17,6 +17,11 @@ import {
   Store,
   BadgeCheck,
   Gift,
+  UtensilsCrossed,
+  Home,
+  Heart,
+  Package,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
@@ -140,6 +145,17 @@ function PremiumStoreHome() {
   // Categories with fallback
   const rawCategories = categories && categories.length > 0 ? categories : ADDITIONAL_CATEGORIES;
   const parentCategories = rawCategories.filter((c) => !c.parent_id);
+  const foodSlugs = ["atta-flour","rice-grains","rice","pulses-dal","oil-ghee","spices-masala","salt-sugar","dry-fruits","tea-coffee","biscuits","namkeen-snacks","chocolates","noodles-pasta","sauces-spreads","dairy","beverages","packaged-foods","breakfast"];
+  const householdSlugs = ["household-cleaning","laundry","kitchen-essentials","utensils-cookware"];
+  const personalSlugs = ["personal-care","hair-care","skin-care","oral-care","baby-products"];
+  const otherSlugs = ["pooja-items","stationery","pet-supplies","misc-items"];
+  const allKnownSlugs = [...foodSlugs, ...householdSlugs, ...personalSlugs, ...otherSlugs];
+
+  const foodCategories = parentCategories.filter(c => foodSlugs.includes(c.slug));
+  const householdCategories = parentCategories.filter(c => householdSlugs.includes(c.slug));
+  const personalCategories = parentCategories.filter(c => personalSlugs.includes(c.slug));
+  const otherGroupCategories = parentCategories.filter(c => otherSlugs.includes(c.slug));
+  const uncategorizedCategories = parentCategories.filter(c => !allKnownSlugs.includes(c.slug));
 
   // Products with fallback
   const allDisplayProducts = products && products.length > 0 ? products : ADDITIONAL_PRODUCTS;
@@ -243,135 +259,231 @@ function PremiumStoreHome() {
   return (
     <div className="space-y-10 sm:space-y-14 pb-28 overflow-x-hidden">
       {/* ═══════════════════════════════════════════════════════
-          1. COMPACT PREMIUM HERO (No Products — Text Only)
+          1. HERO BANNER IMAGE (1920×1080 / 16:9)
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page pt-3 sm:pt-5">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#062A1E] via-[#0B4232] to-[#041F16] border border-[#1E6B50]/15 shadow-2xl text-white">
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute -right-20 -top-20 size-72 sm:size-96 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12)_0%,rgba(20,90,69,0.18)_50%,transparent_75%)] blur-3xl" />
-          <div className="pointer-events-none absolute -left-16 -bottom-16 size-60 sm:size-72 rounded-full bg-[radial-gradient(circle,rgba(20,90,69,0.3)_0%,transparent_60%)] blur-3xl" />
-
-          <div className="relative z-10 px-5 py-8 sm:px-10 sm:py-12 md:px-14 md:py-14 max-w-3xl mx-auto text-center space-y-5">
-            {/* Live Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] border border-white/[0.1] px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-white/90 backdrop-blur-sm">
-              <span className="relative flex size-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full size-2 bg-emerald-400" />
-              </span>
-              <span>
-                {lang === "hi"
-                  ? "रामनगर, महाराजगंज • आपकी भरोसेमंद किराना दुकान"
-                  : "Ramnagar, Maharajganj • Your Trusted Grocery Store"}
-              </span>
-            </div>
-
-            {/* Headline */}
-            <h1 className="font-sans text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.1]">
-              {lang === "hi" ? (
-                <>
-                  हर दिन की जरूरत,{" "}
-                  <span className="bg-gradient-to-r from-[#F7C948] via-[#E3B341] to-[#D4A836] bg-clip-text text-transparent">
-                    अब आपके घर तक!
-                  </span>
-                </>
-              ) : (
-                <>
-                  Everyday Essentials,{" "}
-                  <span className="bg-gradient-to-r from-[#F7C948] via-[#E3B341] to-[#D4A836] bg-clip-text text-transparent">
-                    Delivered Fresh!
-                  </span>
-                </>
-              )}
-            </h1>
-
-            {/* Subtext */}
-            <p className="text-[13px] sm:text-sm text-white/70 leading-relaxed max-w-lg mx-auto">
-              {lang === "hi"
-                ? "आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का सामान — आसान ऑर्डर और तेज़ डिलीवरी।"
-                : "Atta, rice, dal, oil, spices & daily essentials — easy ordering, fast local delivery."}
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-              <Button
-                asChild
-                size="lg"
-                className="rounded-2xl bg-white px-7 sm:px-8 py-3 text-xs sm:text-sm font-black text-[#0F4A38] shadow-lg hover:shadow-xl hover:bg-[#FAF8F2] active:scale-[0.97] transition-all cursor-pointer"
-              >
-                <Link to="/shop">
-                  <ShoppingBag className="mr-2 size-4" />
-                  {lang === "hi" ? "सामान खरीदें →" : "Shop Now →"}
-                </Link>
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setOrderModalOpen(true)}
-                className="rounded-2xl border border-white/20 bg-white/[0.08] hover:bg-white/[0.15] px-5 py-3 text-xs sm:text-sm font-bold text-white backdrop-blur-sm active:scale-[0.97] transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Phone className="size-4 text-[#E3B341]" />
-                <span>{lang === "hi" ? "फोन पर ऑर्डर" : "Order by Phone"}</span>
-              </button>
-            </div>
-
-            {/* Delivery Chip */}
-            <div className="inline-flex items-center gap-2 rounded-full bg-black/20 border border-white/[0.06] px-4 py-1.5 text-[11px] sm:text-xs font-semibold text-[#E3B341]/90 backdrop-blur-sm">
-              <Truck className="size-3.5" />
-              <span>
-                {lang === "hi"
-                  ? "₹499+ पर FREE होम डिलीवरी"
-                  : "FREE Delivery on ₹499+"}
-              </span>
-            </div>
-          </div>
+        <div className="relative overflow-hidden rounded-3xl shadow-2xl">
+          <img
+            src={settings?.hero_image_url || "/images/hero-banner.jpg"}
+            alt={settings?.store_name || "Arun Gopal Traders"}
+            className="w-full aspect-video object-cover"
+          />
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          2. ALL CATEGORIES — FULL GRID (Premium)
+          2. GROUPED CATEGORIES — By Type
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page">
+      <section className="container-page space-y-8">
         <SectionHeader
           icon={<Store className="size-4.5 text-[#145A45]" />}
           title={lang === "hi" ? "कैटेगरी के अनुसार खरीदारी" : "Shop by Category"}
           subtitle={
             lang === "hi"
               ? "अपनी ज़रूरत के अनुसार कैटेगरी चुनें"
-              : "Browse all categories at a glance"
+              : "Browse all categories organized for you"
           }
           linkTo="/shop"
           linkLabel={`${t.viewAll} (${parentCategories.length})`}
         />
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
-          {catLoading
-            ? Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <Skeleton className="size-[4.5rem] sm:size-20 rounded-2xl" />
-                  <Skeleton className="h-3 w-14" />
-                </div>
-              ))
-            : parentCategories.map((c) => (
-                <Link
-                  key={c.id}
-                  to="/shop"
-                  search={{ category: c.slug }}
-                  className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
-                >
-                  <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
-                    <img
-                      src={getCategoryThumbnail(c)}
-                      alt={c.name}
-                      loading="lazy"
-                      className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
-                    />
+        {catLoading ? (
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <Skeleton className="size-[4.5rem] sm:size-20 rounded-2xl" />
+                <Skeleton className="h-3 w-14" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* ── 🍽️ Food & Kitchen ── */}
+            {foodCategories.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+                    <UtensilsCrossed className="size-4 text-[#145A45]" />
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
-                    {getCategoryName(c.name, c.slug)}
-                  </span>
-                </Link>
-              ))}
-        </div>
+                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
+                    {lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen"}
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {foodCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug }}
+                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
+                    >
+                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={c.name}
+                          loading="lazy"
+                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                        {getCategoryName(c.name, c.slug)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── 🏠 Household & Cleaning ── */}
+            {householdCategories.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+                    <Home className="size-4 text-[#145A45]" />
+                  </div>
+                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
+                    {lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning"}
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {householdCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug }}
+                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
+                    >
+                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={c.name}
+                          loading="lazy"
+                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                        {getCategoryName(c.name, c.slug)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── 💆 Personal Care & Beauty ── */}
+            {personalCategories.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+                    <Heart className="size-4 text-[#145A45]" />
+                  </div>
+                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
+                    {lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty"}
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {personalCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug }}
+                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
+                    >
+                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={c.name}
+                          loading="lazy"
+                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                        {getCategoryName(c.name, c.slug)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── 📦 Pooja, Stationery & More ── */}
+            {otherGroupCategories.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+                    <Package className="size-4 text-[#145A45]" />
+                  </div>
+                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
+                    {lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More"}
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {otherGroupCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug }}
+                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
+                    >
+                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={c.name}
+                          loading="lazy"
+                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                        {getCategoryName(c.name, c.slug)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── 🛒 Uncategorized (catch-all) ── */}
+            {uncategorizedCategories.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+                    <ShoppingCart className="size-4 text-[#145A45]" />
+                  </div>
+                  <h3 className="font-sans text-sm sm:text-base font-extrabold text-[#16201A] tracking-tight">
+                    {lang === "hi" ? "अन्य कैटेगरी" : "More Categories"}
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-[#E8E4DA] to-transparent" />
+                </div>
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {uncategorizedCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug }}
+                      className="group flex flex-col items-center gap-2 text-center transition-all hover:-translate-y-1"
+                    >
+                      <div className="relative flex size-[4.5rem] sm:size-20 items-center justify-center overflow-hidden rounded-2xl border border-[#E8E4DA] bg-white p-1.5 shadow-xs group-hover:border-[#145A45] group-hover:shadow-md transition-all">
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={c.name}
+                          loading="lazy"
+                          className="size-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-110"
+                        />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 max-w-[6rem] leading-tight transition-colors">
+                        {getCategoryName(c.name, c.slug)}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       {/* ═══════════════════════════════════════════════════════
