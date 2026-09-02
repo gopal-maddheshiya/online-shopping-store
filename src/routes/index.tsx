@@ -380,7 +380,7 @@ function PremiumStoreHome() {
                           />
                         </div>
                         <span className="text-xs sm:text-sm font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                          {getCategoryName(c.name, c.slug)}
+                          {getCategoryName(c)}
                         </span>
                       </Link>
                     ))}

@@ -284,7 +284,7 @@ export function Header() {
                             alt={c.name}
                             className="size-6 rounded object-cover border border-[#E5E0D5] shrink-0"
                           />
-                          <span className="line-clamp-1">{getCategoryName(c.name, c.slug)}</span>
+                          <span className="line-clamp-1">{getCategoryName(c)}</span>
                         </Link>
                       ))}
                     </div>
@@ -363,7 +363,7 @@ export function Header() {
                             alt={c.name}
                             className="size-4 rounded object-cover"
                           />
-                          <span>{getCategoryName(c.name, c.slug)}</span>
+                          <span>{getCategoryName(c)}</span>
                         </button>
                       ))}
                     </div>
@@ -394,7 +394,7 @@ export function Header() {
                               className="size-7 object-contain shrink-0"
                             />
                             <span className="text-xs font-bold text-[#16201A] truncate">
-                              {getProductName(p.name, p.slug)}
+                              {getProductName(p)}
                             </span>
                           </div>
                           <span className="text-xs font-bold text-[#0F4A38] shrink-0">
@@ -525,7 +525,7 @@ export function Header() {
                         }}
                         className="flex items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#0F4A38]"
                       >
-                        <span>{getCategoryName(c.name, c.slug)}</span>
+                        <span>{getCategoryName(c)}</span>
                       </button>
                     ))}
                   </div>
@@ -552,7 +552,7 @@ export function Header() {
                           className="size-6 object-contain shrink-0"
                         />
                         <span className="text-xs font-bold text-[#16201A] truncate">
-                          {getProductName(p.name, p.slug)}
+                          {getProductName(p)}
                         </span>
                       </div>
                       <span className="text-xs font-bold text-[#0F4A38] shrink-0">

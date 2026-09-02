@@ -119,6 +119,9 @@ export function AdminProducts({
   const [isSaving, setIsSaving] = useState(false);
 
   const parentCategories = categories.filter((c) => !c.parent_id);
+  const subcategories = categories.filter((c) => c.parent_id === categoryId);
+  const selectedCategoryObj = categories.find((c) => c.id === categoryId);
+  const selectedSubcategoryObj = categories.find((c) => c.id === subcategoryId);
 
   function openAddModal() {
     setEditingProduct(null);
@@ -972,19 +975,107 @@ export function AdminProducts({
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-xs font-semibold text-[#1F2924]">Primary Category</Label>
-                  <Select value={categoryId} onValueChange={setCategoryId}>
-                    <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-9">
-                      <SelectValue placeholder="Select Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {parentCategories.map((c) => (
-                        <SelectItem key={c.id} value={c.id} className="text-xs">
-                          {c.name} {c.name_hi ? `(${c.name_hi})` : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
+                    <span>
+                      Category &amp; Subcategory <span className="text-red-500">*</span>
+                    </span>
+                    <span className="text-[10px] text-[#5A655F]">श्रेणी / उपश्रेणी</span>
+                  </Label>
+
+                  <div className="rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] p-2.5 space-y-2">
+                    <Select
+                      value={categoryId}
+                      onValueChange={(v) => {
+                        setCategoryId(v);
+                        setSubcategoryId("");
+                      }}
+                    >
+                      <SelectTrigger className="rounded-lg border-[#E8E4DA] text-xs h-9 bg-white font-semibold">
+                        <SelectValue placeholder="Choose parent category…" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {parentCategories.map((c) => {
+                          const subs = categories.filter((sub) => sub.parent_id === c.id);
+                          return (
+                            <SelectItem
+                              key={c.id}
+                              value={c.id}
+                              className="text-xs font-semibold"
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <span>{c.icon ?? "📦"}</span>
+                                <span>{c.name_en || c.name}</span>
+                                {c.name_hi ? (
+                                  <span className="text-[10px] text-[#145A45]">({c.name_hi})</span>
+                                ) : null}
+                                {subs.length > 0 ? (
+                                  <span className="rounded bg-white border border-[#E8E4DA] px-1 text-[9px] text-[#5A655F]">
+                                    {subs.length} sub
+                                  </span>
+                                ) : null}
+                              </span>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+
+                    {categoryId && subcategories.length > 0 ? (
+                      <div className="space-y-1.5 pt-1 border-t border-[#E8E4DA]/70">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 flex items-center gap-1">
+                          <span>↳</span>
+                          <span>Select Subcategory (Optional)</span>
+                        </p>
+                        <Select value={subcategoryId} onValueChange={setSubcategoryId}>
+                          <SelectTrigger className="rounded-lg border-[#E8E4DA] text-xs h-9 bg-white">
+                            <SelectValue placeholder="— No Subcategory (Top-level) —" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {subcategories.map((s) => (
+                              <SelectItem key={s.id} value={s.id} className="text-xs">
+                                <span className="flex items-center gap-1.5">
+                                  <span>└</span>
+                                  <span className="font-semibold">
+                                    {s.name_en || s.name}
+                                  </span>
+                                  {s.name_hi ? (
+                                    <span className="text-[10px] text-[#145A45]">
+                                      ({s.name_hi})
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : null}
+
+                    {categoryId ? (
+                      <div className="flex items-center gap-1.5 text-[10px] pt-1 border-t border-[#E8E4DA]/70">
+                        <span className="text-[#5A655F] font-semibold">Selected:</span>
+                        <span className="inline-flex items-center gap-1 rounded-md bg-white border border-[#E8E4DA] px-1.5 py-0.5 text-[10px] font-bold text-[#0F4A38]">
+                          {selectedCategoryObj?.icon ?? "📦"}{" "}
+                          {selectedCategoryObj
+                            ? selectedCategoryObj.name_en || selectedCategoryObj.name
+                            : ""}
+                        </span>
+                        {selectedSubcategoryObj ? (
+                          <>
+                            <span className="text-[#5A655F]">›</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-1.5 py-0.5 text-[10px] font-bold text-[#0F4A38]">
+                              └{" "}
+                              {selectedSubcategoryObj.name_en || selectedSubcategoryObj.name}
+                            </span>
+                          </>
+                        ) : subcategories.length > 0 ? (
+                          <span className="text-[10px] text-[#5A655F] italic">
+                            (no subcategory)
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1012,83 +1103,127 @@ export function AdminProducts({
               </div>
 
               <div className="space-y-2.5">
-                {variants.map((v, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-xl bg-white p-3 border border-[#E8E4DA] text-xs shadow-2xs space-y-2"
-                  >
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-center">
-                      <div>
-                        <Label className="text-[10px] text-[#6B746F] font-semibold">Pack Label</Label>
-                        <Input
-                          placeholder="e.g. 5 kg"
-                          value={v.label}
-                          onChange={(e) => updateVariant(idx, "label", e.target.value)}
-                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
-                        />
-                      </div>
+                {variants.map((v, idx) => {
+                  const disc =
+                    v.mrp > 0 && v.price > 0 && v.mrp > v.price
+                      ? Math.round(((v.mrp - v.price) / v.mrp) * 100)
+                      : 0;
+                  return (
+                    <div
+                      key={idx}
+                      className="rounded-xl bg-white p-3.5 border border-[#E8E4DA] text-xs shadow-2xs space-y-3"
+                    >
+                      <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-end">
+                        <div className="sm:col-span-3">
+                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                            Pack Label
+                          </Label>
+                          <Input
+                            placeholder="e.g. 5 kg"
+                            value={v.label}
+                            onChange={(e) => updateVariant(idx, "label", e.target.value)}
+                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
+                          />
+                        </div>
 
-                      <div>
-                        <Label className="text-[10px] text-[#6B746F] font-semibold">MRP (₹)</Label>
-                        <Input
-                          type="number"
-                          placeholder="300"
-                          value={v.mrp}
-                          onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
-                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-[10px] text-[#6B746F] font-semibold">Selling (₹)</Label>
-                        <Input
-                          type="number"
-                          placeholder="275"
-                          value={v.price}
-                          onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
-                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-[10px] text-[#6B746F] font-semibold">Stock Qty</Label>
-                        <Input
-                          type="number"
-                          placeholder="50"
-                          value={v.stock}
-                          onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
-                          className="h-8 text-xs rounded-lg border-[#E8E4DA]"
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between gap-1.5">
-                        <div className="flex-1">
-                          <Label className="text-[10px] text-[#6B746F] font-semibold">Low Alert</Label>
+                        <div className="sm:col-span-2">
+                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                            MRP (₹)
+                          </Label>
                           <Input
                             type="number"
+                            inputMode="decimal"
+                            min="0"
+                            step="1"
+                            placeholder="300"
+                            value={v.mrp}
+                            onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
+                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-bold"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                            Selling Price (₹)
+                          </Label>
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            min="0"
+                            step="1"
+                            placeholder="275"
+                            value={v.price}
+                            onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
+                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-bold"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                            Stock Qty
+                          </Label>
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            step="1"
+                            placeholder="50"
+                            value={v.stock}
+                            onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
+                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                            Low Alert
+                          </Label>
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            step="1"
                             placeholder="5"
                             value={v.low_stock_threshold}
                             onChange={(e) =>
                               updateVariant(idx, "low_stock_threshold", Number(e.target.value))
                             }
-                            className="h-8 text-xs rounded-lg border-[#E8E4DA]"
+                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
                           />
                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-dashed border-[#E8E4DA]">
+                        <div className="flex items-center gap-2 text-[11px]">
+                          <span className="rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-2 py-0.5 text-[10px] font-bold text-[#0F4A38]">
+                            Margin: {v.mrp > 0 && v.price > 0 ? inr(v.mrp - v.price) : "—"}
+                          </span>
+                          <span
+                            className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
+                              disc > 0
+                                ? "bg-amber-50 text-amber-800 border-amber-300"
+                                : "bg-stone-50 text-stone-500 border-stone-200"
+                            }`}
+                          >
+                            Discount: {disc > 0 ? `${disc}% OFF` : "No discount"}
+                          </span>
+                        </div>
+
                         {variants.length > 1 && (
                           <Button
                             type="button"
                             onClick={() => removeVariantRow(idx)}
                             variant="ghost"
-                            size="icon"
-                            className="size-8 text-red-600 hover:bg-red-50 mt-3"
+                            size="sm"
+                            className="h-8 px-2.5 text-xs text-red-600 hover:bg-red-50 rounded-lg"
                           >
-                            <Trash2 className="size-3.5" />
+                            <Trash2 className="size-3.5 mr-1" /> Remove
                           </Button>
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
