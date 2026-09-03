@@ -129,6 +129,7 @@ function SectionHeader({
    ═══════════════════════════════════════════════════════════════ */
 function PremiumStoreHome() {
   const { data: settings } = useQuery(settingsQuery);
+  const isDeliveryEnabled = settings?.delivery_enabled !== false;
   const { data: categories = [], isLoading: catLoading } = useQuery(categoriesQuery);
   const { data: featuredProducts = [], isLoading: featLoading } = useQuery(
     featuredProductsQuery(12),
@@ -257,15 +258,15 @@ function PremiumStoreHome() {
   return (
     <div className="space-y-6 sm:space-y-8 pb-24 overflow-x-hidden">
       {/* ═══════════════════════════════════════════════════════
-          1. HERO BANNER IMAGE (1920×1080 / 16:9)
+          1. HERO BANNER IMAGE (Uncropped, Natural Fit, Sleek on Laptop)
           ═══════════════════════════════════════════════════════ */}
       {settings?.hero_image_url && (
         <section className="container-page pt-2 sm:pt-3">
-          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
+          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto">
             <img
               src={settings.hero_image_url}
               alt={settings?.store_name || "Arun Gopal Traders"}
-              className="w-full aspect-video object-cover"
+              className="w-full h-auto block object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
@@ -349,7 +350,7 @@ function PremiumStoreHome() {
                   </div>
 
                   {group.bannerBefore && (
-                    <div className="my-6 sm:my-8 relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl group/banner">
+                    <div className="my-6 sm:my-8 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
                       <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
                       <img
                         src={group.bannerBefore}
@@ -399,9 +400,17 @@ function PremiumStoreHome() {
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
           {[
             {
-              icon: <Truck className="size-4 text-[#145A45]" />,
-              title: lang === "hi" ? "30 मिनट डिलीवरी" : "30-Min Delivery",
-              sub: lang === "hi" ? "महाराजगंज" : "Local Delivery",
+              icon: isDeliveryEnabled ? (
+                <Truck className="size-4 text-[#145A45]" />
+              ) : (
+                <Store className="size-4 text-[#145A45]" />
+              ),
+              title: isDeliveryEnabled
+                ? (lang === "hi" ? "30 मिनट डिलीवरी" : "30-Min Delivery")
+                : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"),
+              sub: isDeliveryEnabled
+                ? (lang === "hi" ? "महाराजगंज" : "Local Delivery")
+                : (lang === "hi" ? "तुरंत तैयार" : "Ready in Store"),
             },
             {
               icon: <Award className="size-4 text-[#145A45]" />,
@@ -713,12 +722,19 @@ function PremiumStoreHome() {
                 desc: "Fortune, Aashirvaad, Tata, MDH, Amul",
               },
               {
-                icon: <Truck className="size-5 text-[#145A45]" />,
-                title: lang === "hi" ? "तेज़ होम डिलीवरी" : "Fast Delivery",
-                desc:
-                  lang === "hi"
+                icon: isDeliveryEnabled ? (
+                  <Truck className="size-5 text-[#145A45]" />
+                ) : (
+                  <Store className="size-5 text-[#145A45]" />
+                ),
+                title: isDeliveryEnabled
+                  ? (lang === "hi" ? "तेज़ होम डिलीवरी" : "Fast Delivery")
+                  : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"),
+                desc: isDeliveryEnabled
+                  ? (lang === "hi"
                     ? `₹${settings?.free_delivery_threshold ?? 499}+ पर फ्री`
-                    : `Free on ₹${settings?.free_delivery_threshold ?? 499}+`,
+                    : `Free on ₹${settings?.free_delivery_threshold ?? 499}+`)
+                  : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store"),
               },
               {
                 icon: <PhoneCall className="size-5 text-[#145A45]" />,

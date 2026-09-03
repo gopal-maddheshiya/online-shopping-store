@@ -74,9 +74,11 @@ export type StoreSettings = {
   address: string;
   maps_link: string;
   announcement: string | null;
+  announcement_hi?: string | null;
   hero_title: string | null;
   hero_subtitle: string | null;
   delivery_fee: number;
+  delivery_enabled?: boolean | null;
   free_delivery_threshold: number;
   min_order_value: number;
   payment_methods: string[];
@@ -218,10 +220,12 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   address: "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh",
   maps_link:
     "https://www.google.com/maps/search/?api=1&query=Ramnagar%20Adda%20Bazar%20Road%20Maharajganj%20Uttar%20Pradesh",
-  announcement: "⚡ Fast 30-Min Delivery in Maharajganj • Free on ₹499+",
+  announcement: null,
+  announcement_hi: null,
   hero_title: "100% Shuddh Kirana",
   hero_subtitle: "Fresh Atta, Basmati Rice, Mustard Oil & Ghee",
   delivery_fee: 30,
+  delivery_enabled: true,
   free_delivery_threshold: 499,
   min_order_value: 100,
   payment_methods: ["cod", "upi"],

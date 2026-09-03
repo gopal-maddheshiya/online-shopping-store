@@ -26,7 +26,7 @@ import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage, getProductImages } from "@/lib/product-images";
-import { productQuery, productsQuery, type Variant } from "@/lib/queries";
+import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 
 export const Route = createFileRoute("/product/$slug")({
@@ -87,6 +87,8 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { data: product, isLoading } = useQuery(productQuery(slug));
   const { data: all } = useQuery(productsQuery());
+  const { data: settings } = useQuery(settingsQuery);
+  const isDeliveryEnabled = settings?.delivery_enabled !== false;
   const { add } = useCart();
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
@@ -243,8 +245,17 @@ function ProductPage() {
               </div>
               <span className="text-[#EAE6DC]">•</span>
               <div className="flex items-center gap-1 font-bold text-[#0F4A38]">
-                <Truck className="size-3.5 text-[#145A45]" />
-                <span>{lang === "hi" ? "30 मिनट डिलीवरी" : "30-Min Fast Delivery"}</span>
+                {isDeliveryEnabled ? (
+                  <>
+                    <Truck className="size-3.5 text-[#145A45]" />
+                    <span>{lang === "hi" ? "30 मिनट डिलीवरी" : "30-Min Fast Delivery"}</span>
+                  </>
+                ) : (
+                  <>
+                    <Store className="size-3.5 text-[#145A45]" />
+                    <span>{lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -423,7 +434,7 @@ function ProductPage() {
             <div className="grid grid-cols-2 gap-2.5">
               <a
                 href={`https://wa.me/916388354988?text=${encodeURIComponent(
-                  `Namaste Arun Gopal Traders, I want to order ${qty}x ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for home delivery in Maharajganj.`,
+                  `Namaste Arun Gopal Traders, I want to order ${qty}x ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for ${isDeliveryEnabled ? "home delivery" : "store pickup"} in Maharajganj.`,
                 )}`}
                 target="_blank"
                 rel="noreferrer"
@@ -446,12 +457,21 @@ function ProductPage() {
           {/* Guarantee Badges Strip (Clean & Uncluttered) */}
           <div className="grid grid-cols-3 gap-2.5 border-t border-[#EAE6DC] pt-4">
             <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
-              <Truck className="size-4.5 text-[#145A45] mb-1" />
-              <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{t.freeDeliveryTitle}</span>
+              {isDeliveryEnabled ? (
+                <>
+                  <Truck className="size-4.5 text-[#145A45] mb-1" />
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{t.freeDeliveryTitle}</span>
+                </>
+              ) : (
+                <>
+                  <Store className="size-4.5 text-[#145A45] mb-1" />
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}</span>
+                </>
+              )}
             </div>
             <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
               <Store className="size-4.5 text-[#145A45] mb-1" />
-              <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{t.storePickupTitle}</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{lang === "hi" ? "तुरंत तैयार" : "Ready in Store"}</span>
             </div>
             <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
               <ShieldCheck className="size-4.5 text-[#145A45] mb-1" />

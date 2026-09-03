@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Truck,
+  Store,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,8 +62,9 @@ function CartPage() {
     }
   };
 
+  const isDeliveryEnabled = s?.delivery_enabled !== false;
   const freeAt = Number(s?.free_delivery_threshold ?? 499);
-  const fee = subtotal >= freeAt || subtotal === 0 ? 0 : Number(s?.delivery_fee ?? 30);
+  const fee = !isDeliveryEnabled || subtotal >= freeAt || subtotal === 0 ? 0 : Number(s?.delivery_fee ?? 30);
   const diffToFree = Math.max(0, freeAt - subtotal);
 
   if (hydrated && items.length === 0 && savedItems.length === 0) {
@@ -132,8 +134,17 @@ function CartPage() {
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_22rem]">
         {/* Items List Column */}
         <div className="space-y-4">
-          {/* Free Delivery Bar */}
-          {subtotal < freeAt && subtotal > 0 ? (
+          {/* Free Delivery Bar or Store Pickup Bar */}
+          {!isDeliveryEnabled ? (
+            <div className="card-base bg-amber-50/70 border border-amber-200/80 p-3.5 flex items-center gap-2.5 text-xs">
+              <Store className="size-4 text-[#145A45] shrink-0" />
+              <span className="text-[#16201A] font-semibold">
+                {lang === "hi"
+                  ? "🏪 स्टोर पिकअप सेवा चालू है • ऑनलाइन ऑर्डर बुक करें, दुकान पर तैयार मिलेगा (शुल्क: ₹0)!"
+                  : "🏪 Store Pickup Active • Book online and collect at store (No delivery fee)!"}
+              </span>
+            </div>
+          ) : subtotal < freeAt && subtotal > 0 ? (
             <div className="card-base bg-[#FAF8F2] border border-[#E5E0D5] p-3.5 flex items-center justify-between text-xs">
               <span className="flex items-center gap-2 text-[#0F4A38] font-semibold">
                 <Truck className="size-4 text-[#145A45]" />
@@ -298,9 +309,9 @@ function CartPage() {
                 <span className="font-semibold text-[#16201A]">{inr(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span>{t.deliveryFee}</span>
+                <span>{isDeliveryEnabled ? t.deliveryFee : (lang === "hi" ? "पिकअप शुल्क" : "Pickup Fee")}</span>
                 <span className="font-semibold text-[#145A45]">
-                  {fee === 0 ? t.free : inr(fee)}
+                  {fee === 0 ? (isDeliveryEnabled ? t.free : (lang === "hi" ? "मुफ़्त (₹0)" : "FREE (₹0)")) : inr(fee)}
                 </span>
               </div>
               {savings > 0 && (

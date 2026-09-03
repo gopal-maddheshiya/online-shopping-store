@@ -179,13 +179,23 @@ function CheckoutPage() {
   }, [savedAddresses, user, isCustomAddress, selectedAddressId]);
 
 
-  // Calculations
+  // Delivery configuration & Calculations
+  const isDeliveryEnabled = settings?.delivery_enabled !== false;
+
+  useEffect(() => {
+    if (!isDeliveryEnabled && orderType !== "pickup") {
+      setOrderType("pickup");
+    }
+  }, [isDeliveryEnabled, orderType]);
+
   const freeDeliveryThreshold = Number(settings?.free_delivery_threshold ?? 499);
   const standardDeliveryFee = Number(settings?.delivery_fee ?? 30);
   const minOrderValue = Number(settings?.min_order_value ?? 99);
 
   const deliveryFee =
-    orderType === "pickup" || subtotal >= freeDeliveryThreshold ? 0 : standardDeliveryFee;
+    !isDeliveryEnabled || orderType === "pickup" || subtotal >= freeDeliveryThreshold
+      ? 0
+      : standardDeliveryFee;
 
   // Calculate discount when subtotal or coupon changes
   useEffect(() => {
@@ -221,8 +231,10 @@ function CheckoutPage() {
   const isUpiAllowed = onlinePaymentsEnabled && enabledMethods.includes("upi");
   const isCardAllowed = onlinePaymentsEnabled && enabledMethods.includes("card");
   const isQrAllowed = onlinePaymentsEnabled && enabledMethods.includes("qr");
-  const isCodAllowed = enabledMethods.includes("cod");
-  const isPayAtStoreAllowed = orderType === "pickup" && enabledMethods.includes("pay_at_store");
+  const isCodAllowed = isDeliveryEnabled && orderType === "delivery" && enabledMethods.includes("cod");
+  const isPayAtStoreAllowed =
+    orderType === "pickup" &&
+    (enabledMethods.includes("pay_at_store") || enabledMethods.includes("cod"));
 
   useEffect(() => {
     const validMethods: string[] = [];
@@ -898,61 +910,90 @@ function CheckoutPage() {
               {t.orderFulfillmentMethod}
             </h2>
 
-            <RadioGroup
-              value={orderType}
-              onValueChange={(v) => setOrderType(v as "delivery" | "pickup")}
-              className="mt-4 grid gap-3 sm:grid-cols-2"
-            >
-              <div
-                onClick={() => setOrderType("delivery")}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                  orderType === "delivery"
-                    ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
-                    : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
-                }`}
-              >
-                <RadioGroupItem value="delivery" id="type-delivery" className="mt-1 text-[#145A45]" />
-                <div>
-                  <Label
-                    htmlFor="type-delivery"
-                    className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
-                  >
-                    <Truck className="size-4 text-[#145A45]" /> {t.homeDelivery}
-                  </Label>
-                  <p className="mt-0.5 text-xs text-[#5A655F]">
-                    {t.homeDeliveryDesc}
-                  </p>
-                  <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#0F4A38]">
-                    {deliveryFee === 0 ? t.freeDeliveryTitle : `${t.deliveryFee}: ₹${standardDeliveryFee}`}
-                  </span>
+            {!isDeliveryEnabled ? (
+              <div className="mt-4 rounded-xl border border-amber-300/80 bg-amber-50/60 p-4 space-y-2.5">
+                <div className="flex items-start gap-3.5">
+                  <div className="grid size-11 place-items-center rounded-xl bg-[#145A45] text-white shrink-0 shadow-xs">
+                    <Store className="size-5.5" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-sm text-[#16201A]">
+                        {lang === "hi" ? "दुकान से पिकअप (Store Pickup Only)" : "Store Pickup Only"}
+                      </h3>
+                      <span className="rounded-full bg-[#145A45] text-white px-2 py-0.5 text-[10px] font-bold">
+                        {lang === "hi" ? "डिलीवरी शुल्क: ₹0 (मुफ़्त)" : "Delivery Fee: ₹0 (FREE)"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#5A655F] leading-relaxed">
+                      {lang === "hi"
+                        ? "वर्तमान में होम डिलीवरी सेवा बंद है। कृपया ऑर्डर ऑनलाइन बुक करके सीधे दुकान पर आकर प्राप्त करें।"
+                        : "Home delivery service is currently paused. Please book your order online and collect it directly from the store."}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#145A45] pt-1">
+                      <MapPin className="size-3.5 shrink-0" />
+                      <span>{settings?.address || "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh"}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+            ) : (
+              <RadioGroup
+                value={orderType}
+                onValueChange={(v) => setOrderType(v as "delivery" | "pickup")}
+                className="mt-4 grid gap-3 sm:grid-cols-2"
+              >
+                <div
+                  onClick={() => setOrderType("delivery")}
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
+                    orderType === "delivery"
+                      ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
+                      : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <RadioGroupItem value="delivery" id="type-delivery" className="mt-1 text-[#145A45]" />
+                  <div>
+                    <Label
+                      htmlFor="type-delivery"
+                      className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
+                    >
+                      <Truck className="size-4 text-[#145A45]" /> {t.homeDelivery}
+                    </Label>
+                    <p className="mt-0.5 text-xs text-[#5A655F]">
+                      {t.homeDeliveryDesc}
+                    </p>
+                    <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#0F4A38]">
+                      {deliveryFee === 0 ? t.freeDeliveryTitle : `${t.deliveryFee}: ₹${standardDeliveryFee}`}
+                    </span>
+                  </div>
+                </div>
 
-              <div
-                onClick={() => setOrderType("pickup")}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                  orderType === "pickup"
-                    ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
-                    : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
-                }`}
-              >
-                <RadioGroupItem value="pickup" id="type-pickup" className="mt-1 text-[#145A45]" />
-                <div>
-                  <Label
-                    htmlFor="type-pickup"
-                    className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
-                  >
-                    <Store className="size-4 text-[#145A45]" /> {t.storePickupTitle}
-                  </Label>
-                  <p className="mt-0.5 text-xs text-[#5A655F]">
-                    {t.storePickupDesc}
-                  </p>
-                  <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#15803D]">
-                    {t.freeZeroWaiting}
-                  </span>
+                <div
+                  onClick={() => setOrderType("pickup")}
+                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
+                    orderType === "pickup"
+                      ? "border-[#145A45] bg-[#E6EFE8]/40 ring-1 ring-[#145A45]/30"
+                      : "border-[#E5E0D5] hover:bg-[#FAF8F2]"
+                  }`}
+                >
+                  <RadioGroupItem value="pickup" id="type-pickup" className="mt-1 text-[#145A45]" />
+                  <div>
+                    <Label
+                      htmlFor="type-pickup"
+                      className="flex items-center gap-1.5 font-bold cursor-pointer text-[#16201A]"
+                    >
+                      <Store className="size-4 text-[#145A45]" /> {t.storePickupTitle}
+                    </Label>
+                    <p className="mt-0.5 text-xs text-[#5A655F]">
+                      {t.storePickupDesc}
+                    </p>
+                    <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#15803D]">
+                      {t.freeZeroWaiting}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </RadioGroup>
+              </RadioGroup>
+            )}
 
             {/* Address fields if Home Delivery */}
             {orderType === "delivery" ? (

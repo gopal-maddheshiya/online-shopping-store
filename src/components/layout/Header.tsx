@@ -110,28 +110,44 @@ export function Header() {
         <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#0F4A38] to-transparent pointer-events-none" />
         <div className="container-page relative flex items-center justify-between py-2 text-xs gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <span className="flex items-center gap-1.5 shrink-0">
-              <span className="grid size-5 place-items-center rounded-md bg-[#E3B341]/15 border border-[#E3B341]/30">
-                <Truck className="size-3 text-[#E3B341]" />
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E3B341]/90">
-                Live
-              </span>
-            </span>
-            <p
-              className="font-medium tracking-wide text-white/95 text-[11px] sm:text-xs truncate"
-              style={{ letterSpacing: "0.005em" }}
-            >
-              <span className="hidden md:inline">
-                {lang === "hi"
-                  ? "महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी"
-                  : "30-Min Express Delivery in Maharajganj"}
-              </span>
-              <span className="hidden md:inline mx-1.5 text-white/40">•</span>
-              <span className="text-[#E3B341] font-bold">
-                {lang === "hi" ? "₹499+ के ऑर्डर पर फ्री डिलीवरी" : "Free Delivery on ₹499+"}
-              </span>
-            </p>
+            {(() => {
+              const rawText =
+                lang === "hi"
+                  ? settings?.announcement_hi || settings?.announcement || ""
+                  : settings?.announcement || settings?.announcement_hi || "";
+              const activeText = rawText.trim();
+
+              if (!activeText) return null;
+
+              const parts = activeText.split("•");
+
+              return (
+                <>
+                  <span className="flex items-center gap-1.5 shrink-0">
+                    <span className="grid size-5 place-items-center rounded-md bg-[#E3B341]/15 border border-[#E3B341]/30">
+                      <Truck className="size-3 text-[#E3B341]" />
+                    </span>
+                    <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E3B341]/90">
+                      Live
+                    </span>
+                  </span>
+                  <p
+                    className="font-medium tracking-wide text-white/95 text-[11px] sm:text-xs truncate"
+                    style={{ letterSpacing: "0.005em" }}
+                  >
+                    {parts.length > 1 ? (
+                      <>
+                        <span className="hidden md:inline">{parts[0]?.trim()}</span>
+                        <span className="hidden md:inline mx-1.5 text-white/40">•</span>
+                        <span className="text-[#E3B341] font-bold">{parts.slice(1).join(" • ").trim()}</span>
+                      </>
+                    ) : (
+                      <span className="text-[#E3B341] font-bold">{activeText}</span>
+                    )}
+                  </p>
+                </>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-2.5 sm:gap-4 text-xs font-medium shrink-0">

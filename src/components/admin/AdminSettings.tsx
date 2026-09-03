@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +64,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [address, setAddress] = useState("");
   const [mapsLink, setMapsLink] = useState("");
   const [announcement, setAnnouncement] = useState("");
+  const [announcementHi, setAnnouncementHi] = useState("");
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImageUrl, setHeroImageUrl] = useState("");
@@ -70,6 +72,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [hero3ImageUrl, setHero3ImageUrl] = useState("");
   const [hero4ImageUrl, setHero4ImageUrl] = useState("");
   const [deliveryFee, setDeliveryFee] = useState(30);
+  const [deliveryEnabled, setDeliveryEnabled] = useState(true);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState(499);
   const [minOrderValue, setMinOrderValue] = useState(99);
 
@@ -167,9 +170,8 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setEmail(settings.email ?? "gopalmaddheshiya138@gmail.com");
       setAddress(settings.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh");
       setMapsLink(settings.maps_link ?? "");
-      setAnnouncement(
-        settings.announcement ?? "Free home delivery in Maharajganj on orders above ₹499",
-      );
+      setAnnouncement(settings.announcement ?? "");
+      setAnnouncementHi(settings.announcement_hi ?? "");
       setHeroTitle(settings.hero_title ?? "Arun Gopal Traders");
       setHeroSubtitle(
         settings.hero_subtitle ?? "Quality products • Genuine prices • Easy ordering",
@@ -179,6 +181,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setHero3ImageUrl(settings.hero3_image_url ?? "");
       setHero4ImageUrl(settings.hero4_image_url ?? "");
       setDeliveryFee(Number(settings.delivery_fee ?? 30));
+      setDeliveryEnabled(settings.delivery_enabled ?? true);
       setFreeDeliveryThreshold(Number(settings.free_delivery_threshold ?? 499));
       setMinOrderValue(Number(settings.min_order_value ?? 99));
       setBusinessHours(settings.business_hours ?? {});
@@ -243,53 +246,71 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      const updatePayload: Record<string, unknown> = {
+        store_name: storeName.trim(),
+        tagline: tagline.trim(),
+        phone: phone.trim(),
+        whatsapp: whatsapp.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        maps_link: mapsLink.trim(),
+        announcement: announcement.trim() || null,
+        announcement_hi: announcementHi.trim() || null,
+        hero_title: heroTitle.trim() || null,
+        hero_subtitle: heroSubtitle.trim() || null,
+        hero_image_url: heroImageUrl.trim() || null,
+        hero2_image_url: hero2ImageUrl.trim() || null,
+        hero3_image_url: hero3ImageUrl.trim() || null,
+        hero4_image_url: hero4ImageUrl.trim() || null,
+        delivery_fee: Number(deliveryFee),
+        delivery_enabled: Boolean(deliveryEnabled),
+        free_delivery_threshold: Number(freeDeliveryThreshold),
+        min_order_value: Number(minOrderValue),
+        business_hours: businessHours,
+        legal_name: legalName.trim() || "Arun Gopal Traders",
+        gstin: gstin.trim() || null,
+        state: state.trim() || "Uttar Pradesh",
+        state_code: stateCode.trim() || "09",
+        tax_enabled: Boolean(taxEnabled),
+        default_tax_rate: Number(defaultTaxRate),
+        invoice_prefix: invoicePrefix.trim() || "AGT-INV",
+        invoice_footer_note: invoiceFooterNote.trim(),
+        terms_and_conditions: termsAndConditions.trim(),
+        online_payment_enabled: Boolean(onlinePaymentEnabled),
+        enabled_payment_methods: enabledPaymentMethods,
+        upi_vpa: upiVpa.trim() || "6388354988@okbizaxis",
+        upi_merchant_name: upiMerchantName.trim() || "Arun Gopal Traders",
+        upi_registered_phone: upiRegisteredPhone.trim() || "6388354988",
+        bank_account_holder: bankAccountHolder.trim() || null,
+        bank_name: bankName.trim() || null,
+        bank_account_number: bankAccountNumber.trim() || null,
+        bank_ifsc: bankIfsc.trim().toUpperCase() || null,
+        qr_code_mode: qrCodeMode.trim() || "dynamic",
+        qr_custom_note: qrCustomNote.trim() || "Arun Gopal Traders Grocery Order",
+        razorpay_key_id: razorpayKeyId.trim() || null,
+      };
+
+      let { error } = await supabase
         .from("store_settings")
-        .update({
-          store_name: storeName.trim(),
-          tagline: tagline.trim(),
-          phone: phone.trim(),
-          whatsapp: whatsapp.trim(),
-          email: email.trim(),
-          address: address.trim(),
-          maps_link: mapsLink.trim(),
-          announcement: announcement.trim() || null,
-          hero_title: heroTitle.trim() || null,
-          hero_subtitle: heroSubtitle.trim() || null,
-          hero_image_url: heroImageUrl.trim() || null,
-          hero2_image_url: hero2ImageUrl.trim() || null,
-          hero3_image_url: hero3ImageUrl.trim() || null,
-          hero4_image_url: hero4ImageUrl.trim() || null,
-          delivery_fee: Number(deliveryFee),
-          free_delivery_threshold: Number(freeDeliveryThreshold),
-          min_order_value: Number(minOrderValue),
-          business_hours: businessHours,
-          legal_name: legalName.trim() || "Arun Gopal Traders",
-          gstin: gstin.trim() || null,
-          state: state.trim() || "Uttar Pradesh",
-          state_code: stateCode.trim() || "09",
-          tax_enabled: Boolean(taxEnabled),
-          default_tax_rate: Number(defaultTaxRate),
-          invoice_prefix: invoicePrefix.trim() || "AGT-INV",
-          invoice_footer_note: invoiceFooterNote.trim(),
-          terms_and_conditions: termsAndConditions.trim(),
-          online_payment_enabled: Boolean(onlinePaymentEnabled),
-          enabled_payment_methods: enabledPaymentMethods,
-          upi_vpa: upiVpa.trim() || "6388354988@okbizaxis",
-          upi_merchant_name: upiMerchantName.trim() || "Arun Gopal Traders",
-          upi_registered_phone: upiRegisteredPhone.trim() || "6388354988",
-          bank_account_holder: bankAccountHolder.trim() || null,
-          bank_name: bankName.trim() || null,
-          bank_account_number: bankAccountNumber.trim() || null,
-          bank_ifsc: bankIfsc.trim().toUpperCase() || null,
-          qr_code_mode: qrCodeMode.trim() || "dynamic",
-          qr_custom_note: qrCustomNote.trim() || "Arun Gopal Traders Grocery Order",
-          razorpay_key_id: razorpayKeyId.trim() || null,
-        } as never)
+        .update(updatePayload as never)
         .eq("id", 1);
 
+      // Graceful fallback if delivery_enabled or announcement_hi column is not yet created in Supabase
+      if (error && (error.message?.includes("delivery_enabled") || error.message?.includes("announcement_hi"))) {
+        if (error.message?.includes("delivery_enabled")) delete updatePayload["delivery_enabled"];
+        if (error.message?.includes("announcement_hi")) delete updatePayload["announcement_hi"];
+        const fallbackRes = await supabase
+          .from("store_settings")
+          .update(updatePayload as never)
+          .eq("id", 1);
+        error = fallbackRes.error;
+        if (!error) {
+          toast.info("Settings saved! Supabase SQL Editor me migration run karke new columns enable karein.");
+        }
+      }
+
       if (error) throw error;
-      toast.success("Store settings, payment gateway & receiving accounts updated successfully!");
+      toast.success("Store settings updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       broadcastSettingsSync();
       onRefresh();
@@ -464,13 +485,62 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
         {/* Delivery Tab */}
         <TabsContent value="delivery" className="space-y-4 sm:space-y-6">
+          {/* Master Home Delivery Toggle Card */}
+          <div className={`rounded-2xl sm:rounded-3xl border p-5 sm:p-6 transition-all shadow-2xs ${
+            deliveryEnabled
+              ? "border-[#145A45]/30 bg-gradient-to-tr from-[#E6EFE8]/70 via-white to-white"
+              : "border-amber-200 bg-gradient-to-tr from-amber-50/70 via-white to-white"
+          }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className={`grid size-12 place-items-center rounded-2xl shrink-0 transition-colors ${
+                  deliveryEnabled ? "bg-[#145A45] text-white shadow-md shadow-[#145A45]/20" : "bg-amber-100 text-amber-800 border border-amber-200"
+                }`}>
+                  {deliveryEnabled ? <Truck className="size-6" /> : <Store className="size-6" />}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-sans text-base sm:text-lg font-bold text-[#16201A]">
+                      Home Delivery Service (घर तक डिलीवरी सेवा)
+                    </h3>
+                    <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      deliveryEnabled
+                        ? "bg-[#145A45] text-white"
+                        : "bg-amber-600 text-white"
+                    }`}>
+                      {deliveryEnabled ? "चालू (ON)" : "बंद (OFF)"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#5A655F] mt-1 leading-relaxed">
+                    {deliveryEnabled
+                      ? "सक्रिय: ग्राहक चेकआउट पर होम डिलीवरी या दुकान से पिकअप दोनों चुन सकते हैं।"
+                      : "निष्क्रिय: होम डिलीवरी सेवा पूरे ऐप में बंद रहेगी। ग्राहक केवल दुकान पर आकर सामान ले सकेंगे (Store Pickup Only) और डिलीवरी चार्ज ₹0 रहेगा।"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+                <span className="text-xs font-bold text-[#16201A]">
+                  {deliveryEnabled ? "Delivery Enabled" : "Pickup Only"}
+                </span>
+                <Switch
+                  checked={deliveryEnabled}
+                  onCheckedChange={setDeliveryEnabled}
+                  className="data-[state=checked]:bg-[#145A45]"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
             <div>
               <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
                 <Truck className="size-5 text-[#145A45]" /> Delivery Charges &amp; Thresholds
               </h3>
               <p className="text-xs text-[#6B746F] mt-1">
-                Rules applied automatically at cart and checkout for Maharajganj deliveries.
+                {deliveryEnabled
+                  ? "Rules applied automatically at cart and checkout for Maharajganj deliveries."
+                  : "नोट: वर्तमान में होम डिलीवरी बंद है, इसलिए यह शुल्क लागू नहीं होगा (स्टोर पिकअप हमेशा ₹0 रहेगा)।"}
               </p>
             </div>
 
@@ -521,13 +591,48 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
             </div>
 
             <div className="grid gap-3 pt-1">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Top Announcement Bar Text</Label>
-                <Input
-                  value={announcement}
-                  onChange={(e) => setAnnouncement(e.target.value)}
-                  className="rounded-xl text-xs border-[#E8E4DA] h-9"
-                />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
+                    <span>Announcement Bar (English)</span>
+                    <span className="text-[10px] text-[#5A655F]">English View</span>
+                  </Label>
+                  <Input
+                    value={announcement}
+                    onChange={(e) => setAnnouncement(e.target.value)}
+                    placeholder="e.g. ⚡ 30-Min Express Delivery in Maharajganj • Free on ₹499+"
+                    className="rounded-xl text-xs border-[#E8E4DA] h-9"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
+                    <span>Announcement Bar (हिन्दी)</span>
+                    <span className="text-[10px] text-[#5A655F]">Hindi View</span>
+                  </Label>
+                  <Input
+                    value={announcementHi}
+                    onChange={(e) => setAnnouncementHi(e.target.value)}
+                    placeholder="उदा. ⚡ महाराजगंज में 30 मिनट एक्सप्रेस डिलीवरी • ₹499+ पर फ्री डिलीवरी"
+                    className="rounded-xl text-xs border-[#E8E4DA] h-9"
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="rounded-xl border border-[#0A3628] bg-gradient-to-r from-[#0F4A38] via-[#145A45] to-[#0F4A38] p-3 text-white shadow-2xs space-y-1.5">
+                <p className="text-[10px] font-bold text-[#E3B341] uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="size-3" /> Live Header Preview (कस्टमर को ऐसा दिखेगा)
+                </p>
+                <div className="flex flex-col gap-1 text-[11px]">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="rounded bg-white/20 px-1.5 py-0.2 text-[9px] font-bold shrink-0">EN</span>
+                    <span className="truncate text-white/90">{announcement.trim() ? announcement : <em className="text-white/50">No announcement set</em>}</span>
+                  </div>
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="rounded bg-white/20 px-1.5 py-0.2 text-[9px] font-bold shrink-0">HI</span>
+                    <span className="truncate text-white/90">{announcementHi.trim() ? announcementHi : <em className="text-white/50">कोई घोषणा सेट नहीं है</em>}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
