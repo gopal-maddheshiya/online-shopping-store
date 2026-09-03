@@ -281,11 +281,26 @@ function Shop() {
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E0D5] pb-4">
         <div>
-          <h1 className="font-sans text-2xl font-bold text-[#16201A]">
-            {activeCategory
-              ? getCategoryName(activeCategory)
-              : t.allGroceries}
-          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-sans text-2xl font-bold text-[#16201A]">
+              {search.q
+                ? `${lang === "hi" ? "खोज:" : "Search:"} “${search.q}”`
+                : activeCategory
+                ? getCategoryName(activeCategory)
+                : t.allGroceries}
+            </h1>
+            {search.q && (
+              <button
+                type="button"
+                onClick={() => update({ q: undefined })}
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-full transition-colors cursor-pointer"
+                title={lang === "hi" ? "खोज हटाएं" : "Clear search"}
+              >
+                <span>{lang === "hi" ? "हटाएं" : "Clear"}</span>
+                <X className="size-3" />
+              </button>
+            )}
+          </div>
           <p className="text-xs text-[#5A655F] mt-0.5">
             {lang === "hi"
               ? `कुल ${results.length} उत्पाद उपलब्ध हैं`

@@ -143,10 +143,10 @@ function PremiumStoreHome() {
 
   // Use only database categories
   const parentCategories = categories.filter((c) => !c.parent_id);
-  const foodSlugs = ["atta-flour","rice-grains","rice","pulses-dal","oil-ghee","spices-masala","salt-sugar","dry-fruits","tea-coffee","biscuits","namkeen-snacks","chocolates","noodles-pasta","sauces-spreads","dairy","beverages","packaged-foods","breakfast"];
-  const householdSlugs = ["household-cleaning","laundry","kitchen-essentials","utensils-cookware"];
-  const personalSlugs = ["personal-care","hair-care","skin-care","oral-care","baby-products"];
-  const otherSlugs = ["pooja-items","stationery","pet-supplies","misc-items"];
+  const foodSlugs = ["atta-flour", "rice-grains", "rice", "pulses-dal", "oil-ghee", "spices-masala", "salt-sugar", "dry-fruits", "tea-coffee", "biscuits", "namkeen-snacks", "chocolates", "noodles-pasta", "sauces-spreads", "dairy", "beverages", "packaged-foods", "breakfast"];
+  const householdSlugs = ["household-cleaning", "laundry", "kitchen-essentials", "utensils-cookware"];
+  const personalSlugs = ["personal-care", "hair-care", "skin-care", "oral-care", "baby-products"];
+  const otherSlugs = ["pooja-items", "stationery", "pet-supplies", "misc-items"];
   const allKnownSlugs = [...foodSlugs, ...householdSlugs, ...personalSlugs, ...otherSlugs];
 
   const foodCategories = parentCategories.filter(c => foodSlugs.includes(c.slug));
@@ -354,7 +354,7 @@ function PremiumStoreHome() {
                       <img
                         src={group.bannerBefore}
                         alt={group.bannerAlt}
-                        className="w-full aspect-[21/9] sm:aspect-video object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
+                        className="w-full aspect-[21/9] object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
@@ -455,8 +455,8 @@ function PremiumStoreHome() {
           {featLoading
             ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
             : featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              <ProductCard key={product.id} product={product} />
+            ))}
         </div>
       </section>
 

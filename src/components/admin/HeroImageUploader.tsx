@@ -35,7 +35,7 @@ export function HeroImageUploader({
     setIsUploading(true);
     try {
       toast.loading(`Uploading ${fieldKey} banner...`, { id: `${fieldKey}-upload` });
-      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
+      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 823, 0.9);
 
       const fileName = `${fieldKey}_banner_${Date.now()}.webp`;
       const filePath = `hero/${fileName}`;
@@ -128,7 +128,7 @@ export function HeroImageUploader({
       </div>
 
       <p className="text-[10px] text-[#6B746F]">
-        Recommended: 1920×1080px (16:9). Max 5MB.
+        Recommended: 1920×823px (21:9 ultra-wide). Max 5MB.
       </p>
 
       {value ? (
@@ -136,14 +136,14 @@ export function HeroImageUploader({
           <img
             src={value}
             alt={`${label} preview`}
-            className="w-full aspect-video object-cover"
+            className="w-full aspect-[21/9] object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}
           />
         </div>
       ) : (
-        <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center py-6 gap-1.5">
+        <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center aspect-[21/9] gap-1.5">
           <ImageIcon className="size-6 text-[#C5BEA8]" />
           <p className="text-[11px] text-[#9B9585] font-medium">No {label.toLowerCase()} set</p>
           <p className="text-[10px] text-[#C5BEA8]">Upload or paste a URL above</p>

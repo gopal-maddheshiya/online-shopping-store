@@ -654,7 +654,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 <ImageIcon className="size-5 text-[#145A45]" /> Category Section Banners
               </h3>
               <p className="text-xs text-[#6B746F] mt-1">
-                These banners appear between category groups on the homepage. Each banner is the same size as the main hero (1920×1080 / 16:9). Leave empty to hide.
+                These banners appear between category groups on the homepage. They are slightly shorter than the main hero (21:9 ultra-wide). Recommended: 1920×823px. Leave empty to hide.
               </p>
             </div>
 

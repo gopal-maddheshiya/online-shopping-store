@@ -83,10 +83,11 @@ export function Header() {
     }).slice(0, 5)
     : [];
 
-  function submitSearch(e: React.FormEvent) {
-    e.preventDefault();
+  function submitSearch(e?: React.FormEvent, customTerm?: string) {
+    e?.preventDefault();
     setShowSuggestions(false);
-    void navigate({ to: "/shop", search: { q: term.trim() || undefined } as never });
+    const q = (customTerm !== undefined ? customTerm : term).trim();
+    void navigate({ to: "/shop", search: { q: q || undefined } as never });
   }
 
   const storePhone = settings?.phone ?? "+91 6388354988";
@@ -330,6 +331,7 @@ export function Header() {
                 setShowSuggestions(true);
               }}
               onSubmit={submitSearch}
+              onVoiceSearch={(val) => submitSearch(undefined, val)}
               onFocus={() => setShowSuggestions(true)}
               variant="desktop"
               ariaLabel="Search grocery items"
@@ -497,6 +499,7 @@ export function Header() {
               setShowSuggestions(true);
             }}
             onSubmit={submitSearch}
+            onVoiceSearch={(val) => submitSearch(undefined, val)}
             onFocus={() => setShowSuggestions(true)}
             variant="mobile"
             ariaLabel="Mobile search"
