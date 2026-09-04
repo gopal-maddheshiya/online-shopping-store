@@ -1255,7 +1255,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                   type="password"
                   value={telegramBotToken}
                   onChange={(e) => setTelegramBotToken(e.target.value)}
-                  placeholder="8654538443:AAE_5yJ5GnmIYCKFz6A9lwcOT-_-4GqgFZc"
+                  placeholder="1234567890:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
                   className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
                 />
               </div>
@@ -1265,7 +1265,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 <Input
                   value={telegramChatId}
                   onChange={(e) => setTelegramChatId(e.target.value)}
-                  placeholder="5935206082"
+                  placeholder="123456789"
                   className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
                 />
               </div>

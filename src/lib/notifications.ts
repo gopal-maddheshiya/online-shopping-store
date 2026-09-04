@@ -6,8 +6,10 @@
 import { inr, formatDate } from "@/lib/format";
 import type { Order, StoreSettings } from "@/lib/queries";
 
-export const DEFAULT_TELEGRAM_BOT_TOKEN = "8654538443:AAE_5yJ5GnmIYCKFz6A9lwcOT-_-4GqgFZc";
-export const DEFAULT_TELEGRAM_CHAT_ID = "5935206082";
+export const DEFAULT_TELEGRAM_BOT_TOKEN =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_TELEGRAM_BOT_TOKEN) || "";
+export const DEFAULT_TELEGRAM_CHAT_ID =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_TELEGRAM_CHAT_ID) || "";
 
 export interface TelegramOrderAlertPayload {
   orderNo: string;
