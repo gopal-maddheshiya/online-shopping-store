@@ -82,7 +82,7 @@ const TABS = [
 function AdminPage() {
   const { user, isAdmin, profile, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [adminIdentifier, setAdminIdentifier] = useState("gopalmaddheshiya138@gmail.com");
+  const [adminIdentifier, setAdminIdentifier] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -124,6 +124,11 @@ function AdminPage() {
     const cleanInput = adminIdentifier.trim();
     const pass = adminPassword.trim();
 
+    if (!cleanInput) {
+      toast.error("कृपया अपना एडमिन ईमेल या मोबाइल नंबर दर्ज करें");
+      return;
+    }
+
     if (!pass) {
       toast.error("कृपया एडमिन पासवर्ड दर्ज करें");
       return;
@@ -133,18 +138,19 @@ function AdminPage() {
     try {
       let authSuccess = false;
 
-      // 1. Try standard email login (Default primary admin: gopalmaddheshiya138@gmail.com)
+      // 1. Try standard email login
       const isEmail = cleanInput.includes("@");
-      const targetEmail = isEmail ? cleanInput : "gopalmaddheshiya138@gmail.com";
 
-      const emailRes = await supabase.auth.signInWithPassword({
-        email: targetEmail,
-        password: pass,
-      });
+      if (isEmail) {
+        const emailRes = await supabase.auth.signInWithPassword({
+          email: cleanInput,
+          password: pass,
+        });
 
-      if (!emailRes.error && emailRes.data.session) {
-        authSuccess = true;
-      } else if (!isEmail) {
+        if (!emailRes.error && emailRes.data.session) {
+          authSuccess = true;
+        }
+      } else {
         // 2. If entered as phone number, try phone auth
         const cleanDigits = cleanInput.replace(/\D/g, "").slice(-10);
         if (cleanDigits.length === 10) {
@@ -159,11 +165,12 @@ function AdminPage() {
       }
 
       if (!authSuccess) {
-        toast.error("गलत पासवर्ड! कृपया सही एडमिन पासवर्ड दर्ज करें।");
+        toast.error("अमान्य विवरण! कृपया सही एडमिन ईमेल/फोन और पासवर्ड दर्ज करें।");
         return;
       }
 
       await refreshProfile();
+      setAdminIdentifier("");
       setAdminPassword("");
       toast.success("Welcome back to Arun Gopal Traders Admin!");
     } catch (err: unknown) {
@@ -210,13 +217,14 @@ function AdminPage() {
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-[#16201A]">Admin Email / Username</label>
-                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Verified Admin</span>
+                <label className="text-xs font-bold text-[#16201A]">Admin Email / Phone</label>
+                <span className="text-[10px] text-[#5A655F] bg-[#FAF8F2] px-2 py-0.5 rounded-full font-medium border border-[#E5E0D5]">Authorized Access</span>
               </div>
               <Input
                 type="text"
                 required
-                placeholder="gopalmaddheshiya138@gmail.com"
+                autoFocus
+                placeholder="अपना एडमिन ईमेल या मोबाइल नंबर दर्ज करें"
                 value={adminIdentifier}
                 onChange={(e) => setAdminIdentifier(e.target.value)}
                 className="h-11 rounded-lg border-[#E5E0D5] bg-white text-sm font-medium focus-visible:border-[#145A45]"
@@ -228,8 +236,7 @@ function AdminPage() {
               <Input
                 type="password"
                 required
-                autoFocus
-                placeholder="••••••••"
+                placeholder="अपना एडमिन पासवर्ड दर्ज करें"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 className="h-11 rounded-lg border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
@@ -239,7 +246,7 @@ function AdminPage() {
             <Button
               type="submit"
               disabled={isAuthenticating}
-              className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm disabled:opacity-50"
+              className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm disabled:opacity-50 cursor-pointer"
             >
               {isAuthenticating ? "Authenticating..." : "Login to Admin Dashboard"} <ShieldCheck className="ml-2 size-4" />
             </Button>

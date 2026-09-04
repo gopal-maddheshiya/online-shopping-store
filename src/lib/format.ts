@@ -21,7 +21,7 @@ export function prettyPhone(phone: string): string {
   return "+91 " + digits;
 }
 
-export const ORDER_STATUS_FLOW = [
+export const ORDER_STATUS_FLOW_DELIVERY = [
   "placed",
   "confirmed",
   "preparing",
@@ -30,13 +30,34 @@ export const ORDER_STATUS_FLOW = [
   "delivered",
 ] as const;
 
+export const ORDER_STATUS_FLOW_PICKUP = [
+  "placed",
+  "confirmed",
+  "preparing",
+  "ready",
+  "delivered",
+] as const;
+
+export const ORDER_STATUS_FLOW = ORDER_STATUS_FLOW_DELIVERY;
+
 export const ORDER_STATUS_LABEL: Record<string, string> = {
   placed: "Order Placed",
   confirmed: "Order Confirmed",
   preparing: "Preparing",
-  ready: "Ready for Delivery / Pickup",
+  ready: "Ready for Delivery",
   out_for_delivery: "Out for Delivery",
   delivered: "Delivered",
+  cancelled: "Cancelled",
+  rejected: "Rejected",
+  returned: "Returned",
+};
+
+export const ORDER_STATUS_LABEL_PICKUP: Record<string, string> = {
+  placed: "Order Placed",
+  confirmed: "Order Confirmed",
+  preparing: "Packing Items",
+  ready: "Ready for Store Pickup",
+  delivered: "Picked Up (Received)",
   cancelled: "Cancelled",
   rejected: "Rejected",
   returned: "Returned",
@@ -54,10 +75,32 @@ export const ORDER_STATUS_LABEL_HI: Record<string, string> = {
   returned: "वापस हुआ",
 };
 
-export function getOrderStatusLabel(status: string | null | undefined, lang: "hi" | "en" = "en"): string {
+export const ORDER_STATUS_LABEL_PICKUP_HI: Record<string, string> = {
+  placed: "ऑर्डर प्राप्त हुआ",
+  confirmed: "ऑर्डर स्वीकृत",
+  preparing: "सामान पैक हो रहा है",
+  ready: "दुकान पर तैयार (पिकअप करें)",
+  delivered: "सामान प्राप्त कर लिया",
+  cancelled: "ऑर्डर रद्द हुआ",
+  rejected: "अस्वीकृत",
+  returned: "वापस हुआ",
+};
+
+export function getOrderStatusLabel(
+  status: string | null | undefined,
+  lang: "hi" | "en" = "en",
+  orderType: "delivery" | "pickup" = "delivery"
+): string {
   if (!status) return "";
+  const isPickup = orderType === "pickup";
   if (lang === "hi") {
+    if (isPickup && ORDER_STATUS_LABEL_PICKUP_HI[status]) {
+      return ORDER_STATUS_LABEL_PICKUP_HI[status];
+    }
     return ORDER_STATUS_LABEL_HI[status] ?? ORDER_STATUS_LABEL[status] ?? status;
+  }
+  if (isPickup && ORDER_STATUS_LABEL_PICKUP[status]) {
+    return ORDER_STATUS_LABEL_PICKUP[status];
   }
   return ORDER_STATUS_LABEL[status] ?? status;
 }

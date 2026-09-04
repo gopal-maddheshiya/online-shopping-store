@@ -334,6 +334,7 @@ function TrackPage() {
             <div className="mt-4">
               <OrderTimeline
                 currentStatus={searchedOrder.status}
+                orderType={searchedOrder.order_type}
                 events={searchedOrder.order_events}
               />
             </div>

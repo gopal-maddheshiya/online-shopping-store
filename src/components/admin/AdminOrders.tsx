@@ -616,9 +616,18 @@ export function AdminOrders({
                         <SelectItem value="placed">1. Placed (प्राप्त)</SelectItem>
                         <SelectItem value="confirmed">2. Confirmed (स्वीकृत)</SelectItem>
                         <SelectItem value="preparing">3. Preparing (पैकिंग)</SelectItem>
-                        <SelectItem value="ready">4. Ready (तैयार)</SelectItem>
-                        <SelectItem value="out_for_delivery">5. Out for Delivery</SelectItem>
-                        <SelectItem value="delivered">6. Delivered (सफल)</SelectItem>
+                        {order.order_type === "pickup" ? (
+                          <>
+                            <SelectItem value="ready">4. Ready for Pickup (दुकान पर तैयार)</SelectItem>
+                            <SelectItem value="delivered">5. Picked Up (सामान दिया गया)</SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="ready">4. Ready (तैयार)</SelectItem>
+                            <SelectItem value="out_for_delivery">5. Out for Delivery</SelectItem>
+                            <SelectItem value="delivered">6. Delivered (सफल)</SelectItem>
+                          </>
+                        )}
                         <SelectItem value="cancelled">❌ Cancelled (रद्द)</SelectItem>
                       </SelectContent>
                     </Select>
@@ -724,9 +733,18 @@ export function AdminOrders({
                             <SelectItem value="placed" className="text-xs font-medium">1. Placed (प्राप्त)</SelectItem>
                             <SelectItem value="confirmed" className="text-xs font-medium">2. Confirmed (स्वीकृत)</SelectItem>
                             <SelectItem value="preparing" className="text-xs font-medium">3. Preparing (पैकिंग)</SelectItem>
-                            <SelectItem value="ready" className="text-xs font-medium">4. Ready (तैयार)</SelectItem>
-                            <SelectItem value="out_for_delivery" className="text-xs font-medium">5. Out for Delivery</SelectItem>
-                            <SelectItem value="delivered" className="text-xs font-medium text-[#145A45] font-bold">6. Delivered (सफल)</SelectItem>
+                            {order.order_type === "pickup" ? (
+                              <>
+                                <SelectItem value="ready" className="text-xs font-medium">4. Ready for Pickup (दुकान पर तैयार)</SelectItem>
+                                <SelectItem value="delivered" className="text-xs font-medium text-[#145A45] font-bold">5. Picked Up (सामान दिया गया)</SelectItem>
+                              </>
+                            ) : (
+                              <>
+                                <SelectItem value="ready" className="text-xs font-medium">4. Ready (तैयार)</SelectItem>
+                                <SelectItem value="out_for_delivery" className="text-xs font-medium">5. Out for Delivery</SelectItem>
+                                <SelectItem value="delivered" className="text-xs font-medium text-[#145A45] font-bold">6. Delivered (सफल)</SelectItem>
+                              </>
+                            )}
                             <SelectItem value="cancelled" className="text-xs font-medium text-destructive">❌ Cancelled (रद्द)</SelectItem>
                           </SelectContent>
                         </Select>
@@ -806,6 +824,7 @@ export function AdminOrders({
                 <h4 className="text-[11px] font-bold text-[#6B746F] uppercase mb-1">Live Order Lifecycle</h4>
                 <OrderTimeline
                   currentStatus={selectedOrder.status}
+                  orderType={selectedOrder.order_type}
                   events={selectedOrder.order_events}
                 />
               </div>
