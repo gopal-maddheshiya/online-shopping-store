@@ -54,6 +54,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { inr, telHref } from "@/lib/format";
 import { registerPlacedOrder } from "@/lib/orders";
 import { broadcastNewOrder } from "@/lib/realtime-sync";
+import { sendTelegramOrderNotification } from "@/lib/notifications";
 import {
   loadRazorpayScript,
   getPublicRazorpayKey,
@@ -398,6 +399,28 @@ function CheckoutPage() {
         customerName: name.trim(),
         createdAt: new Date().toISOString(),
       });
+
+      // Dispatch Instant Telegram Order Alert to Store Owner (100% automated & zero-cost)
+      void sendTelegramOrderNotification(
+        {
+          orderNo,
+          customerName: name.trim(),
+          customerPhone: cleanPhone,
+          orderType,
+          address: orderType === "delivery" ? addressPayload : null,
+          items: items.map((it) => ({
+            name: it.name_hi || it.name,
+            qty: it.qty,
+            price: it.price,
+            variant_label: it.variantLabel_hi || it.variantLabel,
+          })),
+          total: grandTotal,
+          paymentMethod,
+          createdAt: new Date().toISOString(),
+          customerNote: instructions.trim() || null,
+        },
+        settings
+      );
 
       // Save customer info locally for instant future checkout
       localStorage.setItem("agt.last_phone", cleanPhone);

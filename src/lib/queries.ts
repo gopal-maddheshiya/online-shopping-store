@@ -109,6 +109,8 @@ export type StoreSettings = {
   hero2_image_url?: string | null;
   hero3_image_url?: string | null;
   hero4_image_url?: string | null;
+  telegram_bot_token?: string | null;
+  telegram_chat_id?: string | null;
 };
 
 export type OrderItem = {

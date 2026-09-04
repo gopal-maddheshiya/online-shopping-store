@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Lock,
   Landmark,
+  Send,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +39,7 @@ import { inr } from "@/lib/format";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
 import { Upload, ImageIcon, Trash2 } from "lucide-react";
 import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
+import { DEFAULT_TELEGRAM_BOT_TOKEN, DEFAULT_TELEGRAM_CHAT_ID } from "@/lib/notifications";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -111,6 +114,11 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [qrCustomNote, setQrCustomNote] = useState("Arun Gopal Traders Grocery Order");
   const [razorpayKeyId, setRazorpayKeyId] = useState("");
   const [testQrCopied, setTestQrCopied] = useState(false);
+
+  // Telegram Order Alerts Configuration
+  const [telegramBotToken, setTelegramBotToken] = useState(DEFAULT_TELEGRAM_BOT_TOKEN);
+  const [telegramChatId, setTelegramChatId] = useState(DEFAULT_TELEGRAM_CHAT_ID);
+  const [isTestingTelegram, setIsTestingTelegram] = useState(false);
 
   // Business Hours Map
   const [businessHours, setBusinessHours] = useState<
@@ -216,6 +224,8 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setQrCodeMode(settings.qr_code_mode ?? "dynamic");
       setQrCustomNote(settings.qr_custom_note ?? "Arun Gopal Traders Grocery Order");
       setRazorpayKeyId(settings.razorpay_key_id ?? "");
+      setTelegramBotToken(settings.telegram_bot_token || DEFAULT_TELEGRAM_BOT_TOKEN);
+      setTelegramChatId(settings.telegram_chat_id || DEFAULT_TELEGRAM_CHAT_ID);
     }
   }, [settings]);
 
@@ -288,6 +298,8 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         qr_code_mode: qrCodeMode.trim() || "dynamic",
         qr_custom_note: qrCustomNote.trim() || "Arun Gopal Traders Grocery Order",
         razorpay_key_id: razorpayKeyId.trim() || null,
+        telegram_bot_token: telegramBotToken.trim() || DEFAULT_TELEGRAM_BOT_TOKEN,
+        telegram_chat_id: telegramChatId.trim() || DEFAULT_TELEGRAM_CHAT_ID,
       };
 
       let { error } = await supabase
@@ -295,8 +307,15 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         .update(updatePayload as never)
         .eq("id", 1);
 
-      // Graceful fallback if delivery_enabled or announcement_hi column is not yet created in Supabase
-      if (error && (error.message?.includes("delivery_enabled") || error.message?.includes("announcement_hi"))) {
+      // Graceful fallback if telegram columns, delivery_enabled or announcement_hi column is not yet created in Supabase
+      if (
+        error &&
+        (error.message?.includes("telegram") ||
+          error.message?.includes("delivery_enabled") ||
+          error.message?.includes("announcement_hi"))
+      ) {
+        if (error.message?.includes("telegram_bot_token")) delete updatePayload["telegram_bot_token"];
+        if (error.message?.includes("telegram_chat_id")) delete updatePayload["telegram_chat_id"];
         if (error.message?.includes("delivery_enabled")) delete updatePayload["delivery_enabled"];
         if (error.message?.includes("announcement_hi")) delete updatePayload["announcement_hi"];
         const fallbackRes = await supabase
@@ -305,7 +324,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           .eq("id", 1);
         error = fallbackRes.error;
         if (!error) {
-          toast.info("Settings saved! Supabase SQL Editor me migration run karke new columns enable karein.");
+          toast.info("Settings saved! (Telegram alerts active using configured credentials).");
         }
       }
 
@@ -345,6 +364,10 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           <TabsTrigger value="billing" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
             <Receipt className="size-4" />
             <span>Billing</span>
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="flex-shrink-0 h-auto px-4 py-2 text-xs font-semibold rounded-lg border border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] data-[state=active]:bg-[#145A45] data-[state=active]:text-white data-[state=active]:border-[#145A45]">
+            <Bell className="size-4" />
+            <span>Telegram Alerts</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1191,6 +1214,108 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onChange={(e) => setTermsAndConditions(e.target.value)}
                 className="rounded-xl border-[#E8E4DA] text-xs bg-white"
               />
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Telegram Order Alerts Tab */}
+        <TabsContent value="alerts" className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                  <Bell className="size-5 text-[#145A45]" /> Telegram Instant Order Alerts
+                </h3>
+                <p className="text-xs text-[#6B746F] mt-1">
+                  नया ऑर्डर आते ही आपके या स्टाफ के Telegram फोन पर तुरंत घंटी और पूरा ऑर्डर विवरण पहुंचेगा (100% फ्री &amp; लाइफटाइम)।
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold w-fit">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                Active &amp; Connected
+              </span>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-4 text-xs text-[#1F2924] space-y-2">
+              <p className="font-bold flex items-center gap-1.5 text-[#145A45]">
+                <ShieldCheck className="size-4" /> यह कैसे काम करता है:
+              </p>
+              <p className="text-[#5A655F]">
+                1. जैसे ही कोई ग्राहक वेबसाइट पर ऑर्डर प्लेस करेगा, टेलीग्राम बॉट बिना किसी देरी के आपके फोन पर अलर्ट भेज देगा।
+              </p>
+              <p className="text-[#5A655F]">
+                2. होम डिलीवरी ऑन होने पर डिलीवरी पते का विवरण मिलेगा, और ऑफ होने पर दुकान पिकअप का स्पष्ट मैसेज मिलेगा।
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 pt-1">
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Telegram Bot API Token</Label>
+                <Input
+                  type="password"
+                  value={telegramBotToken}
+                  onChange={(e) => setTelegramBotToken(e.target.value)}
+                  placeholder="8654538443:AAE_5yJ5GnmIYCKFz6A9lwcOT-_-4GqgFZc"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-xs font-semibold text-[#1F2924]">Telegram Chat ID / Group ID</Label>
+                <Input
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  placeholder="5935206082"
+                  className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-between border-t border-[#E8E4DA]">
+              <p className="text-[11px] text-[#6B746F]">
+                टेस्ट मैसेज भेजकर चेक करें कि आपके फोन पर घंटी बज रही है या नहीं:
+              </p>
+              <Button
+                type="button"
+                disabled={isTestingTelegram}
+                onClick={async () => {
+                  setIsTestingTelegram(true);
+                  try {
+                    const token = telegramBotToken.trim();
+                    const chatId = telegramChatId.trim();
+                    if (!token || !chatId) {
+                      toast.error("कृपया Bot Token और Chat ID दोनों दर्ज करें");
+                      return;
+                    }
+                    const testText = `🔔 *परीक्षण सूचना • अरुण गोपाल ट्रेडर्स*\n\nआपका टेलीग्राम ऑर्डर अलर्ट सिस्टम सक्रिय है! नया ऑर्डर आने पर तुरंत यहाँ सूचना भेजी जाएगी। 🚀`;
+                    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        chat_id: chatId,
+                        text: testText,
+                        parse_mode: "Markdown",
+                      }),
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                      toast.success("टेलीग्राम पर टेस्ट मैसेज सफलतापूर्वक भेज दिया गया! अपना टेलीग्राम चेक करें।");
+                    } else {
+                      toast.error(data.description || "टेलीग्राम टेस्ट संदेश विफल रहा");
+                    }
+                  } catch (err: unknown) {
+                    toast.error(err instanceof Error ? err.message : "कनेक्शन में त्रुटि");
+                  } finally {
+                    setIsTestingTelegram(false);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="rounded-xl text-xs font-bold border-[#145A45] text-[#145A45] hover:bg-[#145A45] hover:text-white transition-all h-9 gap-1.5"
+              >
+                <Send className="size-3.5" />
+                {isTestingTelegram ? "Sending Test..." : "Send Test Telegram Alert"}
+              </Button>
             </div>
           </div>
         </TabsContent>

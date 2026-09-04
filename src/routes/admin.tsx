@@ -82,7 +82,7 @@ const TABS = [
 function AdminPage() {
   const { user, isAdmin, profile, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [adminPhone, setAdminPhone] = useState("6388354988");
+  const [adminIdentifier, setAdminIdentifier] = useState("gopalmaddheshiya138@gmail.com");
   const [adminPassword, setAdminPassword] = useState("");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -121,27 +121,45 @@ function AdminPage() {
 
   async function handleUnlock(e: React.FormEvent) {
     e.preventDefault();
-    const clean = adminPhone.replace(/\D/g, "").slice(-10);
-    if (clean.length !== 10) {
-      toast.error("कृपया 10 अंकों का एडमिन मोबाइल नंबर दर्ज करें");
-      return;
-    }
+    const cleanInput = adminIdentifier.trim();
+    const pass = adminPassword.trim();
 
-    if (!adminPassword.trim()) {
+    if (!pass) {
       toast.error("कृपया एडमिन पासवर्ड दर्ज करें");
       return;
     }
 
     setIsAuthenticating(true);
     try {
-      const fullPhone = `+91${clean}`;
-      const { data, error } = await supabase.auth.signInWithPassword({
-        phone: fullPhone,
-        password: adminPassword.trim(),
+      let authSuccess = false;
+
+      // 1. Try standard email login (Default primary admin: gopalmaddheshiya138@gmail.com)
+      const isEmail = cleanInput.includes("@");
+      const targetEmail = isEmail ? cleanInput : "gopalmaddheshiya138@gmail.com";
+
+      const emailRes = await supabase.auth.signInWithPassword({
+        email: targetEmail,
+        password: pass,
       });
 
-      if (error || !data.session) {
-        toast.error("अमान्य एडमिन क्रेडेंशियल्स। कृपया सही पासवर्ड दर्ज करें।");
+      if (!emailRes.error && emailRes.data.session) {
+        authSuccess = true;
+      } else if (!isEmail) {
+        // 2. If entered as phone number, try phone auth
+        const cleanDigits = cleanInput.replace(/\D/g, "").slice(-10);
+        if (cleanDigits.length === 10) {
+          const phoneRes = await supabase.auth.signInWithPassword({
+            phone: `+91${cleanDigits}`,
+            password: pass,
+          });
+          if (!phoneRes.error && phoneRes.data.session) {
+            authSuccess = true;
+          }
+        }
+      }
+
+      if (!authSuccess) {
+        toast.error("गलत पासवर्ड! कृपया सही एडमिन पासवर्ड दर्ज करें।");
         return;
       }
 
@@ -191,14 +209,17 @@ function AdminPage() {
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#16201A]">Admin Mobile Number</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#16201A]">Admin Email / Username</label>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">Verified Admin</span>
+              </div>
               <Input
-                type="tel"
+                type="text"
                 required
-                placeholder="6388354988"
-                value={adminPhone}
-                onChange={(e) => setAdminPhone(e.target.value)}
-                className="h-11 rounded-lg border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
+                placeholder="gopalmaddheshiya138@gmail.com"
+                value={adminIdentifier}
+                onChange={(e) => setAdminIdentifier(e.target.value)}
+                className="h-11 rounded-lg border-[#E5E0D5] bg-white text-sm font-medium focus-visible:border-[#145A45]"
               />
             </div>
 

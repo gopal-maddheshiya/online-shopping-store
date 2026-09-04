@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { inr, formatDate, telHref, waHref, ORDER_STATUS_LABEL } from "@/lib/format";
+import { buildCustomerWhatsAppMessage } from "@/lib/notifications";
 import { getProductImage } from "@/lib/product-images";
 import type { Order } from "@/lib/queries";
 import { OrderTimeline } from "@/components/OrderTimeline";
@@ -571,13 +572,23 @@ export function AdminOrders({
                     <span className="text-[10px] text-[#6B746F] uppercase font-bold">
                       Customer
                     </span>
-                    <p className="font-semibold text-[#1F2924] truncate">{order.customer_name}</p>
-                    <a
-                      href={telHref(order.customer_phone)}
-                      className="inline-flex items-center gap-1 font-mono text-xs text-[#145A45] font-bold py-1 hover:underline"
-                    >
-                      <Phone className="size-3.5" /> +91 {order.customer_phone}
-                    </a>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <a
+                        href={telHref(order.customer_phone)}
+                        className="inline-flex items-center gap-1 font-mono text-xs text-[#145A45] font-bold py-1 hover:underline"
+                      >
+                        <Phone className="size-3.5" /> +91 {order.customer_phone}
+                      </a>
+                      <a
+                        href={waHref(order.customer_phone, buildCustomerWhatsAppMessage(order))}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all text-[10px] font-bold"
+                        title="व्हाट्सएप पर ऑर्डर संदेश भेजें"
+                      >
+                        <MessageCircle className="size-3" /> व्हाट्सएप
+                      </a>
+                    </div>
                   </div>
 
                   <div>
@@ -662,16 +673,13 @@ export function AdminOrders({
                             <Phone className="size-3" /> +91 {order.customer_phone}
                           </a>
                           <a
-                            href={waHref(
-                              order.customer_phone,
-                              `नमस्ते ${order.customer_name}, अरुण गोपाल ट्रेडर्स से आपके ऑर्डर ${order.order_no} (राशि: ${inr(order.total)}) की स्थिति: ${ORDER_STATUS_LABEL[order.status] ?? order.status}`
-                            )}
+                            href={waHref(order.customer_phone, buildCustomerWhatsAppMessage(order))}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[#25D366] hover:opacity-80"
-                            title="Chat on WhatsApp"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all text-[10px] font-bold"
+                            title="व्हाट्सएप पर ऑर्डर संदेश भेजें"
                           >
-                            <MessageCircle className="size-3.5" />
+                            <MessageCircle className="size-3" /> व्हाट्सएप
                           </a>
                         </div>
                       </td>
@@ -817,15 +825,12 @@ export function AdminOrders({
                       <Phone className="size-3" /> +91 {selectedOrder.customer_phone}
                     </a>
                     <a
-                      href={waHref(
-                        selectedOrder.customer_phone,
-                        `नमस्ते ${selectedOrder.customer_name}, अरुण गोपाल ट्रेडर्स से आपके ऑर्डर ${selectedOrder.order_no} की जानकारी:`
-                      )}
+                      href={waHref(selectedOrder.customer_phone, buildCustomerWhatsAppMessage(selectedOrder))}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-[#25D366] font-bold hover:underline"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#25D366] text-white font-bold hover:bg-[#1ebd59] transition-all shadow-xs text-xs"
                     >
-                      <MessageCircle className="size-3" /> WhatsApp
+                      <MessageCircle className="size-3.5" /> व्हाट्सएप पर ऑर्डर संदेश भेजें
                     </a>
                   </div>
                   {selectedOrder.customer_email && (
