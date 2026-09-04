@@ -111,6 +111,7 @@ export type StoreSettings = {
   hero4_image_url?: string | null;
   telegram_bot_token?: string | null;
   telegram_chat_id?: string | null;
+  category_headings?: any[] | null;
 };
 
 export type OrderItem = {

@@ -21,6 +21,9 @@ import {
   Landmark,
   Send,
   Bell,
+  ImageIcon,
+  Upload,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,9 +40,9 @@ import type { StoreSettings } from "@/lib/queries";
 import { generateUpiUri, generateQrCodeUrl } from "@/lib/payment-gateway";
 import { inr } from "@/lib/format";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
-import { Upload, ImageIcon, Trash2 } from "lucide-react";
 import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
 import { DEFAULT_TELEGRAM_BOT_TOKEN, DEFAULT_TELEGRAM_CHAT_ID } from "@/lib/notifications";
+import { getCategoryHeadings, saveCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -126,6 +129,68 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   >({});
 
   const [isSaving, setIsSaving] = useState(false);
+
+  // Dynamic Category Headings for Banners
+  const [headings, setHeadings] = useState<CategoryHeading[]>(() => getCategoryHeadings());
+
+  useEffect(() => {
+    const handleUpdate = () => setHeadings(getCategoryHeadings());
+    window.addEventListener("agt:headings-updated", handleUpdate);
+    return () => window.removeEventListener("agt:headings-updated", handleUpdate);
+  }, []);
+
+  async function handleCustomHeadingBannerUpload(headingId: string, file: File) {
+    try {
+      toast.loading("Uploading banner...", { id: `banner-${headingId}` });
+      const { blob } = await compressAndOptimizeImage(file, 1920, 823, 0.9);
+      const fileName = `custom_banner_${headingId}_${Date.now()}.webp`;
+      const filePath = `hero/${fileName}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(filePath, blob, {
+          cacheControl: "31536000",
+          upsert: true,
+          contentType: blob.type || "image/webp",
+        });
+
+      let publicUrl = "";
+      if (!uploadError && uploadData) {
+        const { data: pubData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+        publicUrl = pubData.publicUrl;
+      } else {
+        const { data: uploadData2 } = await supabase.storage.from("products").upload(filePath, blob, { upsert: true });
+        if (uploadData2) {
+          const { data: pubData2 } = supabase.storage.from("products").getPublicUrl(filePath);
+          publicUrl = pubData2.publicUrl;
+        }
+      }
+
+      if (publicUrl) {
+        const currentList = getCategoryHeadings();
+        const target = currentList.find((h) => h.id === headingId);
+        if (target) {
+          target.banner_image_url = publicUrl;
+          saveCategoryHeadings(currentList);
+          setHeadings([...currentList]);
+          toast.success("हेडिंग बैनर इमेज सेव हो गई!", { id: `banner-${headingId}` });
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      toast.error(msg, { id: `banner-${headingId}` });
+    }
+  }
+
+  function handleRemoveCustomHeadingBanner(headingId: string) {
+    const currentList = getCategoryHeadings();
+    const target = currentList.find((h) => h.id === headingId);
+    if (target) {
+      target.banner_image_url = null;
+      saveCategoryHeadings(currentList);
+      setHeadings([...currentList]);
+      toast.success("हेडिंग बैनर हटा दिया गया");
+    }
+  }
 
   async function saveHeroImageToDb(url: string | null) {
     return saveHeroImageFieldToDb("hero_image_url", url);
@@ -814,6 +879,78 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onSave={(url) => saveHeroImageFieldToDb("hero4_image_url", url)}
                 onRefresh={onRefresh}
               />
+
+              {/* Dynamic Banners for Additional/Custom Headings */}
+              {headings
+                .filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id))
+                .map((h) => (
+                  <div
+                    key={h.id}
+                    className="p-4 rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
+                          <span>{h.icon || "📦"}</span>
+                          <span>बैनर: {h.title_hi} ({h.title_en})</span>
+                        </h4>
+                        <p className="text-[11px] text-[#6B746F]">
+                          होमपेज पर इस हेडिंग के ठीक नीचे दिखाई देगा
+                        </p>
+                      </div>
+                      {h.banner_image_url && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCustomHeadingBanner(h.id)}
+                          className="text-xs text-red-600 hover:underline flex items-center gap-1"
+                        >
+                          <Trash2 className="size-3.5" /> बैनर हटाएं
+                        </button>
+                      )}
+                    </div>
+
+                    {h.banner_image_url && (
+                      <div className="relative aspect-[21/9] rounded-xl overflow-hidden border border-[#E8E4DA] bg-neutral-100 shadow-2xs">
+                        <img
+                          src={h.banner_image_url}
+                          alt={h.title_hi}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="बैनर इमेज URL या फ़ाइल अपलोड करें"
+                        value={h.banner_image_url || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const currentList = getCategoryHeadings();
+                          const target = currentList.find((item) => item.id === h.id);
+                          if (target) {
+                            target.banner_image_url = val || null;
+                            saveCategoryHeadings(currentList);
+                            setHeadings([...currentList]);
+                          }
+                        }}
+                        className="rounded-xl border-[#E8E4DA] text-xs h-9 bg-white"
+                      />
+                      <label className="flex items-center justify-center gap-1.5 px-3 rounded-xl border border-[#E8E4DA] bg-white hover:bg-[#E6EFE8] cursor-pointer shrink-0 text-xs font-bold text-[#145A45] transition-colors">
+                        <Upload className="size-4" />
+                        <span>अपलोड</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleCustomHeadingBannerUpload(h.id, file);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </TabsContent>

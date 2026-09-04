@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 import {
   ShoppingBag,
   Phone,
@@ -142,19 +143,32 @@ function PremiumStoreHome() {
 
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
-  // Use only database categories
-  const parentCategories = categories.filter((c) => !c.parent_id);
-  const foodSlugs = ["atta-flour", "rice-grains", "rice", "pulses-dal", "oil-ghee", "spices-masala", "salt-sugar", "dry-fruits", "tea-coffee", "biscuits", "namkeen-snacks", "chocolates", "noodles-pasta", "sauces-spreads", "dairy", "beverages", "packaged-foods", "breakfast"];
-  const householdSlugs = ["household-cleaning", "laundry", "kitchen-essentials", "utensils-cookware"];
-  const personalSlugs = ["personal-care", "hair-care", "skin-care", "oral-care", "baby-products"];
-  const otherSlugs = ["pooja-items", "stationery", "pet-supplies", "misc-items"];
-  const allKnownSlugs = [...foodSlugs, ...householdSlugs, ...personalSlugs, ...otherSlugs];
+  // Dynamic Headings & Database Categories (from Supabase store_settings & cache)
+  const [headings, setHeadings] = useState<CategoryHeading[]>(() =>
+    getCategoryHeadings(settings?.category_headings as CategoryHeading[] | undefined),
+  );
 
-  const foodCategories = parentCategories.filter(c => foodSlugs.includes(c.slug));
-  const householdCategories = parentCategories.filter(c => householdSlugs.includes(c.slug));
-  const personalCategories = parentCategories.filter(c => personalSlugs.includes(c.slug));
-  const otherGroupCategories = parentCategories.filter(c => otherSlugs.includes(c.slug));
-  const uncategorizedCategories = parentCategories.filter(c => !allKnownSlugs.includes(c.slug));
+  useEffect(() => {
+    if (settings?.category_headings && Array.isArray(settings.category_headings) && settings.category_headings.length > 0) {
+      setHeadings(getCategoryHeadings(settings.category_headings as CategoryHeading[]));
+    }
+  }, [settings?.category_headings]);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setHeadings(getCategoryHeadings(settings?.category_headings as CategoryHeading[] | undefined));
+    };
+    window.addEventListener("agt:headings-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("agt:headings-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, [settings?.category_headings]);
+
+  const parentCategories = categories.filter((c) => !c.parent_id);
+  const allAssignedSlugs = new Set(headings.flatMap((h) => h.slugs));
+  const uncategorizedCategories = parentCategories.filter((c) => !allAssignedSlugs.has(c.slug));
 
   // Use only database products
   const allDisplayProducts = products ?? [];
@@ -290,105 +304,92 @@ function PremiumStoreHome() {
           </div>
         ) : (
           <div className="space-y-12 sm:space-y-16">
-            {[
-              {
-                key: "food",
-                title: lang === "hi" ? "खाने-पीने का सामान" : "Food & Kitchen Essentials",
-                items: foodCategories,
-                icon: <UtensilsCrossed className="size-5 text-[#145A45]" />,
-                bannerBefore: null,
-                bannerAlt: "",
-              },
-              {
-                key: "household",
-                title: lang === "hi" ? "घर की सफ़ाई व बर्तन" : "Household & Cleaning",
-                items: householdCategories,
-                icon: <Home className="size-5 text-[#145A45]" />,
-                bannerBefore: settings?.hero2_image_url,
-                bannerAlt: "Banner above Household & Cleaning",
-              },
-              {
-                key: "personal",
-                title: lang === "hi" ? "पर्सनल केयर व ब्यूटी" : "Personal Care & Beauty",
-                items: personalCategories,
-                icon: <Heart className="size-5 text-[#145A45]" />,
-                bannerBefore: settings?.hero3_image_url,
-                bannerAlt: "Banner above Personal Care & Beauty",
-              },
-              {
-                key: "other",
-                title: lang === "hi" ? "पूजा, स्टेशनरी व अन्य" : "Pooja, Stationery & More",
-                items: [...otherGroupCategories, ...uncategorizedCategories],
-                icon: <Package className="size-5 text-[#145A45]" />,
-                bannerBefore: settings?.hero4_image_url,
-                bannerAlt: "Banner above Pooja, Stationery & More",
-              },
-            ].filter((g) => g.items.length > 0 || g.bannerBefore).map((group) => (
-              <div key={group.key} className="contents">
-                <div className="space-y-5 pt-2 pb-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-sm">
-                        {group.icon}
-                      </div>
-                      <div className="space-y-0.5">
-                        <h3 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
-                          {group.title}
-                        </h3>
-                        <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
-                          {group.items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
-                        </p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/shop"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3.5 py-1.5 rounded-full border border-[#145A45]/20 transition-all shrink-0"
-                    >
-                      <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                      <ChevronRight className="size-3.5" />
-                    </Link>
-                  </div>
+            {headings.map((heading, idx) => {
+              const assigned = parentCategories.filter((c) => heading.slugs.includes(c.slug));
+              const isLast = idx === headings.length - 1;
+              const items = isLast ? [...assigned, ...uncategorizedCategories] : assigned;
 
-                  {group.bannerBefore && (
-                    <div className="my-6 sm:my-8 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
-                      <img
-                        src={group.bannerBefore}
-                        alt={group.bannerAlt}
-                        className="w-full aspect-[21/9] object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
+              const bannerUrl =
+                heading.banner_image_url ||
+                (heading.banner_sub === "hero2"
+                  ? settings?.hero2_image_url
+                  : heading.banner_sub === "hero3"
+                  ? settings?.hero3_image_url
+                  : heading.banner_sub === "hero4"
+                  ? settings?.hero4_image_url
+                  : null);
 
-                  <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
-                    {group.items.map((c) => (
-                      <Link
-                        key={c.id}
-                        to="/shop"
-                        search={{ category: c.slug }}
-                        className="group flex flex-col items-center gap-2.5 text-center"
-                      >
-                        <div className="relative size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl p-2.5 group-hover:-translate-y-1.5 transition-all duration-300 flex items-center justify-center overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-[#FAF8F2] via-white to-[#E6EFE8]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <img
-                            src={getCategoryThumbnail(c)}
-                            alt={c.name}
-                            loading="lazy"
-                            className="relative size-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-110 drop-shadow-sm"
-                          />
+              if (items.length === 0 && !bannerUrl) return null;
+
+              const headingTitle = lang === "hi" ? heading.title_hi : (heading.title_en || heading.title_hi);
+
+              return (
+                <div key={heading.id} className="contents">
+                  <div className="space-y-5 pt-2 pb-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-sm text-lg select-none">
+                          {heading.icon || "🛒"}
                         </div>
-                        <span className="text-xs sm:text-sm font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                          {getCategoryName(c)}
-                        </span>
+                        <div className="space-y-0.5">
+                          <h3 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
+                            {headingTitle}
+                          </h3>
+                          <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
+                            {items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        to="/shop"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3.5 py-1.5 rounded-full border border-[#145A45]/20 transition-all shrink-0"
+                      >
+                        <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                        <ChevronRight className="size-3.5" />
                       </Link>
-                    ))}
+                    </div>
+
+                    {bannerUrl && (
+                      <div className="my-6 sm:my-8 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
+                        <img
+                          src={bannerUrl}
+                          alt={headingTitle}
+                          className="w-full aspect-[21/9] object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+                      {items.map((c) => (
+                        <Link
+                          key={c.id}
+                          to="/shop"
+                          search={{ category: c.slug }}
+                          className="group flex flex-col items-center gap-2.5 text-center"
+                        >
+                          <div className="relative size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl p-2.5 group-hover:-translate-y-1.5 transition-all duration-300 flex items-center justify-center overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#FAF8F2] via-white to-[#E6EFE8]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <img
+                              src={getCategoryThumbnail(c)}
+                              alt={c.name}
+                              loading="lazy"
+                              className="relative size-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-110 drop-shadow-sm"
+                            />
+                          </div>
+                          <span className="text-xs sm:text-sm font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
+                            {getCategoryName(c)}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

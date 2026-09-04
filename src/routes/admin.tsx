@@ -537,7 +537,11 @@ function AdminPage() {
             )}
 
             {activeTab === "categories" && (
-              <AdminCategories categories={categories} onRefresh={refetchCategories} />
+              <AdminCategories
+                categories={categories}
+                onRefresh={refetchCategories}
+                onNavigateToSettings={() => setActiveTab("settings")}
+              />
             )}
 
             {activeTab === "customers" && (
