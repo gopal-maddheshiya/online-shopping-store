@@ -50,17 +50,45 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { title: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज" },
       {
         name: "description",
         content:
-          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का सामान।",
+          "अरुण गोपाल ट्रेडर्स — हर दिन की जरूरत, अब आसान खरीदारी के साथ! आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का 100% शुद्ध सामान। रामनगर, अड्डा बाजार रोड, महाराजगंज।",
       },
-      { property: "og:title", content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज" },
       {
         property: "og:description",
         content:
-          "रामनगर, अड्डा बाजार रोड, महाराजगंज की विश्वसनीय स्थानीय किराना दुकान — 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
+          "हर दिन की जरूरत, अब आसान खरीदारी के साथ! ऑनलाइन सामान देखें, शुद्ध राशन व घरेलू उत्पादों का चयन करें और घर बैठे प्राप्त करें। 100% शुद्ध व असली ब्रांडेड सामान।",
+      },
+      {
+        property: "og:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
+      },
+      {
+        property: "og:image:secure_url",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
+      },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1024" },
+      { property: "og:image:height", content: "576" },
+      {
+        property: "og:image:alt",
+        content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर, महाराजगंज",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज" },
+      {
+        name: "twitter:description",
+        content:
+          "हर दिन की जरूरत, अब आसान खरीदारी के साथ! ऑनलाइन सामान देखें, शुद्ध राशन व घरेलू उत्पादों का चयन करें और घर बैठे प्राप्त करें।",
+      },
+      {
+        name: "twitter:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
       },
     ],
   }),

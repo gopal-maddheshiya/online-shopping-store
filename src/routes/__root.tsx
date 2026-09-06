@@ -93,12 +93,12 @@ export const Route = createRootRouteWithContext<{
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
+        title: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज",
       },
       {
         name: "description",
         content:
-          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का सामान।",
+          "अरुण गोपाल ट्रेडर्स — हर दिन की जरूरत, अब आसान खरीदारी के साथ! आटा, चावल, दाल, तेल, मसाले और रोज़मर्रा का 100% शुद्ध सामान। रामनगर, अड्डा बाजार रोड, महाराजगंज।",
       },
       {
         property: "og:site_name",
@@ -110,16 +110,36 @@ export const Route = createRootRouteWithContext<{
       },
       {
         property: "og:title",
-        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
+        content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज",
       },
       {
         property: "og:description",
         content:
-          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
+          "हर दिन की जरूरत, अब आसान खरीदारी के साथ! ऑनलाइन सामान देखें, शुद्ध राशन व घरेलू उत्पादों का चयन करें और घर बैठे प्राप्त करें। 100% शुद्ध व असली ब्रांडेड सामान।",
       },
       {
         property: "og:image",
-        content: "/agt-og-image.png",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
+      },
+      {
+        property: "og:image:secure_url",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
+      },
+      {
+        property: "og:image:type",
+        content: "image/jpeg",
+      },
+      {
+        property: "og:image:width",
+        content: "1024",
+      },
+      {
+        property: "og:image:height",
+        content: "576",
+      },
+      {
+        property: "og:image:alt",
+        content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर, महाराजगंज",
       },
       {
         name: "twitter:card",
@@ -127,12 +147,16 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: "twitter:title",
-        content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders",
+        content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज",
       },
       {
         name: "twitter:description",
         content:
-          "अरुण गोपाल ट्रेडर्स — रामनगर, अड्डा बाजार रोड, महाराजगंज स्थित आपकी अपनी किराना दुकान। 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
+          "हर दिन की जरूरत, अब आसान खरीदारी के साथ! ऑनलाइन सामान देखें, शुद्ध राशन व घरेलू उत्पादों का चयन करें और घर बैठे प्राप्त करें।",
+      },
+      {
+        name: "twitter:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-image.jpg",
       },
       {
         name: "theme-color",
@@ -190,7 +214,7 @@ export const Route = createRootRouteWithContext<{
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="hi">
       <head>
         <HeadContent />
       </head>
