@@ -265,8 +265,6 @@ export async function withTimeout<T>(
   });
 }
 
-import { ADDITIONAL_CATEGORIES } from "./catalog-data";
-
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
   queryFn: async (): Promise<StoreSettings> => {
