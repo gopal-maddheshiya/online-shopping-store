@@ -407,7 +407,7 @@ function CheckoutPage() {
           customerName: name.trim(),
           customerPhone: cleanPhone,
           orderType,
-          address: orderType === "delivery" ? addressPayload : null,
+          address: orderType === "delivery" ? orderPayload.address : null,
           items: items.map((it) => ({
             name: it.name_hi || it.name,
             qty: it.qty,

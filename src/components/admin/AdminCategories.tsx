@@ -275,9 +275,12 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
 
       if (editingHeading) {
         const idx = currentList.findIndex((h) => h.id === editingHeading.id);
-        if (idx !== -1) {
+        const target = currentList[idx];
+        if (target) {
           currentList[idx] = {
-            ...currentList[idx],
+            ...target,
+            id: target.id,
+            slugs: target.slugs || [],
             title_hi: headingTitleHi.trim(),
             title_en: headingTitleEn.trim(),
             icon: headingIcon.trim() || "📦",

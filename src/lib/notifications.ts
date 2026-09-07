@@ -7,9 +7,9 @@ import { inr, formatDate } from "@/lib/format";
 import type { Order, StoreSettings } from "@/lib/queries";
 
 export const DEFAULT_TELEGRAM_BOT_TOKEN =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_TELEGRAM_BOT_TOKEN) || "";
+  (typeof import.meta !== "undefined" && import.meta.env?.["VITE_TELEGRAM_BOT_TOKEN"]) || "";
 export const DEFAULT_TELEGRAM_CHAT_ID =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_TELEGRAM_CHAT_ID) || "";
+  (typeof import.meta !== "undefined" && import.meta.env?.["VITE_TELEGRAM_CHAT_ID"]) || "";
 
 export interface TelegramOrderAlertPayload {
   orderNo: string;

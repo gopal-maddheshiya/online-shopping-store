@@ -502,10 +502,10 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
             const raw = data as Record<string, unknown>;
             const normalized: Order = {
               ...(raw as unknown as Order),
-              order_items: ((raw.order_items || raw.items || []) as unknown[]).map((it) => ({
+              order_items: ((raw["order_items"] || raw["items"] || []) as unknown[]).map((it) => ({
                 ...(it as Record<string, unknown>),
                 id: (it as { id?: string }).id || "",
-                order_id: (it as { order_id?: string }).order_id || String(raw.id),
+                order_id: (it as { order_id?: string }).order_id || String(raw["id"]),
                 product_id: (it as { product_id?: string | null }).product_id ?? null,
                 variant_id: (it as { variant_id?: string | null }).variant_id ?? null,
                 name: (it as { name?: string }).name || "Item",
@@ -515,9 +515,9 @@ export async function fetchAllAdminOrders(): Promise<Order[]> {
                 price: Number((it as { price?: number }).price || 0),
                 qty: Number((it as { qty?: number }).qty || 1),
               })),
-              order_events: ((raw.order_events || raw.events || []) as unknown[]).map((ev) => ({
+              order_events: ((raw["order_events"] || raw["events"] || []) as unknown[]).map((ev) => ({
                 id: (ev as { id?: string }).id || "",
-                order_id: (ev as { order_id?: string }).order_id || String(raw.id),
+                order_id: (ev as { order_id?: string }).order_id || String(raw["id"]),
                 status: String((ev as { status?: string }).status || "placed"),
                 note: (ev as { note?: string | null }).note ?? null,
                 created_at: (ev as { created_at?: string }).created_at || new Date().toISOString(),

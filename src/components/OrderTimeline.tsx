@@ -47,7 +47,7 @@ export function OrderTimeline({ currentStatus, orderType = "delivery", events }:
   }
 
   // Calculate current index in the active flow
-  let currentIndex = statusFlow.indexOf(currentStatus as (typeof statusFlow)[number]);
+  let currentIndex = (statusFlow as readonly string[]).indexOf(currentStatus);
   if (currentIndex === -1) {
     // Fallback if status is out_for_delivery on a pickup order
     if (currentStatus === "out_for_delivery") currentIndex = 3;
