@@ -43,6 +43,7 @@ import { uploadProductImage } from "@/lib/image-upload";
 import { broadcastProductSync } from "@/lib/realtime-sync";
 import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } from "@/lib/i18n";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
+import { BulkProductImport } from "./BulkProductImport";
 
 
 
@@ -66,6 +67,7 @@ export function AdminProducts({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(initialOpenAdd);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -624,12 +626,23 @@ export function AdminProducts({
           </Select>
         </div>
 
-        <Button
-          onClick={openAddModal}
-          className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 text-xs shadow-xs shrink-0"
-        >
-          <Plus className="mr-1.5 size-4" /> Add Product
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            onClick={() => setIsBulkImportOpen(true)}
+            variant="outline"
+            className="rounded-xl font-bold border-[#145A45]/30 text-[#145A45] hover:bg-[#145A45]/10 h-11 text-xs shrink-0"
+          >
+            <Upload className="mr-1.5 size-4" /> Bulk Import (CSV)
+          </Button>
+          <Button
+            type="button"
+            onClick={openAddModal}
+            className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 text-xs shadow-xs shrink-0"
+          >
+            <Plus className="mr-1.5 size-4" /> Add Product
+          </Button>
+        </div>
       </div>
 
       {/* Products List: Mobile Cards + Desktop Table */}
@@ -1641,6 +1654,15 @@ export function AdminProducts({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk CSV Import Modal */}
+      <BulkProductImport
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        categories={categories}
+        existingProducts={products}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }

@@ -153,6 +153,18 @@ function SectionHeader({
   );
 }
 
+// Soft pastel floating tints inspired by Blinkit / Zepto
+const BLINKIT_CATEGORY_TINTS = [
+  { bg: "bg-[#F0F7F2]", border: "border-[#D6EADB]", hoverBg: "group-hover:bg-[#E4F2E7]", hoverBorder: "group-hover:border-[#145A45]/35" }, // Mint fresh
+  { bg: "bg-[#FCF5EC]", border: "border-[#F4E3CD]", hoverBg: "group-hover:bg-[#F8EBD8]", hoverBorder: "group-hover:border-[#C4832E]/35" }, // Warm harvest
+  { bg: "bg-[#F3F6FC]", border: "border-[#D8E4F8]", hoverBg: "group-hover:bg-[#E6EFFB]", hoverBorder: "group-hover:border-[#3368C6]/35" }, // Soft azure
+  { bg: "bg-[#FAF3EE]", border: "border-[#F2DFD4]", hoverBg: "group-hover:bg-[#F5E6DC]", hoverBorder: "group-hover:border-[#C66233]/35" }, // Terracotta
+  { bg: "bg-[#F8F7EB]", border: "border-[#EDE8C8]", hoverBg: "group-hover:bg-[#F2EDC5]", hoverBorder: "group-hover:border-[#B5A122]/35" }, // Buttercup gold
+  { bg: "bg-[#FAF2F6]", border: "border-[#F1DCE7]", hoverBg: "group-hover:bg-[#F5E4EE]", hoverBorder: "group-hover:border-[#A83874]/35" }, // Rose berry
+  { bg: "bg-[#F2F8F8]", border: "border-[#D5ECEC]", hoverBg: "group-hover:bg-[#E2F3F3]", hoverBorder: "group-hover:border-[#2A9696]/35" }, // Teal breeze
+  { bg: "bg-[#F8F5FC]", border: "border-[#EADDF8]", hoverBg: "group-hover:bg-[#EFE4FB]", hoverBorder: "group-hover:border-[#7A3EB8]/35" }, // Lavender
+];
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN HOMEPAGE COMPONENT
    ═══════════════════════════════════════════════════════════════ */
@@ -318,20 +330,20 @@ function PremiumStoreHome() {
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          2. GROUPED CATEGORIES — Open Layout with Prominent Text
+          2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page space-y-6 sm:space-y-8 pt-6 sm:pt-8 pb-8 sm:pb-10">
+      <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
         {catLoading ? (
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2.5">
-                <Skeleton className="size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl" />
-                <Skeleton className="h-4 w-16" />
+              <div key={i} className="flex flex-col items-center gap-1.5 w-full">
+                <Skeleton className="w-full aspect-[4/4.75] rounded-2xl" />
+                <Skeleton className="h-3 w-14" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-12 sm:space-y-16">
+          <div className="space-y-6 sm:space-y-8">
             {headings.map((heading, idx) => {
               const assigned = parentCategories.filter((c) => heading.slugs.includes(c.slug));
               const isLast = idx === headings.length - 1;
@@ -353,14 +365,14 @@ function PremiumStoreHome() {
 
               return (
                 <div key={heading.id} className="contents">
-                  <div className="space-y-5 pt-2 pb-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-sm text-lg select-none">
+                  <div className="space-y-2.5 sm:space-y-3 pt-0 pb-1">
+                    <div className="flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
                           {heading.icon || "🛒"}
                         </div>
                         <div className="space-y-0.5">
-                          <h3 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
+                          <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
                             {headingTitle}
                           </h3>
                           <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
@@ -370,7 +382,7 @@ function PremiumStoreHome() {
                       </div>
                       <Link
                         to="/shop"
-                        className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3.5 py-1.5 rounded-full border border-[#145A45]/20 transition-all shrink-0"
+                        className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3 py-1 rounded-full border border-[#145A45]/20 transition-all shrink-0"
                       >
                         <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
                         <ChevronRight className="size-3.5" />
@@ -378,7 +390,7 @@ function PremiumStoreHome() {
                     </div>
 
                     {bannerUrl && (
-                      <div className="my-6 sm:my-8 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
+                      <div className="my-4 sm:my-6 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
                         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
                         <img
                           src={bannerUrl}
@@ -391,28 +403,36 @@ function PremiumStoreHome() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
-                      {items.map((c) => (
-                        <Link
-                          key={c.id}
-                          to="/shop"
-                          search={{ category: c.slug }}
-                          className="group flex flex-col items-center gap-2.5 text-center"
-                        >
-                          <div className="relative size-20 sm:size-24 md:size-28 lg:size-[7.5rem] rounded-3xl p-2.5 group-hover:-translate-y-1.5 transition-all duration-300 flex items-center justify-center overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#FAF8F2] via-white to-[#E6EFE8]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <img
-                              src={getCategoryThumbnail(c)}
-                              alt={c.name}
-                              loading="lazy"
-                              className="relative size-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-110 drop-shadow-sm"
-                            />
-                          </div>
-                          <span className="text-xs sm:text-sm font-semibold text-[#16201A] group-hover:text-[#145A45] line-clamp-2 leading-tight transition-colors">
-                            {getCategoryName(c)}
-                          </span>
-                        </Link>
-                      ))}
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
+                      {items.map((c, cIdx) => {
+                        const tint =
+                          BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
+                          BLINKIT_CATEGORY_TINTS[0]!;
+                        return (
+                          <Link
+                            key={c.id}
+                            to="/shop"
+                            search={{ category: c.slug }}
+                            className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                          >
+                            <div
+                              className={`relative w-full aspect-[4/4.5] rounded-2xl p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
+                            >
+                              <div className="size-full rounded-xl overflow-hidden flex items-center justify-center bg-white/50 shadow-2xs">
+                                <img
+                                  src={getCategoryThumbnail(c)}
+                                  alt={c.name}
+                                  loading="lazy"
+                                  className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                                />
+                              </div>
+                            </div>
+                            <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
+                              {getCategoryName(c)}
+                            </span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

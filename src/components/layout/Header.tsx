@@ -18,7 +18,7 @@ import {
   X,
   ArrowLeft,
   Sparkles,
-  Truck,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,7 +125,7 @@ export function Header() {
                 <>
                   <span className="flex items-center gap-1.5 shrink-0">
                     <span className="grid size-5 place-items-center rounded-md bg-[#E3B341]/15 border border-[#E3B341]/30">
-                      <Truck className="size-3 text-[#E3B341]" />
+                      <Megaphone className="size-3 text-[#E3B341]" />
                     </span>
                     <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#E3B341]/90">
                       Live

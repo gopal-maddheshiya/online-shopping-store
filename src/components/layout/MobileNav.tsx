@@ -69,19 +69,17 @@ export function MobileNav() {
 
   return (
     <>
-      {/* 1. Mobile Floating Quick Action Buttons */}
-      <div className="fixed right-3 bottom-16 z-40 flex items-center gap-2 lg:hidden pointer-events-auto">
-        {/* Call Support Button */}
+      {/* Floating Quick Action Buttons */}
+      <div className="fixed right-3 bottom-[4.25rem] z-40 flex items-center gap-2 lg:hidden pointer-events-auto">
         <button
           onClick={() => setOrderModalOpen(true)}
           aria-label="Order on Phone"
-          className="flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-white/95 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold text-[#0F4A38] shadow-md active:scale-95 transition-transform"
+          className="flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-white/95 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold text-[#0F4A38] shadow-sm active:scale-95 transition-transform"
         >
           <PhoneCall className="size-3.5 text-[#0F4A38]" />
           <span>{lang === "hi" ? "फोन ऑर्डर" : "Call Order"}</span>
         </button>
 
-        {/* WhatsApp Quick Order FAB */}
         <a
           href={waHref(
             storeWhatsApp,
@@ -90,19 +88,19 @@ export function MobileNav() {
           target="_blank"
           rel="noreferrer"
           aria-label="Order on WhatsApp"
-          className="flex items-center gap-1.5 rounded-full bg-[#145A45] text-white px-3.5 py-1.5 text-[11px] font-bold shadow-lg hover:bg-[#0A3628] active:scale-95 transition-all border border-white/20 backdrop-blur-xs"
+          className="flex items-center gap-1.5 rounded-full bg-[#145A45] text-white px-3.5 py-1.5 text-[11px] font-bold shadow-md hover:bg-[#0E4333] active:scale-95 transition-all border border-white/15"
         >
           <MessageCircle className="size-3.5 fill-white text-[#145A45]" />
           <span>{lang === "hi" ? "व्हाट्सएप लिस्ट" : "WhatsApp List"}</span>
         </a>
       </div>
 
-      {/* 2. Mobile App Bottom Navigation Bar */}
+      {/* Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed right-0 bottom-0 left-0 z-50 border-t border-[#E5E0D5] bg-white/95 backdrop-blur-lg lg:hidden pb-[calc(env(safe-area-inset-bottom)+0.25rem)] shadow-lg"
+        className="fixed right-0 bottom-0 left-0 z-50 bg-white border-t border-[#EEEAE2] lg:hidden pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="grid grid-cols-5 items-center justify-around h-14.5">
+        <div className="grid grid-cols-5 items-end h-[3.75rem]">
           {links.map((link) => {
             const Icon = link.icon;
             const isCart = link.to === "/cart";
@@ -127,33 +125,38 @@ export function MobileNav() {
                 to={link.to}
                 search={link.search as never}
                 onClick={handleClick}
-                className={`relative flex flex-col items-center justify-center gap-1 h-full text-[10.5px] transition-all min-h-[48px] cursor-pointer ${
-                  isActive
-                    ? "text-[#0F4A38] font-bold"
-                    : "text-[#5A655F] hover:text-[#16201A] font-medium"
-                }`}
+                className="relative flex flex-col items-center justify-center gap-[3px] py-1.5 cursor-pointer active:opacity-70 transition-opacity"
               >
+                {/* Icon with active pill */}
                 <div className="relative flex items-center justify-center">
                   <div
-                    className={`rounded-xl px-2.5 py-0.5 transition-all ${
+                    className={`rounded-full px-3 py-[3px] transition-colors duration-200 ${
                       isActive ? "bg-[#E6EFE8]" : "bg-transparent"
                     }`}
                   >
                     <Icon
-                      className={`size-5.5 transition-transform ${
+                      className={`size-[21px] transition-colors duration-200 ${
                         isActive
-                          ? "text-[#0F4A38] stroke-[2.2] scale-105"
-                          : "text-[#5A655F] stroke-[1.85]"
+                          ? "text-[#145A45] stroke-[2.2]"
+                          : "text-[#9CA3A0] stroke-[1.8]"
                       }`}
                     />
                   </div>
                   {link.badge && link.badge > 0 ? (
-                    <span className="absolute -top-1 -right-1.5 grid size-4.5 place-items-center rounded-full bg-[#D97706] text-[9.5px] font-black text-white shadow-xs border-1.5 border-white">
+                    <span className="absolute -top-1 -right-0.5 grid size-4 place-items-center rounded-full bg-[#D97706] text-[8.5px] font-black text-white border-[1.5px] border-white">
                       {link.badge > 9 ? "9+" : link.badge}
                     </span>
                   ) : null}
                 </div>
-                <span className="truncate max-w-[62px] text-center leading-none">
+
+                {/* Label — matra-safe */}
+                <span
+                  className={`max-w-[70px] text-center leading-snug overflow-visible whitespace-nowrap pb-0.5 text-[10px] transition-colors duration-200 ${
+                    isActive
+                      ? "font-bold text-[#145A45]"
+                      : "font-medium text-[#9CA3A0]"
+                  }`}
+                >
                   {link.label}
                 </span>
               </Link>
