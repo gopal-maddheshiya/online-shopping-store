@@ -6,10 +6,9 @@
 import { inr, formatDate } from "@/lib/format";
 import type { Order, StoreSettings } from "@/lib/queries";
 
-export const DEFAULT_TELEGRAM_BOT_TOKEN =
-  (typeof import.meta !== "undefined" && import.meta.env?.["VITE_TELEGRAM_BOT_TOKEN"]) || "";
-export const DEFAULT_TELEGRAM_CHAT_ID =
-  (typeof import.meta !== "undefined" && import.meta.env?.["VITE_TELEGRAM_CHAT_ID"]) || "";
+// NOTE: Telegram bot token is now handled server-side only.
+// Do NOT use VITE_TELEGRAM_BOT_TOKEN — that would expose the token in the browser bundle.
+// The /api/notify/telegram server route reads the token from server env vars.
 
 export interface TelegramOrderAlertPayload {
   orderNo: string;
@@ -88,42 +87,38 @@ https://arungopaltraders.com/admin?order=${payload.orderNo}`;
 }
 
 /**
- * Sends Instant Order Alert to Telegram Bot
+ * Sends Instant Order Alert to Telegram Bot via secure server-side API.
+ * The token is NEVER sent from the browser — server reads it from env vars.
  */
 export async function sendTelegramOrderNotification(
   payload: TelegramOrderAlertPayload,
   settings?: StoreSettings | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const token = settings?.telegram_bot_token?.trim() || DEFAULT_TELEGRAM_BOT_TOKEN;
-    const chatId = settings?.telegram_chat_id?.trim() || DEFAULT_TELEGRAM_CHAT_ID;
-
-    if (!token || !chatId) {
-      return { success: false, error: "Telegram bot token or chat ID is not configured" };
-    }
-
     const message = buildTelegramOrderMessage(payload);
 
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    // Pass DB-stored token/chatId to server if available (server will use env fallback if not)
+    const body: { message: string; token?: string; chatId?: string } = { message };
+    if (settings?.telegram_bot_token?.trim()) body.token = settings.telegram_bot_token.trim();
+    if (settings?.telegram_chat_id?.trim()) body.chatId = settings.telegram_chat_id.trim();
+
+    // Call secure server-side route — token never leaves the server
+    const res = await fetch("/api/notify/telegram", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    if (!res.ok || !data.ok) {
-      console.warn("Telegram bot send error:", data);
-      return { success: false, error: data.description || "Telegram notification failed" };
+    const data = (await res.json()) as { success?: boolean; skipped?: boolean; error?: string };
+
+    if (!res.ok || !data.success) {
+      console.warn("[Telegram] Notification failed:", data.error);
+      return { success: false, error: data.error || "Telegram notification failed" };
     }
 
     return { success: true };
   } catch (err: unknown) {
-    console.warn("Failed to dispatch Telegram order alert:", err);
+    console.warn("[Telegram] Failed to dispatch order alert:", err);
     return { success: false, error: err instanceof Error ? err.message : "Network error" };
   }
 }

@@ -3,6 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { dispatchPaymentApiRoute } from "./lib/server-payment-api";
+import { handleTelegramNotify } from "./lib/server-telegram-api";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -54,7 +55,13 @@ export default {
         return paymentApiResponse;
       }
 
-      // 2. Main SSR & TanStack Start Request Handler
+      // 2. Intercept Telegram notification route (/api/notify/telegram)
+      const url = new URL(request.url);
+      if (request.method === "POST" && url.pathname === "/api/notify/telegram") {
+        return await handleTelegramNotify(request, env);
+      }
+
+      // 3. Main SSR & TanStack Start Request Handler
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
