@@ -455,7 +455,26 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Announcement Bar Smooth Infinite Marquee (Mobile)
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
 
+.animate-marquee-smooth {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 24s linear infinite;
+  will-change: transform;
+}
 
-
-
+.animate-marquee-smooth:hover,
+.animate-marquee-smooth:active {
+  animation-play-state: paused;
+}

@@ -39,7 +39,7 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     icon: "🧹",
     sort_order: 2,
     banner_sub: "hero2",
-    slugs: ["household-cleaning", "laundry", "kitchen-essentials"],
+    slugs: ["household-cleaning", "laundry", "kitchen-essentials", "pots-cceaners"],
   },
   {
     id: "personal",
@@ -58,6 +58,17 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     sort_order: 4,
     banner_sub: "hero4",
     slugs: ["pooja-items", "stationery", "pet-supplies", "misc-items"],
+  },
+  {
+    id: "sec_1788513799616",
+    title_hi: "पशुआहार - चोकर",
+    title_en: "Pasuahar - Chokar",
+    icon: "🐄",
+    sort_order: 5,
+    banner_sub: null,
+    banner_image_url:
+      "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/hero/custom_banner_sec_1788513799616_1788518803286.webp",
+    slugs: ["kapila-pasuahar", "555-brand-chokar", "kapila-hara-pasuahar"],
   },
 ];
 
@@ -110,8 +121,13 @@ export async function saveCategoryHeadings(headings: CategoryHeading[]) {
   }
 }
 
-export function addCategorySlugToHeading(headingId: string, slug: string) {
-  const headings = getCategoryHeadings();
+export function addCategorySlugToHeading(
+  headingId: string,
+  slug: string,
+  baseHeadings?: CategoryHeading[],
+) {
+  const headings =
+    baseHeadings && baseHeadings.length > 0 ? [...baseHeadings] : getCategoryHeadings();
   const target = headings.find((h) => h.id === headingId);
   if (target) {
     if (!target.slugs.includes(slug)) {
@@ -125,10 +141,15 @@ export function addCategorySlugToHeading(headingId: string, slug: string) {
       saveCategoryHeadings(headings);
     }
   }
+  return headings;
 }
 
-export function removeCategorySlugFromHeadings(slug: string) {
-  const headings = getCategoryHeadings();
+export function removeCategorySlugFromHeadings(
+  slug: string,
+  baseHeadings?: CategoryHeading[],
+) {
+  const headings =
+    baseHeadings && baseHeadings.length > 0 ? [...baseHeadings] : getCategoryHeadings();
   let changed = false;
   for (const h of headings) {
     const idx = h.slugs.indexOf(slug);
@@ -140,9 +161,15 @@ export function removeCategorySlugFromHeadings(slug: string) {
   if (changed) {
     saveCategoryHeadings(headings);
   }
+  return headings;
 }
 
-export function moveCategorySlugToHeading(targetHeadingId: string, slug: string) {
-  removeCategorySlugFromHeadings(slug);
-  addCategorySlugToHeading(targetHeadingId, slug);
+export function moveCategorySlugToHeading(
+  targetHeadingId: string,
+  slug: string,
+  baseHeadings?: CategoryHeading[],
+) {
+  removeCategorySlugFromHeadings(slug, baseHeadings);
+  return addCategorySlugToHeading(targetHeadingId, slug, baseHeadings);
 }
+

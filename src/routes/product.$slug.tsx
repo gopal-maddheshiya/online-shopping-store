@@ -88,7 +88,7 @@ function ProductPage() {
   const { data: product, isLoading } = useQuery(productQuery(slug));
   const { data: all } = useQuery(productsQuery());
   const { data: settings } = useQuery(settingsQuery);
-  const isDeliveryEnabled = settings?.delivery_enabled !== false;
+  const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
   const { add } = useCart();
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
@@ -487,8 +487,8 @@ function ProductPage() {
             </h3>
             <p className="text-xs leading-relaxed text-[#5A655F]">
               {localizedDescription || (lang === "hi"
-                ? "अरुण गोपाल ट्रेडर्स पर उपलब्ध सभी किराना उत्पाद 100% शुद्ध, असली और ताज़ा पैक्ड हैं। अड्डा बाजार रोड, महाराजगंज में सबसे भरोसेमंद किराना डिलीवरी।"
-                : "All grocery products at Arun Gopal Traders are 100% pure, authentic, and freshly packed. Trusted grocery delivery in Maharajganj.")}
+                ? "अरुण गोपाल ट्रेडर्स पर उपलब्ध सभी किराना उत्पाद 100% शुद्ध, असली और ताज़ा पैक्ड हैं। रामनगर चौराहा, अड्डा बाजार।"
+                : "All grocery products at Arun Gopal Traders are 100% pure, authentic, and freshly packed. Ramnagar Chauraha, Adda Bazar.")}
             </p>
           </div>
         </div>

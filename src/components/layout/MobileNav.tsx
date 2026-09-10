@@ -69,32 +69,6 @@ export function MobileNav() {
 
   return (
     <>
-      {/* Floating Quick Action Buttons */}
-      <div className="fixed right-3 bottom-[4.25rem] z-40 flex items-center gap-2 lg:hidden pointer-events-auto">
-        <button
-          onClick={() => setOrderModalOpen(true)}
-          aria-label="Order on Phone"
-          className="flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-white/95 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold text-[#0F4A38] shadow-sm active:scale-95 transition-transform"
-        >
-          <PhoneCall className="size-3.5 text-[#0F4A38]" />
-          <span>{lang === "hi" ? "फोन ऑर्डर" : "Call Order"}</span>
-        </button>
-
-        <a
-          href={waHref(
-            storeWhatsApp,
-            "Namaste Arun Gopal Traders, I want to send my grocery list for delivery.",
-          )}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Order on WhatsApp"
-          className="flex items-center gap-1.5 rounded-full bg-[#145A45] text-white px-3.5 py-1.5 text-[11px] font-bold shadow-md hover:bg-[#0E4333] active:scale-95 transition-all border border-white/15"
-        >
-          <MessageCircle className="size-3.5 fill-white text-[#145A45]" />
-          <span>{lang === "hi" ? "व्हाट्सएप लिस्ट" : "WhatsApp List"}</span>
-        </a>
-      </div>
-
       {/* Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Navigation"
@@ -164,8 +138,6 @@ export function MobileNav() {
           })}
         </div>
       </nav>
-
-      <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
     </>
   );
 }

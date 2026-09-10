@@ -43,6 +43,7 @@ import { AdminCoupons } from "@/components/admin/AdminCoupons";
 import { AdminHelpRequests } from "@/components/admin/AdminHelpRequests";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { mergeOrderWithOverrides, fetchAllAdminOrders } from "@/lib/orders";
+import type { CategoryHeading } from "@/lib/category-headings";
 
 
 
@@ -539,7 +540,11 @@ function AdminPage() {
             {activeTab === "categories" && (
               <AdminCategories
                 categories={categories}
-                onRefresh={refetchCategories}
+                categoryHeadings={settings?.category_headings as CategoryHeading[] | undefined}
+                onRefresh={() => {
+                  refetchCategories();
+                  refetchSettings();
+                }}
                 onNavigateToSettings={() => setActiveTab("settings")}
               />
             )}

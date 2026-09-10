@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Truck,
   RotateCcw,
+  Store,
 } from "lucide-react";
 import { settingsQuery } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
@@ -33,6 +34,7 @@ export function Footer() {
   const whatsapp = s?.whatsapp ?? "916388354988";
   const email = s?.email ?? "gopalmaddheshiya138@gmail.com";
   const address = s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh";
+  const isDeliveryEnabled = Boolean(s?.delivery_enabled);
 
   return (
     <footer className="mt-16 border-t border-[#E5E0D5] bg-white text-[#16201A]">
@@ -41,12 +43,18 @@ export function Footer() {
         <div className="container-page grid grid-cols-2 gap-4 md:grid-cols-4">
           <div className="flex items-center gap-3">
             <div className="grid size-9 place-items-center rounded-lg bg-[#E6EFE8] text-[#0F4A38]">
-              <Truck className="size-4" />
+              {isDeliveryEnabled ? <Truck className="size-4" /> : <Store className="size-4" />}
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">Fast Local Delivery</p>
+              <p className="text-xs font-bold sm:text-sm text-[#16201A]">
+                {isDeliveryEnabled
+                  ? (lang === "hi" ? "तेज़ लोकल डिलीवरी" : "Fast Local Delivery")
+                  : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")}
+              </p>
               <p className="text-[11px] text-[#5A655F]">
-                Free above ₹{s?.free_delivery_threshold ?? 499}
+                {isDeliveryEnabled
+                  ? (lang === "hi" ? `₹${s?.free_delivery_threshold ?? 499}+ पर फ्री` : `Free above ₹${s?.free_delivery_threshold ?? 499}`)
+                  : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store")}
               </p>
             </div>
           </div>
@@ -77,7 +85,9 @@ export function Footer() {
             </div>
             <div>
               <p className="text-xs font-bold sm:text-sm text-[#16201A]">
-                {t.storePickupTitle}
+                {isDeliveryEnabled
+                  ? t.storePickupTitle
+                  : (lang === "hi" ? "आसान रिप्लेसमेंट" : "Easy Exchange")}
               </p>
               <p className="text-[11px] text-[#5A655F]">
                 {lang === "hi" ? "रामनगर दुकान काउंटर" : "Ramnagar shop counter"}
@@ -93,9 +103,12 @@ export function Footer() {
         <div className="space-y-3">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 font-sans text-xl font-bold tracking-tight text-[#0F4A38]"
+            className="inline-flex items-center gap-2.5 font-sans text-xl font-bold tracking-tight text-[#0F4A38] group"
           >
-            <span>🌾</span> {t.storeName}
+            <div className="grid size-7.5 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] via-[#0F4A38] to-[#0A3628] shadow-xs text-white">
+              <Store className="size-4 text-[#F5D061]" />
+            </div>
+            <span>{t.storeName}</span>
           </Link>
           <p className="text-xs leading-relaxed text-[#5A655F]">
             {lang === "hi"

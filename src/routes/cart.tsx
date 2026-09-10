@@ -62,7 +62,7 @@ function CartPage() {
     }
   };
 
-  const isDeliveryEnabled = s?.delivery_enabled !== false;
+  const isDeliveryEnabled = Boolean(s?.delivery_enabled);
   const freeAt = Number(s?.free_delivery_threshold ?? 499);
   const fee = !isDeliveryEnabled || subtotal >= freeAt || subtotal === 0 ? 0 : Number(s?.delivery_fee ?? 30);
   const diffToFree = Math.max(0, freeAt - subtotal);

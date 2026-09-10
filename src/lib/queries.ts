@@ -265,6 +265,32 @@ export async function withTimeout<T>(
   });
 }
 
+const CACHED_SETTINGS_KEY = "agt.cached_settings_v2";
+const CACHED_CATEGORIES_KEY = "agt.cached_categories_v2";
+
+function getCachedSettingsFallback(): StoreSettings {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(CACHED_SETTINGS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+  }
+  return DEFAULT_STORE_SETTINGS;
+}
+
+function getCachedCategoriesFallback(): Category[] {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(CACHED_CATEGORIES_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+  }
+  return [];
+}
+
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
   queryFn: async (): Promise<StoreSettings> => {
@@ -276,28 +302,36 @@ export const settingsQuery = queryOptions({
             .select("*")
             .eq("id", 1)
             .single();
-          if (error || !data) return DEFAULT_STORE_SETTINGS;
+          if (error || !data) return getCachedSettingsFallback();
 
           const raw = data as unknown as StoreSettings;
           const isOldPhone = !raw.phone || raw.phone.includes("9621617360");
           const isOldWhatsApp = !raw.whatsapp || raw.whatsapp.includes("9621617360");
           const isOldEmail = !raw.email || raw.email.includes("ashokmaddheshiya51");
 
-          return {
+          const finalSettings = {
             ...raw,
             phone: isOldPhone ? "+91 6388354988" : raw.phone,
             whatsapp: isOldWhatsApp ? "916388354988" : raw.whatsapp,
             email: isOldEmail ? "gopalmaddheshiya138@gmail.com" : raw.email,
           };
+
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(CACHED_SETTINGS_KEY, JSON.stringify(finalSettings));
+            } catch {}
+          }
+
+          return finalSettings;
         } catch {
-          return DEFAULT_STORE_SETTINGS;
+          return getCachedSettingsFallback();
         }
       })(),
-      2500,
-      DEFAULT_STORE_SETTINGS,
+      12000,
+      getCachedSettingsFallback(),
     );
   },
-  staleTime: 1000 * 60 * 2, // 2 minutes (shorter so hero image updates appear quickly)
+  staleTime: 1000 * 60 * 2, // 2 minutes
 });
 
 export const categoriesQuery = queryOptions({
@@ -311,16 +345,22 @@ export const categoriesQuery = queryOptions({
             .select("*")
             .order("sort_order", { ascending: true });
           if (error) throw error;
-          return (data ?? []) as Category[];
+          const list = (data ?? []) as Category[];
+          if (list.length > 0 && typeof window !== "undefined") {
+            try {
+              localStorage.setItem(CACHED_CATEGORIES_KEY, JSON.stringify(list));
+            } catch {}
+          }
+          return list;
         } catch {
-          return [];
+          return getCachedCategoriesFallback();
         }
       })(),
-      2500,
-      [],
+      12000,
+      getCachedCategoriesFallback(),
     );
   },
-  staleTime: 1000 * 60, // 1 minute (faster refresh for admin changes)
+  staleTime: 1000 * 60 * 2, // 2 minutes
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {

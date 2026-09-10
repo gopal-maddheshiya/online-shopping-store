@@ -166,11 +166,180 @@ const BLINKIT_CATEGORY_TINTS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════
+   SKELETON & IMAGE PLACEHOLDER COMPONENTS (Slow network resilience)
+   ═══════════════════════════════════════════════════════════════ */
+function HeroBanner({
+  imageUrl,
+  storeName,
+  isLoading,
+}: {
+  imageUrl?: string;
+  storeName: string;
+  isLoading?: boolean;
+}) {
+  const [loaded, setLoaded] = useState(false);
+
+  if (isLoading || !imageUrl) {
+    return (
+      <section className="container-page pt-2 sm:pt-3">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl max-w-4xl lg:max-w-[980px] mx-auto aspect-[16/9] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse border border-[#EAE6DC]/50 flex items-center justify-center shadow-xs">
+          <div className="flex items-center gap-2 text-[#8A958F] text-xs sm:text-sm font-medium">
+            <Store className="size-5 opacity-40 animate-pulse text-[#145A45]" />
+            <span className="opacity-60">{storeName}</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="container-page pt-2 sm:pt-3">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB]">
+        {!loaded && (
+          <div className="w-full aspect-[16/9] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center">
+            <div className="flex items-center gap-2 text-[#8A958F] text-xs sm:text-sm font-medium">
+              <Store className="size-5 opacity-40 text-[#145A45]" />
+              <span className="opacity-60">{storeName}</span>
+            </div>
+          </div>
+        )}
+        <img
+          src={imageUrl}
+          alt={storeName}
+          onLoad={() => setLoaded(true)}
+          className={`w-full h-auto block object-contain transition-opacity duration-500 ${
+            loaded ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
+          }`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+          }}
+        />
+      </div>
+    </section>
+  );
+}
+
+function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="my-4 sm:my-6 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner bg-[#F5F2EB] aspect-[21/9]">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
+      {!loaded && (
+        <div className="absolute inset-0 bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center z-0">
+          <Sparkles className="size-5 text-[#8A958F]/40" />
+        </div>
+      )}
+      <img
+        src={bannerUrl}
+        alt={title}
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-700 group-hover/banner:scale-[1.02] ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+    </div>
+  );
+}
+
+function CategoryThumbnail({
+  category,
+  name,
+}: {
+  category: Parameters<typeof getCategoryThumbnail>[0];
+  name: string;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const src = getCategoryThumbnail(category);
+
+  return (
+    <div className="relative size-full flex items-center justify-center p-0.5 sm:p-1 overflow-hidden rounded-[1.25rem]">
+      {!loaded && !hasError && (
+        <div className="absolute inset-1 rounded-[1.25rem] bg-gradient-to-br from-white/70 via-white/30 to-transparent animate-pulse" />
+      )}
+      {hasError ? (
+        <div className="flex flex-col items-center justify-center text-[#145A45]/60">
+          <Store className="size-6 sm:size-7" />
+        </div>
+      ) : (
+        <img
+          src={src}
+          alt={name}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setHasError(true)}
+          className={`size-full object-contain rounded-[1.25rem] drop-shadow-[0_4px_8px_rgba(0,0,0,0.10)] transition-all duration-300 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_8px_16px_rgba(0,0,0,0.18)] ${
+            loaded ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      )}
+    </div>
+  );
+}
+
+function CategoryGridSkeleton() {
+  return (
+    <div className="space-y-7 sm:space-y-9 animate-pulse">
+      {/* Skeleton Heading 1 */}
+      <div className="space-y-2.5 sm:space-y-3">
+        <div className="flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="size-9 rounded-xl bg-[#E6EFE8]/80" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-32 sm:w-40 rounded-md bg-[#EAE6DC]/80" />
+              <Skeleton className="h-2.5 w-16 sm:w-20 rounded-md bg-[#EAE6DC]/50" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
+        </div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5 w-full">
+              <div className="w-full aspect-[4/4.5] rounded-2xl bg-[#F0F4F1] border border-[#E0EAE2] p-1.5 sm:p-2 flex items-center justify-center">
+                <div className="size-full rounded-xl bg-white/60" />
+              </div>
+              <div className="h-3 w-14 bg-[#EAE6DC]/60 rounded-md mt-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Skeleton Heading 2 */}
+      <div className="space-y-2.5 sm:space-y-3">
+        <div className="flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="size-9 rounded-xl bg-[#E6EFE8]/80" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-28 sm:w-36 rounded-md bg-[#EAE6DC]/80" />
+              <Skeleton className="h-2.5 w-14 rounded-md bg-[#EAE6DC]/50" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
+        </div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5 w-full">
+              <div className="w-full aspect-[4/4.5] rounded-2xl bg-[#FCF5EC] border border-[#F4E3CD] p-1.5 sm:p-2 flex items-center justify-center">
+                <div className="size-full rounded-xl bg-white/60" />
+              </div>
+              <div className="h-3 w-12 bg-[#EAE6DC]/60 rounded-md mt-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MAIN HOMEPAGE COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 function PremiumStoreHome() {
-  const { data: settings } = useQuery(settingsQuery);
-  const isDeliveryEnabled = settings?.delivery_enabled !== false;
+  const { data: settings, isLoading: settingsLoading } = useQuery(settingsQuery);
+  const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
   const { data: categories = [], isLoading: catLoading } = useQuery(categoriesQuery);
   const { data: featuredProducts = [], isLoading: featLoading } = useQuery(
     featuredProductsQuery(12),
@@ -314,40 +483,22 @@ function PremiumStoreHome() {
       {/* ═══════════════════════════════════════════════════════
           1. HERO BANNER IMAGE (Uncropped, Natural Fit, Sleek on Laptop)
           ═══════════════════════════════════════════════════════ */}
-      {settings?.hero_image_url && (
-        <section className="container-page pt-2 sm:pt-3">
-          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto">
-            <img
-              src={settings.hero_image_url}
-              alt={settings?.store_name || "Arun Gopal Traders"}
-              className="w-full h-auto block object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          </div>
-        </section>
-      )}
+      {settingsLoading ? (
+        <HeroBanner storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"} isLoading={true} />
+      ) : settings?.hero_image_url ? (
+        <HeroBanner imageUrl={settings.hero_image_url} storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"} />
+      ) : null}
 
       {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
         {catLoading ? (
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5 w-full">
-                <Skeleton className="w-full aspect-[4/4.75] rounded-2xl" />
-                <Skeleton className="h-3 w-14" />
-              </div>
-            ))}
-          </div>
+          <CategoryGridSkeleton />
         ) : (
-          <div className="space-y-6 sm:space-y-8">
-            {headings.map((heading, idx) => {
-              const assigned = parentCategories.filter((c) => heading.slugs.includes(c.slug));
-              const isLast = idx === headings.length - 1;
-              const items = isLast ? [...assigned, ...uncategorizedCategories] : assigned;
+          <div className="space-y-7 sm:space-y-9">
+            {headings.map((heading) => {
+              const items = parentCategories.filter((c) => heading.slugs.includes(c.slug));
 
               const bannerUrl =
                 heading.banner_image_url ||
@@ -364,80 +515,106 @@ function PremiumStoreHome() {
               const headingTitle = lang === "hi" ? heading.title_hi : (heading.title_en || heading.title_hi);
 
               return (
-                <div key={heading.id} className="contents">
-                  <div className="space-y-2.5 sm:space-y-3 pt-0 pb-1">
-                    <div className="flex items-center justify-between gap-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
-                          {heading.icon || "🛒"}
-                        </div>
-                        <div className="space-y-0.5">
-                          <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
-                            {headingTitle}
-                          </h3>
-                          <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
-                            {items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
-                          </p>
-                        </div>
+                <div key={heading.id} className="space-y-2.5 sm:space-y-3">
+                  <div className="flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
+                        {heading.icon || "🛒"}
                       </div>
-                      <Link
-                        to="/shop"
-                        className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3 py-1 rounded-full border border-[#145A45]/20 transition-all shrink-0"
-                      >
-                        <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                        <ChevronRight className="size-3.5" />
-                      </Link>
+                      <div className="space-y-0.5">
+                        <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
+                          {headingTitle}
+                        </h3>
+                        <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
+                          {items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                        </p>
+                      </div>
                     </div>
+                    <Link
+                      to="/shop"
+                      className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3 py-1 rounded-full border border-[#145A45]/20 transition-all shrink-0"
+                    >
+                      <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                      <ChevronRight className="size-3.5" />
+                    </Link>
+                  </div>
 
-                    {bannerUrl && (
-                      <div className="my-4 sm:my-6 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
-                        <img
-                          src={bannerUrl}
-                          alt={headingTitle}
-                          className="w-full aspect-[21/9] object-cover transition-transform duration-700 group-hover/banner:scale-[1.02]"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
+                  {bannerUrl && (
+                    <SubHeroBanner bannerUrl={bannerUrl} title={headingTitle} />
+                  )}
 
-                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-                      {items.map((c, cIdx) => {
-                        const tint =
-                          BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
-                          BLINKIT_CATEGORY_TINTS[0]!;
-                        return (
-                          <Link
-                            key={c.id}
-                            to="/shop"
-                            search={{ category: c.slug }}
-                            className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
+                    {items.map((c, cIdx) => {
+                      const tint =
+                        BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
+                        BLINKIT_CATEGORY_TINTS[0]!;
+                      return (
+                        <Link
+                          key={c.id}
+                          to="/shop"
+                          search={{ category: c.slug }}
+                          className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                        >
+                          <div
+                            className={`relative w-full aspect-[4/4.5] rounded-[1.4rem] p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
                           >
-                            <div
-                              className={`relative w-full aspect-[4/4.5] rounded-2xl p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
-                            >
-                              <div className="size-full rounded-xl overflow-hidden flex items-center justify-center bg-white/50 shadow-2xs">
-                                <img
-                                  src={getCategoryThumbnail(c)}
-                                  alt={c.name}
-                                  loading="lazy"
-                                  className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                                />
-                              </div>
-                            </div>
-                            <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
-                              {getCategoryName(c)}
-                            </span>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                            <CategoryThumbnail category={c} name={c.name} />
+                          </div>
+                          <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
+                            {getCategoryName(c)}
+                          </span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               );
             })}
+
+            {uncategorizedCategories.length > 0 && (
+              <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
+                      🛒
+                    </div>
+                    <div className="space-y-0.5">
+                      <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
+                        {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
+                      </h3>
+                      <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
+                        {uncategorizedCategories.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
+                  {uncategorizedCategories.map((c, cIdx) => {
+                    const tint =
+                      BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
+                      BLINKIT_CATEGORY_TINTS[0]!;
+                    return (
+                      <Link
+                        key={c.id}
+                        to="/shop"
+                        search={{ category: c.slug }}
+                        className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                      >
+                        <div
+                          className={`relative w-full aspect-[4/4.5] rounded-[1.4rem] p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
+                        >
+                          <CategoryThumbnail category={c} name={c.name} />
+                        </div>
+                        <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
+                          {getCategoryName(c)}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -458,7 +635,7 @@ function PremiumStoreHome() {
                 ? (lang === "hi" ? "30 मिनट डिलीवरी" : "30-Min Delivery")
                 : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"),
               sub: isDeliveryEnabled
-                ? (lang === "hi" ? "महाराजगंज" : "Local Delivery")
+                ? (lang === "hi" ? "अड्डा बाजार" : "Adda Bazar")
                 : (lang === "hi" ? "तुरंत तैयार" : "Ready in Store"),
             },
             {

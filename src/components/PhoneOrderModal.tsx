@@ -26,6 +26,8 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
   const cleanPhone = phone.replace(/\s+/g, "");
   const whatsapp = settings?.whatsapp ?? "916388354988";
 
+  const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
+
   let waMessage =
     lang === "hi"
       ? `नमस्ते ${t.storeName}, मुझे किराने का सामान ऑर्डर करना है:`
@@ -42,13 +44,13 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
         : `\n\n*Estimated Subtotal:* ${inr(subtotal)}`;
     waMessage +=
       lang === "hi"
-        ? `\n\nकृपया महाराजगंज के लिए उपलब्धता और डिलीवरी का समय बताएं।`
-        : `\n\nPlease confirm availability and delivery time for Maharajganj.`;
+        ? `\n\nकृपया अड्डा बाजार के लिए उपलब्धता और ${isDeliveryEnabled ? "डिलीवरी" : "पिकअप"} का समय बताएं।`
+        : `\n\nPlease confirm availability and ${isDeliveryEnabled ? "delivery" : "pickup"} time for Adda Bazar.`;
   } else {
     waMessage +=
       lang === "hi"
-        ? `\n\nकृपया महाराजगंज होम डिलीवरी/पिकअप के लिए नवीनतम किराना लिस्ट साझा करें।`
-        : `\n\nPlease share the latest grocery list or help me place an order for Maharajganj delivery/pickup.`;
+        ? `\n\nकृपया अड्डा बाजार ${isDeliveryEnabled ? "होम डिलीवरी / पिकअप" : "स्टोर पिकअप"} के लिए नवीनतम किराना लिस्ट साझा करें।`
+        : `\n\nPlease share the latest grocery list or help me place an order for Adda Bazar ${isDeliveryEnabled ? "delivery/pickup" : "store pickup"}.`;
   }
 
   return (

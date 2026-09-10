@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, X, Mic } from "lucide-react";
+import { Search, X, Mic, PhoneCall } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n";
@@ -11,6 +11,7 @@ interface RotatingSearchInputProps {
   setTerm: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onVoiceSearch?: (val: string) => void;
+  onPhoneClick?: () => void;
   onFocus?: () => void;
   onBlur?: () => void;
   variant?: "desktop" | "mobile";
@@ -22,6 +23,7 @@ export function RotatingSearchInput({
   setTerm,
   onSubmit,
   onVoiceSearch,
+  onPhoneClick,
   onFocus,
   onBlur,
   variant = "desktop",
@@ -92,22 +94,31 @@ export function RotatingSearchInput({
   }
 
   const isDesktop = variant === "desktop";
-  // Full height of input box: h-11 = 44px on desktop, h-10 = 40px on mobile
-  const itemHeight = isDesktop ? 44 : 40;
+  // Full height of input box: h-11.5 = 46px on desktop, h-10.5 = 42px on mobile
+  const itemHeight = isDesktop ? 46 : 42;
 
   return (
     <>
       <form onSubmit={onSubmit} className="relative w-full">
         <div className="relative flex items-center w-full">
-          {/* Front Search Icon */}
-          <div
+          {/* Front Search Icon (Bold, Punchy & Clickable) */}
+          <button
+            type="submit"
+            aria-label="Search"
+            title={lang === "hi" ? "खोजें" : "Search"}
             className={cn(
-              "pointer-events-none absolute inset-y-0 flex items-center text-[#145A45] z-10",
-              isDesktop ? "left-3.5" : "left-3"
+              "absolute inset-y-0 my-auto flex items-center justify-center text-[#145A45] hover:text-[#0A3628] active:scale-90 transition-all z-10 cursor-pointer",
+              isDesktop ? "left-2.5 size-8.5" : "left-2 size-8"
             )}
           >
-            <Search className={isDesktop ? "size-4.5 text-[#145A45]" : "size-4 text-[#145A45]"} />
-          </div>
+            <Search
+              className={cn(
+                "text-[#145A45] drop-shadow-[0_1px_1px_rgba(20,90,69,0.15)]",
+                isDesktop ? "size-5" : "size-4.5"
+              )}
+              strokeWidth={2.5}
+            />
+          </button>
 
           <Input
             type="text"
@@ -124,10 +135,10 @@ export function RotatingSearchInput({
             placeholder=""
             aria-label={ariaLabel || (isDesktop ? "Search grocery items" : "Mobile search")}
             className={cn(
-              "w-full rounded-xl border border-[#E0DCD2] bg-[#FAF8F2] text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/40 focus-visible:border-[#145A45] focus-visible:ring-2 focus-visible:ring-[#145A45]/20 transition-all shadow-2xs font-medium",
+              "w-full rounded-full border border-[#DCD7CB] bg-white text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/50 focus:bg-white focus-visible:border-[#145A45] focus-visible:ring-2 focus-visible:ring-[#145A45]/20 transition-all shadow-xs hover:shadow-sm font-medium",
               isDesktop
-                ? "h-11 pl-10.5 pr-18 text-[13px] sm:text-sm"
-                : "h-10 pl-9.5 pr-16 text-[13px]"
+                ? (onPhoneClick ? "h-11.5 pl-11.5 pr-26 text-[13.5px]" : "h-11.5 pl-11.5 pr-22 text-[13.5px]")
+                : (onPhoneClick ? "h-10.5 pl-10 pr-22 text-[12.5px]" : "h-10.5 pl-10 pr-18 text-[12.5px]")
             )}
           />
 
@@ -136,7 +147,9 @@ export function RotatingSearchInput({
             <div
               className={cn(
                 "pointer-events-none absolute inset-y-0 flex items-center overflow-hidden select-none",
-                isDesktop ? "left-10.5 right-18 text-[13px] sm:text-sm" : "left-9.5 right-16 text-[13px]"
+                isDesktop
+                  ? (onPhoneClick ? "left-11.5 right-26 text-[13.5px]" : "left-11.5 right-22 text-[13.5px]")
+                  : (onPhoneClick ? "left-10 right-22 text-[12.5px]" : "left-10 right-18 text-[12.5px]")
               )}
             >
               <div
@@ -166,15 +179,15 @@ export function RotatingSearchInput({
             </div>
           )}
 
-          {/* Right Action Icons (Clear Button + Microphone Voice Search) */}
-          <div className="absolute right-2 inset-y-0 flex items-center gap-1">
+          {/* Right Action Icons (Clear Button + Divider + Mic + Phone Order) */}
+          <div className="absolute right-2 inset-y-0 flex items-center gap-1 sm:gap-1.5">
             {/* Clear Input Button */}
             {term.trim() ? (
               <button
                 type="button"
                 onClick={() => setTerm("")}
                 className={cn(
-                  "flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-lg transition-all cursor-pointer",
+                  "flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-full transition-all cursor-pointer",
                   isDesktop ? "size-7" : "size-6"
                 )}
                 aria-label="Clear search"
@@ -182,6 +195,9 @@ export function RotatingSearchInput({
                 <X className={isDesktop ? "size-3.5" : "size-3"} />
               </button>
             ) : null}
+
+            {/* Mic Vertical Divider */}
+            <span className={cn("w-px bg-[#E5E0D5]", isDesktop ? "h-5" : "h-4")} />
 
             {/* Microphone Voice Search Button */}
             <button
@@ -191,15 +207,38 @@ export function RotatingSearchInput({
                 e.stopPropagation();
                 setIsVoiceOpen(true);
               }}
-              title={lang === "hi" ? "बोलकर खोजें (वॉयस सर्च)" : "Voice Search (Speak to search)"}
+              title={lang === "hi" ? "बोलकर खोजें (वॉयस सर्च)" : "Voice Search"}
               aria-label="Voice Search"
               className={cn(
-                "flex items-center justify-center rounded-lg text-[#145A45] hover:bg-[#145A45]/10 active:scale-95 transition-all cursor-pointer",
-                isDesktop ? "size-7.5" : "size-7"
+                "flex items-center justify-center rounded-full text-[#145A45] hover:text-[#0A3628] hover:bg-black/5 active:scale-90 transition-all cursor-pointer",
+                isDesktop ? "size-8.5" : "size-8"
               )}
             >
-              <Mic className={isDesktop ? "size-4 text-[#145A45]" : "size-3.5 text-[#145A45]"} />
+              <Mic className={isDesktop ? "size-4.5" : "size-4"} />
             </button>
+
+            {/* Phone Order Direct Button */}
+            {onPhoneClick && (
+              <>
+                <span className={cn("w-px bg-[#E5E0D5]", isDesktop ? "h-5" : "h-4")} />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onPhoneClick();
+                  }}
+                  title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Call"}
+                  aria-label="Phone Order"
+                  className={cn(
+                    "flex items-center justify-center rounded-full text-[#145A45] hover:text-[#0A3628] hover:bg-black/5 active:scale-90 transition-all cursor-pointer",
+                    isDesktop ? "size-8.5" : "size-8"
+                  )}
+                >
+                  <PhoneCall className={isDesktop ? "size-4" : "size-3.5"} />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </form>

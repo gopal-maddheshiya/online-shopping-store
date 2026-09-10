@@ -41,15 +41,29 @@ import {
 
 type AdminCategoriesProps = {
   categories: Category[];
+  categoryHeadings?: CategoryHeading[] | null;
   onRefresh: () => void;
   onNavigateToSettings?: () => void;
 };
 
-export function AdminCategories({ categories, onRefresh, onNavigateToSettings }: AdminCategoriesProps) {
+export function AdminCategories({
+  categories,
+  categoryHeadings,
+  onRefresh,
+  onNavigateToSettings,
+}: AdminCategoriesProps) {
   const queryClient = useQueryClient();
 
-  // Headings state
-  const [headings, setHeadings] = useState<CategoryHeading[]>(getCategoryHeadings());
+  // Headings state (initialized from prop / DB first, fallback to storage)
+  const [headings, setHeadings] = useState<CategoryHeading[]>(() =>
+    getCategoryHeadings(categoryHeadings),
+  );
+
+  useEffect(() => {
+    if (categoryHeadings && Array.isArray(categoryHeadings) && categoryHeadings.length > 0) {
+      setHeadings(getCategoryHeadings(categoryHeadings));
+    }
+  }, [categoryHeadings]);
   
   // Modals state
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -81,10 +95,10 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
 
   // Sync headings listener
   useEffect(() => {
-    const handleUpdate = () => setHeadings(getCategoryHeadings());
+    const handleUpdate = () => setHeadings(getCategoryHeadings(categoryHeadings));
     window.addEventListener("agt:headings-updated", handleUpdate);
     return () => window.removeEventListener("agt:headings-updated", handleUpdate);
-  }, []);
+  }, [categoryHeadings]);
 
   // Top level categories only
   const parentCategories = categories.filter((c) => !c.parent_id);
@@ -166,12 +180,14 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
           .update(payload)
           .eq("id", editingCategory.id);
         if (error) throw error;
-        moveCategorySlugToHeading(selectedHeadingId, slug.trim());
+        const updated = moveCategorySlugToHeading(selectedHeadingId, slug.trim(), headings);
+        setHeadings(updated);
         toast.success(`कैटेगरी "${nameHi || trimmedName}" अपडेट हो गई!`);
       } else {
         const { error } = await supabase.from("categories").insert(payload);
         if (error) throw error;
-        moveCategorySlugToHeading(selectedHeadingId, slug.trim());
+        const updated = moveCategorySlugToHeading(selectedHeadingId, slug.trim(), headings);
+        setHeadings(updated);
         toast.success(`कैटेगरी "${nameHi || trimmedName}" जुड़ गई!`);
       }
 
@@ -195,7 +211,8 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
       const { error } = await supabase.from("categories").delete().eq("id", cat.id);
       if (error) throw error;
 
-      removeCategorySlugFromHeadings(cat.slug);
+      const updated = removeCategorySlugFromHeadings(cat.slug, headings);
+      setHeadings(updated);
       toast.success(`कैटेगरी "${cat.name_hi || cat.name}" हटा दी गई`);
 
       queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -346,6 +363,18 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
     );
   };
 
+  function handleQuickAssign(slug: string, headingId: string) {
+    const updated = moveCategorySlugToHeading(headingId, slug, headings);
+    setHeadings(updated);
+    toast.success("कैटेगरी को हेडिंग में जोड़ दिया गया!");
+    onRefresh();
+  }
+
+  const allAssignedSlugs = new Set(headings.flatMap((h) => h.slugs));
+  const unassignedCategories = parentCategories.filter(
+    (c) => !allAssignedSlugs.has(c.slug) && searchMatches(c),
+  );
+
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Top Header Controls */}
@@ -397,12 +426,112 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
         )}
       </div>
 
+      {/* Unassigned Categories Section (if any category lacks a heading) */}
+      {unassignedCategories.length > 0 && (
+        <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-amber-200/80 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl size-9 grid place-items-center rounded-xl bg-amber-100 border border-amber-300 text-amber-800 shrink-0">
+                ⚠️
+              </span>
+              <div>
+                <h4 className="font-sans font-bold text-sm sm:text-base text-amber-900 leading-tight">
+                  बिना हेडिंग वाली कैटेगरीज ({unassignedCategories.length})
+                </h4>
+                <p className="text-[11px] text-amber-800">
+                  ये कैटेगरीज किसी हेडिंग में सेट नहीं हैं। ड्रॉपडाउन से उन्हें किसी हेडिंग में जोड़ें।
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+            {unassignedCategories.map((cat) => {
+              const hasHindi = Boolean(cat.name_hi && cat.name_hi.trim());
+              const primaryName = hasHindi ? cat.name_hi : (cat.name_en || cat.name);
+              const secondaryName = hasHindi ? (cat.name_en || cat.name) : null;
+
+              return (
+                <div
+                  key={cat.id}
+                  className="group rounded-2xl border border-amber-200 bg-white p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+                >
+                  <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
+                    <img
+                      src={cat.image_url || "/images/packaged.jpg"}
+                      alt={primaryName}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                      }}
+                    />
+                  </div>
+
+                  <div className="text-center min-w-0 px-0.5 space-y-0.5 flex-1 flex flex-col justify-center">
+                    <h5
+                      className="font-sans font-bold text-xs text-[#16201A] leading-snug line-clamp-1 pb-0.5 overflow-visible"
+                      title={primaryName}
+                    >
+                      {primaryName}
+                    </h5>
+                    {secondaryName && secondaryName.toLowerCase() !== primaryName?.toLowerCase() && (
+                      <p
+                        className="text-[11px] text-[#6B746F] font-medium leading-tight line-clamp-1 truncate"
+                        title={secondaryName}
+                      >
+                        {secondaryName}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-2.5 pt-2 border-t border-[#E8E4DA]/70 space-y-1.5">
+                    <Select onValueChange={(targetHId) => handleQuickAssign(cat.slug, targetHId)}>
+                      <SelectTrigger className="h-7 text-[10px] font-bold bg-[#FAF8F2] border-[#E8E4DA] text-[#145A45] rounded-lg">
+                        <SelectValue placeholder="हेडिंग चुनें..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {headings.map((h) => (
+                          <SelectItem key={h.id} value={h.id} className="text-xs">
+                            {h.icon} {h.title_hi}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <div className="flex items-center justify-between gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => openEditCategoryModal(cat)}
+                        className="h-6 flex-1 rounded-md text-[10px] font-semibold text-[#145A45] hover:bg-[#145A45]/10 px-1"
+                      >
+                        एडिट
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDeleteCategory(cat)}
+                        className="size-6 rounded-md text-stone-400 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="size-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Grouped Categories by Headings */}
       <div className="space-y-6 sm:space-y-8">
         {headings.map((heading) => {
           // Find categories assigned to this heading
           const headingCategories = parentCategories.filter(
-            (c) => heading.slugs.includes(c.slug) && searchMatches(c)
+            (c) => heading.slugs.includes(c.slug) && searchMatches(c),
           );
 
           return (
@@ -413,73 +542,61 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
               {/* Section Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#E8E4DA] pb-3.5">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl size-10 grid place-items-center rounded-2xl bg-white border border-[#E8E4DA] shadow-2xs shrink-0">
+                  <span className="text-2xl size-11 grid place-items-center rounded-2xl bg-white border border-[#E8E4DA] shadow-2xs shrink-0">
                     {heading.icon || "📦"}
                   </span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-sans font-bold text-base sm:text-lg text-[#16201A]">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-sans font-bold text-base sm:text-lg text-[#16201A] leading-snug">
                         {heading.title_hi}
                       </h4>
-                      <span className="text-xs text-[#5A655F] font-normal">
-                        ({heading.title_en})
+                      <span className="text-xs text-[#5A655F] font-medium">
+                        • {heading.title_en}
                       </span>
+                      <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45] border border-[#145A45]/20">
+                        {headingCategories.length} {headingCategories.length === 1 ? "कैटेगरी" : "कैटेगरीज"}
+                      </span>
+                      {heading.banner_image_url && (
+                        <span className="rounded-full bg-emerald-100/80 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-800 flex items-center gap-1 border border-emerald-200">
+                          <ImageIcon className="size-3" /> बैनर सक्रिय
+                        </span>
+                      )}
                     </div>
-                    <p className="text-[11px] text-[#145A45] font-semibold">
-                      {headingCategories.length} श्रेणियाँ (Categories)
-                    </p>
                   </div>
                 </div>
 
                 {/* Heading Actions */}
                 <div className="flex items-center gap-1.5 self-end sm:self-auto flex-wrap">
                   <Button
+                    type="button"
                     onClick={() => openAddCategoryModal(heading.id)}
                     size="sm"
-                    variant="outline"
-                    className="rounded-xl text-xs font-bold border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] h-8 shadow-2xs"
+                    className="rounded-xl text-xs font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-8.5 shadow-2xs gap-1"
                   >
-                    <Plus className="mr-1 size-3.5" /> इस हेडिंग में जोड़ें
+                    <Plus className="size-3.5" /> नई कैटेगरी जोड़ें
                   </Button>
 
                   <Button
+                    type="button"
                     onClick={() => openEditHeadingModal(heading)}
                     size="sm"
-                    variant="ghost"
-                    className="rounded-xl text-xs text-[#5A655F] hover:text-[#16201A] hover:bg-white h-8"
-                    title="Edit Heading Details"
+                    variant="outline"
+                    className="rounded-xl text-xs font-semibold border-[#E8E4DA] bg-white text-[#16201A] hover:bg-[#FAF8F2] h-8.5 gap-1 shadow-2xs"
                   >
-                    <Edit2 className="mr-1 size-3.5" /> एडिट हेडिंग
+                    <Edit2 className="size-3 text-[#145A45]" /> हेडिंग एडिट
                   </Button>
 
                   <Button
+                    type="button"
                     onClick={() => handleDeleteHeading(heading)}
-                    size="sm"
+                    size="icon"
                     variant="ghost"
-                    className="rounded-xl text-xs text-red-500 hover:text-red-700 hover:bg-red-50 h-8"
+                    className="size-8.5 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50"
                     title="Delete Heading"
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
                 </div>
-              </div>
-
-              {/* Sub-Hero Banner Guide Note */}
-              <div className="rounded-xl border border-[#E5E0D5] bg-white px-3.5 py-2 flex items-center justify-between text-xs text-[#5A655F]">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="size-4 text-[#145A45] shrink-0" />
-                  <span>
-                    इस हेडिंग का <strong>सब-हीरो बैनर</strong> होमपेज पर दिखाने के लिए <strong>Store Settings ➔ Homepage</strong> में बैनर अपलोड करें।
-                  </span>
-                </div>
-                {onNavigateToSettings && (
-                  <button
-                    onClick={onNavigateToSettings}
-                    className="text-[11px] font-bold text-[#145A45] hover:underline flex items-center gap-1 shrink-0 ml-2 cursor-pointer"
-                  >
-                    <Settings className="size-3" /> सेटिंग्स में जाएं
-                  </button>
-                )}
               </div>
 
               {/* Categories Grid under this Heading */}
@@ -488,61 +605,81 @@ export function AdminCategories({ categories, onRefresh, onNavigateToSettings }:
                   <p className="text-xs text-[#5A655F]">
                     {cleanSearch
                       ? "इस हेडिंग में कोई कैटेगरी सर्च से मैच नहीं हुई।"
-                      : "इस हेडिंग के अंदर अभी कोई कैटेगरी नहीं है। ऊपर दिए '+ इस हेडिंग में जोड़ें' बटन से कैटेगरी जोड़ें।"}
+                      : "इस हेडिंग के अंदर अभी कोई कैटेगरी नहीं है। ऊपर दिए '+ नई कैटेगरी जोड़ें' बटन से कैटेगरी जोड़ें।"}
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-                  {headingCategories.map((cat) => (
-                    <div
-                      key={cat.id}
-                      className="group rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
-                    >
-                      {/* Thumbnail */}
-                      <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA] mb-2 p-1.5 flex items-center justify-center">
-                        <img
-                          src={cat.image_url || "/images/packaged.jpg"}
-                          alt={cat.name_hi || cat.name}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                          }}
-                        />
-                      </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                  {headingCategories.map((cat) => {
+                    const hasHindi = Boolean(cat.name_hi && cat.name_hi.trim());
+                    const primaryName = hasHindi ? cat.name_hi : (cat.name_en || cat.name);
+                    const secondaryName = hasHindi ? (cat.name_en || cat.name) : null;
 
-                      {/* Info */}
-                      <div className="space-y-0.5 text-center min-w-0">
-                        <h5 className="font-sans font-bold text-xs sm:text-sm text-[#16201A] truncate" title={cat.name_hi || cat.name}>
-                          {cat.name_hi || cat.name}
-                        </h5>
-                        <p className="text-[11px] text-[#5A655F] truncate" title={cat.name_en || cat.name}>
-                          {cat.name_en || cat.name}
-                        </p>
-                        <span className="inline-block text-[9px] font-mono text-[#6B746F] bg-[#FAF8F2] px-1.5 py-0.5 rounded border border-[#E8E4DA] truncate max-w-full">
-                          /{cat.slug}
-                        </span>
-                      </div>
+                    return (
+                      <div
+                        key={cat.id}
+                        className="group rounded-2xl border border-[#E8E4DA] bg-white p-3 shadow-2xs hover:border-[#145A45]/40 hover:shadow-xs transition-all flex flex-col justify-between"
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
+                          <img
+                            src={cat.image_url || "/images/packaged.jpg"}
+                            alt={primaryName}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                            }}
+                          />
+                          {cat.icon && (
+                            <span className="absolute top-1.5 left-1.5 text-xs bg-white/90 backdrop-blur-xs rounded-md size-5 flex items-center justify-center shadow-2xs border border-[#E8E4DA]/60">
+                              {cat.icon}
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Actions */}
-                      <div className="mt-2.5 pt-2 border-t border-[#E8E4DA] flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => openEditCategoryModal(cat)}
-                          className="p-1.5 rounded-lg text-[#145A45] hover:bg-[#E6EFE8] transition-colors cursor-pointer"
-                          title="कैटेगरी एडिट करें"
-                        >
-                          <Edit2 className="size-3.5" />
-                        </button>
+                        {/* Title & Subtitle */}
+                        <div className="text-center min-w-0 px-0.5 space-y-0.5 flex-1 flex flex-col justify-center">
+                          <h5
+                            className="font-sans font-bold text-xs text-[#16201A] leading-snug line-clamp-1 pb-0.5 overflow-visible"
+                            title={primaryName}
+                          >
+                            {primaryName}
+                          </h5>
+                          {secondaryName && secondaryName.toLowerCase() !== primaryName?.toLowerCase() && (
+                            <p
+                              className="text-[11px] text-[#6B746F] font-medium leading-tight line-clamp-1 truncate"
+                              title={secondaryName}
+                            >
+                              {secondaryName}
+                            </p>
+                          )}
+                        </div>
 
-                        <button
-                          onClick={() => handleDeleteCategory(cat)}
-                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                          title="कैटेगरी डिलीट करें"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        {/* Actions Strip */}
+                        <div className="mt-2.5 pt-2 border-t border-[#E8E4DA]/70 flex items-center gap-1.5">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => openEditCategoryModal(cat)}
+                            className="h-7 flex-1 rounded-lg text-[11px] font-semibold text-[#145A45] hover:bg-[#145A45]/10 px-2"
+                          >
+                            <Edit2 className="size-3 mr-1" /> एडिट
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteCategory(cat)}
+                            className="size-7 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                            title="हटाएं"
+                          >
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

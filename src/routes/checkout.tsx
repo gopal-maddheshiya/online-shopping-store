@@ -181,7 +181,7 @@ function CheckoutPage() {
 
 
   // Delivery configuration & Calculations
-  const isDeliveryEnabled = settings?.delivery_enabled !== false;
+  const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
 
   useEffect(() => {
     if (!isDeliveryEnabled && orderType !== "pickup") {
