@@ -9,6 +9,8 @@ import type { Order, StoreSettings } from "@/lib/queries";
 // NOTE: Telegram bot token is now handled server-side only.
 // Do NOT use VITE_TELEGRAM_BOT_TOKEN — that would expose the token in the browser bundle.
 // The /api/notify/telegram server route reads the token from server env vars.
+export const DEFAULT_TELEGRAM_BOT_TOKEN = "";
+export const DEFAULT_TELEGRAM_CHAT_ID = "";
 
 export interface TelegramOrderAlertPayload {
   orderNo: string;

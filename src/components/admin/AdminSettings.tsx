@@ -1420,25 +1420,22 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                   try {
                     const token = telegramBotToken.trim();
                     const chatId = telegramChatId.trim();
-                    if (!token || !chatId) {
-                      toast.error("कृपया Bot Token और Chat ID दोनों दर्ज करें");
-                      return;
-                    }
                     const testText = `🔔 *परीक्षण सूचना • अरुण गोपाल ट्रेडर्स*\n\nआपका टेलीग्राम ऑर्डर अलर्ट सिस्टम सक्रिय है! नया ऑर्डर आने पर तुरंत यहाँ सूचना भेजी जाएगी। 🚀`;
-                    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    
+                    const body: { message: string; token?: string; chatId?: string } = { message: testText };
+                    if (token) body.token = token;
+                    if (chatId) body.chatId = chatId;
+
+                    const res = await fetch("/api/notify/telegram", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        chat_id: chatId,
-                        text: testText,
-                        parse_mode: "Markdown",
-                      }),
+                      body: JSON.stringify(body),
                     });
                     const data = await res.json();
-                    if (data.ok) {
+                    if (data.success) {
                       toast.success("टेलीग्राम पर टेस्ट मैसेज सफलतापूर्वक भेज दिया गया! अपना टेलीग्राम चेक करें।");
                     } else {
-                      toast.error(data.description || "टेलीग्राम टेस्ट संदेश विफल रहा");
+                      toast.error(data.error || "टेलीग्राम टेस्ट संदेश विफल रहा");
                     }
                   } catch (err: unknown) {
                     toast.error(err instanceof Error ? err.message : "कनेक्शन में त्रुटि");
