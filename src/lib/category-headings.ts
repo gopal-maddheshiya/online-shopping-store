@@ -38,7 +38,9 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Household & Cleaning",
     icon: "🧹",
     sort_order: 2,
-    banner_sub: "hero2",
+    banner_sub: null,
+    banner_image_url:
+      "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/hero/hero2_banner_1788298562041.webp",
     slugs: ["household-cleaning", "laundry", "kitchen-essentials", "pots-cceaners"],
   },
   {
@@ -47,7 +49,9 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Personal Care & Beauty",
     icon: "🧴",
     sort_order: 3,
-    banner_sub: "hero3",
+    banner_sub: null,
+    banner_image_url:
+      "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/hero/hero3_banner_1788298230943.webp",
     slugs: ["personal-care", "hair-care", "skin-care", "oral-care", "baby-products"],
   },
   {
@@ -56,7 +60,9 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Pooja, Stationery & More",
     icon: "🪔",
     sort_order: 4,
-    banner_sub: "hero4",
+    banner_sub: null,
+    banner_image_url:
+      "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/hero/hero4_banner_1788298478090.webp",
     slugs: ["pooja-items", "stationery", "pet-supplies", "misc-items"],
   },
   {

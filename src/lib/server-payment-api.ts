@@ -7,6 +7,7 @@
  */
 
 import { verifyHmacSha256 } from "./payment-gateway";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateOrderBody {
   orderId: string;
@@ -126,12 +127,95 @@ export async function handleCreatePaymentOrder(request: Request, env?: unknown):
 }
 
 /**
+ * Internal Helper: Synchronize payment status to PostgreSQL database
+ */
+async function syncPaymentToDatabase(params: {
+  orderId?: string | undefined;
+  orderNo?: string | undefined;
+  paymentStatus: "paid" | "failed";
+  paymentMethod?: string | undefined;
+  gatewayPaymentId?: string | undefined;
+  note?: string | undefined;
+}): Promise<boolean> {
+  const { orderId, orderNo, paymentStatus, paymentMethod, gatewayPaymentId, note } = params;
+  try {
+    let resolvedOrderId = orderId;
+
+    // If internal orderId is missing, resolve by orderNo
+    if (!resolvedOrderId && orderNo) {
+      const { data: foundOrder } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("order_no", orderNo)
+        .maybeSingle();
+      if (foundOrder?.id) {
+        resolvedOrderId = foundOrder.id;
+      }
+    }
+
+    if (!resolvedOrderId) {
+      console.warn("[PaymentSync] Could not resolve order to sync payment:", params);
+      return false;
+    }
+
+    // 1. Try secure RPC procedure for payment status
+    try {
+      await supabase.rpc("admin_update_payment_status" as never, {
+        _order_id: resolvedOrderId,
+        _payment_status: paymentStatus,
+      } as never);
+    } catch {
+      // Non-blocking fallback to direct table update
+    }
+
+    // 2. Direct table update to ensure payment_status, method and timestamp are set
+    const updatePayload: Record<string, unknown> = {
+      payment_status: paymentStatus,
+      updated_at: new Date().toISOString(),
+    };
+    if (paymentMethod) {
+      updatePayload["payment_method"] = paymentMethod;
+    }
+    if (paymentStatus === "paid") {
+      updatePayload["paid_at"] = new Date().toISOString();
+    }
+
+    await supabase
+      .from("orders")
+      .update(updatePayload as never)
+      .eq("id", resolvedOrderId);
+
+    // 3. Log event into order_events table
+    try {
+      await supabase
+        .from("order_events")
+        .insert({
+          order_id: resolvedOrderId,
+          status: paymentStatus,
+          note:
+            note ||
+            (paymentStatus === "paid"
+              ? `Online payment verified via Razorpay${gatewayPaymentId ? ` (ID: ${gatewayPaymentId})` : ""}`
+              : `Online payment failed${gatewayPaymentId ? ` (ID: ${gatewayPaymentId})` : ""}`),
+        } as never);
+    } catch {
+      // Event log failure non-blocking
+    }
+
+    return true;
+  } catch (err) {
+    console.error("[PaymentSync] Error syncing payment to database:", err);
+    return false;
+  }
+}
+
+/**
  * Handle /api/payment/verify
  */
 export async function handleVerifyPayment(request: Request, env?: unknown): Promise<Response> {
   try {
     const body = (await request.json()) as VerifyPaymentBody;
-    const { orderId, gatewayOrderId, gatewayPaymentId, signature, amount, paymentMethod } = body;
+    const { orderId, orderNo, gatewayOrderId, gatewayPaymentId, signature, amount, paymentMethod } = body;
 
     if (!orderId || !gatewayPaymentId) {
       return new Response(
@@ -154,6 +238,16 @@ export async function handleVerifyPayment(request: Request, env?: unknown): Prom
         );
       }
     }
+
+    // Persist verified payment status to Supabase database
+    await syncPaymentToDatabase({
+      orderId,
+      orderNo,
+      paymentStatus: "paid",
+      paymentMethod,
+      gatewayPaymentId,
+      note: `Payment verified via gateway (Payment ID: ${gatewayPaymentId})`,
+    });
 
     return new Response(
       JSON.stringify({
@@ -197,12 +291,59 @@ export async function handlePaymentWebhook(request: Request, env?: unknown): Pro
     const payload = JSON.parse(rawBody) as {
       event?: string;
       payload?: {
-        payment?: { entity?: { id?: string; order_id?: string; amount?: number; status?: string } };
-        order?: { entity?: { id?: string; amount?: number; status?: string } };
+        payment?: {
+          entity?: {
+            id?: string;
+            order_id?: string;
+            amount?: number;
+            status?: string;
+            method?: string;
+            notes?: Record<string, string>;
+          };
+        };
+        order?: {
+          entity?: {
+            id?: string;
+            amount?: number;
+            status?: string;
+            receipt?: string;
+            notes?: Record<string, string>;
+          };
+        };
       };
     };
 
     console.info(`Received Razorpay webhook event: ${payload.event}`);
+
+    const event = payload.event;
+    const paymentEntity = payload.payload?.payment?.entity;
+    const orderEntity = payload.payload?.order?.entity;
+
+    const notes = paymentEntity?.notes || orderEntity?.notes;
+    const targetOrderId = (notes ? notes["order_id"] : undefined);
+    const targetOrderNo = (notes ? notes["order_no"] : undefined) || orderEntity?.receipt;
+    const gatewayPaymentId = paymentEntity?.id;
+    const paymentMethod = paymentEntity?.method;
+
+    if (event === "payment.captured" || event === "order.paid") {
+      await syncPaymentToDatabase({
+        orderId: targetOrderId,
+        orderNo: targetOrderNo,
+        paymentStatus: "paid",
+        paymentMethod,
+        gatewayPaymentId,
+        note: `Webhook confirmed: ${event} (Payment ID: ${gatewayPaymentId || "N/A"})`,
+      });
+    } else if (event === "payment.failed") {
+      await syncPaymentToDatabase({
+        orderId: targetOrderId,
+        orderNo: targetOrderNo,
+        paymentStatus: "failed",
+        paymentMethod,
+        gatewayPaymentId,
+        note: `Webhook confirmed: ${event} (Payment ID: ${gatewayPaymentId || "N/A"})`,
+      });
+    }
 
     // Return 200 OK to acknowledge receipt idempotently
     return new Response(JSON.stringify({ status: "ok", received: true }), {

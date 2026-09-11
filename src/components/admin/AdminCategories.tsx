@@ -41,7 +41,7 @@ import {
 
 type AdminCategoriesProps = {
   categories: Category[];
-  categoryHeadings?: CategoryHeading[] | null;
+  categoryHeadings?: CategoryHeading[] | null | undefined;
   onRefresh: () => void;
   onNavigateToSettings?: () => void;
 };
@@ -459,7 +459,7 @@ export function AdminCategories({
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
                     <img
                       src={cat.image_url || "/images/packaged.jpg"}
-                      alt={primaryName}
+                      alt={primaryName ?? ""}
                       className="w-full h-full object-contain"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "/images/packaged.jpg";
@@ -470,7 +470,7 @@ export function AdminCategories({
                   <div className="text-center min-w-0 px-0.5 space-y-0.5 flex-1 flex flex-col justify-center">
                     <h5
                       className="font-sans font-bold text-xs text-[#16201A] leading-snug line-clamp-1 pb-0.5 overflow-visible"
-                      title={primaryName}
+                      title={primaryName ?? undefined}
                     >
                       {primaryName}
                     </h5>
@@ -599,6 +599,67 @@ export function AdminCategories({
                 </div>
               </div>
 
+              {/* Optional Section Banner Preview & Quick Controls */}
+              {heading.banner_image_url ? (
+                <div className="relative group/banner rounded-2xl overflow-hidden border border-[#E8E4DA] bg-white shadow-2xs">
+                  <div className="relative aspect-[21/7] sm:aspect-[32/9] w-full bg-[#FAF8F2] overflow-hidden">
+                    <img
+                      src={heading.banner_image_url}
+                      alt={heading.title_hi}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/banner:opacity-100 transition-opacity flex items-center justify-between px-4">
+                      <span className="text-white text-xs font-semibold drop-shadow-xs">
+                        होमपेज सेक्शन बैनर (21:9)
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => openEditHeadingModal(heading)}
+                          className="h-8 rounded-xl bg-white text-[#16201A] hover:bg-white/90 text-xs font-bold gap-1 shadow-xs"
+                        >
+                          <Edit2 className="size-3 text-[#145A45]" /> बैनर बदलें
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`क्या आप "${heading.title_hi}" का होमपेज बैनर हटाना चाहते हैं?`)) {
+                              const updated = headings.map((h) =>
+                                h.id === heading.id ? { ...h, banner_image_url: null } : h,
+                              );
+                              setHeadings(updated);
+                              saveCategoryHeadings(updated);
+                              toast.success("बैनर हटा दिया गया");
+                            }
+                          }}
+                          className="h-8 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold gap-1 shadow-xs"
+                        >
+                          <Trash2 className="size-3" /> बैनर हटाएं
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between px-3.5 py-2 rounded-2xl border border-dashed border-[#E8E4DA] bg-white/70 hover:bg-white transition-colors">
+                  <div className="flex items-center gap-2 text-xs text-[#5A655F]">
+                    <ImageIcon className="size-4 text-[#8C9590]" />
+                    <span>होमपेज सेक्शन बैनर अभी नहीं जुड़ा है</span>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openEditHeadingModal(heading)}
+                    className="h-7 text-xs font-bold text-[#145A45] hover:bg-[#145A45]/10 gap-1 rounded-lg"
+                  >
+                    <Plus className="size-3" /> बैनर जोड़ें
+                  </Button>
+                </div>
+              )}
+
               {/* Categories Grid under this Heading */}
               {headingCategories.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[#E8E4DA] bg-white p-6 text-center">
@@ -624,7 +685,7 @@ export function AdminCategories({
                         <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
                           <img
                             src={cat.image_url || "/images/packaged.jpg"}
-                            alt={primaryName}
+                            alt={primaryName ?? ""}
                             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/images/packaged.jpg";
@@ -641,7 +702,7 @@ export function AdminCategories({
                         <div className="text-center min-w-0 px-0.5 space-y-0.5 flex-1 flex flex-col justify-center">
                           <h5
                             className="font-sans font-bold text-xs text-[#16201A] leading-snug line-clamp-1 pb-0.5 overflow-visible"
-                            title={primaryName}
+                            title={primaryName ?? undefined}
                           >
                             {primaryName}
                           </h5>

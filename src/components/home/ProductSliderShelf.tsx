@@ -141,8 +141,8 @@ export function ProductSliderShelf({
         <div className="flex items-center gap-2 shrink-0">
           {linkLabel && (
             <Link
-              to={linkTo}
-              search={linkSearch}
+              to={linkTo as any}
+              search={linkSearch as any}
               className="inline-flex items-center gap-1 rounded-full bg-[#E6EFE8] hover:bg-[#145A45] text-[#0F4A38] hover:text-white px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold transition-all shadow-2xs shrink-0"
             >
               <span>{linkLabel}</span>

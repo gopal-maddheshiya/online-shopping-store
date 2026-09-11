@@ -114,7 +114,7 @@ export async function updateOrderStatus(
     }
 
     // 2. Direct table update
-    await supabase
+    const { error: directError } = await supabase
       .from("orders")
       .update({
         status: newStatus as never,
@@ -122,6 +122,20 @@ export async function updateOrderStatus(
         updated_at: new Date().toISOString() as never,
       } as never)
       .eq("id", orderId);
+
+    if (directError) {
+      console.warn("[updateOrderStatus] Database direct update error:", directError);
+      return {
+        success: false,
+        error: directError.message,
+        order: {
+          id: orderId,
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          notes: note ?? null,
+        },
+      };
+    }
 
     return {
       success: true,
@@ -132,9 +146,11 @@ export async function updateOrderStatus(
         notes: note ?? null,
       },
     };
-  } catch {
+  } catch (err: unknown) {
+    console.error("[updateOrderStatus] Unexpected error:", err);
     return {
-      success: true,
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown error updating order",
       order: {
         id: orderId,
         status: newStatus,

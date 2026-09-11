@@ -585,7 +585,7 @@ function PremiumStoreHome() {
           1. HERO BANNER IMAGE (Uncropped, Natural Fit, Sleek on Laptop)
           ═══════════════════════════════════════════════════════ */}
       {settingsLoading ? (
-        <HeroBanner storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"} isLoading={true} />
+        <HeroBanner storeName="अरुण गोपाल ट्रेडर्स" isLoading={true} />
       ) : (
         <HeroBanner
           images={[

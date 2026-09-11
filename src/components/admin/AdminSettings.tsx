@@ -744,21 +744,21 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
             </div>
           </div>
 
-          {/* Top Homepage Hero Slider Banners (1 to 4 Images) */}
+          {/* Main Homepage Hero Banner */}
           <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
             <div>
               <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-                <ImageIcon className="size-5 text-[#145A45]" /> Homepage Hero Slider Banners (शीर्ष मुख्य स्लाइडर)
+                <ImageIcon className="size-5 text-[#145A45]" /> मुख्य हीरो स्लाइडर बैनर्स (Main Hero Slider Banners)
               </h3>
               <p className="text-xs text-[#6B746F] mt-1">
-                ये 1 से 4 बैनर्स होमपेज के सबसे ऊपर एक सुंदर ऑटो-स्लाइडिंग कैरोसेल में एक-एक करके बदलेंगे। आप अपनी दुकान के अनुसार 1, 2, 3 या 4 बैनर्स अपलोड कर सकते हैं।
+                यह होमपेज के सबसे ऊपर ऑटो-स्लाइड होने वाले मुख्य बैनर्स हैं। (Recommended: 1920×1080px या 16:9).
               </p>
             </div>
 
             <div className="space-y-3">
               <HeroImageUploader
                 label="Hero Slide 1 (मुख्य बैनर)"
-                description="होमपेज का पहला मुख्य बैनर (Recommended: 1920×823px या 16:9)"
+                description="होमपेज का पहला मुख्य बैनर (Recommended: 1920×1080px या 16:9)"
                 fieldKey="hero"
                 value={heroImageUrl}
                 onChange={setHeroImageUrl}
@@ -793,90 +793,20 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onRefresh={onRefresh}
               />
             </div>
-          </div>
 
-          {/* Dynamic Banners for Additional/Custom Headings */}
-          {headings.filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id)).length > 0 && (
-            <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-              <div>
-                <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-                  <ImageIcon className="size-5 text-[#145A45]" /> Custom Category Section Banners
-                </h3>
-              </div>
-              <div className="space-y-3">
-                {headings
-                  .filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id))
-                  .map((h) => (
-                  <div
-                    key={h.id}
-                    className="p-4 rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] space-y-3"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
-                          <span>{h.icon || "📦"}</span>
-                          <span>बैनर: {h.title_hi} ({h.title_en})</span>
-                        </h4>
-                        <p className="text-[11px] text-[#6B746F]">
-                          होमपेज पर इस हेडिंग के ठीक नीचे दिखाई देगा
-                        </p>
-                      </div>
-                      {h.banner_image_url && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCustomHeadingBanner(h.id)}
-                          className="text-xs text-red-600 hover:underline flex items-center gap-1"
-                        >
-                          <Trash2 className="size-3.5" /> बैनर हटाएं
-                        </button>
-                      )}
-                    </div>
-
-                    {h.banner_image_url && (
-                      <div className="relative aspect-[21/9] rounded-xl overflow-hidden border border-[#E8E4DA] bg-neutral-100 shadow-2xs">
-                        <img
-                          src={h.banner_image_url}
-                          alt={h.title_hi}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="बैनर इमेज URL या फ़ाइल अपलोड करें"
-                        value={h.banner_image_url || ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const currentList = getCategoryHeadings();
-                          const target = currentList.find((item) => item.id === h.id);
-                          if (target) {
-                            target.banner_image_url = val || null;
-                            saveCategoryHeadings(currentList);
-                            setHeadings([...currentList]);
-                          }
-                        }}
-                        className="rounded-xl border-[#E8E4DA] text-xs h-9 bg-white"
-                      />
-                      <label className="flex items-center justify-center gap-1.5 px-3 rounded-xl border border-[#E8E4DA] bg-white hover:bg-[#E6EFE8] cursor-pointer shrink-0 text-xs font-bold text-[#145A45] transition-colors">
-                        <Upload className="size-4" />
-                        <span>अपलोड</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleCustomHeadingBannerUpload(h.id, file);
-                          }}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                ))}
+            {/* Helpful navigation note */}
+            <div className="rounded-2xl border border-[#145A45]/20 bg-[#E6EFE8]/40 p-3.5 sm:p-4 flex items-start gap-3">
+              <span className="text-xl shrink-0">📂</span>
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-[#145A45]">
+                  कैटेगरी सेक्शन बैनर्स (Category Section Banners)
+                </h4>
+                <p className="text-[11px] text-[#2D3E35] leading-relaxed">
+                  होमपेज पर कैटेगरी हेडिंग्स (जैसे <em>खाने-पीने का सामान, घर की सफ़ाई व बर्तन, पर्सनल केयर व ब्यूटी, पूजा-स्टेशनरी, पशुआहार</em> आदि) के नीचे दिखाई देने वाले बैनर्स अब सीधे <strong>Categories (कैटेगरीज)</strong> टैब में हर हेडिंग के साथ व्यवस्थित हैं। वहां से आप किसी भी हेडिंग का बैनर तुरंत बदल या जोड़ सकते हैं।
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </TabsContent>
 
         {/* Payments Tab */}

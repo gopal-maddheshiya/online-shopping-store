@@ -313,6 +313,18 @@ function CheckoutPage() {
       return;
     }
 
+    // Pre-order stock validation: Ensure no items are out of stock
+    const outOfStockItems = items.filter((it) => it.stock !== undefined && it.stock <= 0);
+    if (outOfStockItems.length > 0) {
+      const names = outOfStockItems.map((it) => it.name_hi || it.name).join(", ");
+      toast.error(
+        lang === "hi"
+          ? `माफ़ करें, ये उत्पाद आउट ऑफ स्टॉक हैं: ${names}`
+          : `Sorry, these items are currently out of stock: ${names}`,
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -333,49 +345,56 @@ function CheckoutPage() {
                 instructions: instructions.trim(),
               }
             : { note: "Store Pickup at Ramnagar, Adda Bazar Road, Maharajganj" },
-        payment_method: paymentMethod,
-        coupon_code: appliedCoupon?.code ?? null,
-        subtotal: subtotal,
+        subtotal,
         discount: couponDiscount,
         delivery_fee: deliveryFee,
         total: grandTotal,
+        coupon_code: appliedCoupon?.code ?? null,
+        payment_method: paymentMethod,
+        payment_status: paymentMethod === "cod" || paymentMethod === "pay_at_store" ? "pending" : "pending",
+        status: "placed",
         notes: instructions.trim() || null,
       };
 
-      const itemsPayload = items.map((item) => ({
-        product_id: item.productId?.startsWith("temp-") ? null : item.productId,
-        variant_id: item.variantId?.startsWith("temp-") ? null : item.variantId,
-        name: item.name,
-        name_en: item.name_en || item.name,
-        name_hi: item.name_hi || null,
-        variant_label: item.variantLabel,
-        variant_label_en: item.variantLabel_en || item.variantLabel,
-        variant_label_hi: item.variantLabel_hi || null,
-        image_url: item.imageUrl,
-        mrp: item.mrp,
-        price: item.price,
-        qty: item.qty,
+      const itemsPayload = items.map((it) => ({
+        product_id: it.productId,
+        variant_id: it.variantId,
+        name: it.name,
+        name_en: it.name_en || it.name,
+        name_hi: it.name_hi || null,
+        variant_label: it.variantLabel,
+        variant_label_en: it.variantLabel_en || it.variantLabel,
+        variant_label_hi: it.variantLabel_hi || null,
+        price: it.price,
+        mrp: it.mrp,
+        qty: it.qty,
+        image_url: it.imageUrl,
       }));
 
-      let orderNo = `AGT-${Date.now().toString().slice(-4)}`;
+      // Generate order number with fallback
+      let orderNo = `AGT-${Date.now().toString().slice(-6)}`;
       let orderId = "";
 
-      // 1. Try atomic place_order RPC procedure first
-      const { data: rpcRes, error: rpcErr } = await (supabase.rpc as Function)("place_order", {
-        _order_payload: orderPayload,
-        _items_payload: itemsPayload,
-      });
+      // 1. Primary: Secure stored procedure
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc(
+        "admin_place_secure_order" as never,
+        {
+          _order_data: orderPayload,
+          _items_data: itemsPayload,
+        } as never,
+      );
 
-      if (!rpcErr && rpcRes && typeof rpcRes === "object" && "order_no" in rpcRes) {
-        orderNo = String((rpcRes as { order_no: string }).order_no);
-        orderId = String((rpcRes as { order_id?: string }).order_id || "");
+      if (!rpcErr && rpcRes && typeof rpcRes === "object" && (rpcRes as { success?: boolean }).success) {
+        const payload = rpcRes as { order_no?: string; order_id?: string };
+        if (payload.order_no) orderNo = payload.order_no;
+        if (payload.order_id) orderId = payload.order_id;
       } else {
-        // Fallback: Direct table insertion
+        // 2. Fallback: Direct table insertion
         const { data: orderData, error: orderError } = await supabase
           .from("orders")
           .insert(orderPayload as never)
           .select("id, order_no")
-          .maybeSingle();
+          .single();
 
         if (orderError) throw orderError;
         if (orderData?.order_no) orderNo = orderData.order_no;
@@ -387,6 +406,28 @@ function CheckoutPage() {
             order_id: orderData.id,
           }));
           await supabase.from("order_items").insert(itemsWithOrderId as never);
+        }
+      }
+
+      // Auto-decrement inventory stock in product_variants for purchased items
+      for (const it of items) {
+        if (!it.variantId) continue;
+        try {
+          const { data: vData } = await supabase
+            .from("product_variants")
+            .select("stock")
+            .eq("id", it.variantId)
+            .maybeSingle();
+
+          if (vData && typeof vData.stock === "number") {
+            const updatedStock = Math.max(0, vData.stock - (it.qty || 1));
+            await supabase
+              .from("product_variants")
+              .update({ stock: updatedStock } as never)
+              .eq("id", it.variantId);
+          }
+        } catch (stockErr) {
+          console.warn("[Checkout] Stock decrement warning:", stockErr);
         }
       }
 

@@ -199,6 +199,11 @@ function CartPage() {
                         <span className="text-xs text-[#5A655F] line-through">{inr(i.mrp)}</span>
                       )}
                     </div>
+                    {i.stock !== undefined && i.stock <= 0 && (
+                      <span className="inline-block mt-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+                        {lang === "hi" ? "आउट ऑफ स्टॉक" : "Out of stock"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Quantity Stepper */}

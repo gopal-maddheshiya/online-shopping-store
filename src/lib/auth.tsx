@@ -134,8 +134,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(userProfile);
 
       // Security check: only designated store owner or explicit DB admin roles have admin privileges
+      const cleanedPhone = (u?.phone || "").replace(/\D/g, "");
       const isOwner = Boolean(
-        (u?.phone && (u.phone.includes("6388354988") || u.phone.includes("638835"))) ||
+        (cleanedPhone && (cleanedPhone.endsWith("6388354988") || cleanedPhone.endsWith("9621617360") || cleanedPhone.endsWith("8960908972"))) ||
         (u?.email && u.email.toLowerCase() === "gopalmaddheshiya138@gmail.com")
       );
       setIsAdmin(isOwner || Boolean(roles?.some((r) => r.role === "admin")));

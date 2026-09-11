@@ -36,7 +36,7 @@ type ParsedRow = {
   name_hi: string;
   brand: string;
   categoryInput: string;
-  matchedCategory?: Category;
+  matchedCategory?: Category | undefined;
   label: string;
   price: number;
   mrp: number;
@@ -285,7 +285,7 @@ export function BulkProductImport({
         }
 
         const rawRows = parseCSV(text);
-        if (rawRows.length < 2) {
+        if (rawRows.length < 2 || !rawRows[0]) {
           toast.error("CSV file must contain a header row and at least 1 product row");
           return;
         }
