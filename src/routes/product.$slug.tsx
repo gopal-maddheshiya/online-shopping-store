@@ -39,19 +39,39 @@ export const Route = createFileRoute("/product/$slug")({
     const p = loaderData?.product;
     const title = p ? `${p.name} — Arun Gopal Traders` : `${params.slug.replace(/-/g, " ")} — Arun Gopal Traders`;
     const desc = p?.description || "Product details, pack sizes, live price and stock at Arun Gopal Traders, Maharajganj.";
-    const img = p?.image_url || "/images/packaged.jpg";
+    
+    // Resolve absolute image URL for WhatsApp / Facebook / Twitter rich preview crawlers
+    const resolvedImg = p ? getProductImage(p) : "/images/packaged.jpg";
+    const isExternalOrPath = resolvedImg && !resolvedImg.startsWith("data:");
+    const absoluteImg = isExternalOrPath
+      ? (resolvedImg.startsWith("http") ? resolvedImg : `https://arungopaltraders.com${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`)
+      : "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg";
+    const pageUrl = `https://arungopaltraders.com/product/${params.slug}`;
+
+    const defaultVariant = p?.product_variants?.[0];
+    const priceAmount = defaultVariant?.price ? String(Math.round(Number(defaultVariant.price))) : undefined;
 
     return {
       meta: [
         { title },
         { name: "description", content: desc },
+        { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स महराजगंज" },
+        { property: "og:type", content: "product" },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
-        { property: "og:image", content: img },
+        { property: "og:url", content: pageUrl },
+        { property: "og:image", content: absoluteImg },
+        { property: "og:image:secure_url", content: absoluteImg },
+        ...(priceAmount
+          ? [
+              { property: "product:price:amount", content: priceAmount },
+              { property: "product:price:currency", content: "INR" },
+            ]
+          : []),
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: desc },
-        { name: "twitter:image", content: img },
+        { name: "twitter:image", content: absoluteImg },
       ],
     };
   },
@@ -160,6 +180,17 @@ function ProductPage() {
     }
   };
 
+  const handleWhatsAppShare = () => {
+    const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://arungopaltraders.com";
+    const shareUrl = `${origin}/product/${product.slug}`;
+    const priceText = variant
+      ? ` (₹${Math.round(Number(variant.price))}${variant.mrp && Number(variant.mrp) > Number(variant.price) ? ` / MRP ₹${Math.round(Number(variant.mrp))}` : ""})`
+      : "";
+    const text = `🛒 *${localizedName}*${priceText}\nअरुण गोपाल ट्रेडर्स, महराजगंज से ऑनलाइन ऑर्डर करें:\n${shareUrl}`;
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="container-page py-4 sm:py-8 pb-28 md:pb-12 space-y-8">
       {/* 1. BREADCRUMB NAVIGATION */}
@@ -207,7 +238,7 @@ function ProductPage() {
                 {product.brand || (lang === "hi" ? "दैनिक राशन" : "Fresh Staples")}
               </span>
 
-              {/* Wishlist & Share Action Buttons */}
+              {/* Wishlist, WhatsApp & Share Action Buttons */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -220,6 +251,14 @@ function ProductPage() {
                       isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
                     }`}
                   />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleWhatsAppShare}
+                  className="flex size-9 items-center justify-center rounded-full bg-[#E8F8EE] border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white shadow-2xs transition-all cursor-pointer"
+                  title={lang === "hi" ? "व्हाट्सएप पर शेयर करें" : "Share on WhatsApp"}
+                >
+                  <MessageCircle className="size-4.5" />
                 </button>
                 <button
                   type="button"
