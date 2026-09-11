@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Volume2,
   VolumeX,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,7 @@ import { AdminInventory } from "@/components/admin/AdminInventory";
 import { AdminCategories } from "@/components/admin/AdminCategories";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminCoupons } from "@/components/admin/AdminCoupons";
+import { AdminReviews } from "@/components/admin/AdminReviews";
 import { AdminHelpRequests } from "@/components/admin/AdminHelpRequests";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { mergeOrderWithOverrides, fetchAllAdminOrders } from "@/lib/orders";
@@ -79,6 +81,7 @@ const TABS = [
   { id: "categories", label: "Categories", icon: Layers },
   { id: "customers", label: "Customers Directory", icon: Users },
   { id: "coupons", label: "Offers & Coupons", icon: Tag },
+  { id: "reviews", label: "Customer Reviews", icon: Star },
   { id: "help", label: "Customer Inquiries", icon: HelpCircle },
   { id: "settings", label: "Store Settings", icon: Settings },
 ] as const;
@@ -608,6 +611,10 @@ function AdminPage() {
 
             {activeTab === "coupons" && (
               <AdminCoupons coupons={coupons} onRefresh={refetchCoupons} />
+            )}
+
+            {activeTab === "reviews" && (
+              <AdminReviews products={products} />
             )}
 
             {activeTab === "help" && <AdminHelpRequests />}
