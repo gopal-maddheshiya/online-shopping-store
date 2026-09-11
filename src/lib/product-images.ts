@@ -744,3 +744,69 @@ export function getImageTypeLabel(type: ProductImageType, lang: string = "en"): 
   }
 }
 
+const KNOWN_JPG_PRODUCTS: Record<string, string> = {
+  "aashirvaad-shudh-chakki-atta": "/images/products/aashirvaad-atta.jpg",
+  "amul-pure-desi-ghee": "/images/products/amul-desi-ghee.jpg",
+  "cadbury-dairy-milk": "/images/products/cadbury-dairy-milk.jpg",
+  "dabur-honey": "/images/products/dabur-honey.jpg",
+  "everest-turmeric-powder-haldi": "/images/products/everest-turmeric.jpg",
+  "fortune-mustard-oil": "/images/products/fortune-mustard-oil.jpg",
+  "fortune-kachi-ghani-mustard-oil": "/images/products/fortune-mustard-oil.jpg",
+  "haldiram-s-aloo-bhujia": "/images/products/haldirams-aloo-bhujia.jpg",
+  "india-gate-classic-basmati-rice": "/images/products/india-gate-basmati-rice.jpg",
+  "maggi-2-minute-masala-noodles": "/images/products/maggi-noodles.jpg",
+  "parle-g-original-glucose-biscuits": "/images/products/parle-g.jpg",
+  "surf-excel-easy-wash": "/images/products/surf-excel.jpg",
+  "tata-salt-iodised": "/images/products/tata-salt.jpg",
+  "tata-sampann-toor-dal": "/images/products/tata-toor-dal.jpg",
+};
+
+/**
+ * Returns a guaranteed raster image (JPG/PNG) suitable for WhatsApp, Facebook,
+ * Twitter, and other OpenGraph link scrapers that do NOT render SVG graphics.
+ */
+export function getOpenGraphProductImage(product?: {
+  slug?: string | null;
+  name?: string | null;
+  image_url?: string | null;
+  category_id?: string | null;
+}): string {
+  if (!product) return "/images/packaged.jpg";
+
+  // 1. If product has custom uploaded image that is NOT an SVG and not a raw base64 data URI
+  if (
+    product.image_url &&
+    !product.image_url.toLowerCase().endsWith(".svg") &&
+    !product.image_url.startsWith("data:")
+  ) {
+    return product.image_url;
+  }
+
+  // 2. Check if we have an explicit JPG for this product
+  if (product.slug) {
+    const knownJpg = KNOWN_JPG_PRODUCTS[product.slug];
+    if (knownJpg) return knownJpg;
+  }
+
+  // 3. Fallback based on keywords in name or slug to genuine JPGs
+  const text = `${product.slug || ""} ${product.name || ""}`.toLowerCase();
+  if (text.includes("atta") || text.includes("flour") || text.includes("suji") || text.includes("besan") || text.includes("maida")) {
+    return "/images/atta.jpg";
+  }
+  if (text.includes("dal") || text.includes("chana") || text.includes("rajma") || text.includes("moong") || text.includes("toor")) {
+    return "/images/dal.jpg";
+  }
+  if (text.includes("rice") || text.includes("chawal") || text.includes("basmati")) {
+    return "/images/rice.jpg";
+  }
+  if (text.includes("oil") || text.includes("tel") || text.includes("ghee") || text.includes("sarson")) {
+    return "/images/oil.jpg";
+  }
+  if (text.includes("masala") || text.includes("mirch") || text.includes("haldi") || text.includes("spices") || text.includes("dhaniya") || text.includes("jeera")) {
+    return "/images/spices.jpg";
+  }
+
+  return "/images/packaged.jpg";
+}
+
+

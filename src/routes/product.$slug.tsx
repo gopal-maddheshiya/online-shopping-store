@@ -25,7 +25,7 @@ import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
-import { getProductImage, getProductImages } from "@/lib/product-images";
+import { getProductImage, getProductImages, getOpenGraphProductImage } from "@/lib/product-images";
 import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 
@@ -41,11 +41,11 @@ export const Route = createFileRoute("/product/$slug")({
     const desc = p?.description || "Product details, pack sizes, live price and stock at Arun Gopal Traders, Maharajganj.";
     
     // Resolve absolute image URL for WhatsApp / Facebook / Twitter rich preview crawlers
-    const resolvedImg = p ? getProductImage(p) : "/images/packaged.jpg";
-    const isExternalOrPath = resolvedImg && !resolvedImg.startsWith("data:");
-    const absoluteImg = isExternalOrPath
-      ? (resolvedImg.startsWith("http") ? resolvedImg : `https://arungopaltraders.com${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`)
-      : "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg";
+    // NOTE: WhatsApp and Facebook crawlers REJECT .svg images. They strictly require .jpg / .png.
+    const resolvedImg = p ? getOpenGraphProductImage(p) : "/images/packaged.jpg";
+    const absoluteImg = resolvedImg.startsWith("http")
+      ? resolvedImg
+      : `https://arungopaltraders.com${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`;
     const pageUrl = `https://arungopaltraders.com/product/${params.slug}`;
 
     const defaultVariant = p?.product_variants?.[0];
@@ -62,6 +62,9 @@ export const Route = createFileRoute("/product/$slug")({
         { property: "og:url", content: pageUrl },
         { property: "og:image", content: absoluteImg },
         { property: "og:image:secure_url", content: absoluteImg },
+        { property: "og:image:type", content: "image/jpeg" },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "800" },
         ...(priceAmount
           ? [
               { property: "product:price:amount", content: priceAmount },
@@ -180,13 +183,41 @@ function ProductPage() {
     }
   };
 
-  const handleWhatsAppShare = () => {
-    const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://arungopaltraders.com";
-    const shareUrl = `${origin}/product/${product.slug}`;
+  const handleWhatsAppShare = async () => {
+    // For WhatsApp web crawler to show rich preview cards, the URL must be a live public URL.
+    // If testing on localhost / private wifi IP, we fallback to the live domain so WhatsApp crawler can reach it.
+    const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168."));
+    const baseUrl = isLocal ? "https://arungopaltraders.com" : (typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://arungopaltraders.com");
+    const shareUrl = `${baseUrl}/product/${product.slug}`;
     const priceText = variant
       ? ` (₹${Math.round(Number(variant.price))}${variant.mrp && Number(variant.mrp) > Number(variant.price) ? ` / MRP ₹${Math.round(Number(variant.mrp))}` : ""})`
       : "";
     const text = `🛒 *${localizedName}*${priceText}\nअरुण गोपाल ट्रेडर्स, महराजगंज से ऑनलाइन ऑर्डर करें:\n${shareUrl}`;
+
+    // Mobile devices (Android Chrome / iOS Safari):
+    // Try to attach the actual photo directly using navigator.share with files!
+    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+      try {
+        const ogImg = getOpenGraphProductImage(product);
+        const fetchUrl = ogImg.startsWith("http") ? ogImg : ogImg;
+        const res = await fetch(fetchUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const file = new File([blob], `${product.slug}.jpg`, { type: blob.type || "image/jpeg" });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: localizedName,
+              text,
+            });
+            return;
+          }
+        }
+      } catch {
+        // Fallback to direct WhatsApp Web URL if sharing cancelled or unsupported
+      }
+    }
+
     const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
