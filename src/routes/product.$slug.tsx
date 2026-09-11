@@ -22,11 +22,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { ProductReviewsSection } from "@/components/ProductReviewsSection";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage, getProductImages, getOpenGraphProductImage } from "@/lib/product-images";
 import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/queries";
+import { productReviewsQuery, computeReviewStats } from "@/lib/reviews";
 import { discountPercent, inr } from "@/lib/format";
 
 export const Route = createFileRoute("/product/$slug")({
@@ -111,6 +113,8 @@ function ProductPage() {
   const { data: product, isLoading } = useQuery(productQuery(slug));
   const { data: all } = useQuery(productsQuery());
   const { data: settings } = useQuery(settingsQuery);
+  const { data: reviews = [] } = useQuery(productReviewsQuery(product?.id));
+  const reviewStats = computeReviewStats(reviews);
   const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
   const { add } = useCart();
   const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
@@ -308,11 +312,17 @@ function ProductPage() {
 
             {/* Micro Rating & Fast Delivery Pill Bar */}
             <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-xs text-[#5A655F]">
-              <div className="flex items-center gap-1 font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md">
+              <a
+                href="#reviews-section"
+                className="flex items-center gap-1 font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors cursor-pointer"
+                title={lang === "hi" ? "ग्राहकों की समीक्षाएं देखें" : "View Customer Reviews"}
+              >
                 <Star className="size-3.5 fill-amber-500 text-amber-500" />
-                <span>4.9</span>
-                <span className="text-[#8C827A] font-normal">(120+ ratings)</span>
-              </div>
+                <span>{reviewStats.count > 0 ? reviewStats.average.toFixed(1) : "5.0"}</span>
+                <span className="text-[#8C827A] font-normal">
+                  ({reviewStats.count > 0 ? `${reviewStats.count} ${lang === "hi" ? "समीक्षाएं" : "reviews"}` : lang === "hi" ? "समीक्षाएं" : "Reviews"})
+                </span>
+              </a>
               <span className="text-[#EAE6DC]">•</span>
               <div className="flex items-center gap-1 font-bold text-[#0F4A38]">
                 {isDeliveryEnabled ? (
@@ -563,6 +573,9 @@ function ProductPage() {
           </div>
         </div>
       </div>
+
+      {/* 2.5. CUSTOMER REVIEWS & STAR RATINGS SECTION */}
+      <ProductReviewsSection product={product} localizedName={localizedName} />
 
       {/* 3. SIMILAR / RELATED ESSENTIALS SECTION */}
       {related.length > 0 && (
