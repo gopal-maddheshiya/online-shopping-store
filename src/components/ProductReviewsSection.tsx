@@ -155,14 +155,14 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
         {/* Left Score Box */}
         <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-4 border-b md:border-b-0 md:border-r border-[#EAE6DC]/80">
           <div className="text-4xl sm:text-5xl font-black text-[#16201A] tracking-tight">
-            {stats.count > 0 ? stats.average.toFixed(1) : "5.0"}
+            {stats.count > 0 ? stats.average.toFixed(1) : "—"}
           </div>
           <div className="mt-2 flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
               <Star
                 key={s}
                 className={`size-4.5 ${
-                  s <= Math.round(stats.count > 0 ? stats.average : 5)
+                  stats.count > 0 && s <= Math.round(stats.average)
                     ? "fill-amber-500 text-amber-500"
                     : "fill-stone-200 text-stone-300"
                 }`}
@@ -177,7 +177,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                   : `Based on ${stats.count} verified ratings`}
               </span>
             ) : (
-              <span>{lang === "hi" ? "100% ताज़गी की गारंटी" : "100% Freshness Guarantee"}</span>
+              <span>{lang === "hi" ? "अभी तक कोई समीक्षा नहीं" : "No reviews yet"}</span>
             )}
           </div>
         </div>
@@ -186,7 +186,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
         <div className="md:col-span-8 flex flex-col justify-center space-y-2 px-1 sm:px-4">
           {([5, 4, 3, 2, 1] as const).map((star) => {
             const count = stats.distribution[star];
-            const pct = stats.count > 0 ? stats.percentages[star] : star === 5 ? 100 : 0;
+            const pct = stats.count > 0 ? stats.percentages[star] : 0;
 
             return (
               <div key={star} className="flex items-center gap-2.5 text-xs">

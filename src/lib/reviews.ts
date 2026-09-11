@@ -37,7 +37,7 @@ export interface ReviewStats {
 export function computeReviewStats(reviews: ProductReview[]): ReviewStats {
   if (!reviews || reviews.length === 0) {
     return {
-      average: 5.0,
+      average: 0,
       count: 0,
       distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       percentages: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },

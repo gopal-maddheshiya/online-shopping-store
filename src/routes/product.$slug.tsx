@@ -317,11 +317,19 @@ function ProductPage() {
                 className="flex items-center gap-1 font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors cursor-pointer"
                 title={lang === "hi" ? "ग्राहकों की समीक्षाएं देखें" : "View Customer Reviews"}
               >
-                <Star className="size-3.5 fill-amber-500 text-amber-500" />
-                <span>{reviewStats.count > 0 ? reviewStats.average.toFixed(1) : "5.0"}</span>
-                <span className="text-[#8C827A] font-normal">
-                  ({reviewStats.count > 0 ? `${reviewStats.count} ${lang === "hi" ? "समीक्षाएं" : "reviews"}` : lang === "hi" ? "समीक्षाएं" : "Reviews"})
-                </span>
+                <Star className={`size-3.5 ${reviewStats.count > 0 ? "fill-amber-500 text-amber-500" : "text-amber-500"}`} />
+                {reviewStats.count > 0 ? (
+                  <>
+                    <span>{reviewStats.average.toFixed(1)}</span>
+                    <span className="text-[#8C827A] font-normal">
+                      ({reviewStats.count} {lang === "hi" ? "समीक्षाएं" : "reviews"})
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-amber-800 font-semibold text-[11px]">
+                    {lang === "hi" ? "समीक्षा लिखें" : "Write Review"}
+                  </span>
+                )}
               </a>
               <span className="text-[#EAE6DC]">•</span>
               <div className="flex items-center gap-1 font-bold text-[#0F4A38]">
