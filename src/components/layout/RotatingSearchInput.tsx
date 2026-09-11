@@ -135,7 +135,7 @@ export function RotatingSearchInput({
             placeholder=""
             aria-label={ariaLabel || (isDesktop ? "Search grocery items" : "Mobile search")}
             className={cn(
-              "w-full rounded-full border border-[#DCD7CB] bg-white text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/50 focus:bg-white focus-visible:border-[#145A45] focus-visible:ring-2 focus-visible:ring-[#145A45]/20 transition-all shadow-xs hover:shadow-sm font-medium",
+              "w-full rounded-full border border-[#D5CFBF] bg-[#FAF9F5]/70 text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/60 hover:bg-white focus:bg-white focus-visible:border-[#145A45] focus-visible:ring-3 focus-visible:ring-[#145A45]/15 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_2px_rgba(0,0,0,0.02)] focus:shadow-[0_4px_16px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,1)] font-medium",
               isDesktop
                 ? (onPhoneClick ? "h-11.5 pl-11.5 pr-26 text-[13.5px]" : "h-11.5 pl-11.5 pr-22 text-[13.5px]")
                 : (onPhoneClick ? "h-10.5 pl-10 pr-22 text-[12.5px]" : "h-10.5 pl-10 pr-18 text-[12.5px]")

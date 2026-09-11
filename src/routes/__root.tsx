@@ -35,7 +35,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-xl bg-[#145A45] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0E4333] shadow-sm"
+            className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-6 py-3 text-sm font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all"
           >
             Return to Store
           </Link>
@@ -64,13 +64,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-xl bg-[#145A45] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0E4333]"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-5 py-2.5 text-sm font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all cursor-pointer"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+            className="inline-flex items-center justify-center rounded-xl border border-[#E4DFD5] bg-white px-5 py-2.5 text-sm font-bold text-[#16201A] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors hover:bg-[#FAF8F2]"
           >
             Go to home
           </a>

@@ -43,6 +43,8 @@ import {
 } from "@/lib/queries";
 import { waHref } from "@/lib/format";
 import { PhoneOrderModal } from "@/components/PhoneOrderModal";
+import { SmartRationBar } from "@/components/home/SmartRationBar";
+import { SmartRationModal } from "@/components/home/SmartRationModal";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -137,7 +139,7 @@ function SectionHeader({
   return (
     <div className="flex items-center justify-between pb-4">
       <div className="flex items-center gap-3">
-        <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#E6EFE8] to-[#D4E8DC]/60 border border-[#145A45]/10 shadow-2xs">
+        <div className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-[#EBF3ED] via-[#E2EEE5] to-[#D6E7DB] border border-[#145A45]/20 shadow-[0_2px_8px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] text-[#145A45]">
           {icon}
         </div>
         <div>
@@ -150,7 +152,7 @@ function SectionHeader({
       <Link
         to={linkTo}
         search={linkSearch as never}
-        className="group inline-flex items-center gap-1 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] px-3 py-1.5 text-xs font-bold text-[#145A45] hover:bg-[#145A45] hover:text-white hover:border-[#145A45] transition-all shrink-0 shadow-2xs"
+        className="group inline-flex items-center gap-1 rounded-xl bg-white border border-[#E2DDD2] px-3 py-1.5 text-xs font-bold text-[#145A45] hover:bg-[#145A45] hover:text-white hover:border-[#145A45] transition-all shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.9)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.2)]"
       >
         <span>{linkLabel}</span>
         <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -473,6 +475,8 @@ function PremiumStoreHome() {
   }, [coupons]);
 
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [smartRationOpen, setSmartRationOpen] = useState(false);
+  const [smartRationMode, setSmartRationMode] = useState<"photo" | "text" | "voice">("text");
 
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
@@ -622,6 +626,16 @@ function PremiumStoreHome() {
       )}
 
       {/* ═══════════════════════════════════════════════════════
+          AI SMART RATION QUICK-BAR (Gemini 3.6 Multimodal + Rotating Ticker)
+          ═══════════════════════════════════════════════════════ */}
+      <SmartRationBar
+        onOpenModal={(mode) => {
+          setSmartRationMode(mode || "text");
+          setSmartRationOpen(true);
+        }}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
@@ -688,7 +702,7 @@ function PremiumStoreHome() {
                           className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
                         >
                           <div
-                            className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.16)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
+                            className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.95)] group-hover:shadow-[0_10px_24px_-4px_rgba(20,90,69,0.18),inset_0_1px_0_rgba(255,255,255,1)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
@@ -734,7 +748,7 @@ function PremiumStoreHome() {
                         className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
                       >
                         <div
-                          className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.16)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
+                          className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.95)] group-hover:shadow-[0_10px_24px_-4px_rgba(20,90,69,0.18),inset_0_1px_0_rgba(255,255,255,1)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>
@@ -783,9 +797,9 @@ function PremiumStoreHome() {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-[#E8E4DA] shadow-2xs"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-[#E4DFD5] shadow-[0_2px_8px_-2px_rgba(15,74,56,0.05),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/30 transition-all"
             >
-              <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/10 shrink-0">
+              <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 {item.icon}
               </div>
               <div className="min-w-0">
@@ -886,11 +900,11 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {activePromoCoupon && (
         <section className="container-page">
-          <div className="relative overflow-hidden rounded-3xl border border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/40 p-5 sm:p-7 shadow-xs">
+          <div className="relative overflow-hidden rounded-3xl border border-[#E0DACF] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.08),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
             <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="space-y-1.5 text-center sm:text-left">
-                <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#145A45] px-3 py-1 text-[11px] font-bold text-white shadow-xs">
+                <div className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-3 py-1 text-[11px] font-bold text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] glint-effect">
                   <Gift className="size-3.5" />
                   <span>
                     {lang === "hi"
@@ -929,7 +943,7 @@ function PremiumStoreHome() {
                         : `Coupon code ${activePromoCoupon.code} copied!`
                     );
                   }}
-                  className="rounded-2xl border border-[#145A45]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#145A45] shadow-2xs hover:bg-[#E6EFE8] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  className="rounded-2xl border border-[#145A45]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] hover:bg-[#E6EFE8] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                   title={lang === "hi" ? "कूपन कोड कॉपी करें" : "Copy coupon code"}
                 >
                   <Copy className="size-3.5" />
@@ -938,7 +952,7 @@ function PremiumStoreHome() {
 
                 <Button
                   asChild
-                  className="rounded-2xl bg-[#145A45] px-5 sm:px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all cursor-pointer"
+                  className="rounded-2xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-5 sm:px-6 py-2.5 text-xs font-bold text-white shadow-[0_4px_12px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0E4333] hover:to-[#0A3628] transition-all cursor-pointer"
                 >
                   <Link to="/shop">
                     {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
@@ -1017,7 +1031,7 @@ function PremiumStoreHome() {
           11B. 🛒 FULL CATALOG DISCOVERY BANNER
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl border border-[#E3B341]/35 bg-gradient-to-br from-[#06291E] via-[#0F4A38] to-[#06291E] p-5 sm:p-7 shadow-xl text-white">
+        <div className="relative overflow-hidden rounded-3xl border border-[#F5D061]/40 bg-gradient-to-br from-[#06291E] via-[#0F4A38] to-[#06291E] p-5 sm:p-7 shadow-[0_12px_32px_-6px_rgba(6,41,30,0.45),inset_0_1px_0_rgba(245,208,97,0.3)] text-white">
           {/* Ambient Glows */}
           <div className="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-[#E3B341]/15 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-12 -left-12 size-40 rounded-full bg-[#145A45]/40 blur-2xl" />
@@ -1079,10 +1093,10 @@ function PremiumStoreHome() {
           12. BOTTOM TRUST + WhatsApp CTA
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="rounded-3xl border border-[#E8E4DA] bg-gradient-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/30 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="rounded-3xl border border-[#E0DACF] bg-gradient-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.08),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
           {/* Title */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[#E4DFD5] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
               <BadgeCheck className="size-4 text-[#145A45]" />
               <span>
                 {lang === "hi"
@@ -1161,6 +1175,12 @@ function PremiumStoreHome() {
       </section>
 
       <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
+      <SmartRationModal
+        open={smartRationOpen}
+        onOpenChange={setSmartRationOpen}
+        products={allDisplayProducts}
+        initialMode={smartRationMode}
+      />
     </div>
   );
 }

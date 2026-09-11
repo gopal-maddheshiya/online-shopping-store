@@ -114,9 +114,9 @@ function ContactPage() {
       {/* 4 Clean Contact Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Call Us */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E5E0D5]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <Phone className="size-5" />
             </div>
             <h3 className="font-sans text-base font-bold text-[#16201A]">
@@ -126,16 +126,16 @@ function ContactPage() {
           </div>
           <Button
             asChild
-            className="mt-6 rounded-lg bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+            className="mt-6 rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
           >
             <a href={telHref(cleanPhone)}>{t.callNow}</a>
           </Button>
         </div>
 
         {/* Card 2: WhatsApp */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E5E0D5]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <MessageCircle className="size-5" />
             </div>
             <h3 className="font-sans text-base font-bold text-[#16201A]">
@@ -147,7 +147,7 @@ function ContactPage() {
           </div>
           <Button
             asChild
-            className="mt-6 rounded-lg bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+            className="mt-6 rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
           >
             <a
               href={waHref(
@@ -165,9 +165,9 @@ function ContactPage() {
         </div>
 
         {/* Card 3: Email */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E5E0D5]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <Mail className="size-5" />
             </div>
             <h3 className="font-sans text-base font-bold text-[#16201A]">
@@ -178,7 +178,7 @@ function ContactPage() {
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-lg border-[#E5E0D5] text-[#0F4A38] text-xs font-semibold hover:bg-[#E6EFE8]"
+            className="mt-6 rounded-lg border-[#E4DFD5] bg-white text-[#0F4A38] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] cursor-pointer"
           >
             <a href={`mailto:${email}`}>
               {lang === "hi" ? "ईमेल भेजें" : "Email Us"}
@@ -187,9 +187,9 @@ function ContactPage() {
         </div>
 
         {/* Card 4: Store Location */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E5E0D5]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-lg bg-[#FAF8F2] text-[#145A45] border border-[#E5E0D5]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <MapPin className="size-5" />
             </div>
             <h3 className="font-sans text-base font-bold text-[#16201A]">
@@ -202,7 +202,7 @@ function ContactPage() {
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-lg border-[#E5E0D5] text-[#0F4A38] text-xs font-semibold hover:bg-[#E6EFE8]"
+            className="mt-6 rounded-lg border-[#E4DFD5] bg-white text-[#0F4A38] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] cursor-pointer"
           >
             <a
               href={
@@ -221,14 +221,14 @@ function ContactPage() {
       {/* Main Support Grid: Help Ticket + Business Hours */}
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         {/* Help Form */}
-        <div className="card-base p-6 sm:p-8 bg-white border border-[#E5E0D5]">
+        <div className="card-base p-6 sm:p-8 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <h2 className="font-sans text-xl font-bold text-[#16201A]">Send us a message</h2>
           <p className="mt-1 text-xs text-[#5A655F]">
             Need a product not listed on the website? Submit your request and we will arrange it.
           </p>
 
           {isSuccess ? (
-            <div className="mt-6 rounded-xl bg-[#E6EFE8] p-6 text-center border border-[#145A45]/20">
+            <div className="mt-6 rounded-xl bg-[#E6EFE8] p-6 text-center border border-[#145A45]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
               <CheckCircle2 className="mx-auto size-8 text-[#145A45]" />
               <h3 className="mt-2 font-bold text-[#0F4A38]">Message Received!</h3>
               <p className="mt-1 text-xs text-[#5A655F]">
@@ -238,7 +238,7 @@ function ContactPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsSuccess(false)}
-                className="mt-4 rounded-lg text-xs border-[#145A45] text-[#0F4A38]"
+                className="mt-4 rounded-lg text-xs border-[#145A45] text-[#0F4A38] bg-white cursor-pointer"
               >
                 Send another message
               </Button>
@@ -253,7 +253,7 @@ function ContactPage() {
                     placeholder="e.g. Ramesh Kumar"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="rounded-lg text-xs border-[#E5E0D5] bg-white"
+                    className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
 
@@ -265,7 +265,7 @@ function ContactPage() {
                     placeholder="9876543210"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="rounded-lg text-xs border-[#E5E0D5] bg-white"
+                    className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
               </div>
@@ -273,7 +273,7 @@ function ContactPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-[#16201A]">Topic / Inquiry Type</Label>
                 <Select value={topic} onValueChange={setTopic}>
-                  <SelectTrigger className="rounded-lg text-xs border-[#E5E0D5] bg-white">
+                  <SelectTrigger className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -294,14 +294,14 @@ function ContactPage() {
                   placeholder="Describe your requirement or list items you need..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="rounded-lg text-xs border-[#E5E0D5] bg-white"
+                  className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-lg bg-[#145A45] py-3.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+                className="w-full rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] py-3.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
               >
                 <Send className="mr-2 size-4" /> {isSubmitting ? "Sending..." : "Submit Inquiry"}
               </Button>
@@ -310,7 +310,7 @@ function ContactPage() {
         </div>
 
         {/* Store Timings & Address */}
-        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E5E0D5]">
+        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-[#0F4A38]">
               Store Schedule
@@ -324,7 +324,7 @@ function ContactPage() {
             </p>
           </div>
 
-          <div className="divide-y divide-[#E5E0D5] text-xs">
+          <div className="divide-y divide-[#E4DFD5] text-xs">
             {DAYS.map(({ key, label }) => {
               const h = s?.business_hours?.[key] ?? {
                 open: "07:00",
@@ -346,7 +346,7 @@ function ContactPage() {
             })}
           </div>
 
-          <div className="border-t border-[#E5E0D5] pt-4 text-xs text-[#5A655F] space-y-3">
+          <div className="border-t border-[#E4DFD5] pt-4 text-xs text-[#5A655F] space-y-3">
             <div>
               <p className="font-bold text-[#16201A]">📍 {t.storeName}</p>
               <p className="mt-0.5">{address}</p>
@@ -355,7 +355,7 @@ function ContactPage() {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Arun Gopal Traders, Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#145A45] text-white px-4 py-2.5 text-xs font-bold hover:bg-[#0E4333] transition-all shadow-xs active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-white px-4 py-2.5 text-xs font-bold shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] transition-all active:scale-95 cursor-pointer"
             >
               <MapPin className="size-3.5" />
               <span>{lang === "hi" ? "गूगल मैप्स पर दुकान का रास्ता देखें" : "Get Directions on Google Maps"}</span>

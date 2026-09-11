@@ -22,12 +22,12 @@ import { inr } from "@/lib/format";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "अरुण गोपाल ट्रेडर्स | कार्ट — Arun Gopal Traders" },
+      { title: "अरुण गोपाल ट्रेडर्स | थैला — Arun Gopal Traders" },
       {
         name: "description",
         content: "Review your grocery basket before checkout at Arun Gopal Traders, Maharajganj.",
       },
-      { property: "og:title", content: "अरुण गोपाल ट्रेडर्स | कार्ट" },
+      { property: "og:title", content: "अरुण गोपाल ट्रेडर्स | थैला" },
       {
         property: "og:description",
         content: "Review items, quantities and totals before placing your order.",
@@ -70,7 +70,7 @@ function CartPage() {
   if (hydrated && items.length === 0 && savedItems.length === 0) {
     return (
       <div className="container-page py-16 sm:py-20 text-center max-w-md mx-auto">
-        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#0F4A38] border border-[#E5E0D5]">
+        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#0F4A38] border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
           <ShoppingBag className="size-8 text-[#145A45]" />
         </div>
         <h1 className="mt-4 font-sans text-2xl font-bold text-[#16201A]">{t.emptyCartTitle}</h1>
@@ -81,13 +81,13 @@ function CartPage() {
             onClick={handleGoBack}
             aria-label="Go back"
             title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
-            className="flex size-10 items-center justify-center rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-2xs cursor-pointer active:scale-95"
+            className="flex size-10 items-center justify-center rounded-xl border border-[#E4DFD5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer active:scale-95"
           >
             <ArrowLeft className="size-5" />
           </button>
           <Button
             asChild
-            className="rounded-xl bg-[#145A45] px-6 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] cursor-pointer"
+            className="rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] px-6 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
           >
             <Link to="/shop">
               {lang === "hi" ? "किराना सामान देखें →" : "Browse Groceries →"}
@@ -101,14 +101,14 @@ function CartPage() {
   return (
     <div className="container-page py-4 sm:py-8 pb-28 lg:pb-10">
       {/* Top Header Bar with Clean Back Icon */}
-      <div className="flex items-center justify-between border-b border-[#E5E0D5] pb-3">
+      <div className="flex items-center justify-between border-b border-[#E4DFD5] pb-3">
         <div className="flex items-center gap-2.5 sm:gap-3">
           <button
             type="button"
             onClick={handleGoBack}
             aria-label="Go back"
             title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
-            className="flex size-9 items-center justify-center rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-2xs cursor-pointer active:scale-95"
+            className="flex size-9 items-center justify-center rounded-lg border border-[#E4DFD5] bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer active:scale-95"
           >
             <ArrowLeft className="size-5" />
           </button>
@@ -125,7 +125,7 @@ function CartPage() {
           >
             {t.continueShoppingBtn}
           </Link>
-          <span className="text-xs font-semibold text-[#5A655F] bg-[#FAF8F2] px-2.5 py-1 rounded-full border border-[#E5E0D5]">
+          <span className="text-xs font-semibold text-[#5A655F] bg-[#FAF8F2] px-2.5 py-1 rounded-full border border-[#E4DFD5] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             {items.length} {t.itemsCountLabel}
           </span>
         </div>
@@ -136,7 +136,7 @@ function CartPage() {
         <div className="space-y-4">
           {/* Free Delivery Bar or Store Pickup Bar */}
           {!isDeliveryEnabled ? (
-            <div className="card-base bg-amber-50/70 border border-amber-200/80 p-3.5 flex items-center gap-2.5 text-xs">
+            <div className="card-base bg-amber-50/70 border border-amber-200/80 p-3.5 flex items-center gap-2.5 text-xs shadow-[0_1px_3px_rgba(217,119,6,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <Store className="size-4 text-[#145A45] shrink-0" />
               <span className="text-[#16201A] font-semibold">
                 {lang === "hi"
@@ -145,7 +145,7 @@ function CartPage() {
               </span>
             </div>
           ) : subtotal < freeAt && subtotal > 0 ? (
-            <div className="card-base bg-[#FAF8F2] border border-[#E5E0D5] p-3.5 flex items-center justify-between text-xs">
+            <div className="card-base bg-[#FAF8F2] border border-[#E4DFD5] p-3.5 flex items-center justify-between text-xs shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
               <span className="flex items-center gap-2 text-[#0F4A38] font-semibold">
                 <Truck className="size-4 text-[#145A45]" />
                 {lang === "hi"
@@ -157,7 +157,7 @@ function CartPage() {
               </Link>
             </div>
           ) : subtotal >= freeAt ? (
-            <div className="card-base bg-[#E6EFE8] border border-[#145A45]/30 p-3.5 flex items-center gap-2 text-xs font-bold text-[#0F4A38]">
+            <div className="card-base bg-[#E6EFE8] border border-[#145A45]/30 p-3.5 flex items-center gap-2 text-xs font-bold text-[#0F4A38] shadow-[0_2px_8px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.9)]">
               <Truck className="size-4 text-[#145A45]" />
               {t.freeDeliveryUnlocked}
             </div>
@@ -170,11 +170,11 @@ function CartPage() {
               const displayVariant = getVariantLabel(i);
 
               return (
-                <div key={i.variantId} className="card-base flex items-center gap-4 p-4 bg-white border border-[#E5E0D5]">
+                <div key={i.variantId} className="card-base flex items-center gap-4 p-4 bg-white border border-[#E4DFD5] shadow-[0_1px_4px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
                   <Link
                     to="/product/$slug"
                     params={{ slug: i.slug }}
-                    className="size-20 shrink-0 overflow-hidden rounded-xl bg-white p-1 border border-[#E5E0D5] flex items-center justify-center shadow-2xs"
+                    className="size-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-[#FAF8F2] to-white p-1 border border-[#E4DFD5] flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1)]"
                     style={{ isolation: "isolate" }}
                   >
                     <img
@@ -211,11 +211,11 @@ function CartPage() {
                   </div>
 
                   {/* Quantity Stepper */}
-                  <div className="flex h-8 items-center rounded-lg border border-[#145A45] bg-[#E6EFE8] px-1">
+                  <div className="flex h-8 items-center rounded-lg border border-[#145A45]/30 bg-[#E6EFE8]/70 shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] px-1">
                     <button
                       type="button"
                       onClick={() => setQty(i.variantId, i.qty - 1)}
-                      className="flex size-6 items-center justify-center rounded text-[#0F4A38] hover:bg-white transition-colors"
+                      className="flex size-6 items-center justify-center rounded text-[#0F4A38] hover:bg-white transition-colors cursor-pointer"
                       aria-label="Decrease"
                     >
                       <Minus className="size-3" />
@@ -227,7 +227,7 @@ function CartPage() {
                       type="button"
                       disabled={i.qty >= i.stock}
                       onClick={() => setQty(i.variantId, i.qty + 1)}
-                      className="flex size-6 items-center justify-center rounded text-[#0F4A38] hover:bg-white transition-colors disabled:opacity-40"
+                      className="flex size-6 items-center justify-center rounded text-[#0F4A38] hover:bg-white transition-colors disabled:opacity-40 cursor-pointer"
                       aria-label="Increase"
                     >
                       <Plus className="size-3" />
@@ -239,7 +239,7 @@ function CartPage() {
                     <button
                       type="button"
                       onClick={() => remove(i.variantId)}
-                      className="flex size-7 items-center justify-center rounded-lg text-[#5A655F] hover:bg-[#FAF8F2] hover:text-red-600 transition-colors"
+                      className="flex size-7 items-center justify-center rounded-lg text-[#5A655F] hover:bg-[#FAF8F2] hover:text-red-600 transition-colors cursor-pointer"
                       title={t.removeBtn}
                     >
                       <Trash2 className="size-4" />
@@ -247,7 +247,7 @@ function CartPage() {
                     <button
                       type="button"
                       onClick={() => saveForLater(i.variantId)}
-                      className="text-[10px] font-semibold text-[#5A655F] hover:text-[#145A45]"
+                      className="text-[10px] font-semibold text-[#5A655F] hover:text-[#145A45] cursor-pointer"
                     >
                       {t.saveForLaterBtn}
                     </button>
@@ -259,14 +259,14 @@ function CartPage() {
 
           {/* Saved For Later Items */}
           {savedItems.length > 0 && (
-            <div className="mt-8 space-y-3 border-t border-[#E5E0D5] pt-6">
+            <div className="mt-8 space-y-3 border-t border-[#E4DFD5] pt-6">
               <h2 className="font-sans text-base font-bold text-[#16201A]">
                 {t.savedForLaterTitle} ({savedItems.length})
               </h2>
               {savedItems.map((i) => (
                 <div
                   key={i.variantId}
-                  className="card-base flex items-center justify-between p-3.5 bg-white border border-[#E5E0D5]"
+                  className="card-base flex items-center justify-between p-3.5 bg-white border border-[#E4DFD5] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]"
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -276,7 +276,7 @@ function CartPage() {
                       decoding="async"
                       width={48}
                       height={48}
-                      className="size-12 rounded-lg object-contain bg-white p-0.5"
+                      className="size-12 rounded-lg object-contain bg-white p-0.5 border border-[#E4DFD5]"
                     />
                     <div>
                       <p className="text-xs font-semibold text-[#16201A]">
@@ -292,13 +292,13 @@ function CartPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => moveToCart(i.variantId)}
-                      className="rounded-lg text-xs font-bold border-[#E5E0D5] text-[#0F4A38]"
+                      className="rounded-lg text-xs font-bold border-[#E4DFD5] text-[#0F4A38] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]"
                     >
                       {t.moveToCartBtn}
                     </Button>
                     <button
                       onClick={() => removeSaved(i.variantId)}
-                      className="text-xs text-[#5A655F] hover:text-red-600"
+                      className="text-xs text-[#5A655F] hover:text-red-600 cursor-pointer"
                     >
                       {t.removeBtn}
                     </button>
@@ -311,12 +311,12 @@ function CartPage() {
 
         {/* Order Summary Column */}
         <div className="space-y-4">
-          <div className="card-base p-5 space-y-4 bg-white border border-[#E5E0D5]">
+          <div className="card-base p-5 space-y-4 bg-white border border-[#E4DFD5] shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
             <h2 className="font-sans text-base font-bold text-[#16201A]">
               {t.orderSummaryTitle}
             </h2>
 
-            <div className="space-y-2.5 text-xs text-[#5A655F] border-b border-[#E5E0D5] pb-4">
+            <div className="space-y-2.5 text-xs text-[#5A655F] border-b border-[#E4DFD5] pb-4">
               <div className="flex justify-between">
                 <span>{t.itemSubtotal}</span>
                 <span className="font-semibold text-[#16201A]">{inr(subtotal)}</span>
@@ -343,13 +343,13 @@ function CartPage() {
             <Button
               asChild
               size="lg"
-              className="w-full rounded-lg bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+              className="w-full rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-xs font-bold text-white shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-[0.99] transition-all cursor-pointer"
             >
               <Link to="/checkout">{t.proceedToCheckout} →</Link>
             </Button>
           </div>
 
-          <div className="card-base p-4 text-xs text-[#5A655F] space-y-2 bg-white border border-[#E5E0D5]">
+          <div className="card-base p-4 text-xs text-[#5A655F] space-y-2 bg-white border border-[#E4DFD5] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <p className="flex items-center gap-2 font-bold text-[#0F4A38]">
               <ShieldCheck className="size-4 text-[#145A45]" /> {t.purityTagline} ({t.puritySub})
             </p>
@@ -362,7 +362,7 @@ function CartPage() {
 
       {/* Mobile Sticky Bottom Checkout Bar */}
       {items.length > 0 && (
-        <div className="fixed bottom-14 left-0 right-0 z-40 border-t border-[#E5E0D5] bg-white/95 backdrop-blur-md p-3 lg:hidden shadow-lg">
+        <div className="fixed bottom-14 left-0 right-0 z-40 border-t border-[#E0DACF] bg-white/95 backdrop-blur-md p-3 lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
           <div className="container-page flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-[#5A655F] uppercase font-bold">{t.totalAmount}</p>
@@ -370,7 +370,7 @@ function CartPage() {
             </div>
             <Button
               asChild
-              className="flex-1 rounded-lg bg-[#145A45] text-xs font-bold text-white shadow-xs hover:bg-[#0A3628] active:scale-95 transition-all"
+              className="flex-1 rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all"
             >
               <Link to="/checkout">{t.proceedToCheckout} →</Link>
             </Button>

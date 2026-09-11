@@ -37,12 +37,12 @@ export function Footer() {
   const isDeliveryEnabled = Boolean(s?.delivery_enabled);
 
   return (
-    <footer className="mt-16 border-t border-[#E5E0D5] bg-white text-[#16201A]">
+    <footer className="mt-16 border-t border-[#E4DFD5] bg-white text-[#16201A]">
       {/* Top Value Proposition Bar */}
-      <div className="border-b border-[#E5E0D5] bg-[#FAF8F2] py-6">
+      <div className="border-b border-[#E4DFD5] bg-[#FAF8F2] py-6">
         <div className="container-page grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#E6EFE8] text-[#0F4A38]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               {isDeliveryEnabled ? <Truck className="size-4" /> : <Store className="size-4" />}
             </div>
             <div>
@@ -59,8 +59,8 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#E6EFE8] text-[#0F4A38]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <ShieldCheck className="size-4" />
             </div>
             <div>
@@ -69,8 +69,8 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#E6EFE8] text-[#0F4A38]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <Phone className="size-4" />
             </div>
             <div>
@@ -79,8 +79,8 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="grid size-9 place-items-center rounded-lg bg-[#E6EFE8] text-[#0F4A38]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <RotateCcw className="size-4" />
             </div>
             <div>
@@ -246,7 +246,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Copyright Bar */}
-      <div className="border-t border-[#E5E0D5] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
+      <div className="border-t border-[#E4DFD5] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
         <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#5A655F] sm:flex-row">
           <p>© {new Date().getFullYear()} {t.storeName}. {t.storeAddressShort}.</p>
           <p className="flex items-center gap-1 font-medium">
@@ -261,7 +261,7 @@ export function Footer() {
           href={waHref(whatsapp, "Namaste! I want to order grocery items from Arun Gopal Traders.")}
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center gap-2 rounded-full bg-[#145A45] px-4 py-2.5 text-xs font-bold text-white shadow-xl hover:bg-[#0A3628] transition-all hover:scale-105 active:scale-95 border border-white/20"
+          className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] px-4.5 py-2.5 text-xs font-bold text-white shadow-[0_6px_20px_rgba(20,90,69,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 border border-[#2D735D] transition-all"
           aria-label="Order on WhatsApp"
         >
           <MessageCircle className="size-4.5 fill-white text-[#145A45]" />

@@ -112,10 +112,10 @@ export function CancelOrderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-3xl p-6 sm:p-7 border border-[#E8E4DA] bg-white shadow-xl">
+      <DialogContent className="max-w-md rounded-3xl p-6 sm:p-7 border border-[#E4DFD5] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,1)]">
         <DialogHeader className="text-left space-y-2">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-200 shrink-0">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-200/80 shrink-0 shadow-[0_1px_2px_rgba(220,38,38,0.08),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <XCircle className="size-6" />
             </div>
             <div>
@@ -147,8 +147,8 @@ export function CancelOrderModal({
                     key={r.id}
                     className={`flex items-start gap-2.5 rounded-xl p-2.5 border cursor-pointer transition-all ${
                       isSelected
-                        ? "border-[#145A45] bg-[#E6EFE8]/40 text-[#145A45] font-semibold"
-                        : "border-[#E8E4DA] bg-white text-[#1F2924] hover:bg-[#FAF8F2]"
+                        ? "border-[#145A45] bg-[#E6EFE8]/70 text-[#145A45] font-semibold shadow-[0_2px_6px_rgba(20,90,69,0.1),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                        : "border-[#E4DFD5] bg-white text-[#1F2924] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/30 hover:bg-[#FAF8F2]"
                     }`}
                   >
                     <input
@@ -176,12 +176,12 @@ export function CancelOrderModal({
                 placeholder={lang === "hi" ? "कृपया कारण लिखें..." : "Please describe..."}
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
-                className="rounded-xl text-xs border-[#E8E4DA]"
+                className="rounded-xl text-xs border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
               />
             </div>
           )}
 
-          <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-3 text-[11px] text-amber-900 flex items-start gap-2">
+          <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-3 text-[11px] text-amber-900 flex items-start gap-2 shadow-[0_1px_2px_rgba(217,119,6,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
             <AlertCircle className="size-4 text-amber-700 shrink-0 mt-0.5" />
             <p>
               {lang === "hi"
@@ -191,13 +191,13 @@ export function CancelOrderModal({
           </div>
         </div>
 
-        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-[#E8E4DA]">
+        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-[#E4DFD5]">
           <Button
             type="button"
             variant="outline"
             disabled={isCancelling}
             onClick={() => onOpenChange(false)}
-            className="rounded-xl text-xs font-semibold border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-9"
+            className="rounded-xl text-xs font-semibold border-[#E4DFD5] bg-white text-[#1F2924] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] h-9 cursor-pointer"
           >
             {lang === "hi" ? "नहीं, ऑर्डर रखें" : "Keep Order"}
           </Button>
@@ -206,7 +206,7 @@ export function CancelOrderModal({
             type="button"
             disabled={isCancelling}
             onClick={handleConfirmCancel}
-            className="rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white h-9 shadow-xs"
+            className="rounded-xl text-xs font-bold bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white h-9 shadow-[0_2px_8px_rgba(220,38,38,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer"
           >
             {isCancelling ? (
               <span>{lang === "hi" ? "रद्द हो रहा है..." : "Cancelling..."}</span>

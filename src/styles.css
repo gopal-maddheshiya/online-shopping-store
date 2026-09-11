@@ -65,8 +65,8 @@
   --color-ring-offset-background: #faf8f2;
   --color-surface: #ffffff;
 
-  --shadow-card: 0 1px 3px 0 rgba(22, 32, 26, 0.04), 0 1px 2px -1px rgba(22, 32, 26, 0.02);
-  --shadow-hover: 0 6px 18px -3px rgba(15, 74, 56, 0.08), 0 2px 6px -2px rgba(15, 74, 56, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(15, 74, 56, 0.04), 0 4px 14px -2px rgba(15, 74, 56, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  --shadow-hover: 0 12px 28px -4px rgba(15, 74, 56, 0.13), 0 4px 10px -2px rgba(15, 74, 56, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
 }
 
 :root {
@@ -100,21 +100,56 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 90, 69, 0.25) transparent;
+  }
+
+  /* Sleek, Slim Luxury Scrollbar for Web Browsers */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(20, 90, 69, 0.22);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(20, 90, 69, 0.45);
+  }
+
+  /* Custom Brand Text Selection */
+  ::selection {
+    background-color: #145a45;
+    color: #ffffff;
   }
 
   body {
     background-color: #faf8f2;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(20, 90, 69, 0.022) 0px, transparent 45%),
+      radial-gradient(at 100% 0%, rgba(217, 119, 6, 0.018) 0px, transparent 40%);
+    background-attachment: fixed;
     color: #16201a;
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   h1,
@@ -127,7 +162,61 @@
     font-weight: 700;
     color: #16201a;
     letter-spacing: -0.02em;
+    text-rendering: optimizeLegibility;
   }
+}
+
+/* Luxury Shimmer Wave for Skeletons */
+@keyframes luxuryShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(235, 231, 222, 0.5) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(235, 231, 222, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: luxuryShimmer 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Subtle Classy Light Glint for Offer Badges */
+@keyframes glintSlide {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  18%, 100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.glint-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.glint-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 100%
+  );
+  animation: glintSlide 6.5s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .container-page {
@@ -146,40 +235,41 @@
   }
 }
 
-/* Premium Structured Cards */
+/* Premium Structured Cards with High-DPI Dual Layer Polish */
 .card-base {
   background-color: #ffffff;
-  border: 1px solid #e5e0d5;
+  border: 1px solid #e4dfd5;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(15, 74, 56, 0.04), 0 4px 14px -2px rgba(15, 74, 56, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-base:hover {
-  border-color: #d0c9bc;
-  box-shadow: var(--shadow-hover);
+  border-color: #cfc9bd;
+  box-shadow: 0 10px 24px -4px rgba(15, 74, 56, 0.1), 0 3px 8px -2px rgba(15, 74, 56, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
 }
 
 .card-interactive {
   background-color: #ffffff;
-  border: 1px solid #e5e0d5;
+  border: 1px solid #e4dfd5;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px 0 rgba(15, 74, 56, 0.04), 0 4px 14px -2px rgba(15, 74, 56, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-interactive:hover {
-  border-color: rgba(20, 90, 69, 0.3);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
+  border-color: rgba(20, 90, 69, 0.35);
+  box-shadow: 0 12px 28px -4px rgba(15, 74, 56, 0.13), 0 4px 10px -2px rgba(15, 74, 56, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2.5px);
 }
 
 /* Header & Navigation Utilities */
 .header-glass {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid #e5e0d5;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(224, 218, 207, 0.9);
+  box-shadow: 0 4px 20px -4px rgba(15, 74, 56, 0.05), inset 0 -1px 0 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Badge Utilities */

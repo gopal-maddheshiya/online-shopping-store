@@ -363,7 +363,7 @@ export function HeroProductCarousel() {
                 <Link
                   to="/shop"
                   search={{ category: product.category }}
-                  className="group relative flex flex-col justify-between h-full rounded-xl bg-white p-2.5 sm:p-3 shadow-sm border border-black/5 hover:shadow-md hover:border-[#145A45]/30 transition-all duration-200 cursor-pointer"
+                  className="group relative flex flex-col justify-between h-full rounded-2xl bg-white p-2.5 sm:p-3 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-[#E4DFD5] hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:border-[#145A45]/40 transition-all duration-200 cursor-pointer"
                   draggable={false}
                   onClick={(e) => {
                     // Prevent accidental click if user was dragging
@@ -375,34 +375,34 @@ export function HeroProductCarousel() {
                   {/* Top Badge */}
                   <div className="flex items-center justify-between w-full min-h-[16px] mb-1">
                     <span
-                      className={`inline-block rounded-sm ${product.badgeColor} px-1.5 py-0.5 text-[8px] font-black text-white uppercase tracking-wider shadow-2xs leading-none`}
+                      className={`inline-block rounded-md ${product.badgeColor} px-1.5 py-0.5 text-[8.5px] font-black text-white uppercase tracking-wider shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.25)] leading-none`}
                     >
                       {badge}
                     </span>
                   </div>
 
-                  {/* Clean Image Area (natural transparent/white blend, no distortion) */}
-                  <div className="w-full aspect-[4/3] sm:aspect-square flex items-center justify-center p-0.5 my-0.5 overflow-hidden">
+                  {/* Clean Image Area with studio vignette */}
+                  <div className="w-full aspect-[4/3] sm:aspect-square flex items-center justify-center p-1 my-0.5 rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F5F2EA] border border-[#E4DFD5]/50 overflow-hidden">
                     <img
                       src={product.image}
                       alt={name}
                       loading="eager"
                       decoding="async"
                       draggable={false}
-                      className="size-full object-contain group-hover:scale-105 transition-transform duration-250 pointer-events-none"
+                      className="size-full object-contain group-hover:scale-108 transition-transform duration-250 pointer-events-none drop-shadow-[0_4px_8px_rgba(0,0,0,0.06)]"
                     />
                   </div>
 
                   {/* Product Details (Name, Price & Weight) */}
-                  <div className="w-full mt-1.5 pt-1 border-t border-black/5 flex flex-col text-left">
-                    <h3 className="text-[11.5px] sm:text-xs font-bold text-[#16201A] line-clamp-1 group-hover:text-[#0F4A38] transition-colors leading-snug">
+                  <div className="w-full mt-1.5 pt-1.5 border-t border-[#E4DFD5]/80 flex flex-col text-left">
+                    <h3 className="text-[11.5px] sm:text-xs font-bold text-[#16201A] line-clamp-1 group-hover:text-[#145A45] transition-colors leading-snug">
                       {name}
                     </h3>
                     <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[11.5px] sm:text-xs font-black text-[#0F4A38]">
+                      <span className="text-[11.5px] sm:text-xs font-black text-[#145A45]">
                         {product.price}
                       </span>
-                      <span className="text-[9.5px] sm:text-[10px] text-[#5A655F] font-medium">
+                      <span className="text-[9.5px] sm:text-[10px] text-[#5A655F] font-semibold bg-[#FAF8F2] px-1.5 py-0.5 rounded-md border border-[#E4DFD5]/60">
                         {product.weight}
                       </span>
                     </div>

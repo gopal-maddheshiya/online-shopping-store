@@ -176,9 +176,9 @@ function Shop() {
         <div className="space-y-0.5">
           <button
             onClick={() => update({ category: undefined, subcategory: undefined })}
-            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+            className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
               !search.category
-                ? "bg-[#145A45] text-white shadow-2xs"
+                ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
                 : "text-[#16201A] hover:bg-[#FAF8F2]"
             }`}
           >
@@ -188,9 +188,9 @@ function Shop() {
             <button
               key={c.id}
               onClick={() => update({ category: c.slug, subcategory: undefined })}
-              className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+              className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
                 search.category === c.slug
-                  ? "bg-[#145A45] text-white shadow-2xs"
+                  ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
                   : "text-[#16201A] hover:bg-[#FAF8F2]"
               }`}
             >
@@ -215,7 +215,7 @@ function Shop() {
                 }
                 className={`block w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${
                   search.subcategory === c.slug
-                    ? "bg-[#E6EFE8] text-[#0F4A38] font-bold"
+                    ? "bg-[#E6EFE8] text-[#0F4A38] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                     : "text-[#5A655F] hover:bg-[#FAF8F2]"
                 }`}
               >
@@ -238,7 +238,7 @@ function Shop() {
             placeholder={t.minPricePlaceholder}
             value={search.min ?? ""}
             onChange={(e) => update({ min: e.target.value ? Number(e.target.value) : undefined })}
-            className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
+            className="rounded-lg text-xs border-[#E4DFD5] bg-white h-8 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
           />
           <span className="text-[#5A655F]">–</span>
           <Input
@@ -247,7 +247,7 @@ function Shop() {
             placeholder={t.maxPricePlaceholder}
             value={search.max ?? ""}
             onChange={(e) => update({ max: e.target.value ? Number(e.target.value) : undefined })}
-            className="rounded-lg text-xs border-[#E5E0D5] bg-white h-8"
+            className="rounded-lg text-xs border-[#E4DFD5] bg-white h-8 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
           />
         </div>
       </div>
@@ -267,7 +267,7 @@ function Shop() {
       <Button
         variant="outline"
         size="sm"
-        className="w-full rounded-lg text-xs border-[#E5E0D5] hover:bg-[#FAF8F2]"
+        className="w-full rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2]"
         onClick={() => void navigate({ search: {} })}
       >
         {t.clearAllFiltersBtn}
@@ -278,7 +278,7 @@ function Shop() {
   return (
     <div className="container-page py-6 sm:py-8 pb-36 overflow-x-hidden">
       {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E0D5] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E4DFD5] pb-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="font-sans text-2xl font-bold text-[#16201A]">
@@ -292,7 +292,7 @@ function Shop() {
               <button
                 type="button"
                 onClick={() => update({ q: undefined })}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-full transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#DC2626] bg-red-50 hover:bg-red-100 border border-red-200 px-2 py-0.5 rounded-full shadow-[0_1px_2px_rgba(220,38,38,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] transition-colors cursor-pointer"
                 title={lang === "hi" ? "खोज हटाएं" : "Clear search"}
               >
                 <span>{lang === "hi" ? "हटाएं" : "Clear"}</span>
@@ -314,7 +314,7 @@ function Shop() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-lg text-xs lg:hidden border-[#E5E0D5] text-[#0F4A38] bg-white"
+                className="rounded-lg text-xs lg:hidden border-[#E4DFD5] text-[#0F4A38] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]"
               >
                 <Filter className="mr-1.5 size-3.5 text-[#145A45]" /> {t.filterBtn}
               </Button>
@@ -333,7 +333,7 @@ function Shop() {
             value={search.sort ?? "relevance"}
             onValueChange={(v) => update({ sort: v as ShopSearch["sort"] })}
           >
-            <SelectTrigger className="h-9 w-44 rounded-lg border-[#E5E0D5] bg-white text-xs text-[#16201A]">
+            <SelectTrigger className="h-9 w-44 rounded-lg border-[#E4DFD5] bg-white text-xs text-[#16201A] shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -350,7 +350,7 @@ function Shop() {
       {/* Main Grid: Sidebar Filters + Products */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[14rem_1fr] items-start">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block card-base p-4 border border-[#E5E0D5] bg-white sticky top-20">
+        <aside className="hidden lg:block card-base p-4 border border-[#E4DFD5] bg-white sticky top-20 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           {filters}
         </aside>
 
@@ -365,8 +365,8 @@ function Shop() {
               onClick={() => update({ category: undefined, subcategory: undefined })}
               className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
                 !search.category
-                  ? "bg-[#145A45] text-white shadow-2xs"
-                  : "border border-[#E5E0D5] bg-white text-[#16201A] hover:border-[#145A45]"
+                  ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                  : "border border-[#E4DFD5] bg-white text-[#16201A] shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
               }`}
             >
               <img
@@ -392,8 +392,8 @@ function Shop() {
                   onClick={() => update({ category: c.slug, subcategory: undefined })}
                   className={`shrink-0 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
                     search.category === c.slug
-                      ? "bg-[#145A45] text-white shadow-2xs"
-                      : "border border-[#E5E0D5] bg-white text-[#16201A] hover:border-[#145A45]"
+                      ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      : "border border-[#E4DFD5] bg-white text-[#16201A] shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <img
@@ -403,7 +403,7 @@ function Shop() {
                     decoding="async"
                     width={16}
                     height={16}
-                    className="size-4 rounded-full object-cover shrink-0 border border-[#E5E0D5]"
+                    className="size-4 rounded-full object-cover shrink-0 border border-[#E4DFD5]"
                   />
                   <span>{getCategoryName(c)}</span>
                   {count > 0 && (
@@ -428,7 +428,7 @@ function Shop() {
               ))}
             </div>
           ) : results.length === 0 ? (
-            <div className="card-base p-12 text-center bg-white border border-[#E5E0D5]">
+            <div className="card-base p-12 text-center bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
               <p className="font-sans text-base font-bold text-[#16201A]">
                 {t.noProductsFoundTitle}
               </p>
@@ -438,7 +438,7 @@ function Shop() {
               <Button
                 variant="outline"
                 size="sm"
-                className="mt-4 rounded-lg text-xs border-[#E5E0D5] text-[#0F4A38]"
+                className="mt-4 rounded-lg text-xs border-[#E4DFD5] bg-white text-[#0F4A38] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]"
                 onClick={() => void navigate({ search: {} })}
               >
                 {t.resetFiltersBtn}

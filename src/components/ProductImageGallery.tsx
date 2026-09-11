@@ -152,7 +152,7 @@ export function ProductImageGallery({
       {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE */}
       <div className="relative w-full max-w-[500px] mx-auto">
         <div
-          className="group relative w-full aspect-square rounded-3xl bg-white border border-[#EAE6DC] shadow-sm overflow-hidden flex items-center justify-center p-6 sm:p-8"
+          className="group relative w-full aspect-square rounded-3xl bg-gradient-to-b from-[#FBFDFA] via-[#F8FAF9] to-[#F1F6F3] border border-[#E0DACF] shadow-[0_4px_24px_-6px_rgba(15,74,56,0.08),inset_0_1px_0_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-6 sm:p-8"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -267,8 +267,8 @@ export function ProductImageGallery({
                   <div
                     className={`relative size-16 sm:size-18 rounded-2xl overflow-hidden bg-white p-1.5 flex items-center justify-center transition-all duration-200 ${
                       isSelected
-                        ? "border-2 border-[#145A45] ring-2 ring-[#145A45]/20 shadow-sm scale-105"
-                        : "border border-[#EAE6DC] opacity-70 hover:opacity-100 hover:border-[#145A45]/50"
+                        ? "border-2 border-[#145A45] ring-3 ring-[#145A45]/15 shadow-[0_2px_8px_rgba(20,90,69,0.25)] scale-105"
+                        : "border border-[#E0DACF] opacity-80 hover:opacity-100 hover:border-[#145A45]/50 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
                     }`}
                   >
                     <img

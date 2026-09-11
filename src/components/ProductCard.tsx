@@ -36,19 +36,19 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E8E4DA] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.12)] hover:border-[#145A45]/30 transition-all duration-300"
+      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E4DFD5] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_2px_8px_-2px_rgba(15,74,56,0.06),0_1px_2px_rgba(15,74,56,0.03),inset_0_1px_0_0_rgba(255,255,255,1)] hover:shadow-[0_12px_28px_-4px_rgba(15,74,56,0.14),0_4px_10px_-2px_rgba(15,74,56,0.04),inset_0_1px_0_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:-translate-y-1 transition-all duration-300"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* 1. Image Canvas Tile (Slightly taller aspect ratio for elegant grocery presentation) */}
-      <div className="relative w-full aspect-[1/1.08] rounded-xl bg-white p-2 sm:p-2.5 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full aspect-[1/1.08] rounded-xl bg-gradient-to-b from-[#FBFDFA] via-[#F8FAF9] to-[#F1F6F3] border border-[#E7EFEA] p-2 sm:p-2.5 flex items-center justify-center overflow-hidden shadow-[inset_0_1px_2px_rgba(20,90,69,0.03)] group-hover:border-[#145A45]/25 transition-all">
         {/* Top Floating Discount Badge */}
         <div className="absolute top-1.5 left-1.5 z-10">
           {off > 0 ? (
-            <span className="inline-flex items-center rounded-md bg-[#D97706] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-black text-white tracking-tight shadow-xs">
+            <span className="inline-flex items-center rounded-md bg-gradient-to-r from-[#D97706] to-[#B45309] px-2 py-0.5 text-[9px] sm:text-[10px] font-black text-white tracking-tight shadow-[0_2px_6px_rgba(217,119,6,0.25)] border border-amber-300/35 glint-effect">
               {off}% {t.off}
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#0F4A38]">
+            <span className="inline-flex items-center rounded-md bg-[#E6EFE8] border border-[#D4E2D8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#0F4A38] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               {t.freshBadge}
             </span>
           )}
@@ -63,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
             toggleWishlist(product);
           }}
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          className="absolute top-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full bg-white border border-[#EAE6DC] text-[#5A655F] hover:text-[#DC2626] hover:border-[#DC2626]/30 shadow-2xs transition-all active:scale-90 cursor-pointer"
+          className="absolute top-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full bg-white/95 backdrop-blur-xs border border-[#E2DDD3] text-[#5A655F] hover:text-[#DC2626] hover:border-[#DC2626]/40 shadow-[0_2px_6px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all active:scale-90 cursor-pointer"
         >
           <Heart
             className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${
@@ -95,7 +95,7 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Store Available Tag */}
         {stock > 0 && (
           <div className="absolute bottom-1.5 left-1.5 z-10 pointer-events-none">
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/95 border border-[#E8E4DA] px-1.5 py-0.2 text-[8.5px] sm:text-[9px] font-semibold text-[#145A45] shadow-2xs">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/95 border border-[#E2DDD3] px-2 py-0.5 text-[8.5px] sm:text-[9px] font-bold text-[#145A45] shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)]">
               <Zap className="size-2.5 fill-[#145A45] text-[#145A45]" />
               <span>{lang === "hi" ? "उपलब्ध" : "In Stock"}</span>
             </span>
@@ -105,7 +105,7 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Out of Stock Overlay */}
         {stock <= 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs rounded-xl z-20">
-            <span className="rounded-md bg-white border border-[#E5E0D5] px-2 py-0.5 text-[10px] font-bold text-[#5A655F]">
+            <span className="rounded-md bg-white border border-[#E0DACF] px-2.5 py-1 text-[10px] font-bold text-[#5A655F] shadow-xs">
               {t.outOfStock}
             </span>
           </div>
@@ -139,8 +139,8 @@ export function ProductCard({ product }: { product: Product }) {
                 onClick={() => setSelectedVariantId(v.id)}
                 className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate cursor-pointer ${
                   v.id === activeVariant?.id
-                    ? "border-[#145A45] bg-[#145A45] text-white shadow-2xs"
-                    : "border-[#E8E4DA] bg-white text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
+                    ? "border-[#145A45] bg-[#145A45] text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "border-[#E4DFD5] bg-white text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45] shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
                 }`}
               >
                 {getVariantLabel(v)}
@@ -149,7 +149,7 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         ) : (
           <div className="mt-1.5">
-            <span className="inline-flex items-center rounded-md bg-[#F4F7F5] px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold text-[#145A45] border border-[#D4E2D8] max-w-full truncate">
+            <span className="inline-flex items-center rounded-md bg-[#F0F5F2] px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-bold text-[#145A45] border border-[#D1E2D6] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] max-w-full truncate">
               {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
             </span>
           </div>
@@ -159,7 +159,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto pt-3 flex items-end justify-between gap-1.5 w-full min-w-0">
           {/* Price Stack */}
           <div className="flex flex-col min-w-0">
-            <span className="text-sm sm:text-base font-black text-[#0F4A38] leading-tight">
+            <span className="text-sm sm:text-base font-black text-[#0F4A38] leading-tight tracking-tight">
               {inr(activeVariant?.price ?? 0)}
             </span>
             {off > 0 && activeVariant?.mrp ? (
@@ -168,7 +168,7 @@ export function ProductCard({ product }: { product: Product }) {
                   {inr(activeVariant.mrp)}
                 </span>
                 {saveAmount > 0 && (
-                  <span className="rounded px-1 py-0.2 text-[8.5px] sm:text-[9px] font-black text-[#0F4A38] bg-[#E6EFE8] leading-tight">
+                  <span className="rounded px-1.5 py-0.2 text-[8.5px] sm:text-[9px] font-black text-[#0F4A38] bg-[#E6EFE8] border border-[#D4E6D9] leading-tight shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
                     {lang === "hi" ? `बचत ₹${saveAmount}` : `Save ₹${saveAmount}`}
                   </span>
                 )}
@@ -176,10 +176,10 @@ export function ProductCard({ product }: { product: Product }) {
             ) : null}
           </div>
 
-          {/* Action Button: Blinkit / Zepto Style */}
+          {/* Action Button: Blinkit / Zepto Style with Tactile Jewel Polish */}
           <div className="shrink-0">
             {inCart ? (
-              <div className="flex h-8 sm:h-8.5 items-center rounded-xl bg-[#145A45] text-white px-1 shadow-xs">
+              <div className="flex h-8 sm:h-8.5 items-center rounded-xl bg-gradient-to-b from-[#145A45] to-[#0D4433] text-white px-1 shadow-[0_2px_8px_rgba(20,90,69,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] border border-[#0D4433]">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
@@ -226,7 +226,7 @@ export function ProductCard({ product }: { product: Product }) {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-xl border border-[#145A45] bg-white px-3 sm:px-3.5 text-xs font-black text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs hover:shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-xl border border-[#145A45]/30 bg-white px-3 sm:px-3.5 text-xs font-black text-[#145A45] hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 transition-all shadow-[0_2px_6px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.25)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Plus className="size-3.5 stroke-[2.5] shrink-0" />
                 <span>{t.add}</span>
@@ -242,10 +242,10 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E8E4DA] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-2xs"
+      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E4DFD5] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_2px_8px_-2px_rgba(15,74,56,0.04),inset_0_1px_0_0_rgba(255,255,255,1)]"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      <Skeleton className="w-full aspect-[1/1.08] rounded-xl bg-white" />
+      <Skeleton className="w-full aspect-[1/1.08] rounded-xl bg-gradient-to-b from-[#FBFDFA] to-[#F1F6F3] border border-[#E7EFEA]" />
       <div className="flex flex-1 flex-col min-w-0 w-full pt-2 space-y-1.5">
         <Skeleton className="h-3 w-14 bg-[#FAF8F2]" />
         <Skeleton className="h-4 w-full bg-[#FAF8F2]" />

@@ -59,7 +59,7 @@ function WishlistPage() {
     });
     toast.success(
       lang === "hi"
-        ? `सभी ${addedCount} सामान कार्ट में जोड़े गए!`
+        ? `सभी ${addedCount} सामान थैले में जोड़े गए!`
         : `Moved ${addedCount} items to your shopping cart!`,
     );
   }
@@ -67,7 +67,7 @@ function WishlistPage() {
   if (items.length === 0) {
     return (
       <div className="container-page py-20 text-center">
-        <div className="mx-auto grid size-20 place-items-center rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5] text-[#145A45]">
+        <div className="mx-auto grid size-20 place-items-center rounded-2xl bg-[#FAF8F2] border border-[#E4DFD5] text-[#145A45] shadow-[0_2px_8px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
           <Heart className="size-10 text-[#145A45]" />
         </div>
         <h1 className="mt-4 font-sans text-2xl font-bold tracking-tight text-[#16201A] sm:text-3xl">
@@ -79,7 +79,7 @@ function WishlistPage() {
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button
             asChild
-            className="rounded-lg bg-[#145A45] px-8 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+            className="rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] px-8 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
           >
             <Link to="/shop">
               {t.browseCatalogueBtn}
@@ -92,7 +92,7 @@ function WishlistPage() {
 
   return (
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E0D5] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E4DFD5] pb-4">
         <div>
           <h1 className="font-sans text-2xl sm:text-3xl font-bold text-[#16201A]">
             {t.myWishlist}
@@ -105,7 +105,7 @@ function WishlistPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={handleMoveAllToCart}
-            className="rounded-lg bg-[#145A45] gap-1.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3628]"
+            className="rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] gap-1.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
           >
             <ShoppingBag className="size-4" />{" "}
             {t.moveAllToCartBtn}
@@ -114,7 +114,7 @@ function WishlistPage() {
             onClick={clear}
             variant="outline"
             size="icon"
-            className="rounded-lg border-[#E5E0D5] text-[#5A655F] hover:text-red-600 hover:bg-white"
+            className="rounded-lg border-[#E4DFD5] bg-white text-[#5A655F] hover:text-red-600 hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer"
             aria-label="Clear wishlist"
           >
             <Trash2 className="size-4" />

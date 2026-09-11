@@ -121,12 +121,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
   };
 
   return (
-    <section id="reviews-section" className="mt-12 pt-8 border-t border-[#EAE6DC] space-y-6 scroll-mt-24">
+    <section id="reviews-section" className="mt-12 pt-8 border-t border-[#E4DFD5] space-y-6 scroll-mt-24">
       {/* 1. Header with Title & Write Review Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-[#E6EFE8] text-[#145A45]">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-[#E6EFE8] text-[#145A45] border border-[#145A45]/20 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <Sparkles className="size-4" />
             </span>
             <h2 className="font-sans text-xl sm:text-2xl font-black text-[#16201A]">
@@ -143,7 +143,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
         <Button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="rounded-xl bg-[#145A45] hover:bg-[#0E4333] text-white text-xs font-bold shadow-xs active:scale-95 transition-all gap-2"
+          className="rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white text-xs font-bold shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all gap-2 cursor-pointer"
         >
           <MessageSquarePlus className="size-4" />
           <span>{lang === "hi" ? "समीक्षा लिखें" : "Write a Review"}</span>
@@ -151,9 +151,9 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
       </div>
 
       {/* 2. Rating Breakdown & Score Card */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 p-5 sm:p-6 rounded-3xl border border-[#EAE6DC] bg-[#FAF8F2]">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 p-5 sm:p-6 rounded-3xl border border-[#E4DFD5] bg-gradient-to-b from-[#FAF8F2] to-[#F5F2EA] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
         {/* Left Score Box */}
-        <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-4 border-b md:border-b-0 md:border-r border-[#EAE6DC]/80">
+        <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-4 border-b md:border-b-0 md:border-r border-[#E4DFD5]">
           <div className="text-4xl sm:text-5xl font-black text-[#16201A] tracking-tight">
             {stats.count > 0 ? stats.average.toFixed(1) : "—"}
           </div>
@@ -193,9 +193,9 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                 <span className="w-7 font-bold text-[#16201A] flex items-center gap-0.5 justify-end">
                   {star} <Star className="size-3 fill-amber-500 text-amber-500 inline" />
                 </span>
-                <div className="flex-1 h-2.5 rounded-full bg-stone-200/80 overflow-hidden">
+                <div className="flex-1 h-2.5 rounded-full bg-[#E4DFD5]/80 overflow-hidden shadow-[inset_0_1px_1px_rgba(0,0,0,0.06)]">
                   <div
-                    className="h-full rounded-full bg-[#145A45] transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r from-[#145A45] to-[#1B7A5D] transition-all duration-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -215,8 +215,8 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
             {lang === "hi" ? "समीक्षाएं लोड हो रही हैं..." : "Loading reviews..."}
           </div>
         ) : reviews.length === 0 ? (
-          <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-[#EAE6DC] bg-white space-y-3">
-            <div className="size-12 rounded-full bg-[#E6EFE8] text-[#145A45] flex items-center justify-center mx-auto">
+          <div className="text-center py-10 px-4 rounded-3xl border border-dashed border-[#E4DFD5] bg-white space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="size-12 rounded-2xl bg-[#E6EFE8] text-[#145A45] flex items-center justify-center mx-auto border border-[#145A45]/20 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
               <Star className="size-6 fill-[#145A45]" />
             </div>
             <h3 className="font-bold text-sm text-[#16201A]">
@@ -231,7 +231,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
               type="button"
               onClick={() => setIsModalOpen(true)}
               variant="outline"
-              className="rounded-xl border-[#145A45] text-[#145A45] hover:bg-[#E6EFE8] text-xs font-bold"
+              className="rounded-xl border border-[#145A45] text-[#145A45] hover:bg-[#E6EFE8] text-xs font-bold shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
             >
               {lang === "hi" ? "समीक्षा दर्ज करें" : "Write Review"}
             </Button>
@@ -244,12 +244,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
             return (
               <div
                 key={rev.id}
-                className="p-4 sm:p-5 rounded-2xl border border-[#EAE6DC] bg-white shadow-2xs space-y-2.5 transition-all hover:border-[#145A45]/30"
+                className="p-4 sm:p-5 rounded-3xl border border-[#E4DFD5] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] space-y-2.5 transition-all hover:border-[#145A45]/30 hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
               >
                 {/* Header: Avatar, Name, Verified Badge & Date */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="size-9 rounded-full bg-[#E6EFE8] text-[#145A45] font-black text-sm flex items-center justify-center shrink-0">
+                    <div className="size-9 rounded-2xl bg-gradient-to-br from-[#145A45] via-[#104E3C] to-[#0A3628] text-white font-black text-sm flex items-center justify-center shrink-0 shadow-[0_2px_4px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]">
                       {initial}
                     </div>
                     <div>
@@ -258,7 +258,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                           {rev.customer_name}
                         </span>
                         {rev.is_verified && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200/80">
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-200/80 shadow-[0_1px_1px_rgba(0,0,0,0.02)]">
                             <CheckCircle2 className="size-2.5 text-emerald-600" />
                             <span>{lang === "hi" ? "सत्यापित खरीदार" : "Verified Buyer"}</span>
                           </span>
@@ -286,7 +286,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                   </div>
 
                   {/* Star Rating Badge */}
-                  <div className="flex items-center gap-0.5 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md shrink-0">
+                  <div className="flex items-center gap-0.5 bg-amber-50/80 border border-amber-200/80 px-2.5 py-0.5 rounded-xl shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
                     <Star className="size-3 fill-amber-500 text-amber-500" />
                     <span className="text-xs font-black text-amber-900">{rev.rating}.0</span>
                   </div>
@@ -307,10 +307,10 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                   <button
                     type="button"
                     onClick={() => handleToggleHelpful(rev.id)}
-                    className={`inline-flex items-center gap-1.5 py-1 px-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+                    className={`inline-flex items-center gap-1.5 py-1 px-2.5 rounded-xl text-[11px] font-medium transition-colors cursor-pointer border ${
                       isHelpful
-                        ? "text-[#145A45] bg-[#E6EFE8] font-bold"
-                        : "hover:text-[#16201A] hover:bg-[#FAF8F2]"
+                        ? "text-[#145A45] bg-[#E6EFE8] font-bold border-[#145A45]/20 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                        : "border-transparent hover:text-[#16201A] hover:bg-[#FAF8F2] hover:border-[#E4DFD5]"
                     }`}
                   >
                     <ThumbsUp className={`size-3.5 ${isHelpful ? "fill-[#145A45]" : ""}`} />
@@ -328,7 +328,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
       {/* 4. "Write a Review" Modal Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md p-6 rounded-3xl">
+        <DialogContent className="max-w-md p-6 rounded-3xl border border-[#E4DFD5] shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           <DialogHeader>
             <DialogTitle className="font-sans text-lg sm:text-xl font-black text-[#16201A]">
               {lang === "hi" ? "सामान की समीक्षा लिखें" : "Write a Review"}
@@ -344,7 +344,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
               </label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((s) => {
-                  const active = s <= (hoverRating || rating);
+                  const active = (hoverRating || rating) >= s;
                   return (
                     <button
                       key={s}
@@ -383,7 +383,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={lang === "hi" ? "उदा. रमेश गुप्ता" : "e.g. Ramesh Gupta"}
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-xl border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
               />
             </div>
 
@@ -398,7 +398,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                 placeholder={
                   lang === "hi" ? "उदा. रामनगर, अड्डा बाजार रोड" : "e.g. Ramnagar, Adda Bazar"
                 }
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-xl border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
               />
             </div>
 
@@ -415,7 +415,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                     ? "उदा. बहुत शुद्ध और ताजा सामान"
                     : "e.g. Fresh quality and great packaging"
                 }
-                className="h-10 text-xs rounded-xl"
+                className="h-10 text-xs rounded-xl border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
               />
             </div>
 
@@ -433,7 +433,7 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                     ? "सामान की गुणवत्ता, पैकिंग और डिलीवरी के बारे में अपने अनुभव लिखें..."
                     : "Write about product quality, taste, freshness or delivery speed..."
                 }
-                className="text-xs rounded-xl"
+                className="text-xs rounded-xl border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
               />
             </div>
 
@@ -442,14 +442,14 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-xl text-xs"
+                className="rounded-xl border border-[#E4DFD5] text-xs font-medium hover:bg-[#FAF8F2] cursor-pointer"
               >
                 {lang === "hi" ? "रद्द करें" : "Cancel"}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-[#145A45] hover:bg-[#0E4333] text-white text-xs font-bold gap-2"
+                className="rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white text-xs font-bold shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] gap-2 cursor-pointer active:scale-95 transition-all"
               >
                 {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
                 <span>{lang === "hi" ? "समीक्षा सबमिट करें" : "Submit Review"}</span>

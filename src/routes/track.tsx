@@ -423,7 +423,7 @@ function TrackPage() {
       </div>
 
       {/* Lookup Form */}
-      <div className="mx-auto mt-8 max-w-xl rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-6 shadow-2xs">
+      <div className="mx-auto mt-8 max-w-xl rounded-3xl border border-[#E4DFD5] bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
         <form onSubmit={handleSearch} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="track-order-no" className="text-xs font-bold text-[#1F2924]">
@@ -434,7 +434,7 @@ function TrackPage() {
               placeholder="e.g. AGT-1001"
               value={orderNoInput}
               onChange={(e) => setOrderNoInput(e.target.value.toUpperCase())}
-              className="rounded-xl font-mono text-sm border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white h-11"
+              className="rounded-xl font-mono text-sm border-[#E4DFD5] bg-[#FAF8F2]/60 focus:bg-white h-11 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
               required
             />
           </div>
@@ -449,7 +449,7 @@ function TrackPage() {
               placeholder="10-digit mobile number"
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              className="rounded-xl text-sm border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white h-11"
+              className="rounded-xl text-sm border-[#E4DFD5] bg-[#FAF8F2]/60 focus:bg-white h-11 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
               required
             />
           </div>
@@ -457,7 +457,7 @@ function TrackPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="rounded-xl font-bold sm:col-span-2 bg-[#145A45] text-white hover:bg-[#0E4333] h-11 shadow-xs"
+            className="rounded-xl font-bold sm:col-span-2 bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-white hover:from-[#0F4A38] hover:to-[#07271D] h-11 shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer"
           >
             <Search className="mr-2 size-4" />{" "}
             {loading
@@ -481,8 +481,8 @@ function TrackPage() {
       {/* Loading State */}
       {loading ? (
         <div className="mx-auto mt-10 max-w-3xl space-y-4">
-          <Skeleton className="h-28 w-full rounded-2xl bg-[#E8E4DA]/50" />
-          <Skeleton className="h-64 w-full rounded-2xl bg-[#E8E4DA]/50" />
+          <Skeleton className="h-28 w-full rounded-2xl bg-[#E4DFD5]/50" />
+          <Skeleton className="h-64 w-full rounded-2xl bg-[#E4DFD5]/50" />
         </div>
       ) : null}
 
@@ -490,14 +490,14 @@ function TrackPage() {
       {searchedOrder && !loading ? (
         <div className="mx-auto mt-10 max-w-3xl space-y-6">
           {/* Order Header Card */}
-          <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 sm:p-6 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E8E4DA] pb-4">
+          <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E4DFD5] pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="font-sans text-2xl font-bold text-[#1F2924]">
                     {searchedOrder.order_no}
                   </h2>
-                  <span className="rounded-full bg-[#145A45]/10 px-3 py-0.5 text-xs font-bold text-[#145A45]">
+                  <span className="rounded-full bg-[#145A45]/10 border border-[#145A45]/20 px-3 py-0.5 text-xs font-bold text-[#145A45]">
                     {ORDER_STATUS_LABEL[searchedOrder.status] ?? searchedOrder.status}
                   </span>
                 </div>
@@ -511,7 +511,7 @@ function TrackPage() {
                   size="sm"
                   disabled={reorderLoading}
                   onClick={() => handleRepeatOrder(searchedOrder)}
-                  className="rounded-xl gap-1.5 text-xs font-bold bg-[#145A45] hover:bg-[#0E4333] text-white h-9 shadow-xs transition-all cursor-pointer"
+                  className="rounded-xl gap-1.5 text-xs font-bold bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white h-9 shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
                 >
                   <RotateCcw className={`size-3.5 ${reorderLoading ? "animate-spin" : ""}`} />
                   {language === "hi" ? "यही सामान फिर से मंगवाएं" : "Repeat Order"}
@@ -522,7 +522,7 @@ function TrackPage() {
                   size="sm"
                   disabled={invoiceLoading}
                   onClick={() => handleOpenInvoice(searchedOrder)}
-                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white h-9 transition-all cursor-pointer"
+                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/70 hover:bg-[#145A45] hover:text-white h-9 shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all cursor-pointer"
                 >
                   <Receipt className="size-3.5" />
                   {language === "hi" ? "बिल व रसीद देखें / प्रिंट" : "Official Invoice"}
@@ -533,7 +533,7 @@ function TrackPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCancelModalOpen(true)}
-                    className="rounded-xl gap-1.5 text-xs font-bold border-red-200 text-red-700 bg-red-50/70 hover:bg-red-600 hover:text-white h-9 transition-all cursor-pointer"
+                    className="rounded-xl gap-1.5 text-xs font-bold border-red-200 text-red-700 bg-red-50/70 hover:bg-red-600 hover:text-white h-9 shadow-[0_1px_2px_rgba(220,38,38,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all cursor-pointer"
                   >
                     <XCircle className="size-3.5" />
                     {language === "hi" ? "ऑर्डर रद्द करें" : "Cancel Order"}
@@ -547,7 +547,7 @@ function TrackPage() {
                   )}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] text-white px-3.5 py-2 text-xs font-bold shadow-xs hover:bg-[#1EBE5B]"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#25D366] to-[#15803D] text-white px-3.5 py-2 text-xs font-bold shadow-[0_2px_6px_rgba(37,211,102,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#1EBE5D] hover:to-[#166534] transition-all cursor-pointer"
                 >
                   <MessageCircle className="size-3.5" /> WhatsApp Support
                 </a>
@@ -567,7 +567,7 @@ function TrackPage() {
           {/* Details 2-Column Grid */}
           <div className="grid gap-6 md:grid-cols-2">
             {/* Fulfillment & Address */}
-            <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 shadow-2xs">
+            <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
               <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
                 <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
               </h3>
@@ -617,7 +617,7 @@ function TrackPage() {
                 {searchedOrder.notes ? (
                   <div className="pt-2">
                     <span className="text-[#6B746F]">Instructions:</span>
-                    <p className="rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-2.5 italic text-[#1F2924]">
+                    <p className="rounded-xl bg-[#FAF8F2] border border-[#E4DFD5] p-2.5 italic text-[#1F2924] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
                       {searchedOrder.notes}
                     </p>
                   </div>
@@ -626,21 +626,21 @@ function TrackPage() {
             </div>
 
             {/* Payment & Summary */}
-            <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 shadow-2xs">
+            <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
                   <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
                 </h3>
                 {searchedOrder.payment_status === "paid" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 shadow-[0_1px_2px_rgba(16,185,129,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                     <CheckCircle2 className="size-3" /> {t.paymentStatusPaid}
                   </span>
                 ) : searchedOrder.payment_status === "failed" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-bold text-red-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2.5 py-0.5 text-[11px] font-bold text-red-700 shadow-[0_1px_2px_rgba(239,68,68,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                     <AlertCircle className="size-3" /> {t.paymentStatusFailed}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 shadow-[0_1px_2px_rgba(245,158,11,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                     <Clock className="size-3" /> {t.paymentStatusPending}
                   </span>
                 )}
@@ -682,7 +682,7 @@ function TrackPage() {
                     {searchedOrder.delivery_fee === 0 ? "FREE" : inr(searchedOrder.delivery_fee)}
                   </dd>
                 </div>
-                <div className="flex justify-between border-t border-[#E8E4DA] pt-2 text-base font-bold text-[#1F2924]">
+                <div className="flex justify-between border-t border-[#E4DFD5] pt-2 text-base font-bold text-[#1F2924]">
                   <dt>Total Amount:</dt>
                   <dd className="font-sans font-bold text-[#145A45]">{inr(searchedOrder.total)}</dd>
                 </div>
@@ -703,8 +703,8 @@ function TrackPage() {
                         ?.items ?? [];
 
             return (
-              <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 shadow-2xs">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E8E4DA] pb-3">
+              <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4DFD5] pb-3">
                   <div>
                     <h3 className="font-sans text-base font-bold text-[#1F2924]">
                       {language === "hi"
@@ -721,14 +721,14 @@ function TrackPage() {
                     size="sm"
                     disabled={reorderLoading}
                     onClick={() => handleRepeatOrder(searchedOrder)}
-                    className="rounded-xl gap-1.5 text-xs font-bold bg-[#145A45] hover:bg-[#0E4333] text-white h-8 shadow-2xs cursor-pointer"
+                    className="rounded-xl gap-1.5 text-xs font-bold bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white h-8 shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer"
                   >
                     <RotateCcw className={`size-3 ${reorderLoading ? "animate-spin" : ""}`} />
                     {language === "hi" ? "पूरा राशन रीऑर्डर करें" : "Reorder All"}
                   </Button>
                 </div>
 
-                <div className="mt-3 divide-y divide-[#E8E4DA]">
+                <div className="mt-3 divide-y divide-[#E4DFD5]">
                   {itemsList.map((item, idx) => {
                     const itemKey = item.variant_id || item.id || `${idx}`;
                     const isAddingThis = singleAddingId === itemKey;
@@ -745,7 +745,7 @@ function TrackPage() {
                               image_url: item.image_url,
                             })}
                             alt={getProductName(item)}
-                            className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E8E4DA]"
+                            className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]"
                           />
                           <div>
                             <p className="font-semibold text-[#1F2924]">{getProductName(item)}</p>
@@ -765,7 +765,7 @@ function TrackPage() {
                             variant="outline"
                             disabled={isAddingThis}
                             onClick={() => handleAddSingleItem(item)}
-                            className="h-8 rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white px-3 text-xs font-bold cursor-pointer transition-all shrink-0"
+                            className="h-8 rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/70 hover:bg-[#145A45] hover:text-white px-3 text-xs font-bold cursor-pointer shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all shrink-0"
                           >
                             <Plus className="mr-1 size-3" />
                             {language === "hi" ? "जोड़ें" : "Add"}
@@ -780,7 +780,7 @@ function TrackPage() {
           })()}
 
           {/* Assistance Card */}
-          <div className="rounded-3xl border border-[#145A45]/20 bg-[#FAF8F2] p-6 text-center shadow-2xs">
+          <div className="rounded-3xl border border-[#145A45]/20 bg-[#FAF8F2] p-6 text-center shadow-[0_2px_8px_rgba(20,90,69,0.03),inset_0_1px_0_rgba(255,255,255,0.9)]">
             <h4 className="font-sans text-lg font-bold text-[#1F2924]">
               {language === "hi" ? "कोई प्रश्न है या त्वरित सहायता चाहिए?" : "Have Questions or Need Quick Delivery?"}
             </h4>

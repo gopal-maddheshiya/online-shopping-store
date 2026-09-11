@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import {
   Menu,
+  LayoutDashboard,
   Phone,
   Search,
   ShoppingBag,
@@ -301,21 +302,23 @@ export function Header() {
         </div>
       </div>
 
-      {/* 2. Main Sticky Header — clean premium */}
+      {/* 2. Main Sticky Header — clean premium crystal glass */}
       <header
-        className="sticky top-0 z-40 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md"
+        className="sticky top-0 z-40 border-b border-[#E0DACF]/80 bg-white/95 backdrop-blur-xl shadow-[0_2px_12px_-2px_rgba(15,74,56,0.05),inset_0_-1px_0_rgba(255,255,255,0.8)]"
         style={{ fontFeatureSettings: '"ss01", "cv11"' }}
       >
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <div className="container-page flex h-15 sm:h-16 items-center justify-between gap-2 sm:gap-4 md:gap-6">
-            {/* Mobile Menu Trigger (Drawer) — Pinned to Left on Mobile */}
-            <div className="flex md:hidden items-center shrink-0 w-8.5">
+            {/* Mobile Menu Trigger (Drawer) — Polished Crystal Admin Squircle */}
+            <div className="flex md:hidden items-center shrink-0">
               <SheetTrigger asChild>
                 <button
+                  type="button"
                   aria-label="Open menu"
-                  className="flex size-8.5 items-center justify-center rounded-full text-[#16201A] hover:bg-[#FAF8F2] border border-[#E5E0D5] bg-white transition-colors shrink-0 shadow-2xs active:scale-95 cursor-pointer"
+                  className="group relative flex size-9.5 items-center justify-center rounded-xl border border-[#DCD6CA] bg-gradient-to-b from-white via-[#FAF8F2] to-[#F4EFE6] text-[#104E3C] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1),inset_0_-1px_0_rgba(0,0,0,0.03)] hover:border-[#145A45]/50 hover:bg-[#EBF3ED] hover:shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,1)] active:scale-92 transition-all duration-200 cursor-pointer"
+                  title={lang === "hi" ? "मेन्यू खोलें" : "Open Menu"}
                 >
-                  <Menu className="size-4.5 text-[#0F4A38]" />
+                  <LayoutDashboard className="size-4.5 text-[#145A45] group-hover:scale-105 group-hover:text-[#0A3628] transition-all duration-200" />
                 </button>
               </SheetTrigger>
             </div>
@@ -500,7 +503,7 @@ export function Header() {
           <button
             type="button"
             onClick={() => setOrderModalOpen(true)}
-            className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-all shadow-2xs cursor-pointer"
+            className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E0DACF] bg-white px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] cursor-pointer"
             title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Call"}
           >
             <PhoneCall className="size-3.5 text-[#145A45]" />
@@ -519,7 +522,7 @@ export function Header() {
             rel="noopener noreferrer"
             aria-label="Order on WhatsApp"
             title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
-            className="hidden lg:flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] hover:border-[#25D366]/50 shadow-2xs transition-all cursor-pointer shrink-0"
+            className="hidden lg:flex size-8.5 items-center justify-center rounded-full border border-[#E0DACF] bg-white hover:bg-[#E6EFE8] hover:border-[#25D366]/50 shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] transition-all cursor-pointer shrink-0"
           >
             <svg viewBox="0 0 24 24" className="size-4 fill-[#25D366]" aria-hidden="true">
               <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15ZM16.56 14.43C16.31 14.31 15.08 13.7 14.85 13.62C14.62 13.53 14.46 13.49 14.29 13.74C14.13 13.99 13.64 14.56 13.49 14.73C13.34 14.89 13.2 14.91 12.95 14.79C12.7 14.67 11.89 14.4 10.93 13.55C10.18 12.89 9.68 12.07 9.53 11.82C9.38 11.57 9.51 11.44 9.64 11.31C9.75 11.2 9.89 11.02 10.01 10.87C10.13 10.72 10.18 10.62 10.26 10.45C10.34 10.28 10.3 10.14 10.24 10.02C10.18 9.9 9.69 8.69 9.48 8.19C9.28 7.7 9.07 7.77 8.92 7.76C8.78 7.75 8.61 7.75 8.45 7.75C8.28 7.75 8.01 7.81 7.79 8.05C7.56 8.3 6.93 8.89 6.93 10.09C6.93 11.29 7.8 12.45 7.92 12.61C8.04 12.77 9.64 15.25 12.1 16.31C12.68 16.56 13.14 16.71 13.49 16.82C14.07 17.01 14.6 16.98 15.02 16.92C15.49 16.85 16.47 16.33 16.67 15.75C16.88 15.18 16.88 14.69 16.81 14.58C16.75 14.47 16.58 14.41 16.33 14.29L16.56 14.43Z" />
@@ -529,7 +532,7 @@ export function Header() {
             {/* Account Link */}
             <Link
               to="/account"
-              className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
+              className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#5A655F] hover:bg-white hover:border-[#E0DACF] border border-transparent hover:text-[#145A45] transition-all"
               title={user ? t.myAccount : t.login}
             >
               <User className="size-4 text-[#145A45]" />
@@ -545,12 +548,12 @@ export function Header() {
             {/* Wishlist Link */}
             <Link
               to="/wishlist"
-              className="relative hidden sm:flex items-center justify-center rounded-full p-2 text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#145A45] transition-colors"
+              className="relative hidden sm:flex items-center justify-center rounded-full p-2 text-[#5A655F] hover:bg-white hover:border-[#E0DACF] border border-transparent hover:text-[#145A45] transition-all"
               title={t.wishlist}
             >
               <Heart className="size-4.5" />
               {wishlistCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-[#145A45] text-[10px] font-bold text-white">
+                <span className="absolute top-0.5 right-0.5 grid size-4 place-items-center rounded-full bg-[#145A45] text-[10px] font-bold text-white shadow-xs">
                   {wishlistCount}
                 </span>
               )}
@@ -561,16 +564,16 @@ export function Header() {
               to="/cart"
               onClick={handleCartClick}
               title={t.cart}
-              className={`hidden md:flex items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all cursor-pointer shadow-xs shrink-0 ${
+              className={`hidden md:flex items-center gap-2 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold transition-all cursor-pointer shrink-0 border ${
                 isOnCart
-                  ? "bg-[#0A3628] text-white ring-2 ring-[#145A45]/40"
-                  : "bg-[#145A45] text-white hover:bg-[#0A3628] hover:shadow-sm active:scale-98"
+                  ? "bg-[#0A3628] text-white border-[#0A3628] ring-2 ring-[#145A45]/40 shadow-xs"
+                  : "bg-gradient-to-b from-[#145A45] to-[#0D4433] text-white border-[#0D4433] shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_4px_14px_rgba(20,90,69,0.35)] active:scale-98"
               }`}
             >
               <div className="relative flex items-center">
                 <ShoppingBag className="size-3.5 sm:size-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 grid size-4.5 place-items-center rounded-full bg-[#D97706] text-[9.5px] font-black text-white shadow-2xs">
+                  <span className="absolute -top-2 -right-2 grid size-4.5 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9.5px] font-black text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60">
                     {cartCount}
                   </span>
                 )}
@@ -596,7 +599,7 @@ export function Header() {
                 onClick={() => setOrderModalOpen(true)}
                 title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Phone"}
                 aria-label="Order on Phone"
-                className="flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F2] text-[#145A45] shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+                className="flex size-8.5 items-center justify-center rounded-full border border-[#E0DACF] bg-white hover:bg-[#FAF8F2] text-[#145A45] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
               >
                 <PhoneCall className="size-4 text-[#145A45]" />
               </button>
@@ -613,7 +616,7 @@ export function Header() {
                 rel="noopener noreferrer"
                 aria-label="Order on WhatsApp"
                 title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
-                className="flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F2] shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+                className="flex size-8.5 items-center justify-center rounded-full border border-[#E0DACF] bg-white hover:bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -630,15 +633,15 @@ export function Header() {
                   to="/cart"
                   onClick={handleCartClick}
                   title={t.cart}
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer border ${
                     isOnCart
-                      ? "bg-[#0A3628] text-white ring-2 ring-[#145A45]/40"
-                      : "bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-98"
+                      ? "bg-[#0A3628] text-white border-[#0A3628] ring-2 ring-[#145A45]/40 shadow-xs"
+                      : "bg-gradient-to-b from-[#145A45] to-[#0D4433] text-white border-[#0D4433] shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-98"
                   }`}
                 >
                   <div className="relative flex items-center">
                     <ShoppingBag className="size-3.5" />
-                    <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-[#D97706] text-[9px] font-black text-white shadow-2xs">
+                    <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9px] font-black text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60">
                       {cartCount}
                     </span>
                   </div>
@@ -651,21 +654,21 @@ export function Header() {
         </div>
 
         {/* Mobile Navigation Drawer */}
-        <SheetContent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF8F2]">
-                  {/* 1. Premium Brand & User Profile Header */}
-                  <SheetHeader className="p-0 border-b border-[#E5E0D5] bg-gradient-to-br from-[#0F4A38] via-[#145A45] to-[#0A3628] text-white text-left shrink-0">
-                    <div className="p-4.5 pb-3.5 space-y-3">
+        <SheetContent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF9F5]">
+                  {/* 1. Clean Warm-Neutral Brand & User Profile Header (No overwhelming dark green) */}
+                  <SheetHeader className="p-0 border-b border-[#E8E3D9] bg-gradient-to-b from-white via-[#FCFAF6] to-[#F5F1E8] text-[#16201A] text-left shrink-0">
+                    <div className="p-4 pb-3.5 space-y-3">
                       <div className="flex items-center justify-between pr-8">
                         {/* Store Emblem & Name */}
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="grid size-9 place-items-center rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 shadow-xs shrink-0">
-                            <Store className="size-4.5 text-[#F5D061]" />
+                          <div className="grid size-9.5 place-items-center rounded-xl bg-gradient-to-br from-[#FAF5EA] to-[#F2E8D2] border border-[#E8DCBF] text-[#B45309] shadow-2xs shrink-0">
+                            <Store className="size-5 text-[#B45309]" />
                           </div>
                           <div className="min-w-0">
-                            <SheetTitle className="text-base font-black text-white tracking-tight leading-tight truncate">
+                            <SheetTitle className="text-base font-black text-[#16201A] tracking-tight leading-tight truncate">
                               {t.storeName}
                             </SheetTitle>
-                            <p className="text-[10.5px] font-medium text-[#E6EFE8]/80 leading-tight mt-0.5 truncate">
+                            <p className="text-[10.5px] font-medium text-[#6B746F] leading-tight mt-0.5 truncate">
                               {lang === "hi" ? "रामनगर चौराहा, अड्डा बाजार" : "Ramnagar Chauraha, Adda Bazar"}
                             </p>
                           </div>
@@ -673,18 +676,18 @@ export function Header() {
                       </div>
 
                       {/* User Account / Welcome Card */}
-                      <div className="flex items-center justify-between rounded-xl bg-white/10 backdrop-blur-xs p-2.5 border border-white/15">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="grid size-8 place-items-center rounded-full bg-white/20 text-white font-black text-xs shrink-0">
-                            {user ? (profile?.full_name?.[0]?.toUpperCase() || "U") : <User className="size-4 text-white" />}
+                      <div className="flex items-center justify-between rounded-xl bg-white p-2.5 border border-[#E5E0D5] shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="grid size-8 place-items-center rounded-full bg-[#F3EFE6] text-[#16201A] font-black text-xs shrink-0">
+                            {user ? (profile?.full_name?.[0]?.toUpperCase() || "U") : <User className="size-4 text-[#6B746F]" />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-white truncate">
+                            <p className="text-xs font-bold text-[#16201A] truncate">
                               {user
                                 ? (profile?.full_name || (user.phone ? `+91 ${user.phone.slice(-10)}` : t.myAccount))
                                 : (lang === "hi" ? "नमस्ते! स्वागत है 👋" : "Welcome! 👋")}
                             </p>
-                            <p className="text-[10px] text-[#E6EFE8]/70 truncate">
+                            <p className="text-[10px] text-[#6B746F] truncate">
                               {user ? (lang === "hi" ? "अकाउंट एक्टिव है" : "Account Active") : (lang === "hi" ? "ऑर्डर हिस्ट्री व सेव एड्रेस" : "Orders & Address")}
                             </p>
                           </div>
@@ -692,23 +695,23 @@ export function Header() {
                         <Link
                           to="/account"
                           onClick={() => setMenuOpen(false)}
-                          className="shrink-0 rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold text-[#0F4A38] shadow-xs hover:bg-[#FAF8F2] transition-colors"
+                          className="shrink-0 rounded-lg bg-[#16201A] hover:bg-[#2A342E] px-3 py-1 text-[11px] font-bold text-white shadow-xs transition-colors"
                         >
                           {user ? (lang === "hi" ? "देखें" : "View") : (lang === "hi" ? "लॉगिन" : "Login")}
                         </Link>
                       </div>
 
                       {/* Language Selector in Header */}
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10.5px] font-semibold text-[#E6EFE8]/80 flex items-center gap-1">
-                          <Languages className="size-3 text-[#F5D061]" /> {lang === "hi" ? "भाषा / Language" : "Language"}
+                      <div className="flex items-center justify-between pt-0.5">
+                        <span className="text-[10.5px] font-semibold text-[#6B746F] flex items-center gap-1">
+                          <Languages className="size-3 text-[#B45309]" /> {lang === "hi" ? "भाषा चुनें" : "Language"}
                         </span>
-                        <div className="flex items-center rounded-lg bg-black/20 p-0.5 border border-white/10">
+                        <div className="flex items-center rounded-lg bg-[#EFEBE3] p-0.5 border border-[#E2DDD2]">
                           <button
                             type="button"
                             onClick={() => setLang("en")}
                             className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                              lang === "en" ? "bg-white text-[#0F4A38] shadow-xs" : "text-white/80 hover:text-white"
+                              lang === "en" ? "bg-white text-[#16201A] shadow-xs" : "text-[#6B746F] hover:text-[#16201A]"
                             }`}
                           >
                             English
@@ -717,7 +720,7 @@ export function Header() {
                             type="button"
                             onClick={() => setLang("hi")}
                             className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                              lang === "hi" ? "bg-white text-[#0F4A38] shadow-xs" : "text-white/80 hover:text-white"
+                              lang === "hi" ? "bg-white text-[#16201A] shadow-xs" : "text-[#6B746F] hover:text-[#16201A]"
                             }`}
                           >
                             हिन्दी
@@ -728,23 +731,23 @@ export function Header() {
                   </SheetHeader>
 
                   {/* 2. Scrollable Drawer Body */}
-                  <div className="flex-1 overflow-y-auto divide-y divide-[#E5E0D5]">
+                  <div className="flex-1 overflow-y-auto divide-y divide-[#E8E3D9]">
                     {/* Delivery & Trust Badge */}
-                    <div className="bg-[#E6EFE8]/70 px-3.5 py-2 flex items-center justify-between text-[11px] font-semibold text-[#0F4A38]">
-                      <span className="flex items-center gap-1">
+                    <div className="bg-[#FAF8F5] px-3.5 py-2.5 flex items-center justify-between text-[11px] font-semibold text-[#16201A]">
+                      <span className="flex items-center gap-1.5">
                         {isDeliveryEnabled ? (
                           <Zap className="size-3.5 text-[#D97706] fill-[#D97706]" />
                         ) : (
-                          <Store className="size-3.5 text-[#145A45]" />
+                          <Store className="size-3.5 text-[#B45309]" />
                         )}
-                        <span>
+                        <span className="font-bold">
                           {isDeliveryEnabled
                             ? (lang === "hi" ? "अड्डा बाजार में फास्ट डिलीवरी" : "Fast Local Delivery")
                             : (lang === "hi" ? "दुकान से पिकअप उपलब्ध" : "Store Pickup Available")}
                         </span>
                       </span>
-                      <span className="flex items-center gap-1 text-[10.5px] text-[#5A655F]">
-                        <ShieldCheck className="size-3 text-[#145A45]" />
+                      <span className="flex items-center gap-1 text-[10.5px] text-[#6B746F]">
+                        <ShieldCheck className="size-3 text-[#D97706]" />
                         <span>100% शुद्ध राशन</span>
                       </span>
                     </div>
@@ -757,7 +760,7 @@ export function Header() {
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
-                          <Home className="size-4 text-[#145A45]" />
+                          <Home className="size-4 text-[#4A5568]" />
                           <span>{t.home}</span>
                         </span>
                         <ChevronRight className="size-3.5 text-[#8C827A]" />
@@ -769,10 +772,10 @@ export function Header() {
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
-                          <ShoppingBag className="size-4 text-[#145A45]" />
+                          <ShoppingBag className="size-4 text-[#B45309]" />
                           <span>{t.allGroceries}</span>
                         </span>
-                        <span className="rounded-full bg-[#145A45]/10 px-2 py-0.5 text-[10px] font-bold text-[#145A45]">
+                        <span className="rounded-full bg-[#FAF5EA] border border-[#E9DFCB] px-2 py-0.5 text-[10px] font-bold text-[#B45309]">
                           {lang === "hi" ? "सभी सामान" : "Shop"}
                         </span>
                       </Link>
@@ -783,7 +786,7 @@ export function Header() {
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
-                          <Package className="size-4 text-[#145A45]" />
+                          <Package className="size-4 text-[#2B6CB0]" />
                           <span>{t.trackOrder}</span>
                         </span>
                         <ChevronRight className="size-3.5 text-[#8C827A]" />
@@ -795,7 +798,7 @@ export function Header() {
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
-                          <Heart className="size-4 text-[#145A45]" />
+                          <Heart className="size-4 text-[#E53E3E]" />
                           <span>{t.wishlist}</span>
                         </span>
                         {wishlistCount > 0 ? (
@@ -813,7 +816,7 @@ export function Header() {
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >
                         <span className="flex items-center gap-2.5">
-                          <HelpCircle className="size-4 text-[#145A45]" />
+                          <HelpCircle className="size-4 text-[#4A5568]" />
                           <span>{t.helpCenter}</span>
                         </span>
                         <ChevronRight className="size-3.5 text-[#8C827A]" />
@@ -829,7 +832,7 @@ export function Header() {
                         <Link
                           to="/shop"
                           onClick={() => setMenuOpen(false)}
-                          className="text-[11px] font-bold text-[#145A45] hover:underline"
+                          className="text-[11px] font-bold text-[#B45309] hover:text-[#92400E] hover:underline"
                         >
                           {lang === "hi" ? "सभी देखें →" : "View all →"}
                         </Link>
@@ -842,7 +845,7 @@ export function Header() {
                             to="/shop"
                             search={{ category: c.slug } as never}
                             onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-2 rounded-xl border border-[#E5E0D5] bg-white p-2 text-left hover:border-[#145A45] hover:shadow-2xs transition-all"
+                            className="flex items-center gap-2 rounded-xl border border-[#E5E0D5] bg-white p-2 text-left hover:border-[#B45309]/50 hover:bg-[#FCFAF6] hover:shadow-2xs transition-all"
                           >
                             <img
                               src={getCategoryThumbnail(c)}
@@ -866,7 +869,7 @@ export function Header() {
                   <div className="p-3 border-t border-[#E5E0D5] bg-white shrink-0 space-y-2">
                     {/* Store Timings */}
                     <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#5A655F]">
-                      <Clock className="size-3.5 text-[#145A45]" />
+                      <Clock className="size-3.5 text-[#B45309]" />
                       <span>{lang === "hi" ? "दुकान: सुबह 7:00 AM से रात 9:00 PM तक" : "Store: 7:00 AM - 9:00 PM"}</span>
                     </div>
 
@@ -888,7 +891,7 @@ export function Header() {
 
                       <a
                         href={telHref(cleanPhone)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#145A45] hover:bg-[#0A3628] py-2 px-2 text-xs font-bold text-white transition-all shadow-xs"
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-[#16201A] hover:bg-[#2A342E] py-2 px-2 text-xs font-bold text-white transition-all shadow-xs"
                       >
                         <Phone className="size-3.5" />
                         <span>{lang === "hi" ? "कॉल करें" : "Call Store"}</span>
@@ -900,7 +903,7 @@ export function Header() {
                       <Link
                         to="/admin"
                         onClick={() => setMenuOpen(false)}
-                        className="text-[10px] font-semibold text-[#8C827A] hover:text-[#145A45] transition-colors inline-flex items-center gap-1"
+                        className="text-[10px] font-semibold text-[#8C827A] hover:text-[#16201A] transition-colors inline-flex items-center gap-1"
                       >
                         <Lock className="size-2.5" />
                         <span>{lang === "hi" ? "दुकानदार / एडमिन पोर्टल" : "Admin Portal"}</span>

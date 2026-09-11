@@ -121,7 +121,7 @@ export function ProductSliderShelf({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           {icon && (
-            <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 shrink-0 text-base shadow-2xs">
+            <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#EBF3ED] via-[#E2EEE5] to-[#D6E7DB] border border-[#145A45]/20 shrink-0 text-base shadow-[0_2px_8px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.9)]">
               {icon}
             </div>
           )}
@@ -143,7 +143,7 @@ export function ProductSliderShelf({
             <Link
               to={linkTo as any}
               search={linkSearch as any}
-              className="inline-flex items-center gap-1 rounded-full bg-[#E6EFE8] hover:bg-[#145A45] text-[#0F4A38] hover:text-white px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center gap-1 rounded-full bg-white hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#0F4A38] hover:text-white px-3 py-1 text-[11px] sm:text-xs font-bold transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.2)] shrink-0"
             >
               <span>{linkLabel}</span>
               <ArrowRight className="size-3" />

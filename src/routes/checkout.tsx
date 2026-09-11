@@ -800,7 +800,7 @@ function CheckoutPage() {
   return (
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Top Header */}
-      <div className="mb-6 flex items-center justify-between border-b border-[#E8E4DA] pb-4">
+      <div className="mb-6 flex items-center justify-between border-b border-[#E4DFD5] pb-4">
         <div>
           <Link
             to="/cart"
@@ -814,7 +814,7 @@ function CheckoutPage() {
         </div>
         <a
           href={telHref(settings?.phone ?? "+916388354988")}
-          className="flex items-center gap-1.5 rounded-full border border-[#145A45]/30 bg-[#FAF8F2] px-3 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#DCEBDD]"
+          className="flex items-center gap-1.5 rounded-full border border-[#145A45]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] transition-all"
         >
           <PhoneCall className="size-3.5" /> {lang === "hi" ? "फोन पर ऑर्डर?" : "Order on Phone?"}
         </a>
@@ -825,9 +825,9 @@ function CheckoutPage() {
         <form onSubmit={handlePlaceOrder} className="space-y-8">
           {/* Guest One-Click Google Login Banner */}
           {!user && (
-            <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+            <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-xl bg-white border border-[#E5E0D5] grid place-items-center shrink-0 shadow-2xs">
+                <div className="size-9 rounded-xl bg-white border border-[#E4DFD5] grid place-items-center shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
                   <svg className="size-4.5 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -869,7 +869,7 @@ function CheckoutPage() {
                       },
                     });
                   }}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl border border-[#E5E0D5] bg-white text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] shadow-2xs cursor-pointer active:scale-98 transition-all"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl border border-[#E4DFD5] bg-white text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer active:scale-98 transition-all"
                 >
                   <span>{lang === "hi" ? "Google से लॉगिन" : "Sign in with Google"}</span>
                 </button>
@@ -884,9 +884,9 @@ function CheckoutPage() {
           )}
 
           {/* Section 1: Customer Contact Info */}
-          <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 shadow-xs">
+          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
-              <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
+              <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
                 1
               </span>
               {t.customerContactDetails}
@@ -906,7 +906,7 @@ function CheckoutPage() {
                   placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="rounded-lg border-[#E5E0D5] bg-white"
+                  className="rounded-lg border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
               </div>
 
@@ -914,8 +914,8 @@ function CheckoutPage() {
                 <Label htmlFor="cust-phone" className="text-xs font-semibold text-[#16201A]">
                   {t.mobileNumber10} <span className="text-red-500">*</span>
                 </Label>
-                <div className="flex rounded-lg border border-[#E5E0D5] focus-within:ring-1 focus-within:ring-[#145A45]">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E5E0D5]">
+                <div className="flex rounded-lg border border-[#E4DFD5] focus-within:ring-1 focus-within:ring-[#145A45] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E4DFD5]">
                     +91
                   </span>
                   <Input
@@ -926,7 +926,7 @@ function CheckoutPage() {
                     placeholder="9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                    className="border-0 rounded-l-none rounded-r-lg focus-visible:ring-0"
+                    className="border-0 rounded-l-none rounded-r-lg focus-visible:ring-0 shadow-none"
                   />
                 </div>
               </div>
@@ -944,16 +944,16 @@ function CheckoutPage() {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-lg border-[#E5E0D5] bg-white"
+                  className="rounded-lg border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 2: Fulfillment & Delivery */}
-          <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 shadow-xs">
+          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
-              <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
+              <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
                 2
               </span>
               {t.orderFulfillmentMethod}
@@ -1348,10 +1348,10 @@ function CheckoutPage() {
 
 
           {/* Section 3: Payment Method */}
-          <div className="rounded-2xl border border-[#E5E0D5] bg-white p-5 shadow-xs">
+          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
-                <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white">
+                <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
                   3
                 </span>
                 {t.paymentMethodLabel}
@@ -1373,14 +1373,14 @@ function CheckoutPage() {
                   onClick={() => setPaymentMethod("upi")}
                   className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "upi"
-                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
-                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
+                      ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#145A45]"
+                      : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RadioGroupItem value="upi" id="pay-upi" className="text-[#145A45]" />
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10 border border-[#145A45]/15">
                         <Smartphone className="size-4 text-[#145A45]" />
                       </span>
                       <Label htmlFor="pay-upi" className="font-bold cursor-pointer text-sm text-[#16201A]">
@@ -1408,14 +1408,14 @@ function CheckoutPage() {
                   onClick={() => setPaymentMethod("card")}
                   className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "card"
-                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
-                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
+                      ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#145A45]"
+                      : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RadioGroupItem value="card" id="pay-card" className="text-[#145A45]" />
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10 border border-[#145A45]/15">
                         <CreditCard className="size-4 text-[#145A45]" />
                       </span>
                       <Label htmlFor="pay-card" className="font-bold cursor-pointer text-sm text-[#16201A]">
@@ -1443,14 +1443,14 @@ function CheckoutPage() {
                   onClick={() => setPaymentMethod("qr")}
                   className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "qr"
-                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
-                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
+                      ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#145A45]"
+                      : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RadioGroupItem value="qr" id="pay-qr" className="text-[#145A45]" />
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10 border border-[#145A45]/15">
                         <QrCode className="size-4 text-[#145A45]" />
                       </span>
                       <Label htmlFor="pay-qr" className="font-bold cursor-pointer text-sm text-[#16201A]">
@@ -1476,14 +1476,14 @@ function CheckoutPage() {
                   onClick={() => setPaymentMethod("cod")}
                   className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "cod"
-                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
-                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
+                      ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#145A45]"
+                      : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RadioGroupItem value="cod" id="pay-cod" className="text-[#145A45]" />
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#15803D]/10">
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#15803D]/10 border border-[#15803D]/15">
                         <Banknote className="size-4 text-[#15803D]" />
                       </span>
                       <Label htmlFor="pay-cod" className="font-bold cursor-pointer text-sm text-[#16201A]">
@@ -1506,14 +1506,14 @@ function CheckoutPage() {
                   onClick={() => setPaymentMethod("pay_at_store")}
                   className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all ${
                     paymentMethod === "pay_at_store"
-                      ? "border-[#145A45] bg-[#F0F7F3] ring-1 ring-[#145A45]"
-                      : "border-[#E5E0D5] bg-white hover:border-[#145A45]/40"
+                      ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#145A45]"
+                      : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RadioGroupItem value="pay_at_store" id="pay-store" className="text-[#145A45]" />
-                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10">
+                      <span className="grid size-8 place-items-center rounded-lg bg-[#145A45]/10 border border-[#145A45]/15">
                         <Store className="size-4 text-[#145A45]" />
                       </span>
                       <Label htmlFor="pay-store" className="font-bold cursor-pointer text-sm text-[#16201A]">
@@ -1538,7 +1538,7 @@ function CheckoutPage() {
               type="submit"
               size="lg"
               disabled={isSubmitting || isProcessingPayment || items.length === 0}
-              className="w-full rounded-xl py-4 text-base font-bold shadow-md bg-[#145A45] text-white hover:bg-[#0A3628]"
+              className="w-full rounded-xl py-4 text-base font-bold shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer"
             >
               {isSubmitting || isProcessingPayment ? (
                 <span className="flex items-center gap-2">
@@ -1565,7 +1565,7 @@ function CheckoutPage() {
 
         {/* Right Order Summary Column */}
         <aside className="space-y-6">
-          <div className="rounded-2xl p-5 shadow-xs lg:sticky lg:top-24 bg-white border border-[#E5E0D5]">
+          <div className="rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] lg:sticky lg:top-24 bg-white border border-[#E4DFD5]">
             <h2 className="font-sans text-lg font-bold text-[#16201A]">
               {lang === "hi" ? "ऑर्डर का विवरण" : "Order Summary"}
             </h2>
@@ -1574,7 +1574,7 @@ function CheckoutPage() {
             </p>
 
             {/* Items mini list */}
-            <div className="mt-4 max-h-56 space-y-2.5 overflow-y-auto pr-1 border-b border-[#E5E0D5] pb-4">
+            <div className="mt-4 max-h-56 space-y-2.5 overflow-y-auto pr-1 border-b border-[#E4DFD5] pb-4">
               {items.map((i) => (
                 <div key={i.variantId} className="flex items-center justify-between gap-2 text-xs">
                   <div className="min-w-0 flex-1">
@@ -1591,25 +1591,25 @@ function CheckoutPage() {
             </div>
 
             {/* Coupon Application */}
-            <div className="mt-4 border-b border-[#E5E0D5] pb-4">
+            <div className="mt-4 border-b border-[#E4DFD5] pb-4">
               <form onSubmit={handleApplyCoupon} className="flex gap-2">
                 <Input
                   placeholder="Coupon code (e.g. WELCOME50)"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="h-9 rounded-lg text-xs border-[#E5E0D5] bg-white"
+                  className="h-9 rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
                 <Button
                   type="submit"
                   size="sm"
                   variant="secondary"
-                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[#E5E0D5] text-[#0F4A38] hover:bg-[#E6EFE8]"
+                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[#E4DFD5] text-[#0F4A38] hover:bg-[#E6EFE8] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer"
                 >
                   Apply
                 </Button>
               </form>
               {appliedCoupon ? (
-                <div className="mt-2 flex items-center justify-between rounded-lg bg-[#E6EFE8] px-2.5 py-1.5 text-xs text-[#0F4A38]">
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-[#E6EFE8] border border-[#145A45]/20 px-2.5 py-1.5 text-xs text-[#0F4A38] shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                   <span className="flex items-center gap-1 font-semibold">
                     <Tag className="size-3" /> {appliedCoupon.code} (-{inr(couponDiscount)})
                   </span>
@@ -1619,7 +1619,7 @@ function CheckoutPage() {
                       setAppliedCoupon(null);
                       setCouponCode("");
                     }}
-                    className="text-[11px] font-bold underline hover:opacity-75"
+                    className="text-[11px] font-bold underline hover:opacity-75 cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1653,13 +1653,13 @@ function CheckoutPage() {
               </div>
 
               {subtotal > 0 && subtotal < freeDeliveryThreshold && orderType === "delivery" ? (
-                <div className="rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-2 text-[11px] text-[#5A655F]">
+                <div className="rounded-lg bg-[#FAF8F2] border border-[#E4DFD5] p-2 text-[11px] text-[#5A655F] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
                   💡 Add <strong>{inr(freeDeliveryThreshold - subtotal)}</strong> more for{" "}
                   <strong>FREE Delivery</strong>!
                 </div>
               ) : null}
 
-              <div className="flex justify-between border-t border-[#E5E0D5] pt-3 text-base font-bold text-[#16201A]">
+              <div className="flex justify-between border-t border-[#E4DFD5] pt-3 text-base font-bold text-[#16201A]">
                 <dt>{t.totalAmount}</dt>
                 <dd className="text-[#0F4A38] font-sans text-lg font-black">{inr(grandTotal)}</dd>
               </div>
@@ -1670,7 +1670,7 @@ function CheckoutPage() {
               onClick={handlePlaceOrder}
               disabled={isSubmitting || isProcessingPayment || items.length === 0}
               size="lg"
-              className="mt-5 hidden w-full rounded-xl py-6 font-bold shadow-md lg:flex bg-[#145A45] text-white hover:bg-[#0E4333]"
+              className="mt-5 hidden w-full rounded-xl py-6 font-bold shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] lg:flex bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer"
             >
               {isSubmitting || isProcessingPayment ? (
                 <span className="flex items-center gap-2">
@@ -1696,7 +1696,7 @@ function CheckoutPage() {
               </div>
             </div>
 
-            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#6B746F] border-t border-[#E5E0D5] pt-3">
+            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#6B746F] border-t border-[#E4DFD5] pt-3">
               <p className="flex items-center justify-center gap-1">
                 <ShieldCheck className="size-3.5 text-[#145A45]" /> 100% शुद्ध राशन • अरुण गोपाल ट्रेडर्स
               </p>

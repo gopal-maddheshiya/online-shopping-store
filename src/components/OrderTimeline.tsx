@@ -73,37 +73,37 @@ export function OrderTimeline({ currentStatus, orderType = "delivery", events }:
               <div className="relative flex w-full items-center justify-center">
                 {index > 0 ? (
                   <div
-                    className={`absolute top-4 right-1/2 left-0 -z-10 h-0.5 -translate-y-1/2 ${
-                      isDone ? "bg-primary" : "bg-border"
+                    className={`absolute top-4.5 right-1/2 left-0 -z-10 h-0.5 -translate-y-1/2 transition-colors ${
+                      isDone ? "bg-[#145A45]" : "bg-[#E4DFD5]"
                     }`}
                   />
                 ) : null}
                 {index < statusFlow.length - 1 ? (
                   <div
-                    className={`absolute top-4 left-1/2 right-0 -z-10 h-0.5 -translate-y-1/2 ${
-                      currentIndex > index ? "bg-primary" : "bg-border"
+                    className={`absolute top-4.5 left-1/2 right-0 -z-10 h-0.5 -translate-y-1/2 transition-colors ${
+                      currentIndex > index ? "bg-[#145A45]" : "bg-[#E4DFD5]"
                     }`}
                   />
                 ) : null}
                 <div
-                  className={`grid size-8 place-items-center rounded-full border-2 transition-all ${
+                  className={`grid size-9 place-items-center rounded-full border transition-all ${
                     isDone
-                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                      : "border-border bg-background text-muted-foreground"
-                  } ${isCurrent ? "ring-4 ring-primary/20" : ""}`}
+                      ? "border-[#145A45] bg-gradient-to-br from-[#145A45] via-[#104E3C] to-[#0A3628] text-white shadow-[0_2px_6px_rgba(20,90,69,0.3),inset_0_1px_0_rgba(255,255,255,0.25)]"
+                      : "border-[#E4DFD5] bg-[#FAF8F2] text-[#A8B2AC] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                  } ${isCurrent ? "ring-4 ring-[#145A45]/20 scale-105" : ""}`}
                 >
                   <Icon className="size-4" />
                 </div>
               </div>
               <p
                 className={`mt-2 text-xs font-semibold ${
-                  isCurrent ? "text-primary" : isDone ? "text-foreground" : "text-muted-foreground"
+                  isCurrent ? "text-[#145A45] font-bold" : isDone ? "text-[#16201A]" : "text-[#5A655F]"
                 }`}
               >
                 {getOrderStatusLabel(status, language, isPickup ? "pickup" : "delivery")}
               </p>
               {event?.created_at ? (
-                <span className="mt-0.5 text-[10px] text-muted-foreground">
+                <span className="mt-0.5 text-[10px] text-[#5A655F]">
                   {new Date(event.created_at).toLocaleTimeString("en-IN", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -127,34 +127,34 @@ export function OrderTimeline({ currentStatus, orderType = "delivery", events }:
             <div key={status} className="flex items-start gap-3">
               <div className="relative flex flex-col items-center">
                 <div
-                  className={`grid size-7 place-items-center rounded-full border-2 ${
+                  className={`grid size-7.5 place-items-center rounded-full border ${
                     isDone
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-muted-foreground"
-                  } ${isCurrent ? "ring-2 ring-primary/30" : ""}`}
+                      ? "border-[#145A45] bg-gradient-to-br from-[#145A45] via-[#104E3C] to-[#0A3628] text-white shadow-[0_2px_4px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.25)]"
+                      : "border-[#E4DFD5] bg-[#FAF8F2] text-[#A8B2AC] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                  } ${isCurrent ? "ring-4 ring-[#145A45]/20" : ""}`}
                 >
                   <Icon className="size-3.5" />
                 </div>
                 {index < statusFlow.length - 1 ? (
                   <div
-                    className={`h-6 w-0.5 ${currentIndex > index ? "bg-primary" : "bg-border"}`}
+                    className={`h-6 w-0.5 ${currentIndex > index ? "bg-[#145A45]" : "bg-[#E4DFD5]"}`}
                   />
                 ) : null}
               </div>
               <div className="flex-1 pb-1">
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-sm ${
                     isCurrent
-                      ? "text-primary font-semibold"
+                      ? "text-[#145A45] font-bold"
                       : isDone
-                        ? "text-foreground"
-                        : "text-muted-foreground"
+                        ? "text-[#16201A] font-semibold"
+                        : "text-[#5A655F] font-medium"
                   }`}
                 >
                   {getOrderStatusLabel(status, language, isPickup ? "pickup" : "delivery")}
                 </p>
                 {event?.created_at ? (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-[#5A655F]">
                     {new Date(event.created_at).toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",

@@ -302,12 +302,12 @@ function ProductPage() {
                 {product.brand || (lang === "hi" ? "दैनिक राशन" : "Fresh Staples")}
               </span>
 
-              {/* Wishlist, WhatsApp & Share Action Buttons */}
+            {/* Wishlist, WhatsApp & Share Action Buttons */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => toggleWishlist(product)}
-                  className="flex size-9 items-center justify-center rounded-full bg-white border border-[#EAE6DC] text-[#5A655F] hover:text-[#DC2626] hover:bg-[#FAF8F2] shadow-2xs transition-all cursor-pointer"
+                  className="flex size-9 items-center justify-center rounded-full bg-white border border-[#E4DFD5] text-[#5A655F] hover:text-[#DC2626] hover:bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] transition-all cursor-pointer"
                   title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
                 >
                   <Heart
@@ -319,7 +319,7 @@ function ProductPage() {
                 <button
                   type="button"
                   onClick={handleWhatsAppShare}
-                  className="flex size-9 items-center justify-center rounded-full bg-[#E8F8EE] border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white shadow-2xs transition-all cursor-pointer"
+                  className="flex size-9 items-center justify-center rounded-full bg-[#E8F8EE] border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white shadow-[0_1px_3px_rgba(37,211,102,0.15),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all cursor-pointer"
                   title={lang === "hi" ? "व्हाट्सएप पर शेयर करें" : "Share on WhatsApp"}
                 >
                   <MessageCircle className="size-4.5" />
@@ -327,7 +327,7 @@ function ProductPage() {
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="flex size-9 items-center justify-center rounded-full bg-white border border-[#EAE6DC] text-[#5A655F] hover:text-[#145A45] hover:bg-[#FAF8F2] shadow-2xs transition-all cursor-pointer"
+                  className="flex size-9 items-center justify-center rounded-full bg-white border border-[#E4DFD5] text-[#5A655F] hover:text-[#145A45] hover:bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] transition-all cursor-pointer"
                   title="Share product"
                 >
                   <Share2 className="size-4.5" />
@@ -343,7 +343,7 @@ function ProductPage() {
             <div className="mt-2.5 flex flex-wrap items-center gap-2.5 text-xs text-[#5A655F]">
               <a
                 href="#reviews-section"
-                className="flex items-center gap-1 font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md hover:bg-amber-100 transition-colors cursor-pointer"
+                className="flex items-center gap-1 font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md hover:bg-amber-100 shadow-[0_1px_2px_rgba(217,119,6,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] transition-colors cursor-pointer"
                 title={lang === "hi" ? "ग्राहकों की समीक्षाएं देखें" : "View Customer Reviews"}
               >
                 <Star className={`size-3.5 ${reviewStats.count > 0 ? "fill-amber-500 text-amber-500" : "text-amber-500"}`} />
@@ -360,7 +360,7 @@ function ProductPage() {
                   </span>
                 )}
               </a>
-              <span className="text-[#EAE6DC]">•</span>
+              <span className="text-[#E0DACF]">•</span>
               <div className="flex items-center gap-1 font-bold text-[#0F4A38]">
                 {isDeliveryEnabled ? (
                   <>
@@ -378,7 +378,7 @@ function ProductPage() {
           </div>
 
           {/* Clean Modern Pricing Row (Uncluttered, No Heavy Nested Box) */}
-          <div className="pt-2 pb-4 border-y border-[#EAE6DC] space-y-1.5">
+          <div className="pt-2 pb-4 border-y border-[#E4DFD5] space-y-1.5">
             <div className="flex items-baseline flex-wrap gap-2.5">
               <span className="text-3xl sm:text-4xl font-black text-[#145A45] tracking-tight">
                 {inr(variant?.price ?? 0)}
@@ -389,7 +389,7 @@ function ProductPage() {
                   <span className="text-base sm:text-lg text-[#5A655F] line-through font-medium">
                     {inr(variant.mrp)}
                   </span>
-                  <span className="rounded-full bg-[#D97706] text-white px-2.5 py-0.5 text-xs font-black tracking-wide shadow-2xs">
+                  <span className="relative overflow-hidden glint-effect rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-white px-2.5 py-0.5 text-xs font-black tracking-wide shadow-[0_1px_3px_rgba(217,119,6,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]">
                     {off}% {t.off}
                   </span>
                 </>
@@ -433,8 +433,8 @@ function ProductPage() {
                     disabled={v.stock <= 0}
                     className={`relative flex flex-col p-3 rounded-2xl border text-left transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                       isSelected
-                        ? "border-[#145A45] bg-[#E6EFE8]/50 shadow-xs ring-2 ring-[#145A45]/20"
-                        : "border-[#EAE6DC] bg-white hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
+                        ? "border-[#145A45] bg-[#E6EFE8]/70 shadow-[0_2px_8px_rgba(20,90,69,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] ring-2 ring-[#145A45]/20"
+                        : "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:bg-[#FAF8F2]"
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -467,7 +467,7 @@ function ProductPage() {
           <div className="text-xs pt-0.5">
             {variant && variant.stock > 0 ? (
               variant.stock <= variant.low_stock_threshold ? (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-amber-800 font-bold">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-amber-800 font-bold shadow-[0_1px_2px_rgba(217,119,6,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                   <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
                   <span>
                     {lang === "hi"
@@ -493,7 +493,7 @@ function ProductPage() {
           <div className="space-y-3 pt-2">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {/* Sleek Quantity Stepper */}
-              <div className="flex h-12 items-center justify-between sm:justify-start rounded-2xl border border-[#EAE6DC] bg-[#FAF8F2] px-2 shrink-0">
+              <div className="flex h-12 items-center justify-between sm:justify-start rounded-2xl border border-[#E4DFD5] bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] px-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -540,7 +540,7 @@ function ProductPage() {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="flex-1 h-12 rounded-2xl bg-[#145A45] hover:bg-[#0E4333] text-sm font-bold text-white shadow-md active:scale-[0.99] transition-all cursor-pointer"
+                className="flex-1 h-12 rounded-2xl bg-gradient-to-r from-[#145A45] via-[#11503E] to-[#0D3F31] hover:from-[#0E4333] hover:to-[#092B21] text-sm font-bold text-white shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-[0.99] transition-all cursor-pointer"
               >
                 <ShoppingBag className="mr-2 size-5" />
                 <span>{t.add}</span>
@@ -555,7 +555,7 @@ function ProductPage() {
                 )}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-[#15803D] hover:bg-[#166534] text-white px-4 text-xs font-bold shadow-xs active:scale-95 transition-all"
+                className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#15803D] to-[#166534] hover:from-[#166534] hover:to-[#14532D] text-white px-4 text-xs font-bold shadow-[0_2px_8px_rgba(21,128,61,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all"
               >
                 <MessageCircle className="size-4" />
                 <span>{t.whatsappOrderBtn}</span>
@@ -563,7 +563,7 @@ function ProductPage() {
 
               <a
                 href="tel:+916388354988"
-                className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-[#EAE6DC] bg-white hover:bg-[#FAF8F2] text-[#0F4A38] px-4 text-xs font-bold shadow-xs active:scale-95 transition-all"
+                className="flex h-11 items-center justify-center gap-2 rounded-2xl border border-[#E4DFD5] bg-white hover:bg-[#FAF8F2] text-[#0F4A38] px-4 text-xs font-bold shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all"
               >
                 <Phone className="size-4 text-[#145A45]" />
                 <span>{t.callStoreBtn}</span>
@@ -572,8 +572,8 @@ function ProductPage() {
           </div>
 
           {/* Guarantee Badges Strip (Clean & Uncluttered) */}
-          <div className="grid grid-cols-3 gap-2.5 border-t border-[#EAE6DC] pt-4">
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
+          <div className="grid grid-cols-3 gap-2.5 border-t border-[#E4DFD5] pt-4">
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2]/80 border border-[#E4DFD5] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
               {isDeliveryEnabled ? (
                 <>
                   <Truck className="size-4.5 text-[#145A45] mb-1" />
@@ -586,18 +586,18 @@ function ProductPage() {
                 </>
               )}
             </div>
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2]/80 border border-[#E4DFD5] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
               <Store className="size-4.5 text-[#145A45] mb-1" />
               <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{lang === "hi" ? "तुरंत तैयार" : "Ready in Store"}</span>
             </div>
-            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2] border border-[#EAE6DC]/60">
+            <div className="flex flex-col items-center text-center p-2 rounded-xl bg-[#FAF8F2]/80 border border-[#E4DFD5] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
               <ShieldCheck className="size-4.5 text-[#145A45] mb-1" />
               <span className="text-[10px] sm:text-[11px] font-bold text-[#16201A]">{t.genuineBrandsTitle}</span>
             </div>
           </div>
 
           {/* Product Details Box */}
-          <div className="rounded-2xl border border-[#EAE6DC] bg-white p-4.5 space-y-2">
+          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-4.5 space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#16201A] flex items-center gap-2">
               <Sparkles className="size-4 text-[#145A45]" />
               <span>{t.productDetailsAndPurity}</span>
@@ -616,7 +616,7 @@ function ProductPage() {
 
       {/* 3. SIMILAR / RELATED ESSENTIALS SECTION */}
       {related.length > 0 && (
-        <section className="space-y-5 pt-8 border-t border-[#EAE6DC]">
+        <section className="space-y-5 pt-8 border-t border-[#E4DFD5]">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-sans text-xl sm:text-2xl font-black text-[#16201A]">
@@ -644,7 +644,7 @@ function ProductPage() {
       )}
 
       {/* 4. STICKY MOBILE BOTTOM BUY BAR */}
-      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[#EAE6DC] bg-white/95 backdrop-blur-md p-3 shadow-xl md:hidden">
+      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[#E0DACF] bg-white/95 backdrop-blur-md p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-[#5A655F] truncate">
@@ -677,7 +677,7 @@ function ProductPage() {
                 icon: <Check className="size-4 text-[#145A45]" />,
               });
             }}
-            className="flex-1 max-w-[220px] h-10 rounded-xl bg-[#145A45] text-xs font-black text-white shadow-xs active:scale-95 cursor-pointer"
+            className="flex-1 max-w-[220px] h-10 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0F4A38] text-xs font-black text-white shadow-[0_2px_8px_rgba(20,90,69,0.25)] active:scale-95 cursor-pointer"
           >
             <ShoppingBag className="mr-1.5 size-4" />
             <span>{t.add}</span>

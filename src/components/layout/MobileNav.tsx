@@ -72,7 +72,7 @@ export function MobileNav() {
       {/* Bottom Navigation Bar */}
       <nav
         aria-label="Mobile Navigation"
-        className="fixed right-0 bottom-0 left-0 z-50 bg-white border-t border-[#EEEAE2] lg:hidden pb-[env(safe-area-inset-bottom)]"
+        className="fixed right-0 bottom-0 left-0 z-50 bg-white/96 backdrop-blur-xl border-t border-[#E0DACF] shadow-[0_-4px_20px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] lg:hidden pb-[env(safe-area-inset-bottom)]"
       >
         <div className="grid grid-cols-5 items-end h-[3.75rem]">
           {links.map((link) => {
@@ -104,8 +104,8 @@ export function MobileNav() {
                 {/* Icon with active pill */}
                 <div className="relative flex items-center justify-center">
                   <div
-                    className={`rounded-full px-3 py-[3px] transition-colors duration-200 ${
-                      isActive ? "bg-[#E6EFE8]" : "bg-transparent"
+                    className={`rounded-full px-3 py-[3px] transition-all duration-200 ${
+                      isActive ? "bg-[#E6EFE8] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]" : "bg-transparent"
                     }`}
                   >
                     <Icon
@@ -117,7 +117,7 @@ export function MobileNav() {
                     />
                   </div>
                   {link.badge && link.badge > 0 ? (
-                    <span className="absolute -top-1 -right-0.5 grid size-4 place-items-center rounded-full bg-[#D97706] text-[8.5px] font-black text-white border-[1.5px] border-white">
+                    <span className="absolute -top-1 -right-0.5 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[8.5px] font-black text-white border-[1.5px] border-white shadow-[0_2px_4px_rgba(217,119,6,0.3)]">
                       {link.badge > 9 ? "9+" : link.badge}
                     </span>
                   ) : null}

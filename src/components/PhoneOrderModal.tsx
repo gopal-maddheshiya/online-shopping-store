@@ -34,7 +34,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
       : `Namaste ${t.storeName}, I want to place a grocery order:`;
 
   if (items.length > 0) {
-    waMessage += lang === "hi" ? `\n\n*कार्ट का सामान:*` : `\n\n*Cart Items:*`;
+    waMessage += lang === "hi" ? `\n\n*थैले का सामान:*` : `\n\n*Cart Items:*`;
     items.forEach((item, idx) => {
       waMessage += `\n${idx + 1}. ${item.name} (${item.variantLabel}) - Qty: ${item.qty} (${inr(item.price * item.qty)})`;
     });
@@ -55,10 +55,10 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl border border-[#E5E0D5] bg-white shadow-2xl">
+      <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl border border-[#E4DFD5] bg-white shadow-[0_20px_50px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,1)]">
         <DialogHeader className="space-y-2 text-left">
           {/* Top Cute Badge */}
-          <div className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[11px] font-bold text-[#0F4A38]">
+          <div className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#E6EFE8] px-2.5 py-0.5 text-[11px] font-bold text-[#0F4A38] border border-[#145A45]/15 shadow-2xs">
             <Sparkles className="size-3 text-[#145A45]" />
             <span>
               {lang === "hi" ? "त्वरित सहायता व आसान ऑर्डर" : "Direct Store Ordering & Support"}
@@ -76,7 +76,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
         <div className="space-y-3.5 pt-2">
           {/* Cart Basket Preview (if items present) */}
           {items.length > 0 ? (
-            <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-3.5 text-xs text-[#16201A] space-y-1 shadow-2xs">
+            <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-3.5 text-xs text-[#16201A] space-y-1 shadow-[0_1px_3px_rgba(20,90,69,0.04),inset_0_1px_0_rgba(255,255,255,0.9)]">
               <div className="flex items-center justify-between font-bold">
                 <span className="flex items-center gap-1.5 text-[#0F4A38]">
                   <ShoppingBag className="size-4 text-[#145A45]" /> {t.currentBasketLabel} (
@@ -95,10 +95,10 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
             {/* 1. Direct Phone Call Card */}
             <a
               href={telHref(cleanPhone)}
-              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#145A45]/20 bg-linear-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/40 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#145A45]/50 hover:shadow-md active:scale-[0.99] cursor-pointer"
+              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#145A45]/20 bg-linear-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/40 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#145A45]/50 shadow-[0_2px_8px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-md active:scale-[0.99] cursor-pointer"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#145A45] text-white shadow-md shadow-[#145A45]/20 group-hover:scale-105 transition-transform">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] to-[#0A3628] text-white shadow-md shadow-[#145A45]/20 group-hover:scale-105 transition-transform">
                   <Phone className="size-5" />
                 </div>
                 <div className="min-w-0">
@@ -114,7 +114,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                 </div>
               </div>
               <div className="shrink-0 ml-2">
-                <span className="inline-flex items-center gap-1 rounded-xl bg-[#145A45] px-3.5 py-2 text-xs font-bold text-white shadow-xs group-hover:bg-[#0A3628] transition-colors">
+                <span className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0A3628] px-3.5 py-2 text-xs font-bold text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] group-hover:from-[#0F4A38] group-hover:to-[#07271D] transition-all">
                   <span>{t.callNow}</span>
                   <PhoneCall className="size-3.5" />
                 </span>
@@ -126,10 +126,10 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
               href={waHref(whatsapp, waMessage)}
               target="_blank"
               rel="noreferrer"
-              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#25D366]/30 bg-linear-to-br from-white via-[#FAF8F2] to-[#25D366]/10 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#25D366]/60 hover:shadow-md active:scale-[0.99] cursor-pointer"
+              className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#25D366]/30 bg-linear-to-br from-white via-[#FAF8F2] to-[#25D366]/10 p-3.5 sm:p-4 transition-all duration-200 hover:border-[#25D366]/60 shadow-[0_2px_8px_rgba(37,211,102,0.06),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-md active:scale-[0.99] cursor-pointer"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#25D366] text-white shadow-md shadow-[#25D366]/25 group-hover:scale-105 transition-transform">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#25D366] to-[#15803D] text-white shadow-md shadow-[#25D366]/25 group-hover:scale-105 transition-transform">
                   <MessageCircle className="size-5 fill-white text-[#25D366]" />
                 </div>
                 <div className="min-w-0">
@@ -145,7 +145,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                 </div>
               </div>
               <div className="shrink-0 ml-2">
-                <span className="inline-flex items-center gap-1 rounded-xl bg-[#25D366] px-3.5 py-2 text-xs font-bold text-white shadow-xs group-hover:bg-[#1EBE5D] transition-colors">
+                <span className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-[#25D366] to-[#15803D] px-3.5 py-2 text-xs font-bold text-white shadow-[0_2px_6px_rgba(37,211,102,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] group-hover:from-[#1EBE5D] group-hover:to-[#166534] transition-all">
                   <span>{t.sendList}</span>
                   <Send className="size-3.5" />
                 </span>
@@ -154,7 +154,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
           </div>
 
           {/* Location & Hours Strip */}
-          <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF8F2] p-3.5 space-y-2 text-xs text-[#16201A] shadow-2xs">
+          <div className="rounded-2xl border border-[#E4DFD5] bg-[#FAF8F2] p-3.5 space-y-2 text-xs text-[#16201A] shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="flex items-start gap-2.5">
               <MapPin className="size-4 shrink-0 text-[#145A45] mt-0.5" />
               <div className="leading-tight">
@@ -162,7 +162,7 @@ export function PhoneOrderModal({ open, onOpenChange }: PhoneOrderModalProps) {
                 <span className="text-[#5A655F]">{t.storeAddressShort}</span>
               </div>
             </div>
-            <div className="flex items-start gap-2.5 border-t border-[#E5E0D5]/70 pt-2">
+            <div className="flex items-start gap-2.5 border-t border-[#E4DFD5]/70 pt-2">
               <Clock className="size-4 shrink-0 text-[#145A45] mt-0.5" />
               <div className="leading-tight">
                 <span className="font-bold text-[#16201A]">{t.storeHoursLabel}: </span>
