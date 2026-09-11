@@ -275,6 +275,7 @@ export function ProductImageGallery({
                       src={img.url}
                       alt=""
                       loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "/images/packaged.jpg";
                       }}

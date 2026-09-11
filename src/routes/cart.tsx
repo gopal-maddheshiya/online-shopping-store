@@ -180,6 +180,10 @@ function CartPage() {
                     <img
                       src={getProductImage({ slug: i.slug, name: i.name, image_url: i.imageUrl })}
                       alt={displayName}
+                      loading="lazy"
+                      decoding="async"
+                      width={80}
+                      height={80}
                       className="size-full object-contain object-center"
                     />
                   </Link>
@@ -268,6 +272,10 @@ function CartPage() {
                     <img
                       src={getProductImage({ slug: i.slug, name: i.name, image_url: i.imageUrl })}
                       alt={i.name}
+                      loading="lazy"
+                      decoding="async"
+                      width={48}
+                      height={48}
                       className="size-12 rounded-lg object-contain bg-white p-0.5"
                     />
                     <div>

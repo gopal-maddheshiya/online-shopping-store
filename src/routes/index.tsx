@@ -201,6 +201,8 @@ function HeroBanner({
           <img
             src={activeImages[0]}
             alt={storeName}
+            decoding="async"
+            fetchPriority="high"
             className="w-full h-auto block object-contain select-none"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
@@ -284,6 +286,8 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
                   src={imgUrl}
                   alt={`${storeName} Offer Banner ${idx + 1}`}
                   loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={idx === 0 ? "high" : "low"}
                   className="w-full h-auto block object-contain select-none"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
@@ -333,6 +337,8 @@ function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string 
       <img
         src={bannerUrl}
         alt={title}
+        loading="lazy"
+        decoding="async"
         onLoad={() => setLoaded(true)}
         className={`w-full h-full object-cover transition-all duration-700 group-hover/banner:scale-[1.02] ${
           loaded ? "opacity-100" : "opacity-0"
@@ -370,6 +376,7 @@ function CategoryThumbnail({
           src={src}
           alt={name}
           loading="lazy"
+          decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}
           className={`size-full object-cover transition-all duration-500 ease-out group-hover:scale-108 ${

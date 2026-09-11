@@ -372,6 +372,10 @@ function Shop() {
               <img
                 src="/images/packaged.jpg"
                 alt="All"
+                loading="lazy"
+                decoding="async"
+                width={16}
+                height={16}
                 className="size-4 rounded-full object-cover shrink-0"
               />
               <span>
@@ -395,6 +399,10 @@ function Shop() {
                   <img
                     src={getCategoryThumbnail(c)}
                     alt={c.name}
+                    loading="lazy"
+                    decoding="async"
+                    width={16}
+                    height={16}
                     className="size-4 rounded-full object-cover shrink-0 border border-[#E5E0D5]"
                   />
                   <span>{getCategoryName(c)}</span>

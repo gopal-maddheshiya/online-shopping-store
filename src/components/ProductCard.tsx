@@ -82,6 +82,9 @@ export function ProductCard({ product }: { product: Product }) {
             src={getProductImage(product)}
             alt={localizedProductName}
             loading="lazy"
+            decoding="async"
+            width={220}
+            height={220}
             onError={(e) => {
               e.currentTarget.src = "/images/packaged.jpg";
             }}

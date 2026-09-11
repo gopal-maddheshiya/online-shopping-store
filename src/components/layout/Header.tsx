@@ -389,6 +389,10 @@ export function Header() {
                               <img
                                 src={getCategoryThumbnail(c)}
                                 alt={c.name}
+                                loading="lazy"
+                                decoding="async"
+                                width={16}
+                                height={16}
                                 className="size-4 rounded object-cover"
                               />
                               <span>{getCategoryName(c)}</span>
@@ -419,6 +423,10 @@ export function Header() {
                                 <img
                                   src={getProductImage(p)}
                                   alt={p.name}
+                                  loading="lazy"
+                                  decoding="async"
+                                  width={28}
+                                  height={28}
                                   className="size-7 object-contain shrink-0"
                                 />
                                 <span className="text-xs font-bold text-[#16201A] truncate">
@@ -770,6 +778,10 @@ export function Header() {
                             <img
                               src={getCategoryThumbnail(c)}
                               alt={c.name}
+                              loading="lazy"
+                              decoding="async"
+                              width={28}
+                              height={28}
                               className="size-7 rounded-lg object-cover border border-[#E5E0D5]/60 shrink-0"
                             />
                             <span className="text-[11px] font-bold text-[#16201A] line-clamp-1 leading-tight">

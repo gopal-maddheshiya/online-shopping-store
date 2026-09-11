@@ -387,6 +387,7 @@ export function HeroProductCarousel() {
                       src={product.image}
                       alt={name}
                       loading="eager"
+                      decoding="async"
                       draggable={false}
                       className="size-full object-contain group-hover:scale-105 transition-transform duration-250 pointer-events-none"
                     />
