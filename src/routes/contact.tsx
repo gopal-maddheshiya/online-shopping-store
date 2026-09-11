@@ -346,9 +346,20 @@ function ContactPage() {
             })}
           </div>
 
-          <div className="border-t border-[#E5E0D5] pt-4 text-xs text-[#5A655F] space-y-1">
-            <p className="font-bold text-[#16201A]">📍 {t.storeName}</p>
-            <p>{address}</p>
+          <div className="border-t border-[#E5E0D5] pt-4 text-xs text-[#5A655F] space-y-3">
+            <div>
+              <p className="font-bold text-[#16201A]">📍 {t.storeName}</p>
+              <p className="mt-0.5">{address}</p>
+            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Arun Gopal Traders, Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#145A45] text-white px-4 py-2.5 text-xs font-bold hover:bg-[#0E4333] transition-all shadow-xs active:scale-95"
+            >
+              <MapPin className="size-3.5" />
+              <span>{lang === "hi" ? "गूगल मैप्स पर दुकान का रास्ता देखें" : "Get Directions on Google Maps"}</span>
+            </a>
           </div>
         </div>
       </div>

@@ -78,6 +78,35 @@ export const Route = createFileRoute("/product/$slug")({
         { name: "twitter:description", content: desc },
         { name: "twitter:image", content: absoluteImg },
       ],
+      scripts: p
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: p.name,
+                image: absoluteImg,
+                description: desc,
+                brand: {
+                  "@type": "Brand",
+                  name: p.brand || "Arun Gopal Traders",
+                },
+                offers: {
+                  "@type": "Offer",
+                  url: pageUrl,
+                  priceCurrency: "INR",
+                  price: priceAmount || "0",
+                  itemCondition: "https://schema.org/NewCondition",
+                  availability:
+                    defaultVariant && defaultVariant.stock > 0
+                      ? "https://schema.org/InStock"
+                      : "https://schema.org/OutOfStock",
+                },
+              }),
+            },
+          ]
+        : [],
     };
   },
   errorComponent: ({ reset }) => (
