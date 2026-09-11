@@ -1,12 +1,11 @@
-<!-- LOVABLE:BEGIN -->
+# Arun Gopal Traders — E-Commerce Store
 
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
+**अरुण गोपाल ट्रेडर्स** (रामनगर चौराहा, अड्डा बाजार रोड, महराजगंज, उत्तर प्रदेश) का आधिकारिक ऑनलाइन किराना एवं जनरल स्टोर।
 
-<!-- LOVABLE:END -->
+## Development Guidelines
+- **Framework**: TanStack Start, React 19, Vite, Tailwind CSS.
+- **Database**: Supabase PostgreSQL with Row Level Security (RLS).
+- **Core Principles**:
+  - Always keep the codebase clean, stable, and production-ready.
+  - Test and verify builds (`npx tsc --noEmit`) before committing.
+  - Maintain data safety and business rules.
