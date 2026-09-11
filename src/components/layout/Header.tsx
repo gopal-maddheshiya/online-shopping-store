@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
   Phone,
@@ -65,6 +65,22 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const status = isOpenNow(settings);
+
+  // Automatically dismiss suggestions popover when navigating routes
+  useEffect(() => {
+    setShowSuggestions(false);
+  }, [currentPath]);
+
+  // Dismiss suggestions on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowSuggestions(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const { data: categories = [] } = useQuery(categoriesQuery);
   const { data: products = [] } = useQuery(productsQuery());
@@ -328,8 +344,10 @@ export function Header() {
                 setShowSuggestions(true);
               }}
               onSubmit={submitSearch}
-              onVoiceSearch={(val) => submitSearch(undefined, val)}
-              onPhoneClick={() => setOrderModalOpen(true)}
+              onVoiceSearch={(val) => {
+                setShowSuggestions(false);
+                submitSearch(undefined, val);
+              }}
               onFocus={() => setShowSuggestions(true)}
               variant="desktop"
               ariaLabel="Search grocery items"
@@ -337,17 +355,33 @@ export function Header() {
 
             {/* Desktop Autocomplete Popover */}
             {showSuggestions && (
-              <div
-                className="absolute top-13 left-0 right-0 z-50 rounded-2xl border border-[#E5E0D5] bg-white p-3.5 shadow-xl space-y-3"
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {!term.trim() ? (
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#D97706] px-1 mb-2 flex items-center gap-1.5">
-                      <Sparkles className="size-3.5 text-[#D97706]" />
-                      <span>{lang === "hi" ? "🔥 लोकप्रिय खोजें" : "🔥 Trending Searches"}</span>
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
+              <>
+                {/* Click-away backdrop to close suggestions */}
+                <div
+                  className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[0.5px]"
+                  onClick={() => setShowSuggestions(false)}
+                />
+                <div
+                  className="absolute top-13 left-0 right-0 z-50 rounded-2xl border border-[#E5E0D5] bg-white p-3.5 shadow-xl space-y-3"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  {!term.trim() ? (
+                    <div>
+                      <div className="flex items-center justify-between px-1 mb-2">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-[#D97706] flex items-center gap-1.5">
+                          <Sparkles className="size-3.5 text-[#D97706]" />
+                          <span>{lang === "hi" ? "🔥 लोकप्रिय खोजें" : "🔥 Trending Searches"}</span>
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowSuggestions(false)}
+                          className="flex size-6 items-center justify-center rounded-full text-[#5A655F] hover:text-[#16201A] hover:bg-[#FAF8F2] transition-colors cursor-pointer"
+                          title={lang === "hi" ? "बंद करें" : "Close"}
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
                       {trendingSearches.map((item) => {
                         const label = lang === "hi" ? item.hi : item.en;
                         return (
@@ -456,19 +490,41 @@ export function Header() {
                   </>
                 )}
               </div>
-            )}
-          </div>
+            </>
+          )}
+        </div>
 
-          {/* Clean Right Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Quick Call Button */}
-            <a
-              href={telHref(cleanPhone)}
-              className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-all shadow-2xs"
-            >
-              <Phone className="size-3.5 text-[#145A45]" />
-              <span>{storePhone}</span>
-            </a>
+        {/* Clean Right Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quick Call & Phone Order Button */}
+          <button
+            type="button"
+            onClick={() => setOrderModalOpen(true)}
+            className="hidden lg:flex items-center gap-1.5 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#E6EFE8] hover:border-[#145A45] transition-all shadow-2xs cursor-pointer"
+            title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Call"}
+          >
+            <PhoneCall className="size-3.5 text-[#145A45]" />
+            <span>{storePhone}</span>
+          </button>
+
+          {/* Quick WhatsApp Button */}
+          <a
+            href={waHref(
+              storeWhatsApp,
+              lang === "hi"
+                ? "नमस्ते अरुण गोपाल ट्रेडर्स, मुझे सामान ऑर्डर करना है।"
+                : "Hello Arun Gopal Traders, I want to send my grocery list."
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Order on WhatsApp"
+            title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
+            className="hidden lg:flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-[#FAF8F2] hover:bg-[#E6EFE8] hover:border-[#25D366]/50 shadow-2xs transition-all cursor-pointer shrink-0"
+          >
+            <svg viewBox="0 0 24 24" className="size-4 fill-[#25D366]" aria-hidden="true">
+              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15ZM16.56 14.43C16.31 14.31 15.08 13.7 14.85 13.62C14.62 13.53 14.46 13.49 14.29 13.74C14.13 13.99 13.64 14.56 13.49 14.73C13.34 14.89 13.2 14.91 12.95 14.79C12.7 14.67 11.89 14.4 10.93 13.55C10.18 12.89 9.68 12.07 9.53 11.82C9.38 11.57 9.51 11.44 9.64 11.31C9.75 11.2 9.89 11.02 10.01 10.87C10.13 10.72 10.18 10.62 10.26 10.45C10.34 10.28 10.3 10.14 10.24 10.02C10.18 9.9 9.69 8.69 9.48 8.19C9.28 7.7 9.07 7.77 8.92 7.76C8.78 7.75 8.61 7.75 8.45 7.75C8.28 7.75 8.01 7.81 7.79 8.05C7.56 8.3 6.93 8.89 6.93 10.09C6.93 11.29 7.8 12.45 7.92 12.61C8.04 12.77 9.64 15.25 12.1 16.31C12.68 16.56 13.14 16.71 13.49 16.82C14.07 17.01 14.6 16.98 15.02 16.92C15.49 16.85 16.47 16.33 16.67 15.75C16.88 15.18 16.88 14.69 16.81 14.58C16.75 14.47 16.58 14.41 16.33 14.29L16.56 14.43Z" />
+            </svg>
+          </a>
 
             {/* Account Link */}
             <Link
@@ -532,9 +588,44 @@ export function Header() {
               </span>
             </Link>
 
-            {/* Mobile Actions: Cart when cartCount > 0, otherwise sleek circular WhatsApp icon */}
-            <div className="flex md:hidden items-center shrink-0">
-              {cartCount > 0 ? (
+            {/* Mobile Actions: Phone & WhatsApp paired together seamlessly */}
+            <div className="flex md:hidden items-center gap-1.5 shrink-0">
+              {/* Phone Order Direct Button */}
+              <button
+                type="button"
+                onClick={() => setOrderModalOpen(true)}
+                title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Phone"}
+                aria-label="Order on Phone"
+                className="flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F2] text-[#145A45] shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                <PhoneCall className="size-4 text-[#145A45]" />
+              </button>
+
+              {/* WhatsApp Quick Order Button */}
+              <a
+                href={waHref(
+                  storeWhatsApp,
+                  lang === "hi"
+                    ? "नमस्ते अरुण गोपाल ट्रेडर्स, मुझे सामान ऑर्डर करना है।"
+                    : "Hello Arun Gopal Traders, I want to send my grocery list."
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Order on WhatsApp"
+                title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
+                className="flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F2] shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-4.5 fill-[#25D366]"
+                  aria-hidden="true"
+                >
+                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15ZM16.56 14.43C16.31 14.31 15.08 13.7 14.85 13.62C14.62 13.53 14.46 13.49 14.29 13.74C14.13 13.99 13.64 14.56 13.49 14.73C13.34 14.89 13.2 14.91 12.95 14.79C12.7 14.67 11.89 14.4 10.93 13.55C10.18 12.89 9.68 12.07 9.53 11.82C9.38 11.57 9.51 11.44 9.64 11.31C9.75 11.2 9.89 11.02 10.01 10.87C10.13 10.72 10.18 10.62 10.26 10.45C10.34 10.28 10.3 10.14 10.24 10.02C10.18 9.9 9.69 8.69 9.48 8.19C9.28 7.7 9.07 7.77 8.92 7.76C8.78 7.75 8.61 7.75 8.45 7.75C8.28 7.75 8.01 7.81 7.79 8.05C7.56 8.3 6.93 8.89 6.93 10.09C6.93 11.29 7.8 12.45 7.92 12.61C8.04 12.77 9.64 15.25 12.1 16.31C12.68 16.56 13.14 16.71 13.49 16.82C14.07 17.01 14.6 16.98 15.02 16.92C15.49 16.85 16.47 16.33 16.67 15.75C16.88 15.18 16.88 14.69 16.81 14.58C16.75 14.47 16.58 14.41 16.33 14.29L16.56 14.43Z" />
+                </svg>
+              </a>
+
+              {/* Cart Pill (when items in cart) */}
+              {cartCount > 0 && (
                 <Link
                   to="/cart"
                   onClick={handleCartClick}
@@ -553,28 +644,6 @@ export function Header() {
                   </div>
                   <span className="font-extrabold text-[11px] tracking-tight">{inr(subtotal)}</span>
                 </Link>
-              ) : (
-                <a
-                  href={waHref(
-                    storeWhatsApp,
-                    lang === "hi"
-                      ? "नमस्ते अरुण गोपाल ट्रेडर्स, मुझे सामान ऑर्डर करना है।"
-                      : "Hello Arun Gopal Traders, I want to send my grocery list."
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Order on WhatsApp"
-                  title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
-                  className="flex size-8.5 items-center justify-center rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F2] shadow-2xs active:scale-95 transition-all cursor-pointer shrink-0"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="size-4.5 fill-[#25D366]"
-                    aria-hidden="true"
-                  >
-                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15ZM16.56 14.43C16.31 14.31 15.08 13.7 14.85 13.62C14.62 13.53 14.46 13.49 14.29 13.74C14.13 13.99 13.64 14.56 13.49 14.73C13.34 14.89 13.2 14.91 12.95 14.79C12.7 14.67 11.89 14.4 10.93 13.55C10.18 12.89 9.68 12.07 9.53 11.82C9.38 11.57 9.51 11.44 9.64 11.31C9.75 11.2 9.89 11.02 10.01 10.87C10.13 10.72 10.18 10.62 10.26 10.45C10.34 10.28 10.3 10.14 10.24 10.02C10.18 9.9 9.69 8.69 9.48 8.19C9.28 7.7 9.07 7.77 8.92 7.76C8.78 7.75 8.61 7.75 8.45 7.75C8.28 7.75 8.01 7.81 7.79 8.05C7.56 8.3 6.93 8.89 6.93 10.09C6.93 11.29 7.8 12.45 7.92 12.61C8.04 12.77 9.64 15.25 12.1 16.31C12.68 16.56 13.14 16.71 13.49 16.82C14.07 17.01 14.6 16.98 15.02 16.92C15.49 16.85 16.47 16.33 16.67 15.75C16.88 15.18 16.88 14.69 16.81 14.58C16.75 14.47 16.58 14.41 16.33 14.29L16.56 14.43Z" />
-                  </svg>
-                </a>
               )}
             </div>
 
@@ -850,8 +919,10 @@ export function Header() {
               setShowSuggestions(true);
             }}
             onSubmit={submitSearch}
-            onVoiceSearch={(val) => submitSearch(undefined, val)}
-            onPhoneClick={() => setOrderModalOpen(true)}
+            onVoiceSearch={(val) => {
+              setShowSuggestions(false);
+              submitSearch(undefined, val);
+            }}
             onFocus={() => setShowSuggestions(true)}
             variant="mobile"
             ariaLabel="Mobile search"
@@ -859,107 +930,124 @@ export function Header() {
 
           {/* Mobile Autocomplete Suggestions */}
           {showSuggestions && (
-            <div
-              className="absolute top-14 left-3 right-3 z-50 rounded-2xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-2.5"
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              {!term.trim() ? (
-                <div>
-                  <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#D97706] px-1 mb-2 flex items-center gap-1.5">
-                    <Sparkles className="size-3 text-[#D97706]" />
-                    <span>{lang === "hi" ? "🔥 लोकप्रिय खोजें" : "🔥 Trending Searches"}</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {trendingSearches.map((item) => {
-                      const label = lang === "hi" ? item.hi : item.en;
-                      return (
-                        <button
-                          key={item.en}
-                          type="button"
-                          onClick={() => {
-                            setShowSuggestions(false);
-                            setTerm(label);
-                            submitSearch(undefined, label);
-                          }}
-                          className="flex items-center gap-1 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-2.5 py-1 text-[11px] font-semibold text-[#16201A] hover:bg-[#145A45] hover:text-white transition-all cursor-pointer shadow-2xs"
-                        >
-                          <span>{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {matchingCategories.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
-                        {lang === "hi" ? "श्रेणियां" : "Categories"}
+            <>
+              {/* Click-away backdrop to close suggestions */}
+              <div
+                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
+                onClick={() => setShowSuggestions(false)}
+              />
+              <div
+                className="absolute top-14 left-3 right-3 z-50 rounded-2xl border border-[#E5E0D5] bg-white p-3 shadow-xl space-y-2.5 max-h-[70vh] overflow-y-auto"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                {!term.trim() ? (
+                  <div>
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <p className="text-[10.5px] font-bold uppercase tracking-wider text-[#D97706] flex items-center gap-1.5">
+                        <Sparkles className="size-3 text-[#D97706]" />
+                        <span>{lang === "hi" ? "🔥 लोकप्रिय खोजें" : "🔥 Trending Searches"}</span>
                       </p>
-                      <div className="flex flex-wrap gap-1">
-                        {matchingCategories.map((c) => (
+                      <button
+                        type="button"
+                        onClick={() => setShowSuggestions(false)}
+                        className="flex size-6 items-center justify-center rounded-full text-[#5A655F] hover:text-[#16201A] hover:bg-[#FAF8F2] transition-colors cursor-pointer"
+                        title={lang === "hi" ? "बंद करें" : "Close"}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {trendingSearches.map((item) => {
+                        const label = lang === "hi" ? item.hi : item.en;
+                        return (
                           <button
-                            key={c.id}
+                            key={item.en}
+                            type="button"
+                            onClick={() => {
+                              setShowSuggestions(false);
+                              setTerm(label);
+                              submitSearch(undefined, label);
+                            }}
+                            className="flex items-center gap-1 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-2.5 py-1 text-[11px] font-semibold text-[#16201A] hover:bg-[#145A45] hover:text-white transition-all cursor-pointer shadow-2xs"
+                          >
+                            <span>{label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {matchingCategories.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
+                          {lang === "hi" ? "श्रेणियां" : "Categories"}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {matchingCategories.map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => {
+                                setShowSuggestions(false);
+                                setTerm("");
+                                void navigate({ to: "/shop", search: { category: c.slug } as never });
+                              }}
+                              className="flex items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#0F4A38]"
+                            >
+                              <span>{getCategoryName(c)}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {matchingProducts.length > 0 && (
+                      <div className="divide-y divide-[#E5E0D5]/60">
+                        {matchingProducts.map((p) => (
+                          <button
+                            key={p.id}
                             type="button"
                             onClick={() => {
                               setShowSuggestions(false);
                               setTerm("");
-                              void navigate({ to: "/shop", search: { category: c.slug } as never });
+                              void navigate({ to: "/product/$slug", params: { slug: p.slug } });
                             }}
-                            className="flex items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 py-0.5 text-[11px] font-semibold text-[#0F4A38]"
+                            className="flex items-center justify-between w-full py-1.5 px-1 text-left"
                           >
-                            <span>{getCategoryName(c)}</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={getProductImage(p)}
+                                alt={p.name}
+                                className="size-6 object-contain shrink-0"
+                              />
+                              <span className="text-xs font-bold text-[#16201A] truncate">
+                                {getProductName(p)}
+                              </span>
+                            </div>
+                            <span className="text-xs font-bold text-[#0F4A38] shrink-0">
+                              {inr(p.product_variants?.[0]?.price ?? 0)}
+                            </span>
                           </button>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {matchingProducts.length > 0 && (
-                    <div className="divide-y divide-[#E5E0D5]/60">
-                      {matchingProducts.map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            setShowSuggestions(false);
-                            setTerm("");
-                            void navigate({ to: "/product/$slug", params: { slug: p.slug } });
-                          }}
-                          className="flex items-center justify-between w-full py-1.5 px-1 text-left"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <img
-                              src={getProductImage(p)}
-                              alt={p.name}
-                              className="size-6 object-contain shrink-0"
-                            />
-                            <span className="text-xs font-bold text-[#16201A] truncate">
-                              {getProductName(p)}
-                            </span>
-                          </div>
-                          <span className="text-xs font-bold text-[#0F4A38] shrink-0">
-                            {inr(p.product_variants?.[0]?.price ?? 0)}
-                          </span>
-                        </button>
-                      ))}
+                    <div className="border-t border-[#E5E0D5] pt-1 text-center">
+                      <button
+                        type="button"
+                        onClick={(e) => submitSearch(e)}
+                        className="text-xs font-bold text-[#145A45]"
+                      >
+                        {lang === "hi"
+                          ? `"${term}" के सभी परिणाम देखें →`
+                          : `View all results for "${term}" →`}
+                      </button>
                     </div>
-                  )}
-
-                  <div className="border-t border-[#E5E0D5] pt-1 text-center">
-                    <button
-                      type="button"
-                      onClick={(e) => submitSearch(e)}
-                      className="text-xs font-bold text-[#145A45]"
-                    >
-                      {lang === "hi"
-                        ? `"${term}" के सभी परिणाम देखें →`
-                        : `View all results for "${term}" →`}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            </>
           )}
         </div>
       </header>

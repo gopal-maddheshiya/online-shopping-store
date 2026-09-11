@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, X, Mic, PhoneCall } from "lucide-react";
+import { Search, X, Mic } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/i18n";
@@ -179,7 +179,7 @@ export function RotatingSearchInput({
             </div>
           )}
 
-          {/* Right Action Icons (Clear Button + Divider + Mic + Phone Order) */}
+          {/* Right Action Icons (Clear Button + Mic) */}
           <div className="absolute right-2 inset-y-0 flex items-center gap-1 sm:gap-1.5">
             {/* Clear Input Button */}
             {term.trim() ? (
@@ -195,9 +195,6 @@ export function RotatingSearchInput({
                 <X className={isDesktop ? "size-3.5" : "size-3"} />
               </button>
             ) : null}
-
-            {/* Mic Vertical Divider */}
-            <span className={cn("w-px bg-[#E5E0D5]", isDesktop ? "h-5" : "h-4")} />
 
             {/* Microphone Voice Search Button */}
             <button
@@ -216,29 +213,6 @@ export function RotatingSearchInput({
             >
               <Mic className={isDesktop ? "size-4.5" : "size-4"} />
             </button>
-
-            {/* Phone Order Direct Button */}
-            {onPhoneClick && (
-              <>
-                <span className={cn("w-px bg-[#E5E0D5]", isDesktop ? "h-5" : "h-4")} />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onPhoneClick();
-                  }}
-                  title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Call"}
-                  aria-label="Phone Order"
-                  className={cn(
-                    "flex items-center justify-center rounded-full text-[#145A45] hover:text-[#0A3628] hover:bg-black/5 active:scale-90 transition-all cursor-pointer",
-                    isDesktop ? "size-8.5" : "size-8"
-                  )}
-                >
-                  <PhoneCall className={isDesktop ? "size-4" : "size-3.5"} />
-                </button>
-              </>
-            )}
           </div>
         </div>
       </form>

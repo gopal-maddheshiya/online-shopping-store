@@ -162,38 +162,29 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
         };
 
         recognition.onresult = (event: ISpeechRecognitionEvent) => {
-          let interimText = "";
-          let finalDetected = false;
+          let fullTranscript = "";
 
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
+          for (let i = 0; i < event.results.length; ++i) {
             const res = event.results[i];
             if (res && res[0]) {
-              interimText += res[0].transcript;
-              if (res.isFinal) {
-                finalDetected = true;
-              }
+              fullTranscript += res[0].transcript;
             }
           }
 
-          const trimmed = interimText.trim();
+          const trimmed = fullTranscript.trim();
           if (trimmed) {
             setTranscript(trimmed);
             transcriptRef.current = trimmed;
 
-            if (finalDetected) {
-              // Once recognition flags final utterance, trigger search promptly
-              triggerSearch(trimmed);
-            } else {
-              // For streaming interim words, wait 1200ms of silence before submitting
-              if (silenceTimerRef.current) {
-                clearTimeout(silenceTimerRef.current);
-              }
-              silenceTimerRef.current = setTimeout(() => {
-                if (transcriptRef.current.trim() && !isSubmittedRef.current) {
-                  triggerSearch(transcriptRef.current.trim());
-                }
-              }, 1200);
+            // Reset silence timer with a comfortable window so user isn't cut off mid-word
+            if (silenceTimerRef.current) {
+              clearTimeout(silenceTimerRef.current);
             }
+            silenceTimerRef.current = setTimeout(() => {
+              if (transcriptRef.current.trim() && !isSubmittedRef.current) {
+                triggerSearch(transcriptRef.current.trim());
+              }
+            }, 1100);
           }
         };
 
@@ -236,7 +227,11 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
 
         recognition.onend = () => {
           setIsListening(false);
-          // If speech finished and we captured words, auto-search
+          // If speech finished naturally and we captured words, auto-search
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+            silenceTimerRef.current = null;
+          }
           if (transcriptRef.current.trim() && !isSubmittedRef.current) {
             triggerSearch(transcriptRef.current.trim());
           }
@@ -348,7 +343,13 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
 
           <button
             type="button"
-            onClick={() => startListening()}
+            onClick={() => {
+              if (transcript.trim() && !isSearching) {
+                triggerSearch(transcript);
+              } else if (!isListening) {
+                startListening();
+              }
+            }}
             className={`relative z-10 flex size-24 items-center justify-center rounded-full shadow-xl transition-all active:scale-95 cursor-pointer ${
               isSearching
                 ? "bg-[#15803D] text-white ring-4 ring-emerald-200"
