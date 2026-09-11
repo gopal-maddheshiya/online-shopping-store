@@ -24,7 +24,9 @@ import {
   Heart,
   Package,
   ShoppingCart,
+  Copy,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { ProductSliderShelf } from "@/components/home/ProductSliderShelf";
@@ -36,6 +38,7 @@ import {
   productsQuery,
   featuredProductsQuery,
   settingsQuery,
+  couponsQuery,
   isOpenNow,
 } from "@/lib/queries";
 import { waHref } from "@/lib/format";
@@ -48,6 +51,7 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(categoriesQuery),
       context.queryClient.ensureQueryData(featuredProductsQuery(12)),
       context.queryClient.ensureQueryData(productsQuery()),
+      context.queryClient.ensureQueryData(couponsQuery),
     ]);
   },
   head: () => ({
@@ -453,8 +457,20 @@ function PremiumStoreHome() {
     featuredProductsQuery(12),
   );
   const { data: products = [], isLoading: prodLoading } = useQuery(productsQuery());
+  const { data: coupons = [] } = useQuery(couponsQuery);
   const { lang, t, getCategoryName } = useLanguage();
   const navigate = useNavigate();
+
+  // Active promotional coupon from Supabase database (strictly checked against is_active, starts_at, ends_at)
+  const activePromoCoupon = useMemo(() => {
+    const now = new Date();
+    return (coupons ?? []).find((c) => {
+      if (!c.is_active) return false;
+      if (c.starts_at && new Date(c.starts_at) > now) return false;
+      if (c.ends_at && new Date(c.ends_at) < now) return false;
+      return true;
+    });
+  }, [coupons]);
 
   const [orderModalOpen, setOrderModalOpen] = useState(false);
 
@@ -866,35 +882,73 @@ function PremiumStoreHome() {
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          8. PROMO BANNER (Mid-Page Hook)
+          8. PROMO BANNER (Mid-Page Hook - Strictly rendered only when an active coupon is in DB)
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl border border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/40 p-5 sm:p-7 shadow-xs">
-          <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1.5 text-center sm:text-left">
-              <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#145A45] px-3 py-1 text-[11px] font-bold text-white shadow-xs">
-                <Gift className="size-3.5" />
-                <span>
-                  {lang === "hi" ? "विशेष स्वागत ऑफर" : "WELCOME OFFER"}
-                </span>
+      {activePromoCoupon && (
+        <section className="container-page">
+          <div className="relative overflow-hidden rounded-3xl border border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/40 p-5 sm:p-7 shadow-xs">
+            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
+            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1.5 text-center sm:text-left">
+                <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#145A45] px-3 py-1 text-[11px] font-bold text-white shadow-xs">
+                  <Gift className="size-3.5" />
+                  <span>
+                    {lang === "hi"
+                      ? `विशेष ऑफर कोड: ${activePromoCoupon.code}`
+                      : `SPECIAL OFFER: ${activePromoCoupon.code}`}
+                  </span>
+                </div>
+                <h3 className="font-sans text-base sm:text-xl font-black text-[#16201A] tracking-tight">
+                  {activePromoCoupon.discount_type === "percent"
+                    ? lang === "hi"
+                      ? `कोड ${activePromoCoupon.code} के साथ पाएं ${activePromoCoupon.value}% की छूट`
+                      : `Get ${activePromoCoupon.value}% OFF with code ${activePromoCoupon.code}`
+                    : lang === "hi"
+                      ? `कोड ${activePromoCoupon.code} के साथ पाएं ₹${activePromoCoupon.value} की सीधी छूट`
+                      : `Flat ₹${activePromoCoupon.value} OFF with code ${activePromoCoupon.code}`}
+                </h3>
+                <p className="text-xs text-[#5A655F]">
+                  {activePromoCoupon.min_order > 0
+                    ? lang === "hi"
+                      ? `₹${activePromoCoupon.min_order} या उससे अधिक के ऑनलाइन किराना ऑर्डर पर मान्य।`
+                      : `Applicable on online grocery orders above ₹${activePromoCoupon.min_order}.`
+                    : activePromoCoupon.description || (lang === "hi"
+                      ? "चेकआउट पर कूपन कोड दर्ज करके तुरंत बचत पाएं।"
+                      : "Apply coupon code at checkout to save instantly.")}
+                </p>
               </div>
-              <h3 className="font-sans text-base sm:text-xl font-black text-[#16201A] tracking-tight">
-                {t.welcomeOfferTitle}
-              </h3>
-              <p className="text-xs text-[#5A655F]">{t.welcomeOfferSub}</p>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(activePromoCoupon.code);
+                    toast.success(
+                      lang === "hi"
+                        ? `कूपन कोड ${activePromoCoupon.code} कॉपी हो गया!`
+                        : `Coupon code ${activePromoCoupon.code} copied!`
+                    );
+                  }}
+                  className="rounded-2xl border border-[#145A45]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#145A45] shadow-2xs hover:bg-[#E6EFE8] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  title={lang === "hi" ? "कूपन कोड कॉपी करें" : "Copy coupon code"}
+                >
+                  <Copy className="size-3.5" />
+                  <span>{activePromoCoupon.code}</span>
+                </button>
+
+                <Button
+                  asChild
+                  className="rounded-2xl bg-[#145A45] px-5 sm:px-6 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all cursor-pointer"
+                >
+                  <Link to="/shop">
+                    {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <Button
-              asChild
-              className="rounded-2xl bg-[#145A45] px-6 sm:px-7 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all cursor-pointer"
-            >
-              <Link to="/shop">
-                {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
-              </Link>
-            </Button>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           9. 🌶️ SPICES & DRY FRUITS (Auto-Sliding Shelf)

@@ -257,26 +257,11 @@ function CheckoutPage() {
 
     const found = (coupons ?? []).find((c) => c.code.toUpperCase() === code && c.is_active);
     if (!found) {
-      // Fallback predefined promo codes
-      if (code === "WELCOME50" && subtotal >= 300) {
-        setAppliedCoupon({
-          id: "promo-1",
-          code: "WELCOME50",
-          description: "Flat ₹50 OFF on orders above ₹300",
-          discount_type: "flat",
-          value: 50,
-          min_order: 300,
-          max_discount: 50,
-          starts_at: null,
-          ends_at: null,
-          usage_limit: null,
-          used_count: 0,
-          is_active: true,
-        });
-        toast.success("Coupon WELCOME50 applied! You saved ₹50.");
-        return;
-      }
-      toast.error("Invalid or expired coupon code");
+      toast.error(
+        lang === "hi"
+          ? "अमान्य या समाप्त कूपन कोड दर्ज किया गया है"
+          : "Invalid or expired coupon code"
+      );
       return;
     }
 
