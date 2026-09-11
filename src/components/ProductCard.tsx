@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Plus, Minus, Heart, Check } from "lucide-react";
+import { Plus, Minus, Heart, Check, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useWishlist } from "@/lib/wishlist";
@@ -28,7 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
     ? discountPercent(Number(activeVariant.mrp), Number(activeVariant.price))
     : 0;
   const saveAmount =
-    activeVariant && activeVariant.mrp > activeVariant.price
+    activeVariant && Number(activeVariant.mrp) > Number(activeVariant.price)
       ? Math.round(Number(activeVariant.mrp) - Number(activeVariant.price))
       : 0;
   const isWishlisted = inWishlist(product.id);
@@ -36,24 +36,25 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full max-w-full min-w-0 pb-3 sm:pb-3.5 transition-all duration-200"
+      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E8E4DA] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.12)] hover:border-[#145A45]/30 transition-all duration-300"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* Product Image Canvas on crisp tile */}
-      <div className="relative w-full aspect-square rounded-2xl bg-white border border-[#EAE6DC] p-2 flex items-center justify-center overflow-hidden group-hover:border-[#145A45]/40 group-hover:shadow-md transition-all duration-300">
-        {/* Top Floating Badge & Wishlist Button */}
-        <div className="absolute top-2 left-2 z-10">
+      {/* 1. Image Canvas Tile (Slightly taller aspect ratio for elegant grocery presentation) */}
+      <div className="relative w-full aspect-[1/1.08] rounded-xl bg-white p-2 sm:p-2.5 flex items-center justify-center overflow-hidden">
+        {/* Top Floating Discount Badge */}
+        <div className="absolute top-1.5 left-1.5 z-10">
           {off > 0 ? (
-            <span className="rounded-md bg-[#D97706] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-white tracking-tight shadow-xs">
+            <span className="inline-flex items-center rounded-md bg-[#D97706] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-black text-white tracking-tight shadow-xs">
               {off}% {t.off}
             </span>
           ) : (
-            <span className="rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-[#0F4A38]">
+            <span className="inline-flex items-center rounded-md bg-[#E6EFE8] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#0F4A38]">
               {t.freshBadge}
             </span>
           )}
         </div>
 
+        {/* Wishlist Heart Button */}
         <button
           type="button"
           onClick={(e) => {
@@ -62,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
             toggleWishlist(product);
           }}
           aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/90 backdrop-blur-xs text-[#5A655F] hover:text-[#DC2626] hover:bg-white shadow-2xs transition-all cursor-pointer"
+          className="absolute top-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full bg-white border border-[#EAE6DC] text-[#5A655F] hover:text-[#DC2626] hover:border-[#DC2626]/30 shadow-2xs transition-all active:scale-90 cursor-pointer"
         >
           <Heart
             className={`size-3.5 sm:size-4 transition-transform active:scale-125 ${
@@ -71,6 +72,7 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </button>
 
+        {/* Product Image Link */}
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
@@ -83,37 +85,50 @@ export function ProductCard({ product }: { product: Product }) {
             onError={(e) => {
               e.currentTarget.src = "/images/packaged.jpg";
             }}
-            className="size-full object-contain mx-auto transition-transform duration-300 group-hover:scale-108 drop-shadow-xs select-none"
+            className="size-full object-contain mx-auto transition-transform duration-500 ease-out group-hover:scale-108 drop-shadow-xs select-none"
           />
         </Link>
 
+        {/* Store Available Tag */}
+        {stock > 0 && (
+          <div className="absolute bottom-1.5 left-1.5 z-10 pointer-events-none">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/95 border border-[#E8E4DA] px-1.5 py-0.2 text-[8.5px] sm:text-[9px] font-semibold text-[#145A45] shadow-2xs">
+              <Zap className="size-2.5 fill-[#145A45] text-[#145A45]" />
+              <span>{lang === "hi" ? "उपलब्ध" : "In Stock"}</span>
+            </span>
+          </div>
+        )}
+
+        {/* Out of Stock Overlay */}
         {stock <= 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs rounded-2xl">
-            <span className="rounded-md bg-[#FAF8F2] border border-[#E5E0D5] px-2 py-0.5 text-[10px] font-bold text-[#5A655F]">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-2xs rounded-xl z-20">
+            <span className="rounded-md bg-white border border-[#E5E0D5] px-2 py-0.5 text-[10px] font-bold text-[#5A655F]">
               {t.outOfStock}
             </span>
           </div>
         )}
       </div>
 
-      {/* Content Section (Open, Unboxed) */}
+      {/* 2. Product Details Section */}
       <div className="flex flex-1 flex-col min-w-0 w-full pt-2">
-        <span className="text-[9px] sm:text-[10px] font-semibold text-[#5A655F] tracking-wider uppercase truncate w-full">
+        {/* Brand / Category Micro-Tag */}
+        <span className="text-[9px] sm:text-[10px] font-bold text-[#5A655F] tracking-wider uppercase truncate w-full">
           {product.brand || (lang === "hi" ? "दैनिक राशन" : "Fresh Staples")}
         </span>
 
+        {/* Product Name Title */}
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 mt-0.5 min-h-[2.3rem] sm:min-h-[2.5rem] text-xs sm:text-sm font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-snug break-words w-full"
+          className="line-clamp-2 mt-0.5 min-h-[2.5rem] sm:min-h-[2.8rem] text-xs sm:text-[13px] font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-snug break-words w-full"
           title={localizedProductName}
         >
           {localizedProductName}
         </Link>
 
-        {/* Variant Chips */}
+        {/* Variant Chips / Weight Unit Badge */}
         {variants.length > 1 ? (
-          <div className="mt-1 flex flex-wrap gap-1 min-w-0 w-full">
+          <div className="mt-1.5 flex flex-wrap gap-1 min-w-0 w-full">
             {variants.slice(0, 3).map((v) => (
               <button
                 key={v.id}
@@ -122,7 +137,7 @@ export function ProductCard({ product }: { product: Product }) {
                 className={`rounded-md border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold transition-all max-w-full truncate cursor-pointer ${
                   v.id === activeVariant?.id
                     ? "border-[#145A45] bg-[#145A45] text-white shadow-2xs"
-                    : "border-[#E5E0D5] bg-white text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
+                    : "border-[#E8E4DA] bg-white text-[#5A655F] hover:border-[#145A45] hover:text-[#145A45]"
                 }`}
               >
                 {getVariantLabel(v)}
@@ -130,46 +145,57 @@ export function ProductCard({ product }: { product: Product }) {
             ))}
           </div>
         ) : (
-          <div className="mt-0.5 text-[10px] sm:text-[11px] font-medium text-[#5A655F] truncate w-full">
-            {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
+          <div className="mt-1.5">
+            <span className="inline-flex items-center rounded-md bg-[#F4F7F5] px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold text-[#145A45] border border-[#D4E2D8] max-w-full truncate">
+              {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
+            </span>
           </div>
         )}
 
-        {/* Price & Add to Cart Action */}
-        <div className="mt-auto pt-2 flex items-center justify-between gap-1.5 w-full min-w-0">
+        {/* 3. Price & Add to Cart Row */}
+        <div className="mt-auto pt-3 flex items-end justify-between gap-1.5 w-full min-w-0">
+          {/* Price Stack */}
           <div className="flex flex-col min-w-0">
             <span className="text-sm sm:text-base font-black text-[#0F4A38] leading-tight">
               {inr(activeVariant?.price ?? 0)}
             </span>
             {off > 0 && activeVariant?.mrp ? (
-              <span className="text-[10px] text-[#5A655F] line-through font-medium leading-none">
-                {inr(activeVariant.mrp)}
-              </span>
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <span className="text-[10px] sm:text-[10.5px] text-[#8A958F] line-through font-medium leading-none">
+                  {inr(activeVariant.mrp)}
+                </span>
+                {saveAmount > 0 && (
+                  <span className="rounded px-1 py-0.2 text-[8.5px] sm:text-[9px] font-black text-[#0F4A38] bg-[#E6EFE8] leading-tight">
+                    {lang === "hi" ? `बचत ₹${saveAmount}` : `Save ₹${saveAmount}`}
+                  </span>
+                )}
+              </div>
             ) : null}
           </div>
 
+          {/* Action Button: Blinkit / Zepto Style */}
           <div className="shrink-0">
             {inCart ? (
-              <div className="flex h-8 sm:h-8.5 items-center rounded-xl border border-[#145A45] bg-[#E6EFE8] px-1 shadow-2xs">
+              <div className="flex h-8 sm:h-8.5 items-center rounded-xl bg-[#145A45] text-white px-1 shadow-xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
-                  className="flex size-6 items-center justify-center rounded-lg text-[#0F4A38] hover:bg-white active:scale-95 transition-all cursor-pointer"
+                  className="flex size-6 items-center justify-center rounded-lg text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="size-3" />
+                  <Minus className="size-3 stroke-[2.5]" />
                 </button>
-                <span className="text-xs font-black text-[#0F4A38] px-2 text-center">
+                <span className="text-xs font-black text-white px-2 text-center min-w-5 select-none">
                   {inCart.qty}
                 </span>
                 <button
                   type="button"
                   disabled={inCart.qty >= stock}
                   onClick={() => setQty(inCart.variantId, inCart.qty + 1)}
-                  className="flex size-6 items-center justify-center rounded-lg text-[#0F4A38] hover:bg-white active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+                  className="flex size-6 items-center justify-center rounded-lg text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="size-3" />
+                  <Plus className="size-3 stroke-[2.5]" />
                 </button>
               </div>
             ) : (
@@ -197,21 +223,15 @@ export function ProductCard({ product }: { product: Product }) {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-xl border border-[#145A45] bg-white px-3 sm:px-3.5 text-xs font-black text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="flex h-8 sm:h-8.5 items-center justify-center gap-1 rounded-xl border border-[#145A45] bg-white px-3 sm:px-3.5 text-xs font-black text-[#145A45] hover:bg-[#145A45] hover:text-white active:scale-95 transition-all shadow-2xs hover:shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
-                <Plus className="size-3.5 shrink-0" />
+                <Plus className="size-3.5 stroke-[2.5] shrink-0" />
                 <span>{t.add}</span>
               </button>
             )}
           </div>
         </div>
       </div>
-
-      {/* Right Vertical Divider (Between adjacent items) */}
-      <div className="absolute top-2 -right-1.5 sm:-right-2 md:-right-2.5 bottom-2 w-px bg-gradient-to-b from-transparent via-[#EAE6DC] to-transparent pointer-events-none" />
-
-      {/* Subtle Bottom Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-[#EAE6DC]/20 via-[#EAE6DC] to-[#EAE6DC]/20 mt-3 sm:mt-3.5" />
     </div>
   );
 }
@@ -219,21 +239,20 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div
-      className="group relative flex flex-col justify-between w-full max-w-full min-w-0 pb-3 sm:pb-3.5"
+      className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E8E4DA] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-2xs"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      <Skeleton className="w-full aspect-square rounded-2xl bg-[#FAF8F2]" />
+      <Skeleton className="w-full aspect-[1/1.08] rounded-xl bg-white" />
       <div className="flex flex-1 flex-col min-w-0 w-full pt-2 space-y-1.5">
-        <Skeleton className="h-3 w-16 bg-[#FAF8F2]" />
+        <Skeleton className="h-3 w-14 bg-[#FAF8F2]" />
         <Skeleton className="h-4 w-full bg-[#FAF8F2]" />
         <Skeleton className="h-4 w-3/4 bg-[#FAF8F2]" />
-        <div className="mt-auto pt-2 flex items-center justify-between gap-2 w-full">
+        <Skeleton className="h-5 w-16 rounded-md bg-[#FAF8F2]" />
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2 w-full">
           <Skeleton className="h-5 w-16 bg-[#FAF8F2]" />
-          <Skeleton className="h-8 w-16 rounded-xl bg-[#E6EFE8]/60" />
+          <Skeleton className="h-8 w-16 rounded-xl bg-[#E6EFE8]/70" />
         </div>
       </div>
-      <div className="absolute top-2 -right-1.5 sm:-right-2 md:-right-2.5 bottom-2 w-px bg-[#EAE6DC]" />
-      <div className="w-full h-px bg-[#EAE6DC] mt-3" />
     </div>
   );
 }

@@ -172,7 +172,7 @@ export function Header() {
             const parts = activeText.split("•");
 
             const mobileSnippet = (
-              <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5">
                 {parts.length > 1 ? (
                   <>
                     <span className="text-white/95 font-medium">{parts[0]?.trim()}</span>
@@ -187,20 +187,23 @@ export function Header() {
 
             return (
               <>
-                {/* ─── MOBILE VIEW (Auto-Marquee without truncation) ─── */}
-                <div className="flex md:hidden items-center gap-2 min-w-0 flex-1">
-                  <span className="grid size-5 place-items-center rounded-md bg-[#E3B341]/20 border border-[#E3B341]/40 shrink-0">
-                    <Megaphone className="size-3 text-[#E3B341]" />
+                {/* ─── MOBILE VIEW (Auto-Marquee without truncation & snug spacing) ─── */}
+                <div className="flex md:hidden items-center gap-1.5 min-w-0 flex-1">
+                  <span className="grid size-4.5 place-items-center rounded-md bg-[#E3B341]/20 border border-[#E3B341]/40 shrink-0">
+                    <Sparkles className="size-2.5 text-[#E3B341]" />
                   </span>
                   <div className="relative flex-1 overflow-hidden min-w-0">
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-[#0A3628] to-transparent z-10" />
                     <div className="pointer-events-none absolute inset-y-0 right-0 w-2.5 bg-gradient-to-l from-[#0A3628] to-transparent z-10" />
-                    <div className="animate-marquee-smooth flex items-center gap-6 py-0.5 text-[11px] whitespace-nowrap">
+                    <div className="animate-marquee-smooth flex items-center gap-2.5 py-0.5 text-[11px] whitespace-nowrap">
                       {mobileSnippet}
-                      <span className="text-[#E3B341]/60 text-xs">✦</span>
+                      <span className="text-[#E3B341]/50 text-[10px]">✦</span>
                       {mobileSnippet}
-                      <span className="text-[#E3B341]/60 text-xs">✦</span>
+                      <span className="text-[#E3B341]/50 text-[10px]">✦</span>
                       {mobileSnippet}
+                      <span className="text-[#E3B341]/50 text-[10px]">✦</span>
+                      {mobileSnippet}
+                      <span className="text-[#E3B341]/50 text-[10px]">✦</span>
                     </div>
                   </div>
                 </div>
@@ -212,18 +215,18 @@ export function Header() {
 
                 {/* Laptop Center Premium Highlight Pill */}
                 <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-3">
-                  <div className="inline-flex items-center gap-2.5 rounded-full bg-black/25 border border-white/15 px-3.5 py-1 shadow-2xs hover:bg-black/35 transition-colors max-w-full">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-black/25 border border-white/15 px-3 py-1 shadow-2xs hover:bg-black/35 transition-colors max-w-full">
                     <span className="grid size-4 place-items-center rounded-full bg-[#E3B341]/25 text-[#E3B341] shrink-0">
-                      <Megaphone className="size-2.5" />
+                      <Sparkles className="size-2.5 text-[#E3B341]" />
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-[#E3B341]/25 px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider text-[#E3B341] shrink-0">
-                      OFFER
+                    <span className="inline-flex items-center rounded-full bg-[#E3B341]/25 px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider text-[#E3B341] shrink-0">
+                      {lang === "hi" ? "अपडेट" : "UPDATE"}
                     </span>
                     <p className="text-xs font-semibold tracking-wide truncate">
                       {parts.length > 1 ? (
                         <>
                           <span className="text-white/95 font-medium">{parts[0]?.trim()}</span>
-                          <span className="mx-2 text-[#E3B341] font-bold">•</span>
+                          <span className="mx-1.5 text-[#E3B341] font-bold">•</span>
                           <span className="text-[#F5D061] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                             {parts.slice(1).join(" • ").trim()}
                           </span>
@@ -287,23 +290,34 @@ export function Header() {
         className="sticky top-0 z-40 border-b border-[#E5E0D5] bg-white/95 backdrop-blur-md"
         style={{ fontFeatureSettings: '"ss01", "cv11"' }}
       >
-        <div className="container-page flex h-15 sm:h-16 items-center justify-between gap-2.5 sm:gap-4 md:gap-6">
-          {/* Brand Logo & Location (Left-aligned, Blinkit/Zepto Style) */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group shrink min-w-0 py-0.5">
-            <div className="grid size-8 sm:size-8.5 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] via-[#0F4A38] to-[#0A3628] shadow-xs border border-[#145A45]/20 shrink-0 group-hover:scale-105 transition-transform">
-              <Store className="size-4 sm:size-4.5 text-[#F5D061]" />
+        <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+          <div className="container-page flex h-15 sm:h-16 items-center justify-between gap-2 sm:gap-4 md:gap-6">
+            {/* Mobile Menu Trigger (Drawer) — Pinned to Left on Mobile */}
+            <div className="flex md:hidden items-center shrink-0 w-8.5">
+              <SheetTrigger asChild>
+                <button
+                  aria-label="Open menu"
+                  className="flex size-8.5 items-center justify-center rounded-full text-[#16201A] hover:bg-[#FAF8F2] border border-[#E5E0D5] bg-white transition-colors shrink-0 shadow-2xs active:scale-95 cursor-pointer"
+                >
+                  <Menu className="size-4.5 text-[#0F4A38]" />
+                </button>
+              </SheetTrigger>
             </div>
-            <div className="flex flex-col text-left min-w-0 overflow-visible">
+
+            {/* Brand Typography & Location (Centered on Mobile, Left-aligned on Desktop) */}
+            <Link
+              to="/"
+              className="flex flex-col text-center md:text-left justify-center group shrink min-w-0 py-0.5 flex-1 md:flex-initial"
+            >
               <span
-                className="font-sans text-[15px] sm:text-base md:text-xl font-black text-[#0F4A38] leading-normal pt-0.5 overflow-visible"
+                className="font-sans text-[17px] sm:text-[18px] md:text-[22px] font-black text-[#0F4A38] tracking-tight leading-tight group-hover:text-[#145A45] transition-colors"
               >
                 {t.storeName}
               </span>
-              <span className="text-[10px] sm:text-[10.5px] md:text-[11px] font-semibold text-[#5A655F] leading-tight -mt-0.5 truncate">
+              <span className="text-[9.5px] sm:text-[10px] md:text-[10.5px] font-medium text-[#5A655F] leading-tight mt-0.5 tracking-tight truncate">
                 {lang === "hi" ? "रामनगर चौराहा, अड्डा बाजार" : "Ramnagar Chauraha, Adda Bazar"}
               </span>
-            </div>
-          </Link>
+            </Link>
 
           {/* Desktop Search Bar */}
           <div className="relative hidden w-full max-w-lg md:block">
@@ -556,18 +570,11 @@ export function Header() {
               )}
             </div>
 
-            {/* Mobile Menu Trigger (Drawer) */}
-            <div className="flex items-center shrink-0 lg:hidden">
-              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    aria-label="Open menu"
-                    className="flex size-8.5 items-center justify-center rounded-full text-[#16201A] hover:bg-[#FAF8F2] border border-[#E5E0D5] bg-white transition-colors shrink-0 shadow-2xs active:scale-95"
-                  >
-                    <Menu className="size-4.5 text-[#0F4A38]" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF8F2]">
+          </div>
+        </div>
+
+        {/* Mobile Navigation Drawer */}
+        <SheetContent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF8F2]">
                   {/* 1. Premium Brand & User Profile Header */}
                   <SheetHeader className="p-0 border-b border-[#E5E0D5] bg-gradient-to-br from-[#0F4A38] via-[#145A45] to-[#0A3628] text-white text-left shrink-0">
                     <div className="p-4.5 pb-3.5 space-y-3">
@@ -819,11 +826,8 @@ export function Header() {
                       </Link>
                     </div>
                   </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-        </div>
+        </SheetContent>
+      </Sheet>
 
         {/* Mobile Search Bar Row (Slim & Roomy) */}
         <div className="border-t border-[#EAE6DC] bg-[#FAF8F2]/60 px-3 py-1.5 md:hidden relative">

@@ -16,7 +16,7 @@ type HeroImageUploaderProps = {
   onChange: (url: string) => void;
   onSave: (url: string | null) => Promise<boolean>;
   onRefresh?: () => void;
-  fieldKey: "hero2" | "hero3" | "hero4";
+  fieldKey: "hero" | "hero2" | "hero3" | "hero4";
 };
 
 export function HeroImageUploader({

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { getCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 import {
   ShoppingBag,
@@ -26,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
+import { ProductSliderShelf } from "@/components/home/ProductSliderShelf";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/lib/i18n";
 import { getCategoryThumbnail } from "@/lib/product-images";
@@ -169,17 +171,17 @@ const BLINKIT_CATEGORY_TINTS = [
    SKELETON & IMAGE PLACEHOLDER COMPONENTS (Slow network resilience)
    ═══════════════════════════════════════════════════════════════ */
 function HeroBanner({
-  imageUrl,
+  images,
   storeName,
   isLoading,
 }: {
-  imageUrl?: string;
+  images?: string[];
   storeName: string;
   isLoading?: boolean;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  const activeImages = (images || []).filter(Boolean);
 
-  if (isLoading || !imageUrl) {
+  if (isLoading || activeImages.length === 0) {
     return (
       <section className="container-page pt-2 sm:pt-3">
         <div className="relative overflow-hidden rounded-xl sm:rounded-2xl max-w-4xl lg:max-w-[980px] mx-auto aspect-[16/9] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse border border-[#EAE6DC]/50 flex items-center justify-center shadow-xs">
@@ -192,28 +194,127 @@ function HeroBanner({
     );
   }
 
+  if (activeImages.length === 1) {
+    return (
+      <section className="container-page pt-2 sm:pt-3">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB]">
+          <img
+            src={activeImages[0]}
+            alt={storeName}
+            className="w-full h-auto block object-contain select-none"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  return <HeroSlider images={activeImages} storeName={storeName} />;
+}
+
+function HeroSlider({ images, storeName }: { images: string[]; storeName: string }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    duration: 30,
+    skipSnaps: false,
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const isInteractingRef = useRef(false);
+  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const handleUserInteraction = useCallback(() => {
+    isInteractingRef.current = true;
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+    }
+    cooldownTimerRef.current = setTimeout(() => {
+      isInteractingRef.current = false;
+    }, 6000);
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("pointerDown", handleUserInteraction);
+    return () => {
+      emblaApi.off("pointerDown", handleUserInteraction);
+    };
+  }, [emblaApi, handleUserInteraction]);
+
+  useEffect(() => {
+    if (!emblaApi || images.length <= 1) return;
+    const timer = setInterval(() => {
+      if (isInteractingRef.current) return;
+      emblaApi.scrollNext();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [emblaApi, images.length]);
+
   return (
     <section className="container-page pt-2 sm:pt-3">
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB]">
-        {!loaded && (
-          <div className="w-full aspect-[16/9] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center">
-            <div className="flex items-center gap-2 text-[#8A958F] text-xs sm:text-sm font-medium">
-              <Store className="size-5 opacity-40 text-[#145A45]" />
-              <span className="opacity-60">{storeName}</span>
-            </div>
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB] group">
+        <div
+          ref={emblaRef}
+          className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
+          onMouseEnter={handleUserInteraction}
+          onTouchStart={handleUserInteraction}
+        >
+          <div className="flex select-none">
+            {images.map((imgUrl, idx) => (
+              <div key={idx} className="shrink-0 grow-0 basis-full min-w-0">
+                <img
+                  src={imgUrl}
+                  alt={`${storeName} Offer Banner ${idx + 1}`}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  className="w-full h-auto block object-contain select-none"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+            ))}
           </div>
-        )}
-        <img
-          src={imageUrl}
-          alt={storeName}
-          onLoad={() => setLoaded(true)}
-          className={`w-full h-auto block object-contain transition-opacity duration-500 ${
-            loaded ? "opacity-100" : "opacity-0 absolute inset-0 pointer-events-none"
-          }`}
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
+        </div>
+
+        {/* Navigation Indicator Pills */}
+        <div className="absolute bottom-2.5 sm:bottom-3.5 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-auto">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-xs border border-white/20 shadow-xs">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  emblaApi?.scrollTo(idx);
+                  handleUserInteraction();
+                }}
+                className={`transition-all duration-300 rounded-full cursor-pointer ${
+                  idx === selectedIndex
+                    ? "w-5 sm:w-6 h-1.5 bg-[#F5D061] shadow-2xs"
+                    : "w-1.5 h-1.5 bg-white/70 hover:bg-white"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -256,9 +357,9 @@ function CategoryThumbnail({
   const src = getCategoryThumbnail(category);
 
   return (
-    <div className="relative size-full flex items-center justify-center p-0.5 sm:p-1 overflow-hidden rounded-[1.25rem]">
+    <div className="relative size-full flex items-center justify-center overflow-hidden">
       {!loaded && !hasError && (
-        <div className="absolute inset-1 rounded-[1.25rem] bg-gradient-to-br from-white/70 via-white/30 to-transparent animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6DC]/50 via-white/80 to-[#EAE6DC]/50 animate-pulse" />
       )}
       {hasError ? (
         <div className="flex flex-col items-center justify-center text-[#145A45]/60">
@@ -271,7 +372,7 @@ function CategoryThumbnail({
           loading="lazy"
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}
-          className={`size-full object-contain rounded-[1.25rem] drop-shadow-[0_4px_8px_rgba(0,0,0,0.10)] transition-all duration-300 ease-out group-hover:scale-110 group-hover:drop-shadow-[0_8px_16px_rgba(0,0,0,0.18)] ${
+          className={`size-full object-cover transition-all duration-500 ease-out group-hover:scale-108 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -485,9 +586,17 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {settingsLoading ? (
         <HeroBanner storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"} isLoading={true} />
-      ) : settings?.hero_image_url ? (
-        <HeroBanner imageUrl={settings.hero_image_url} storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"} />
-      ) : null}
+      ) : (
+        <HeroBanner
+          images={[
+            settings?.hero_image_url,
+            settings?.hero2_image_url,
+            settings?.hero3_image_url,
+            settings?.hero4_image_url,
+          ].filter(Boolean) as string[]}
+          storeName={settings?.store_name || "अरुण गोपाल ट्रेडर्स"}
+        />
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
@@ -556,7 +665,7 @@ function PremiumStoreHome() {
                           className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
                         >
                           <div
-                            className={`relative w-full aspect-[4/4.5] rounded-[1.4rem] p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
+                            className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.16)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
@@ -602,7 +711,7 @@ function PremiumStoreHome() {
                         className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
                       >
                         <div
-                          className={`relative w-full aspect-[4/4.5] rounded-[1.4rem] p-1.5 sm:p-2 flex items-center justify-center transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_18px_-4px_rgba(20,90,69,0.14)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBg} ${tint.hoverBorder}`}
+                          className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02)] group-hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.16)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>
@@ -668,143 +777,93 @@ function PremiumStoreHome() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          4. ⭐ BEST SELLERS & POPULAR PRODUCTS
+          4. ⭐ BEST SELLERS & POPULAR PRODUCTS (Auto-Sliding)
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page">
-        <SectionHeader
-          icon={<Sparkles className="size-4.5 text-amber-600" />}
-          title={
-            lang === "hi"
-              ? "लोकप्रिय उत्पाद व बेस्ट सेलर्स"
-              : "Popular & Best Sellers"
-          }
+      <ProductSliderShelf
+        icon={<Sparkles className="size-4 text-amber-600" />}
+        title={lang === "hi" ? "लोकप्रिय उत्पाद व बेस्ट सेलर्स" : "Popular & Best Sellers"}
+        subtitle={
+          lang === "hi"
+            ? "दुकान के सबसे ज्यादा बिकने वाले शुद्ध उत्पाद"
+            : "Most ordered grocery essentials"
+        }
+        products={featuredProducts}
+        linkTo="/shop"
+        linkLabel={`${t.viewAll} (${products.length || 300}+)`}
+        autoSlide={true}
+        intervalMs={3500}
+        isLoading={featLoading}
+      />
+
+      {/* ═══════════════════════════════════════════════════════
+          5. 🌾 ATTA, RICE & GRAINS (Auto-Sliding Shelf)
+          ═══════════════════════════════════════════════════════ */}
+      {attaRiceProducts.length > 0 && (
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🌾</span>}
+          title={lang === "hi" ? "आटा, बासमती चावल व अनाज" : "Atta, Rice & Grains"}
           subtitle={
             lang === "hi"
-              ? "सबसे ज्यादा बिकने वाले शुद्ध उत्पाद"
-              : "Most ordered grocery essentials"
+              ? "आशीर्वाद, फॉर्च्यून चक्की आटा, दावत बासमती"
+              : "Aashirvaad, Fortune Atta & Daawat Basmati"
           }
+          products={attaRiceProducts}
           linkTo="/shop"
-          linkLabel={`${t.viewAll} (${products.length || 302})`}
+          linkSearch={{ category: "flour-atta" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4200}
         />
-        <div className="grocery-grid">
-          {featLoading
-            ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
-            : featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-        </div>
-      </section>
-
-      {/* Subtle Section Divider */}
-      {attaRiceProducts.length > 0 && (
-        <div className="container-page">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
-        </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          5. 🌾 ATTA, RICE & GRAINS
-          ═══════════════════════════════════════════════════════ */}
-      {attaRiceProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">🌾</span>}
-            title={
-              lang === "hi"
-                ? "आटा, बासमती चावल व अनाज"
-                : "Atta, Rice & Grains"
-            }
-            subtitle={
-              lang === "hi"
-                ? "आशीर्वाद, फॉर्च्यून चक्की आटा, दावत बासमती"
-                : "Aashirvaad, Fortune Atta & Daawat Basmati"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "flour-atta" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {attaRiceProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Subtle Section Divider */}
-      {dalPulsesProducts.length > 0 && (
-        <div className="container-page">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════
-          6. 🫘 PULSES & DAL
+          6. 🫘 PULSES & DAL (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {dalPulsesProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">🫘</span>}
-            title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
-            subtitle={
-              lang === "hi"
-                ? "अरहर, मूंग, चना दाल, राजमा व काबुली चना"
-                : "Arhar, Moong, Chana Dal, Rajma"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "pulses-dal" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {dalPulsesProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Subtle Section Divider */}
-      {oilGheeProducts.length > 0 && (
-        <div className="container-page">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent" />
-        </div>
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🫘</span>}
+          title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
+          subtitle={
+            lang === "hi"
+              ? "अरहर, मूंग, चना दाल, राजमा व काबुली चना"
+              : "Arhar, Moong, Chana Dal, Rajma"
+          }
+          products={dalPulsesProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "pulses-dal" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4600}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          7. 🛢️ OIL & GHEE
+          7. 🛢️ OIL & GHEE (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {oilGheeProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">🛢️</span>}
-            title={
-              lang === "hi"
-                ? "सरसों तेल व शुद्ध देसी घी"
-                : "Mustard Oil & Desi Ghee"
-            }
-            subtitle={
-              lang === "hi"
-                ? "फॉर्च्यून कच्ची घानी, धारा, अमूल घी"
-                : "Fortune, Dhara & Amul Pure Ghee"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "oil-ghee" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {oilGheeProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🛢️</span>}
+          title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
+          subtitle={
+            lang === "hi"
+              ? "फॉर्च्यून कच्ची घानी, धारा, अमूल घी"
+              : "Fortune, Dhara & Amul Pure Ghee"
+          }
+          products={oilGheeProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "oil-ghee" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4000}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          8. PROMO BANNER
+          8. PROMO BANNER (Mid-Page Hook)
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl border border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/40 p-6 sm:p-8 shadow-xs">
-          <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.05] blur-2xl" />
+        <div className="relative overflow-hidden rounded-3xl border border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/40 p-5 sm:p-7 shadow-xs">
+          <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
           <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1.5 text-center sm:text-left">
               <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#145A45] px-3 py-1 text-[11px] font-bold text-white shadow-xs">
@@ -813,14 +872,14 @@ function PremiumStoreHome() {
                   {lang === "hi" ? "विशेष स्वागत ऑफर" : "WELCOME OFFER"}
                 </span>
               </div>
-              <h3 className="font-sans text-lg sm:text-xl font-black text-[#16201A] tracking-tight">
+              <h3 className="font-sans text-base sm:text-xl font-black text-[#16201A] tracking-tight">
                 {t.welcomeOfferTitle}
               </h3>
               <p className="text-xs text-[#5A655F]">{t.welcomeOfferSub}</p>
             </div>
             <Button
               asChild
-              className="rounded-2xl bg-[#145A45] px-7 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all"
+              className="rounded-2xl bg-[#145A45] px-6 sm:px-7 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all cursor-pointer"
             >
               <Link to="/shop">
                 {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
@@ -831,91 +890,129 @@ function PremiumStoreHome() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          9. 🌶️ SPICES & DRY FRUITS
+          9. 🌶️ SPICES & DRY FRUITS (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {spicesMasalaProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">🌶️</span>}
-            title={
-              lang === "hi"
-                ? "मसाले व सूखे मेवे"
-                : "Spices & Dry Fruits"
-            }
-            subtitle={
-              lang === "hi"
-                ? "MDH, एवरेस्ट, काजू, बादाम, किशमिश"
-                : "MDH, Everest, Cashews, Almonds"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "spices-masala" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {spicesMasalaProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🌶️</span>}
+          title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
+          subtitle={
+            lang === "hi"
+              ? "MDH, एवरेस्ट, काजू, बादाम, किशमिश"
+              : "MDH, Everest, Cashews, Almonds"
+          }
+          products={spicesMasalaProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "spices-masala" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4400}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          10. ☕ SNACKS, TEA & BREAKFAST
+          10. ☕ SNACKS, TEA & BREAKFAST (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {snacksBreakfastProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">☕</span>}
-            title={
-              lang === "hi"
-                ? "चाय, नाश्ता व नमकीन"
-                : "Tea, Snacks & Biscuits"
-            }
-            subtitle={
-              lang === "hi"
-                ? "टाटा टी, पारले-जी, गुड डे, हल्दीराम"
-                : "Tata Tea, Parle-G, Good Day, Haldiram"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "snacks-namkeen" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {snacksBreakfastProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">☕</span>}
+          title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
+          subtitle={
+            lang === "hi"
+              ? "टाटा टी, पारले-जी, गुड डे, हल्दीराम"
+              : "Tata Tea, Parle-G, Good Day, Haldiram"
+          }
+          products={snacksBreakfastProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "snacks-namkeen" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4100}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          11. 🧽 CLEANING & HOUSEHOLD
+          11. 🧽 CLEANING & HOUSEHOLD (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {cleaningProducts.length > 0 && (
-        <section className="container-page">
-          <SectionHeader
-            icon={<span className="text-lg leading-none">🧽</span>}
-            title={
-              lang === "hi"
-                ? "सफाई, डिटर्जेंट व झाड़ू"
-                : "Cleaning & Household"
-            }
-            subtitle={
-              lang === "hi"
-                ? "सर्फ, हार्पिक, प्रिल, गाला झाड़ू"
-                : "Surf Excel, Harpic, Pril, Gala"
-            }
-            linkTo="/shop"
-            linkSearch={{ category: "cleaning-supplies" }}
-            linkLabel={`${t.viewAll} →`}
-          />
-          <div className="home-shelf-grid">
-            {cleaningProducts.slice(0, 10).map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🧽</span>}
+          title={lang === "hi" ? "सफाई, डिटर्जेंट व झाड़ू" : "Cleaning & Household"}
+          subtitle={
+            lang === "hi"
+              ? "सर्फ, हार्पिक, प्रिल, गाला झाड़ू"
+              : "Surf Excel, Harpic, Pril, Gala"
+          }
+          products={cleaningProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "cleaning-supplies" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4700}
+        />
       )}
+
+      {/* ═══════════════════════════════════════════════════════
+          11B. 🛒 FULL CATALOG DISCOVERY BANNER
+          ═══════════════════════════════════════════════════════ */}
+      <section className="container-page">
+        <div className="relative overflow-hidden rounded-3xl border border-[#E3B341]/35 bg-gradient-to-br from-[#06291E] via-[#0F4A38] to-[#06291E] p-5 sm:p-7 shadow-xl text-white">
+          {/* Ambient Glows */}
+          <div className="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-[#E3B341]/15 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-12 -left-12 size-40 rounded-full bg-[#145A45]/40 blur-2xl" />
+
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left">
+            <div className="space-y-2.5 max-w-xl">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#E3B341]/20 border border-[#E3B341]/45 px-3 py-1 text-[11px] font-bold text-[#F5D061] shadow-xs">
+                <Sparkles className="size-3 text-[#F5D061]" />
+                <span>{lang === "hi" ? "दुकान की पूरी लिस्टिंग" : "Complete Store Catalog"}</span>
+              </div>
+
+              {/* Title with crisp high-contrast white & gold */}
+              <h3 className="font-sans text-base sm:text-xl md:text-2xl font-black !text-white tracking-tight leading-snug drop-shadow-xs">
+                {lang === "hi" ? (
+                  <>
+                    हमारे पास <span className="text-[#F5D061] underline decoration-[#E3B341]/50 underline-offset-4">300+</span> से अधिक किराना सामान उपलब्ध हैं
+                  </>
+                ) : (
+                  <>
+                    Explore Over <span className="text-[#F5D061] underline decoration-[#E3B341]/50 underline-offset-4">300+</span> Quality Grocery Items
+                  </>
+                )}
+              </h3>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-sm text-emerald-100/90 font-medium leading-relaxed">
+                {lang === "hi"
+                  ? "दाल, चावल, शुद्ध तेल, मसाले, साबुन, बिस्कुट और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती दामों में!"
+                  : "Grains, pulses, pure oils, spices, soaps, biscuits and all household essentials at fair prices."}
+              </p>
+
+              {/* Category Quick Badges */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-1 text-[11px] text-emerald-100/90 font-medium">
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🌾 दाल व चावल</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🛢️ सरसों व रिफाइंड तेल</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">☕ चाय व नमकीन</span>
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🧼 होमकेयर</span>
+              </div>
+            </div>
+
+            {/* Premium CTA Button */}
+            <Link
+              to="/shop"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#F5D061] to-[#E3B341] px-6 py-3 text-xs sm:text-sm font-black text-[#0A3628] shadow-lg shadow-amber-950/30 hover:shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all shrink-0 cursor-pointer border border-[#FFF0A0]/60"
+            >
+              <ShoppingBag className="size-4 text-[#0A3628] transition-transform group-hover:-rotate-6" />
+              <span>{lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}</span>
+              <span className="rounded-full bg-black/15 px-2 py-0.5 text-[10px] font-black text-[#0A3628]">
+                {products.length || 300}+
+              </span>
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════
           12. BOTTOM TRUST + WhatsApp CTA

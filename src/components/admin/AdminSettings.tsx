@@ -741,120 +741,33 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Hero Banner Image (1920×1080 / 16:9)</Label>
-                
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer rounded-xl border border-[#145A45]/20 bg-[#E6EFE8] hover:bg-[#D4E8DC] px-4 py-2 text-xs font-bold text-[#145A45] transition-all">
-                    <Upload className="size-3.5" />
-                    <span>{heroImageUrl ? "Change Image" : "Upload from Device"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        try {
-                          toast.loading("Uploading hero banner...", { id: "hero-upload" });
-                          const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
-                          
-                          const fileName = `hero_banner_${Date.now()}.webp`;
-                          const filePath = `hero/${fileName}`;
-                          const { data: uploadData, error: uploadError } = await supabase.storage
-                            .from("product-images")
-                            .upload(filePath, blob, {
-                              cacheControl: "31536000",
-                              upsert: true,
-                              contentType: blob.type || "image/webp",
-                            });
-                          
-                          if (!uploadError && uploadData) {
-                            const { data: pubData } = supabase.storage
-                              .from("product-images")
-                              .getPublicUrl(filePath);
-                            if (pubData?.publicUrl) {
-                              setHeroImageUrl(pubData.publicUrl);
-                              await saveHeroImageToDb(pubData.publicUrl);
-                              toast.success("Hero banner uploaded & saved!", { id: "hero-upload" });
-                              return;
-                            }
-                          }
-                          
-                          setHeroImageUrl(dataUrl);
-                          await saveHeroImageToDb(dataUrl);
-                          toast.success("Hero banner saved!", { id: "hero-upload" });
-                        } catch {
-                          toast.error("Failed to upload image", { id: "hero-upload" });
-                        }
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                  
-                  <span className="text-[10px] text-[#6B746F]">or</span>
-                  
-                  <div className="flex-1">
-                    <Input
-                      value={heroImageUrl}
-                      onChange={(e) => setHeroImageUrl(e.target.value)}
-                      placeholder="Paste image URL here..."
-                      className="rounded-xl border-[#E8E4DA] text-xs h-9"
-                    />
-                  </div>
-                  
-                  {heroImageUrl && (
-                    <button
-                      type="button"
-                      onClick={async () => { setHeroImageUrl(""); await saveHeroImageToDb(null); toast.success("Hero banner removed!"); }}
-                      className="rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 p-2 text-red-500 transition-all"
-                      title="Remove image"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  )}
-                </div>
-                
-                <p className="text-[10px] text-[#6B746F]">
-                  Upload from your phone/computer or paste a direct image URL. Recommended: 1920×1080px (16:9).
-                </p>
-                
-                {heroImageUrl ? (
-                  <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative">
-                    <img
-                      src={heroImageUrl}
-                      alt="Hero banner preview"
-                      className="w-full aspect-video object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-2 rounded-xl border-2 border-dashed border-[#E8E4DA] bg-[#FAF8F2] flex flex-col items-center justify-center py-8 gap-2">
-                    <ImageIcon className="size-8 text-[#C5BEA8]" />
-                    <p className="text-xs text-[#9B9585] font-medium">No hero banner image set</p>
-                    <p className="text-[10px] text-[#C5BEA8]">Upload or paste a URL above</p>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
-          {/* Additional Hero Banners (between category sections) */}
+          {/* Top Homepage Hero Slider Banners (1 to 4 Images) */}
           <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
             <div>
               <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
-                <ImageIcon className="size-5 text-[#145A45]" /> Category Section Banners
+                <ImageIcon className="size-5 text-[#145A45]" /> Homepage Hero Slider Banners (शीर्ष मुख्य स्लाइडर)
               </h3>
               <p className="text-xs text-[#6B746F] mt-1">
-                These banners appear between category groups on the homepage. They are slightly shorter than the main hero (21:9 ultra-wide). Recommended: 1920×823px. Leave empty to hide.
+                ये 1 से 4 बैनर्स होमपेज के सबसे ऊपर एक सुंदर ऑटो-स्लाइडिंग कैरोसेल में एक-एक करके बदलेंगे। आप अपनी दुकान के अनुसार 1, 2, 3 या 4 बैनर्स अपलोड कर सकते हैं।
               </p>
             </div>
 
             <div className="space-y-3">
               <HeroImageUploader
-                label="Banner 1 (After Food & Essentials)"
-                description="Shown below खाने-पीने का सामान category"
+                label="Hero Slide 1 (मुख्य बैनर)"
+                description="होमपेज का पहला मुख्य बैनर (Recommended: 1920×823px या 16:9)"
+                fieldKey="hero"
+                value={heroImageUrl}
+                onChange={setHeroImageUrl}
+                onSave={(url) => saveHeroImageFieldToDb("hero_image_url", url)}
+                onRefresh={onRefresh}
+              />
+              <HeroImageUploader
+                label="Hero Slide 2 (ऑफर बैनर 2)"
+                description="स्लाइड होने वाला दूसरा ऑफर बैनर"
                 fieldKey="hero2"
                 value={hero2ImageUrl}
                 onChange={setHero2ImageUrl}
@@ -862,8 +775,8 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onRefresh={onRefresh}
               />
               <HeroImageUploader
-                label="Banner 2 (After Household & Cleaning)"
-                description="Shown below घर की सफ़ाई व बर्तन category"
+                label="Hero Slide 3 (ऑफर बैनर 3)"
+                description="स्लाइड होने वाला तीसरा ऑफर बैनर"
                 fieldKey="hero3"
                 value={hero3ImageUrl}
                 onChange={setHero3ImageUrl}
@@ -871,19 +784,29 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onRefresh={onRefresh}
               />
               <HeroImageUploader
-                label="Banner 3 (After Personal Care & Beauty)"
-                description="Shown below पर्सनल केयर व ब्यूटी category"
+                label="Hero Slide 4 (ऑफर बैनर 4)"
+                description="स्लाइड होने वाला चौथा ऑफर बैनर"
                 fieldKey="hero4"
                 value={hero4ImageUrl}
                 onChange={setHero4ImageUrl}
                 onSave={(url) => saveHeroImageFieldToDb("hero4_image_url", url)}
                 onRefresh={onRefresh}
               />
+            </div>
+          </div>
 
-              {/* Dynamic Banners for Additional/Custom Headings */}
-              {headings
-                .filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id))
-                .map((h) => (
+          {/* Dynamic Banners for Additional/Custom Headings */}
+          {headings.filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id)).length > 0 && (
+            <div className="rounded-2xl sm:rounded-3xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+              <div>
+                <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                  <ImageIcon className="size-5 text-[#145A45]" /> Custom Category Section Banners
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {headings
+                  .filter((h) => !["food", "household", "personal", "pooja_misc"].includes(h.id))
+                  .map((h) => (
                   <div
                     key={h.id}
                     className="p-4 rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] space-y-3"
@@ -951,8 +874,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                     </div>
                   </div>
                 ))}
+              </div>
             </div>
-          </div>
+          )}
         </TabsContent>
 
         {/* Payments Tab */}
