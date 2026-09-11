@@ -22,7 +22,8 @@ import {
   Send,
   Bell,
   ImageIcon,
-  Upload,
+  Volume2,
+  VolumeX,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ import { compressAndOptimizeImage } from "@/lib/image-upload";
 import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
 import { DEFAULT_TELEGRAM_BOT_TOKEN, DEFAULT_TELEGRAM_CHAT_ID } from "@/lib/notifications";
 import { getCategoryHeadings, saveCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
+import { isOrderSoundEnabled, setOrderSoundEnabled, playNewOrderChime } from "@/lib/sound";
 
 type AdminSettingsProps = {
   settings: StoreSettings | undefined;
@@ -122,6 +124,20 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [telegramBotToken, setTelegramBotToken] = useState(DEFAULT_TELEGRAM_BOT_TOKEN);
   const [telegramChatId, setTelegramChatId] = useState(DEFAULT_TELEGRAM_CHAT_ID);
   const [isTestingTelegram, setIsTestingTelegram] = useState(false);
+
+  // Web Counter Sound Alert Configuration
+  const [soundAlertEnabled, setSoundAlertEnabled] = useState(isOrderSoundEnabled);
+
+  const handleToggleSound = (val: boolean) => {
+    setSoundAlertEnabled(val);
+    setOrderSoundEnabled(val);
+    if (val) {
+      playNewOrderChime();
+      toast.success("ऑर्डर साउंड घंटी सक्रिय कर दी गई है! (Sound Alert Enabled)");
+    } else {
+      toast.info("ऑर्डर साउंड घंटी म्यूट कर दी गई है। (Sound Alert Muted)");
+    }
+  };
 
   // Business Hours Map
   const [businessHours, setBusinessHours] = useState<
@@ -1303,6 +1319,55 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               >
                 <Send className="size-3.5" />
                 {isTestingTelegram ? "Sending Test..." : "Send Test Telegram Alert"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Web Counter Bell Sound Alert */}
+          <div className="rounded-2xl border border-[#E8E4DA] bg-white p-4 sm:p-6 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="space-y-1">
+                <h3 className="flex items-center gap-2 font-sans text-base sm:text-lg font-bold text-[#1F2924]">
+                  <Bell className="size-5 text-[#145A45]" /> Web Counter Bell Sound Alert (काउंटर साउंड घंटी)
+                </h3>
+                <p className="text-xs text-[#6B746F]">
+                  दुकान के काउंटर पर लैपटॉप या कंप्यूटर खुला होने पर नया ऑनलाइन ऑर्डर आते ही मधुर घंटी बजेगी।
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-[#1F2924]">
+                  {soundAlertEnabled ? "घंटी चालू (ON)" : "म्यूट (OFF)"}
+                </span>
+                <Switch
+                  checked={soundAlertEnabled}
+                  onCheckedChange={handleToggleSound}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] p-4 text-xs text-[#1F2924] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="space-y-1">
+                <p className="font-bold text-[#145A45] flex items-center gap-1.5">
+                  <Sparkles className="size-4" /> Telegram Bot + Web Bell Sync:
+                </p>
+                <p className="text-[#5A655F]">
+                  यह साउंड अलर्ट सीधे आपके ब्राउज़र में बजेगा, जबकि आपका टेलीग्राम बॉट आपके मोबाइल पर मैसेज भी भेजता रहेगा।
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  playNewOrderChime();
+                  toast.success("घंटी बजाई गई! (Chime Played)");
+                }}
+                className="rounded-xl text-xs font-bold border-[#145A45] text-[#145A45] hover:bg-[#145A45] hover:text-white transition-all h-9 gap-1.5 shrink-0"
+              >
+                <Volume2 className="size-4" />
+                घंटी टेस्ट करें (Test Sound)
               </Button>
             </div>
           </div>

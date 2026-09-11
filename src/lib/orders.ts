@@ -199,6 +199,119 @@ export async function updatePaymentStatus(
   }
 }
 
+export interface CancelOrderParams {
+  orderId: string;
+  orderNo: string;
+  customerPhone?: string | undefined;
+  reason: string;
+  items?: Array<{ variant_id?: string | null; qty: number }> | undefined;
+}
+
+export async function cancelOrderAsCustomer(
+  params: CancelOrderParams
+): Promise<{ success: boolean; error?: string }> {
+  const { orderId, orderNo, customerPhone, reason, items } = params;
+
+  // 1. Optimistically save status locally so customer sees immediate change
+  saveLocalStatusOverride(orderId, "cancelled", `Cancelled by customer: ${reason}`);
+
+  // 2. Broadcast in realtime to sync all screens & admin
+  broadcastOrderSync({
+    orderId,
+    orderNo,
+    status: "cancelled",
+  });
+
+  try {
+    // 3. Primary: Stored Procedure
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "customer_cancel_order" as never,
+      {
+        p_order_id: orderId,
+        p_reason: reason,
+        p_phone: customerPhone ?? null,
+      } as never
+    );
+
+    if (!rpcError && rpcData && typeof rpcData === "object") {
+      const res = rpcData as { success?: boolean; error?: string };
+      if (res.success) {
+        void notifyStoreOfCancellation(orderNo, customerPhone, reason);
+        return { success: true };
+      } else if (res.error) {
+        return { success: false, error: res.error };
+      }
+    }
+
+    // 4. Fallback if RPC is not yet created in Supabase:
+    const { error: directErr } = await supabase
+      .from("orders")
+      .update({
+        status: "cancelled" as never,
+        notes: `Cancelled by customer: ${reason}` as never,
+        updated_at: new Date().toISOString() as never,
+      } as never)
+      .eq("id", orderId);
+
+    if (!directErr) {
+      await supabase.from("order_events").insert({
+        order_id: orderId,
+        status: "cancelled",
+        note: `Cancelled by customer: ${reason}`,
+      } as never);
+
+      if (items && items.length > 0) {
+        for (const item of items) {
+          if (item.variant_id) {
+            try {
+              const { data: v } = await supabase
+                .from("product_variants")
+                .select("stock")
+                .eq("id", item.variant_id)
+                .maybeSingle();
+              if (v) {
+                await supabase
+                  .from("product_variants")
+                  .update({ stock: (v.stock ?? 0) + item.qty } as never)
+                  .eq("id", item.variant_id);
+              }
+            } catch {
+              // Non-blocking stock restore
+            }
+          }
+        }
+      }
+
+      void notifyStoreOfCancellation(orderNo, customerPhone, reason);
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      error: rpcError?.message || directErr?.message || "Failed to cancel order",
+    };
+  } catch (err: unknown) {
+    console.error("[cancelOrderAsCustomer] Error:", err);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Error cancelling order",
+    };
+  }
+}
+
+async function notifyStoreOfCancellation(orderNo: string, customerPhone?: string, reason?: string) {
+  try {
+    const alertText = `❌ *ऑर्डर रद्द किया गया • अरुण गोपाल ट्रेडर्स*\n━━━━━━━━━━━━━━━━━━━━━━━━\n📦 *ऑर्डर नंबर:* #${orderNo}\n📞 *ग्राहक फोन:* +91 ${customerPhone ? customerPhone.slice(-10) : "N/A"}\n⚠️ *कारण:* ${reason || "ग्राहक द्वारा रद्द किया गया"}\nℹ️ *कृपया यह ऑर्डर पैक या डिस्पैच न करें!*`;
+    await fetch("/api/notify/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: alertText }),
+    });
+  } catch {
+    // Non-blocking
+  }
+}
+
 /**
  * Private Realtime Subscription for a specific Order ID or Order No
  * Strictly scoped to that specific order with instant multi-tab synchronization

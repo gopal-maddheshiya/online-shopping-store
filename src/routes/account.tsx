@@ -28,6 +28,7 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ import { customerOrdersQuery, type Order } from "@/lib/queries";
 import { inr, formatDate, ORDER_STATUS_LABEL } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
 import { InvoiceView } from "@/components/InvoiceView";
+import { CancelOrderModal } from "@/components/CancelOrderModal";
 import type { Invoice } from "@/lib/billing";
 
 export const Route = createFileRoute("/account")({
@@ -78,9 +80,12 @@ export function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, profile, isAdmin, refreshProfile, loading: authLoading } = useAuth();
-  const { add } = useCart();
+  const { add, addMultiple } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
+
+  const [reorderLoadingId, setReorderLoadingId] = useState<string | null>(null);
+  const [cancelModalOrder, setCancelModalOrder] = useState<Order | null>(null);
 
   // Auth Mode: "signin" | "signup" | "forgot"
   const [authView, setAuthView] = useState<"signin" | "signup" | "forgot">("signin");
@@ -822,7 +827,7 @@ export function AccountPage() {
     }
   }
 
-  function handleReorder(order: Order) {
+  async function handleReorder(order: Order) {
     if (!order.order_items || order.order_items.length === 0) {
       toast.error(
         lang === "hi" ? "इस ऑर्डर में कोई सामग्री नहीं मिली" : "No items found in this order to reorder",
@@ -830,35 +835,115 @@ export function AccountPage() {
       return;
     }
 
-    let addedCount = 0;
-    order.order_items.forEach((item) => {
-      add(
-        {
-          variantId: item.variant_id ?? `temp-${item.id}`,
-          productId: item.product_id ?? item.id,
-          slug: item.name.toLowerCase().replace(/\s+/g, "-"),
-          name: getProductName(item),
-          name_en: item.name_en || item.name,
-          name_hi: item.name_hi || null,
-          variantLabel: getVariantLabel(item) || "1 pack",
-          variantLabel_en: item.variant_label_en || item.variant_label || "1 pack",
-          variantLabel_hi: item.variant_label_hi || null,
-          price: Number(item.price),
-          mrp: Number(item.mrp || item.price),
-          imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
-          stock: 99,
-        },
-        item.qty,
-      );
-      addedCount++;
-    });
+    setReorderLoadingId(order.id);
+    try {
+      const variantIds = order.order_items
+        .map((i) => i.variant_id)
+        .filter((id): id is string => Boolean(id));
 
-    toast.success(
-      lang === "hi"
-        ? `ऑर्डर #${order.order_no} से ${addedCount} सामान बास्केट में जोड़े गए!`
-        : `Added ${addedCount} items from Order #${order.order_no} to basket!`,
-    );
-    void navigate({ to: "/cart" });
+      const liveStockMap = new Map<string, { stock: number; price: number; isActive: boolean }>();
+      if (variantIds.length > 0) {
+        const { data: variants } = await supabase
+          .from("product_variants")
+          .select("id, stock, price, is_active")
+          .in("id", variantIds);
+
+        if (variants) {
+          variants.forEach((v) => {
+            liveStockMap.set(v.id, {
+              stock: Number(v.stock ?? 99),
+              price: Number(v.price),
+              isActive: v.is_active !== false,
+            });
+          });
+        }
+      }
+
+      const itemsToAdd: Array<{
+        item: {
+          variantId: string;
+          productId: string;
+          slug: string;
+          name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
+          variantLabel: string;
+          variantLabel_en?: string | null;
+          variantLabel_hi?: string | null;
+          price: number;
+          mrp: number;
+          imageUrl: string | null;
+          stock: number;
+        };
+        qty: number;
+      }> = [];
+
+      let outOfStockCount = 0;
+
+      for (const item of order.order_items) {
+        const vId = item.variant_id ?? `temp-${item.id}`;
+        const liveInfo = item.variant_id ? liveStockMap.get(item.variant_id) : null;
+
+        if (liveInfo && (!liveInfo.isActive || liveInfo.stock <= 0)) {
+          outOfStockCount++;
+          continue;
+        }
+
+        const effectiveStock = liveInfo ? liveInfo.stock : 99;
+        const effectivePrice = liveInfo ? liveInfo.price : Number(item.price);
+
+        itemsToAdd.push({
+          item: {
+            variantId: vId,
+            productId: item.product_id ?? item.id,
+            slug: item.name.toLowerCase().replace(/\s+/g, "-"),
+            name: getProductName(item),
+            name_en: item.name_en || item.name,
+            name_hi: item.name_hi || null,
+            variantLabel: getVariantLabel(item) || "1 pack",
+            variantLabel_en: item.variant_label_en || item.variant_label || "1 pack",
+            variantLabel_hi: item.variant_label_hi || null,
+            price: effectivePrice,
+            mrp: Number(item.mrp || effectivePrice),
+            imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
+            stock: effectiveStock,
+          },
+          qty: Math.min(item.qty || 1, effectiveStock),
+        });
+      }
+
+      if (itemsToAdd.length === 0) {
+        toast.error(
+          lang === "hi"
+            ? "इस ऑर्डर के सभी सामान अभी आउट-ऑफ़-स्टॉक हैं"
+            : "All items from this order are currently out of stock",
+        );
+        return;
+      }
+
+      addMultiple(itemsToAdd);
+
+      if (outOfStockCount > 0) {
+        toast.success(
+          lang === "hi"
+            ? `ऑर्डर #${order.order_no} से ${itemsToAdd.length} सामान बास्केट में जोड़े गए (${outOfStockCount} सामान आउट-ऑफ़-स्टॉक था)`
+            : `Added ${itemsToAdd.length} items from Order #${order.order_no} (${outOfStockCount} was out of stock)`,
+        );
+      } else {
+        toast.success(
+          lang === "hi"
+            ? `ऑर्डर #${order.order_no} के सभी ${itemsToAdd.length} सामान बास्केट में जोड़े गए!`
+            : `All ${itemsToAdd.length} items from Order #${order.order_no} added to basket!`,
+        );
+      }
+
+      void navigate({ to: "/cart" });
+    } catch (err) {
+      console.error("Account handleReorder error:", err);
+      toast.error(lang === "hi" ? "रीऑर्डर करने में समस्या हुई" : "Failed to repeat order");
+    } finally {
+      setReorderLoadingId(null);
+    }
   }
 
   // ==========================================
@@ -1529,13 +1614,27 @@ export function AccountPage() {
 
                     <Button
                       onClick={() => handleReorder(order)}
+                      disabled={reorderLoadingId === order.id}
                       size="sm"
-                      variant="outline"
-                      className="h-8 rounded-xl text-xs font-bold border-[#E8E4DA] text-[#16201A] hover:bg-[#FAF8F2] cursor-pointer"
+                      className="h-8 rounded-xl text-xs font-bold bg-[#145A45] hover:bg-[#0E4333] text-white shadow-2xs cursor-pointer transition-all"
                     >
-                      <RotateCcw className="size-3 mr-1 text-[#145A45]" />
-                      <span>{lang === "hi" ? "रीऑर्डर" : "Reorder"}</span>
+                      <RotateCcw
+                        className={`size-3 mr-1 ${reorderLoadingId === order.id ? "animate-spin" : ""}`}
+                      />
+                      <span>{lang === "hi" ? "फिर से मंगवाएं" : "Repeat Order"}</span>
                     </Button>
+
+                    {order.status === "placed" && (
+                      <Button
+                        onClick={() => setCancelModalOrder(order)}
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-xl text-xs font-bold border-red-200 text-red-700 bg-red-50/70 hover:bg-red-600 hover:text-white cursor-pointer transition-all"
+                      >
+                        <XCircle className="size-3 mr-1" />
+                        <span>{lang === "hi" ? "रद्द करें" : "Cancel"}</span>
+                      </Button>
+                    )}
 
                     <Button
                       asChild
@@ -2000,6 +2099,20 @@ export function AccountPage() {
         isOpen={invoiceModalOpen}
         onClose={() => setInvoiceModalOpen(false)}
         lang={lang as "hi" | "en"}
+      />
+
+      {/* Customer Cancellation Dialog */}
+      <CancelOrderModal
+        open={Boolean(cancelModalOrder)}
+        onOpenChange={(open) => {
+          if (!open) setCancelModalOrder(null);
+        }}
+        order={cancelModalOrder}
+        onSuccess={() => {
+          void queryClient.invalidateQueries({ queryKey: ["customer-orders"] });
+          void queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+          setCancelModalOrder(null);
+        }}
       />
     </div>
   );

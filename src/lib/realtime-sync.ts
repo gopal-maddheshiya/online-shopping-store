@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { playNewOrderChime } from "@/lib/sound";
 
 export const STORE_SYNC_CHANNEL = "store-realtime-sync";
 
@@ -275,6 +276,7 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
           window.dispatchEvent(new CustomEvent("agt:order-sync", { detail: payload }));
         }
         if (optionsRef.current.isAdmin) {
+          playNewOrderChime();
           if (optionsRef.current.onNewOrderNotification) {
             optionsRef.current.onNewOrderNotification(payload);
           } else {
@@ -342,6 +344,7 @@ export function useRealtimeSync(queryClient: QueryClient, options: RealtimeSyncO
             );
           }
           if (payload.eventType === "INSERT" && optionsRef.current.isAdmin) {
+            playNewOrderChime();
             const orderNo = newRow?.order_no || "AGT";
             toast.success(`🛒 नया ऑर्डर प्राप्त हुआ! (#${orderNo})`, { duration: 5000 });
           }

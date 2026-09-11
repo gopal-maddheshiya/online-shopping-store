@@ -17,12 +17,15 @@ import {
   ShieldCheck,
   RefreshCw,
   ExternalLink,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { isOrderSoundEnabled, setOrderSoundEnabled, playNewOrderChime } from "@/lib/sound";
 import {
   productsQuery,
   categoriesQuery,
@@ -88,6 +91,32 @@ function AdminPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // Counter Web Bell Sound Alert
+  const [soundEnabled, setSoundEnabled] = useState(isOrderSoundEnabled);
+
+  useEffect(() => {
+    const handleSoundChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ enabled: boolean }>;
+      if (typeof customEvent.detail?.enabled === "boolean") {
+        setSoundEnabled(customEvent.detail.enabled);
+      }
+    };
+    window.addEventListener("agt:order-sound-changed", handleSoundChange);
+    return () => window.removeEventListener("agt:order-sound-changed", handleSoundChange);
+  }, []);
+
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    setOrderSoundEnabled(next);
+    if (next) {
+      playNewOrderChime();
+      toast.success("ऑर्डर साउंड घंटी सक्रिय कर दी गई है! (Sound Alert Enabled)");
+    } else {
+      toast.info("ऑर्डर साउंड घंटी म्यूट कर दी गई है। (Sound Alert Muted)");
+    }
+  };
 
   const isAuthorizedAdmin = isAdmin;
 
@@ -303,9 +332,27 @@ function AdminPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={handleToggleSound}
+              title={soundEnabled ? "Order Sound Alert: Active (Click to mute)" : "Order Sound Alert: Muted (Click to enable)"}
+              className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 sm:px-3 text-xs font-semibold active:scale-95 transition-all shadow-2xs cursor-pointer ${
+                soundEnabled
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                  : "border-[#E5E0D5] bg-white text-[#6B746F] hover:bg-[#FAF8F2]"
+              }`}
+            >
+              {soundEnabled ? (
+                <Volume2 className="size-3.5 text-emerald-600" />
+              ) : (
+                <VolumeX className="size-3.5 text-[#A8B2AC]" />
+              )}
+              <span className="hidden sm:inline">{soundEnabled ? "Sound: ON" : "Sound: Muted"}</span>
+            </button>
+
+            <button
+              type="button"
               onClick={refreshAllData}
               title="Refresh Data"
-              className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-white px-3 text-xs font-semibold text-[#16201A] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs"
+              className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-white px-3 text-xs font-semibold text-[#16201A] hover:bg-[#FAF8F2] active:scale-95 transition-all shadow-2xs cursor-pointer"
             >
               <RefreshCw className="size-3.5 text-[#145A45]" />
               <span className="hidden sm:inline">Refresh Data</span>

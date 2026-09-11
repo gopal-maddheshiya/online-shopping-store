@@ -25,6 +25,7 @@ type CartContextValue = {
   subtotal: number;
   savings: number;
   add: (item: Omit<CartItem, "qty">, qty?: number) => void;
+  addMultiple: (itemsToAdd: Array<{ item: Omit<CartItem, "qty">; qty?: number }>) => void;
   setQty: (variantId: string, qty: number) => void;
   remove: (variantId: string) => void;
   saveForLater: (variantId: string) => void;
@@ -84,6 +85,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addMultiple = useCallback(
+    (itemsToAdd: Array<{ item: Omit<CartItem, "qty">; qty?: number }>) => {
+      setItems((prev) => {
+        const next = [...prev];
+        for (const { item, qty = 1 } of itemsToAdd) {
+          const existingIdx = next.findIndex((i) => i.variantId === item.variantId);
+          const current = existingIdx >= 0 ? next[existingIdx] : undefined;
+          if (current && existingIdx >= 0) {
+            const updatedQty = Math.min(current.qty + qty, Math.max(item.stock, 1));
+            next[existingIdx] = { ...current, ...item, qty: updatedQty };
+          } else {
+            next.push({ ...item, qty: Math.min(qty, Math.max(item.stock, 1)) });
+          }
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   const setQty = useCallback((variantId: string, qty: number) => {
     setItems((prev) =>
       qty <= 0
@@ -128,6 +149,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       savings,
       add,
+      addMultiple,
       setQty,
       remove,
       saveForLater,
@@ -140,6 +162,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     items,
     savedItems,
     add,
+    addMultiple,
     setQty,
     remove,
     saveForLater,

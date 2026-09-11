@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -14,6 +14,9 @@ import {
   AlertCircle,
   ShoppingBag,
   CheckCircle2,
+  RotateCcw,
+  Plus,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/i18n";
+import { useCart } from "@/lib/cart";
 import { inr, formatDate, ORDER_STATUS_LABEL, PAYMENT_LABEL, telHref, waHref } from "@/lib/format";
 import { settingsQuery, type Order } from "@/lib/queries";
 import { OrderTimeline } from "@/components/OrderTimeline";
@@ -28,6 +32,7 @@ import { getProductImage } from "@/lib/product-images";
 import { fetchOrderForTracking, subscribeToOrderRealtime } from "@/lib/orders";
 import { supabase } from "@/integrations/supabase/client";
 import { InvoiceView } from "@/components/InvoiceView";
+import { CancelOrderModal } from "@/components/CancelOrderModal";
 import type { Invoice } from "@/lib/billing";
 
 type TrackSearchParams = {
@@ -56,6 +61,8 @@ export const Route = createFileRoute("/track")({
 
 function TrackPage() {
   const { t, lang, language = lang, getProductName, getVariantLabel } = useLanguage();
+  const { add, addMultiple } = useCart();
+  const navigate = useNavigate();
   const search = Route.useSearch();
 
   const { data: settings } = useQuery(settingsQuery);
@@ -66,13 +73,207 @@ function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Reorder state
+  const [reorderLoading, setReorderLoading] = useState(false);
+  const [singleAddingId, setSingleAddingId] = useState<string | null>(null);
+
   // Billing Invoice Modal State
   const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
 
+  // Cancellation Modal State
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+
   const storePhone = settings?.phone ?? "+91 6388354988";
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
+
+  async function handleRepeatOrder(order: Order) {
+    const itemsList =
+      order.order_items && order.order_items.length > 0
+        ? order.order_items
+        : (order as unknown as { items?: typeof order.order_items }).items &&
+            (order as unknown as { items?: typeof order.order_items }).items!.length > 0
+          ? (order as unknown as { items?: typeof order.order_items }).items!
+          : (order.address as unknown as { items?: typeof order.order_items })?.items ?? [];
+
+    if (itemsList.length === 0) {
+      toast.error(
+        language === "hi" ? "इस ऑर्डर में कोई सामग्री नहीं मिली" : "No items found in this order to reorder",
+      );
+      return;
+    }
+
+    setReorderLoading(true);
+    try {
+      const variantIds = itemsList
+        .map((i) => i.variant_id)
+        .filter((id): id is string => Boolean(id));
+
+      const liveStockMap = new Map<string, { stock: number; price: number; isActive: boolean }>();
+      if (variantIds.length > 0) {
+        const { data: variants } = await supabase
+          .from("product_variants")
+          .select("id, stock, price, is_active")
+          .in("id", variantIds);
+
+        if (variants) {
+          variants.forEach((v) => {
+            liveStockMap.set(v.id, {
+              stock: Number(v.stock ?? 99),
+              price: Number(v.price),
+              isActive: v.is_active !== false,
+            });
+          });
+        }
+      }
+
+      const itemsToAdd: Array<{
+        item: {
+          variantId: string;
+          productId: string;
+          slug: string;
+          name: string;
+          name_en?: string | null;
+          name_hi?: string | null;
+          variantLabel: string;
+          variantLabel_en?: string | null;
+          variantLabel_hi?: string | null;
+          price: number;
+          mrp: number;
+          imageUrl: string | null;
+          stock: number;
+        };
+        qty: number;
+      }> = [];
+
+      let outOfStockCount = 0;
+
+      for (const item of itemsList) {
+        const vId = item.variant_id ?? `temp-${item.id}`;
+        const liveInfo = item.variant_id ? liveStockMap.get(item.variant_id) : null;
+
+        if (liveInfo && (!liveInfo.isActive || liveInfo.stock <= 0)) {
+          outOfStockCount++;
+          continue;
+        }
+
+        const effectiveStock = liveInfo ? liveInfo.stock : 99;
+        const effectivePrice = liveInfo ? liveInfo.price : Number(item.price);
+
+        itemsToAdd.push({
+          item: {
+            variantId: vId,
+            productId: item.product_id ?? item.id ?? "",
+            slug: (item.name || "").toLowerCase().replace(/\s+/g, "-"),
+            name: getProductName(item),
+            name_en: item.name_en || item.name,
+            name_hi: item.name_hi || null,
+            variantLabel: getVariantLabel(item) || "1 pack",
+            variantLabel_en: item.variant_label_en || item.variant_label || "1 pack",
+            variantLabel_hi: item.variant_label_hi || null,
+            price: effectivePrice,
+            mrp: Number(item.mrp || effectivePrice),
+            imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
+            stock: effectiveStock,
+          },
+          qty: Math.min(item.qty || 1, effectiveStock),
+        });
+      }
+
+      if (itemsToAdd.length === 0) {
+        toast.error(
+          language === "hi"
+            ? "इस ऑर्डर के सभी सामान अभी आउट-ऑफ़-स्टॉक हैं"
+            : "All items from this order are currently out of stock",
+        );
+        return;
+      }
+
+      addMultiple(itemsToAdd);
+
+      if (outOfStockCount > 0) {
+        toast.success(
+          language === "hi"
+            ? `ऑर्डर #${order.order_no} से ${itemsToAdd.length} सामान बास्केट में जोड़े गए (${outOfStockCount} सामान आउट-ऑफ़-स्टॉक था)`
+            : `Added ${itemsToAdd.length} items from Order #${order.order_no} (${outOfStockCount} was out of stock)`,
+        );
+      } else {
+        toast.success(
+          language === "hi"
+            ? `ऑर्डर #${order.order_no} के सभी ${itemsToAdd.length} सामान बास्केट में जोड़े गए!`
+            : `All ${itemsToAdd.length} items from Order #${order.order_no} added to basket!`,
+        );
+      }
+
+      void navigate({ to: "/cart" });
+    } catch (err) {
+      console.error("Repeat order error:", err);
+      toast.error(language === "hi" ? "रीऑर्डर करने में समस्या हुई" : "Failed to repeat order");
+    } finally {
+      setReorderLoading(false);
+    }
+  }
+
+  async function handleAddSingleItem(item: NonNullable<Order["order_items"]>[number]) {
+    const key = item.variant_id || item.id || item.name;
+    setSingleAddingId(key);
+    try {
+      let stock = 99;
+      let price = Number(item.price);
+
+      if (item.variant_id) {
+        const { data: v } = await supabase
+          .from("product_variants")
+          .select("id, stock, price, is_active")
+          .eq("id", item.variant_id)
+          .maybeSingle();
+
+        if (v) {
+          if (v.is_active === false || Number(v.stock ?? 0) <= 0) {
+            toast.error(
+              language === "hi"
+                ? `${getProductName(item)} अभी आउट-ऑफ़-स्टॉक है`
+                : `${getProductName(item)} is currently out of stock`,
+            );
+            return;
+          }
+          stock = Number(v.stock ?? 99);
+          price = Number(v.price);
+        }
+      }
+
+      add(
+        {
+          variantId: item.variant_id ?? `temp-${item.id}`,
+          productId: item.product_id ?? item.id ?? "",
+          slug: (item.name || "").toLowerCase().replace(/\s+/g, "-"),
+          name: getProductName(item),
+          name_en: item.name_en || item.name,
+          name_hi: item.name_hi || null,
+          variantLabel: getVariantLabel(item) || "1 pack",
+          variantLabel_en: item.variant_label_en || item.variant_label || "1 pack",
+          variantLabel_hi: item.variant_label_hi || null,
+          price,
+          mrp: Number(item.mrp || price),
+          imageUrl: getProductImage({ name: item.name, image_url: item.image_url }),
+          stock,
+        },
+        1,
+      );
+
+      toast.success(
+        language === "hi"
+          ? `${getProductName(item)} बास्केट में जोड़ा गया!`
+          : `Added ${getProductName(item)} to basket!`,
+      );
+    } catch (e) {
+      console.error("Add single item error:", e);
+      toast.error(language === "hi" ? "सामान जोड़ने में विफल" : "Failed to add item");
+    } finally {
+      setSingleAddingId(null);
+    }
+  }
 
   async function handleOpenInvoice(order: Order) {
     setInvoiceLoading(true);
@@ -307,15 +508,38 @@ function TrackPage() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <Button
+                  size="sm"
+                  disabled={reorderLoading}
+                  onClick={() => handleRepeatOrder(searchedOrder)}
+                  className="rounded-xl gap-1.5 text-xs font-bold bg-[#145A45] hover:bg-[#0E4333] text-white h-9 shadow-xs transition-all cursor-pointer"
+                >
+                  <RotateCcw className={`size-3.5 ${reorderLoading ? "animate-spin" : ""}`} />
+                  {language === "hi" ? "यही सामान फिर से मंगवाएं" : "Repeat Order"}
+                </Button>
+
+                <Button
                   variant="outline"
                   size="sm"
                   disabled={invoiceLoading}
                   onClick={() => handleOpenInvoice(searchedOrder)}
-                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white h-9 transition-all"
+                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white h-9 transition-all cursor-pointer"
                 >
                   <Receipt className="size-3.5" />
                   {language === "hi" ? "बिल व रसीद देखें / प्रिंट" : "Official Invoice"}
                 </Button>
+
+                {searchedOrder.status === "placed" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCancelModalOpen(true)}
+                    className="rounded-xl gap-1.5 text-xs font-bold border-red-200 text-red-700 bg-red-50/70 hover:bg-red-600 hover:text-white h-9 transition-all cursor-pointer"
+                  >
+                    <XCircle className="size-3.5" />
+                    {language === "hi" ? "ऑर्डर रद्द करें" : "Cancel Order"}
+                  </Button>
+                )}
+
                 <a
                   href={waHref(
                     storeWhatsApp,
@@ -480,38 +704,76 @@ function TrackPage() {
 
             return (
               <div className="rounded-3xl border border-[#E8E4DA] bg-white p-5 shadow-2xs">
-                <h3 className="font-sans text-base font-bold text-[#1F2924]">
-                  Items Ordered ({itemsList.length})
-                </h3>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E8E4DA] pb-3">
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-[#1F2924]">
+                      {language === "hi"
+                        ? `ऑर्डर की गई सामग्री (${itemsList.length})`
+                        : `Items Ordered (${itemsList.length})`}
+                    </h3>
+                    <p className="text-[11px] text-[#6B746F]">
+                      {language === "hi"
+                        ? "आप पूरा राशन एक साथ या अपनी पसंद का एक-एक सामान बास्केट में जोड़ सकते हैं।"
+                        : "Reorder the entire basket or add individual items."}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={reorderLoading}
+                    onClick={() => handleRepeatOrder(searchedOrder)}
+                    className="rounded-xl gap-1.5 text-xs font-bold bg-[#145A45] hover:bg-[#0E4333] text-white h-8 shadow-2xs cursor-pointer"
+                  >
+                    <RotateCcw className={`size-3 ${reorderLoading ? "animate-spin" : ""}`} />
+                    {language === "hi" ? "पूरा राशन रीऑर्डर करें" : "Reorder All"}
+                  </Button>
+                </div>
 
-                <div className="mt-4 divide-y divide-[#E8E4DA]">
-                  {itemsList.map((item, idx) => (
-                    <div
-                      key={item.id ?? `item-${idx}`}
-                      className="flex items-center justify-between gap-4 py-3 text-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={getProductImage({
-                            name: item.name,
-                            image_url: item.image_url,
-                          })}
-                          alt={getProductName(item)}
-                          className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E8E4DA]"
-                        />
-                        <div>
-                          <p className="font-semibold text-[#1F2924]">{getProductName(item)}</p>
-                          <p className="text-[#6B746F]">
-                            {getVariantLabel(item)} × {item.qty}
-                          </p>
+                <div className="mt-3 divide-y divide-[#E8E4DA]">
+                  {itemsList.map((item, idx) => {
+                    const itemKey = item.variant_id || item.id || `${idx}`;
+                    const isAddingThis = singleAddingId === itemKey;
+
+                    return (
+                      <div
+                        key={item.id ?? `item-${idx}`}
+                        className="flex items-center justify-between gap-3 py-3 text-xs"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={getProductImage({
+                              name: item.name,
+                              image_url: item.image_url,
+                            })}
+                            alt={getProductName(item)}
+                            className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E8E4DA]"
+                          />
+                          <div>
+                            <p className="font-semibold text-[#1F2924]">{getProductName(item)}</p>
+                            <p className="text-[#6B746F]">
+                              {getVariantLabel(item)} × {item.qty}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
+                            <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isAddingThis}
+                            onClick={() => handleAddSingleItem(item)}
+                            className="h-8 rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/40 hover:bg-[#145A45] hover:text-white px-3 text-xs font-bold cursor-pointer transition-all shrink-0"
+                          >
+                            <Plus className="mr-1 size-3" />
+                            {language === "hi" ? "जोड़ें" : "Add"}
+                          </Button>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
-                        <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -553,6 +815,22 @@ function TrackPage() {
         isOpen={invoiceModalOpen}
         onClose={() => setInvoiceModalOpen(false)}
         lang={language as "hi" | "en"}
+      />
+
+      {/* Customer Cancellation Dialog */}
+      <CancelOrderModal
+        open={cancelModalOpen}
+        onOpenChange={setCancelModalOpen}
+        order={searchedOrder}
+        onSuccess={() => {
+          if (searchedOrder) {
+            setSearchedOrder({
+              ...searchedOrder,
+              status: "cancelled",
+              updated_at: new Date().toISOString(),
+            });
+          }
+        }}
       />
     </div>
   );
