@@ -404,13 +404,13 @@ function Shop() {
               }`}
             >
               <img
-                src="/images/packaged.jpg"
+                src="/agt-icon.png"
                 alt="All"
                 loading="lazy"
                 decoding="async"
                 width={16}
                 height={16}
-                className="size-4 rounded-full object-cover shrink-0"
+                className="size-4 rounded-full object-contain shrink-0 bg-white"
               />
               <span>
                 {t.allItemsCountLabel} ({products?.length ?? 0})

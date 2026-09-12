@@ -44,7 +44,7 @@ export const Route = createFileRoute("/product/$slug")({
     
     // Resolve absolute image URL for WhatsApp / Facebook / Twitter rich preview crawlers
     // NOTE: WhatsApp and Facebook crawlers REJECT .svg images. They strictly require .jpg / .png.
-    const resolvedImg = p ? getOpenGraphProductImage(p) : "/images/packaged.jpg";
+    const resolvedImg = p ? getOpenGraphProductImage(p) : "/agt-og-image.jpg";
     const absoluteImg = resolvedImg.startsWith("http")
       ? resolvedImg
       : `https://arungopaltraders.com${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`;
