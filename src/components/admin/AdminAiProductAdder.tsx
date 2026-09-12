@@ -38,6 +38,7 @@ import { getProductImage } from "@/lib/product-images";
 import { WebImageFinderModal } from "./WebImageFinderModal";
 import {
   parseSupplierBillWithGemini,
+  generateCleanSlug,
   type ParsedAiProduct,
   type ParsedAiProductVariant,
 } from "@/lib/gemini-admin";
@@ -400,12 +401,7 @@ export function AdminAiProductAdder({
           }
           savedCount++;
         } else {
-          // 2. CREATE NEW PRODUCT
-          let baseSlug = prod.name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
-          if (!baseSlug) baseSlug = `item-${Date.now().toString().slice(-4)}`;
+          let baseSlug = generateCleanSlug(prod.name, prod.brand);
 
           let slug = baseSlug;
           let counter = 1;

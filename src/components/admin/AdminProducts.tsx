@@ -47,7 +47,11 @@ import type { Product, Category, Variant, ProductImage, ProductImageType } from 
 import { BulkProductImport } from "./BulkProductImport";
 import { AdminAiProductAdder } from "./AdminAiProductAdder";
 import { WebImageFinderModal } from "./WebImageFinderModal";
-import { autoCompleteProductWithGemini } from "@/lib/gemini-admin";
+import {
+  autoCompleteProductWithGemini,
+  generateCleanSlug,
+  detectGroceryNature,
+} from "@/lib/gemini-admin";
 import { Loader2 } from "lucide-react";
 
 
@@ -208,18 +212,13 @@ export function AdminProducts({
   function handleNameChange(val: string) {
     setName(val);
     if (!editingProduct) {
-      setSlug(
-        val
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, ""),
-      );
+      setSlug(generateCleanSlug(val, brand));
     }
   }
 
   async function handleAiAutoComplete() {
     if (!name.trim()) {
-      toast.error("कृपया पहले अंग्रेजी में प्रोडक्ट का नाम लिखें (जैसे: Fortune Oil, Catch Masala)");
+      toast.error("कृपया पहले प्रोडक्ट या ब्रांड का नाम लिखें (जैसे: Fortune Oil, Tata Namak, या हिंदी में)");
       return;
     }
     setIsAiFilling(true);
@@ -230,14 +229,29 @@ export function AdminProducts({
       });
 
       if (res.success && res.data) {
-        if (!nameHi.trim()) setNameHi(res.data.name_hi);
-        if (!brand.trim()) setBrand(res.data.brand);
-        if (res.data.category_id && (!categoryId || categoryId === parentCategories[0]?.id)) {
+        // 1. Standardize English name if AI gave a clean, professional retail title
+        if (res.data.name) setName(res.data.name);
+
+        // 2. Always update authentic Devanagari Hindi name
+        if (res.data.name_hi) setNameHi(res.data.name_hi);
+
+        // 3. Always update clean alphanumeric kebab-case URL slug
+        if (res.data.slug) setSlug(res.data.slug);
+
+        // 4. Update brand if detected
+        if (res.data.brand) setBrand(res.data.brand);
+
+        // 5. Update category if detected and valid
+        if (res.data.category_id) {
           setCategoryId(res.data.category_id);
         }
-        if (!description.trim()) setDescription(res.data.description);
-        if (!descriptionHi.trim()) setDescriptionHi(res.data.description_hi);
-        if (res.data.variants.length > 0 && variants.length <= 1 && variants[0]?.price === 100) {
+
+        // 6. Descriptions
+        if (res.data.description) setDescription(res.data.description);
+        if (res.data.description_hi) setDescriptionHi(res.data.description_hi);
+
+        // 7. Replace variants with smart physical pack sizes (e.g. 1 L for oil, 1 kg for flour)
+        if (res.data.variants && res.data.variants.length > 0) {
           setVariants(
             res.data.variants.map((v) => ({
               label: v.label,
@@ -248,7 +262,15 @@ export function AdminProducts({
             }))
           );
         }
-        toast.success("✨ AI ने हिंदी नाम, विवरण व वेरिएंट्स भर दिए!");
+
+        const unitTypeMsg =
+          res.data.nature === "liquid"
+            ? "तरल (लीटर/मिली)"
+            : res.data.nature === "solid"
+            ? "ठोस (किलो/ग्राम)"
+            : "नग/पैकेट";
+
+        toast.success(`✨ AI ने नाम, हिंदी नाम, URL स्लग और सही माप (${unitTypeMsg}) भर दिए!`);
       } else {
         toast.error(res.error || "AI ऑटो-कंप्लीट नहीं कर सका।");
       }
@@ -1187,6 +1209,68 @@ export function AdminProducts({
                 >
                   <Plus className="size-3.5 mr-1" /> Add Pack
                 </Button>
+              </div>
+
+              {/* Quick Unit Presets for Easy 1-Tap Manual Entry */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[10px] font-bold text-[#5A655F]">
+                  त्वरित पैक साइज ({detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? "तरल / Liquid" : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? "ठोस / Solid" : "पैकेट / Piece"}):
+                </span>
+                {detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? (
+                  <>
+                    {["1 L", "500 ml", "200 ml", "2 L", "5 L Jar", "Pouch (1 L)"].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setVariants((prev) => [
+                            ...prev,
+                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+                          ]);
+                        }}
+                        className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </>
+                ) : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? (
+                  <>
+                    {["1 kg", "500 g", "250 g", "100 g", "5 kg", "10 kg"].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setVariants((prev) => [
+                            ...prev,
+                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+                          ]);
+                        }}
+                        className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    {["1 Pack", "Pack of 4", "1 Piece", "1 Box", "1 Bar (100g)"].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setVariants((prev) => [
+                            ...prev,
+                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+                          ]);
+                        }}
+                        className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </>
+                )}
               </div>
 
               <div className="space-y-2.5">
