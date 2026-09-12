@@ -25,6 +25,7 @@ import {
   AlertCircle,
   HelpCircle,
   Volume2,
+  ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/i18n";
@@ -72,7 +73,8 @@ export function SmartRationModal({
 }: SmartRationModalProps) {
   const { lang } = useLanguage();
   const cart = useCart();
-  const fileInputId = useId();
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [activeTab, setActiveTab] = useState<"photo" | "text" | "voice">(initialMode);
   const [inputText, setInputText] = useState("");
@@ -348,26 +350,19 @@ export function SmartRationModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl p-4 sm:p-6 rounded-3xl border border-[#E4DFD5] shadow-[0_12px_40px_rgba(0,0,0,0.16)] bg-white max-h-[92vh] flex flex-col overflow-hidden">
-        <DialogHeader className="pb-3 border-b border-[#E4DFD5]">
-          <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#145A45] to-[#0A3628] text-white shadow-[0_2px_6px_rgba(20,90,69,0.3),inset_0_1px_0_rgba(255,255,255,0.3)]">
-              <Sparkles className="size-4 text-[#E3B341]" />
-            </span>
+        <DialogHeader className="pb-3 border-b border-[#E8E3D9]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="grid size-9 sm:size-10 place-items-center rounded-xl bg-gradient-to-br from-[#FAF5EA] to-[#F2E8D2] border border-[#E8DCBF] text-[#B45309] shadow-2xs shrink-0">
+              <Sparkles className="size-5 text-[#B45309]" />
+            </div>
             <div>
-              <DialogTitle className="font-sans text-base sm:text-lg font-black text-[#16201A] flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span>{lang === "hi" ? "स्मार्ट राशन सहायक" : "Smart Ration Assistant"}</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E6EFE8] text-[#145A45] border border-[#145A45]/20">
-                  {lang === "hi" ? "1-क्लिक ऑर्डर" : "1-Click Order"}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F5E9] text-[#166534] border border-[#86EFAC] inline-flex items-center gap-1 shadow-2xs">
-                  <Volume2 className="size-3 text-[#166534]" />
-                  <span>{lang === "hi" ? "बोलकर बताएगा" : "Voice Response"}</span>
-                </span>
+              <DialogTitle className="font-sans text-base sm:text-lg font-black text-[#16201A] tracking-tight">
+                {lang === "hi" ? "स्मार्ट राशन सहायक" : "Smart Ration Assistant"}
               </DialogTitle>
-              <DialogDescription className="text-xs text-[#5A655F]">
+              <DialogDescription className="text-[11.5px] sm:text-xs text-[#5A655F] mt-0.5">
                 {lang === "hi"
-                  ? "पर्चे का फोटो खींचें, लिस्ट पेस्ट करें या बोलकर बताएं — सारा सामान 1-क्लिक में आपके थैले में जुड़ जाएगा।"
-                  : "Upload a slip photo, paste text, or speak — items will be added to your cart instantly."}
+                  ? "पर्चा फोटो लगाएं, बोलकर बताएं या लिस्ट लिखें — 1-क्लिक में थैला तैयार!"
+                  : "Upload slip, speak, or type — instant 1-click cart match!"}
               </DialogDescription>
             </div>
           </div>
@@ -377,15 +372,15 @@ export function SmartRationModal({
         <div className="flex-1 overflow-y-auto py-3 space-y-4 pr-1">
           {!isDone ? (
             <>
-              {/* Mode Selector Tabs */}
-              <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#FAF8F2] border border-[#E4DFD5] shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+              {/* Clean Segmented Mode Selector */}
+              <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5]">
                 <button
                   type="button"
                   onClick={() => setActiveTab("photo")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === "photo"
-                      ? "bg-gradient-to-r from-[#145A45] to-[#0E4333] text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/60"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
                   <Camera className="size-3.5" />
@@ -394,28 +389,28 @@ export function SmartRationModal({
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab("text")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === "text"
-                      ? "bg-gradient-to-r from-[#145A45] to-[#0E4333] text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/60"
+                  onClick={() => setActiveTab("voice")}
+                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === "voice"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
-                  <FileText className="size-3.5" />
-                  <span>{lang === "hi" ? "लिस्ट लिखें" : "Type List"}</span>
+                  <Mic className="size-3.5" />
+                  <span>{lang === "hi" ? "बोलकर बताएं" : "By Voice"}</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab("voice")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === "voice"
-                      ? "bg-gradient-to-r from-[#145A45] to-[#0E4333] text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/60"
+                  onClick={() => setActiveTab("text")}
+                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === "text"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
-                  <Mic className="size-3.5" />
-                  <span>{lang === "hi" ? "बोलें" : "Voice"}</span>
+                  <FileText className="size-3.5" />
+                  <span>{lang === "hi" ? "लिस्ट लिखें" : "Type List"}</span>
                 </button>
               </div>
 
@@ -423,74 +418,109 @@ export function SmartRationModal({
               {activeTab === "photo" && (
                 <div className="space-y-3">
                   <input
+                    ref={cameraInputRef}
                     type="file"
-                    id={fileInputId}
                     accept="image/*"
                     capture="environment"
                     onChange={handleFileChange}
                     className="hidden"
                   />
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
 
                   {imagePreview ? (
-                    <div className="relative rounded-2xl border border-[#E4DFD5] overflow-hidden bg-stone-900/5 p-2">
-                      <img
-                        src={imagePreview}
-                        alt="Grocery slip preview"
-                        className="max-h-60 w-full object-contain rounded-xl"
-                      />
-                      <button
+                    <div className="space-y-3">
+                      <div className="relative rounded-2xl border border-[#E5E0D5] bg-[#FAF8F5] p-2 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={imagePreview}
+                          alt="Grocery slip preview"
+                          className="max-h-56 w-auto object-contain rounded-xl shadow-xs"
+                        />
+                        <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => galleryInputRef.current?.click()}
+                            className="rounded-full bg-white/95 hover:bg-white text-[#16201A] border border-[#D5CEBF] px-2.5 py-1 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                            title="गैलरी से दूसरी फोटो"
+                          >
+                            <ImageIcon className="size-3 text-[#145A45]" />
+                            <span>{lang === "hi" ? "गैलरी" : "Gallery"}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setImagePreview(null)}
+                            className="rounded-full bg-black/75 hover:bg-black text-white px-2.5 py-1 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                            title="हटाएं"
+                          >
+                            <Trash2 className="size-3" />
+                            <span>{lang === "hi" ? "हटाएं" : "Remove"}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Direct 1-Click Search Button for Photo */}
+                      <Button
                         type="button"
-                        onClick={() => setImagePreview(null)}
-                        className="absolute top-4 right-4 size-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors cursor-pointer"
-                        title="हटाएं"
+                        onClick={handleProcessWithGemini}
+                        disabled={isLoading}
+                        className="w-full rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white py-3 px-4 font-bold text-xs sm:text-sm shadow-[0_3px_10px_rgba(20,90,69,0.25)] transition-all cursor-pointer h-11 gap-2"
                       >
-                        <Trash2 className="size-4" />
-                      </button>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin text-[#E3B341]" />
+                            <span>{statusMessage || (lang === "hi" ? "AI पर्चा पढ़ रहा है..." : "Reading slip...")}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="size-4 text-[#E3B341]" />
+                            <span>{lang === "hi" ? "✨ AI से पर्चा पढ़कर सामान खोजें" : "✨ Read Slip & Match with AI"}</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
                   ) : (
-                    <label
-                      htmlFor={fileInputId}
-                      className="flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed border-[#145A45]/30 bg-[#FAF8F2] hover:bg-[#F2EFE8] transition-all cursor-pointer text-center space-y-2 group shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
-                    >
-                      <div className="size-12 rounded-2xl bg-[#E6EFE8] text-[#145A45] flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_2px_6px_rgba(20,90,69,0.15)]">
-                        <Camera className="size-6" />
+                    <div className="rounded-2xl border-2 border-dashed border-[#145A45]/25 bg-[#FAF8F5] p-5 sm:p-7 text-center space-y-3.5">
+                      <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#E6EFE8] text-[#145A45] shadow-xs">
+                        <UploadCloud className="size-6 text-[#145A45]" />
                       </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-bold text-[#16201A]">
-                          {lang === "hi"
-                            ? "कागज़ के पर्चे की फोटो खींचें या अपलोड करें"
-                            : "Take a photo or upload grocery slip"}
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-[#16201A]">
+                          {lang === "hi" ? "कागज़ के पर्चे की फोटो लगाएं" : "Add grocery slip photo"}
                         </p>
-                        <p className="text-[11px] text-[#5A655F] mt-0.5">
+                        <p className="text-[11.5px] text-[#5A655F] max-w-xs mx-auto leading-relaxed">
                           {lang === "hi"
-                            ? "हाथ से लिखी डायरी या रसीद (PNG, JPG, HEIC)"
-                            : "Handwritten list or receipt"}
+                            ? "हाथ से लिखी पर्ची का नया फोटो खींचें या फोन की गैलरी से अपलोड करें"
+                            : "Snap a fresh photo with camera or upload from your gallery"}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] mt-1 group-hover:underline">
-                        <UploadCloud className="size-3.5" />
-                        <span>{lang === "hi" ? "फोटो चुनें →" : "Choose File →"}</span>
-                      </span>
-                    </label>
-                  )}
 
-                  {/* Optional extra note for photo */}
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-[#16201A] block">
-                      {lang === "hi" ? "अतिरिक्त निर्देश (ऐच्छिक)" : "Any extra note (Optional)"}
-                    </label>
-                    <input
-                      type="text"
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      placeholder={
-                        lang === "hi"
-                          ? "उदा. तेल में केवल फॉर्च्यून चाहिए, या 1 किलो दाल और जोड़ दें"
-                          : "e.g. Please choose Fortune brand for oil"
-                      }
-                      className="w-full h-9 rounded-xl border border-[#E4DFD5] bg-white px-3 text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:outline-none focus-visible:border-[#145A45]"
-                    />
-                  </div>
+                      {/* TWO DISTINCT EASY BUTTONS: Camera & Gallery */}
+                      <div className="grid grid-cols-2 gap-2.5 max-w-sm mx-auto pt-1">
+                        <button
+                          type="button"
+                          onClick={() => cameraInputRef.current?.click()}
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#145A45] hover:bg-[#0E4333] text-white py-2.5 px-3 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                        >
+                          <Camera className="size-4" />
+                          <span>{lang === "hi" ? "कैमरा से खींचें" : "Use Camera"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => galleryInputRef.current?.click()}
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-[#F2EFE8] border border-[#D5CEBF] text-[#16201A] py-2.5 px-3 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                        >
+                          <ImageIcon className="size-4 text-[#145A45]" />
+                          <span>{lang === "hi" ? "गैलरी से अपलोड" : "From Gallery"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
