@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Mic, X, Check, RefreshCw, AlertCircle, ArrowRight, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { cleanDeduplicateSpeech, removeStutteredWords } from "@/lib/voice";
 
 interface VoiceSearchModalProps {
   isOpen: boolean;
@@ -162,19 +163,37 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
         };
 
         recognition.onresult = (event: ISpeechRecognitionEvent) => {
-          let fullTranscript = "";
+          let newlyFinalized = "";
+          let interimPart = "";
 
-          for (let i = 0; i < event.results.length; ++i) {
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
             const res = event.results[i];
-            if (res && res[0]) {
-              fullTranscript += res[0].transcript;
+            if (!res || !res[0]) continue;
+            const chunk = (res[0].transcript || "").trim();
+            if (!chunk) continue;
+
+            if (res.isFinal) {
+              newlyFinalized = newlyFinalized
+                ? cleanDeduplicateSpeech(newlyFinalized, chunk)
+                : chunk;
+            } else {
+              interimPart = chunk;
             }
           }
 
-          const trimmed = fullTranscript.trim();
-          if (trimmed) {
-            setTranscript(trimmed);
-            transcriptRef.current = trimmed;
+          let combined = "";
+          if (newlyFinalized) {
+            const updated = cleanDeduplicateSpeech(transcriptRef.current, newlyFinalized);
+            combined = removeStutteredWords(updated);
+          } else if (interimPart) {
+            const updated = cleanDeduplicateSpeech(transcriptRef.current, interimPart);
+            combined = removeStutteredWords(updated);
+          }
+
+          const clean = combined.trim();
+          if (clean) {
+            setTranscript(clean);
+            transcriptRef.current = clean;
 
             // Reset silence timer with a comfortable window so user isn't cut off mid-word
             if (silenceTimerRef.current) {
@@ -184,7 +203,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
               if (transcriptRef.current.trim() && !isSubmittedRef.current) {
                 triggerSearch(transcriptRef.current.trim());
               }
-            }, 1100);
+            }, 1200);
           }
         };
 

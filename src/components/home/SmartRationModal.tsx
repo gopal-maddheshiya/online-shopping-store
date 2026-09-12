@@ -16,6 +16,9 @@ import {
   Mic,
   MicOff,
   Check,
+  CheckCircle2,
+  Edit3,
+  Languages,
   Plus,
   Minus,
   ArrowRight,
@@ -41,6 +44,9 @@ import {
   speakVoiceConfirmation,
   playMicTone,
   isSpeechRecognitionAvailable,
+  cleanDeduplicateSpeech,
+  removeStutteredWords,
+  formatSpokenGroceryList,
 } from "@/lib/voice";
 
 export interface SmartRationModalProps {
@@ -85,20 +91,31 @@ export function SmartRationModal({
   const [recognizedItems, setRecognizedItems] = useState<MatchedRationItem[]>([]);
   const [isDone, setIsDone] = useState(false);
 
-  // Voice speech recognition
+  // Voice speech recognition state
+  const [voiceLang, setVoiceLang] = useState<"hi" | "en">(lang === "hi" ? "hi" : "en");
   const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  const baseTextRef = useRef<string>("");
+  const [interimText, setInterimText] = useState("");
+  const [recognizedVoiceItems, setRecognizedVoiceItems] = useState<string[]>([]);
+  const [isManualEditing, setIsManualEditing] = useState(false);
 
-  // Start Voice Recording
-  const startVoiceRecording = () => {
+  const recognitionRef = useRef<any>(null);
+  const finalAccumulatorRef = useRef<string>("");
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep recognizedVoiceItems updated when inputText changes
+  useEffect(() => {
+    setRecognizedVoiceItems(formatSpokenGroceryList(inputText));
+  }, [inputText]);
+
+  // Start Voice Recording with zero-duplication accumulator
+  const startVoiceRecording = (targetLang?: "hi" | "en") => {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       toast.error(
         lang === "hi"
-          ? "आपके ब्राउज़र में आवाज़ पहचान उपलब्ध नहीं है। कृपया टेक्स्ट लिखें।"
+          ? "आपके ब्राउज़र में आवाज़ पहचान उपलब्ध नहीं है। कृपया लिखकर राशन मंगाएं।"
           : "Voice recognition not supported in this browser. Please type."
       );
       return;
@@ -113,37 +130,89 @@ export function SmartRationModal({
         }
       }
 
-      baseTextRef.current = inputText.trim();
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+
+      const chosenLang = targetLang || voiceLang;
+      // Pre-seed accumulator with current input so speech appends smoothly without duplicating
+      finalAccumulatorRef.current = inputText.trim();
+      setInterimText("");
 
       const recognition = new SpeechRecognition();
-      recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
+      recognition.lang = chosenLang === "hi" ? "hi-IN" : "en-IN";
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsRecording(true);
         playMicTone("start");
-        toast.info(lang === "hi" ? "🎙️ बोलिए, AI सुन रहा है..." : "Listening...");
       };
 
       recognition.onresult = (event: any) => {
-        let sessionTranscript = "";
-        for (let i = 0; i < event.results.length; i++) {
+        // Reset silence timer whenever any speech sound is captured
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
+        }
+
+        let latestInterim = "";
+        let newlyFinalized = "";
+
+        // Process only newly updated result items to avoid looping old frames
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
           const res = event.results[i];
-          if (res && res[0]) {
-            sessionTranscript += res[0].transcript + " ";
+          if (!res || !res[0]) continue;
+          const chunk = (res[0].transcript || "").trim();
+          if (!chunk) continue;
+
+          if (res.isFinal) {
+            newlyFinalized = newlyFinalized
+              ? cleanDeduplicateSpeech(newlyFinalized, chunk)
+              : chunk;
+          } else {
+            latestInterim = chunk;
           }
         }
-        const trimmedSession = sessionTranscript.trim();
-        const base = baseTextRef.current;
-        const combined = base ? `${base} ${trimmedSession}` : trimmedSession;
-        setInputText(combined);
+
+        if (newlyFinalized) {
+          const mergedFinal = cleanDeduplicateSpeech(
+            finalAccumulatorRef.current,
+            newlyFinalized
+          );
+          const cleanFinal = removeStutteredWords(mergedFinal);
+          finalAccumulatorRef.current = cleanFinal;
+          setInputText(cleanFinal);
+        }
+
+        setInterimText(latestInterim);
+
+        // Auto-silence timer: Stop smoothly after 2.3 seconds of silence
+        silenceTimerRef.current = setTimeout(() => {
+          if (latestInterim) {
+            const promotedFinal = cleanDeduplicateSpeech(
+              finalAccumulatorRef.current,
+              latestInterim
+            );
+            const cleanFinal = removeStutteredWords(promotedFinal);
+            finalAccumulatorRef.current = cleanFinal;
+            setInputText(cleanFinal);
+            setInterimText("");
+          }
+          stopVoiceRecording();
+          toast.success(
+            lang === "hi"
+              ? "✅ आवाज़ सुन ली गई! नीचे 1-क्लिक में थैला भरें"
+              : "✅ Voice captured! Tap below to match items"
+          );
+        }, 2300);
       };
 
       recognition.onerror = (err: any) => {
         console.warn("Speech recognition error:", err);
         if (err.error === "no-speech") {
-          // Silent interval, don't abort
           return;
         }
         setIsRecording(false);
@@ -166,7 +235,7 @@ export function SmartRationModal({
 
       recognition.onend = () => {
         setIsRecording(false);
-        playMicTone("stop");
+        setInterimText("");
       };
 
       recognitionRef.current = recognition;
@@ -178,8 +247,12 @@ export function SmartRationModal({
     }
   };
 
-  // Stop Voice Recording
+  // Stop Voice Recording cleanly
   const stopVoiceRecording = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -188,6 +261,7 @@ export function SmartRationModal({
       }
     }
     setIsRecording(false);
+    setInterimText("");
     playMicTone("stop");
   };
 
@@ -197,6 +271,38 @@ export function SmartRationModal({
       stopVoiceRecording();
     } else {
       startVoiceRecording();
+    }
+  };
+
+  // Switch Voice Language
+  const handleSwitchVoiceLang = (newLang: "hi" | "en") => {
+    setVoiceLang(newLang);
+    if (isRecording) {
+      stopVoiceRecording();
+      setTimeout(() => {
+        startVoiceRecording(newLang);
+      }, 150);
+    }
+  };
+
+  // Clear Voice Text and Accumulator
+  const handleClearVoice = () => {
+    setInputText("");
+    finalAccumulatorRef.current = "";
+    setInterimText("");
+    setRecognizedVoiceItems([]);
+  };
+
+  // Gracefully switch tabs and manage recording lifecycle
+  const handleTabChange = (tab: "photo" | "text" | "voice") => {
+    if (tab !== "voice" && isRecording) {
+      stopVoiceRecording();
+    }
+    setActiveTab(tab);
+    if (tab === "voice" && !isRecording) {
+      setTimeout(() => {
+        startVoiceRecording();
+      }, 200);
     }
   };
 
@@ -387,7 +493,7 @@ export function SmartRationModal({
               <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#FAF8F2] border border-[#E5E0D5]">
                 <button
                   type="button"
-                  onClick={() => setActiveTab("photo")}
+                  onClick={() => handleTabChange("photo")}
                   className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === "photo"
                       ? "bg-[#145A45] text-white shadow-xs"
@@ -400,7 +506,7 @@ export function SmartRationModal({
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab("voice")}
+                  onClick={() => handleTabChange("voice")}
                   className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === "voice"
                       ? "bg-[#145A45] text-white shadow-xs"
@@ -413,7 +519,7 @@ export function SmartRationModal({
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab("text")}
+                  onClick={() => handleTabChange("text")}
                   className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === "text"
                       ? "bg-[#145A45] text-white shadow-xs"
@@ -579,108 +685,272 @@ export function SmartRationModal({
                 </div>
               )}
 
-              {/* TAB 3: VOICE INPUT */}
+              {/* TAB 3: ULTRA-PREMIUM VOICE STUDIO */}
               {activeTab === "voice" && (
-                <div className="space-y-4 py-1">
-                  <div className="p-5 sm:p-6 rounded-3xl border border-[#E4DFD5] bg-gradient-to-b from-[#FAF8F2] via-white to-[#F5F2EA] flex flex-col items-center justify-center text-center space-y-3 relative overflow-hidden shadow-inner">
-                    {/* Pulsing Aura Rings when listening */}
-                    {isRecording && (
-                      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                        <div className="size-36 rounded-full bg-red-500/10 animate-ping duration-1000" />
-                        <div className="size-28 rounded-full bg-red-500/15 animate-pulse" />
-                      </div>
-                    )}
+                <div className="space-y-3.5 py-1">
+                  {/* 1. Glassmorphic Hero Audio Stage */}
+                  <div className="relative overflow-hidden rounded-3xl border border-[#145A45]/30 bg-gradient-to-b from-[#0C382A] via-[#145A45] to-[#0A2E22] p-5 sm:p-6 text-white text-center shadow-[0_10px_35px_rgba(20,90,69,0.25)]">
+                    {/* Soft Ambient Gold/Emerald Glow Orbs */}
+                    <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#E3B341]/15 blur-2xl" />
+                    <div className="pointer-events-none absolute -left-8 -bottom-8 size-40 rounded-full bg-emerald-400/10 blur-2xl" />
 
-                    <div className="relative">
+                    {/* Top Header: Language Switcher Pill */}
+                    <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
+                      <div className="inline-flex items-center gap-1 rounded-full bg-black/30 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-200">
+                        <Sparkles className="size-3 text-[#E3B341]" />
+                        <span>{lang === "hi" ? "AI वॉयस सहायक" : "AI Voice Studio"}</span>
+                      </div>
+
+                      {/* Language Switch Buttons */}
+                      <div className="inline-flex rounded-full bg-black/40 backdrop-blur-md p-0.5 border border-white/15">
+                        <button
+                          type="button"
+                          onClick={() => handleSwitchVoiceLang("hi")}
+                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all cursor-pointer ${
+                            voiceLang === "hi"
+                              ? "bg-white text-[#145A45] shadow-xs"
+                              : "text-white/70 hover:text-white"
+                          }`}
+                        >
+                          🇮🇳 हिन्दी
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSwitchVoiceLang("en")}
+                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all cursor-pointer ${
+                            voiceLang === "en"
+                              ? "bg-white text-[#145A45] shadow-xs"
+                              : "text-white/70 hover:text-white"
+                          }`}
+                        >
+                          🇬🇧 English
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Center Animated Microphone Button */}
+                    <div className="relative my-4 flex items-center justify-center">
+                      {isRecording && (
+                        <>
+                          <div className="absolute size-36 rounded-full bg-red-500/20 animate-ping duration-1000 pointer-events-none" />
+                          <div className="absolute size-28 rounded-full bg-red-500/30 animate-pulse duration-700 pointer-events-none" />
+                        </>
+                      )}
+
                       <button
                         type="button"
                         onClick={toggleVoiceRecording}
-                        className={`size-20 rounded-full flex items-center justify-center text-white transition-all shadow-[0_4px_16px_rgba(20,90,69,0.3)] cursor-pointer relative z-10 ${
+                        className={`relative z-10 flex size-20 sm:size-24 items-center justify-center rounded-full transition-all duration-300 active:scale-95 cursor-pointer ${
                           isRecording
-                            ? "bg-red-600 animate-pulse ring-8 ring-red-200/80 scale-105"
-                            : "bg-gradient-to-br from-[#145A45] to-[#0A3628] hover:scale-105 active:scale-95"
+                            ? "bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 text-white shadow-[0_0_35px_rgba(239,68,68,0.6)] ring-4 ring-red-300/60 scale-105"
+                            : "bg-gradient-to-tr from-white/20 via-white/10 to-white/5 text-white border-2 border-white/40 hover:border-white hover:bg-white/25 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
                         }`}
-                        aria-label="Toggle voice"
+                        aria-label={isRecording ? "Stop recording" : "Start recording"}
                       >
-                        {isRecording ? <MicOff className="size-8 animate-bounce" /> : <Mic className="size-8" />}
+                        {isRecording ? (
+                          <MicOff className="size-9 sm:size-10 animate-bounce" />
+                        ) : (
+                          <Mic className="size-9 sm:size-10 text-[#E3B341]" />
+                        )}
                       </button>
                     </div>
 
-                    <div className="relative z-10">
-                      <p className="text-xs sm:text-sm font-black text-[#16201A]">
+                    {/* Dynamic Soundwave Equalizer (11 smooth dancing bars) */}
+                    <div className="my-2.5 flex items-center justify-center gap-1.5 h-7">
+                      {[
+                        { h: "h-3", activeH: "h-5", delay: "delay-75" },
+                        { h: "h-2", activeH: "h-7", delay: "delay-150" },
+                        { h: "h-4", activeH: "h-6", delay: "delay-0" },
+                        { h: "h-2", activeH: "h-8", delay: "delay-200" },
+                        { h: "h-3", activeH: "h-5", delay: "delay-100" },
+                        { h: "h-5", activeH: "h-7", delay: "delay-300" },
+                        { h: "h-2", activeH: "h-6", delay: "delay-75" },
+                        { h: "h-4", activeH: "h-8", delay: "delay-150" },
+                        { h: "h-2", activeH: "h-5", delay: "delay-250" },
+                        { h: "h-3", activeH: "h-7", delay: "delay-0" },
+                        { h: "h-2", activeH: "h-4", delay: "delay-100" },
+                      ].map((bar, idx) => (
+                        <span
+                          key={idx}
+                          className={`w-1.5 rounded-full transition-all duration-200 ${
+                            isRecording
+                              ? `${bar.activeH} ${bar.delay} bg-gradient-to-t from-[#E3B341] to-red-400 animate-pulse`
+                              : `${bar.h} bg-white/25`
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Status Badge & Helper Text */}
+                    <div className="relative z-10 space-y-1">
+                      <p className="text-xs sm:text-sm font-extrabold tracking-wide">
+                        {isRecording ? (
+                          <span className="inline-flex items-center gap-1.5 text-red-200">
+                            <span className="size-2 rounded-full bg-red-400 animate-ping" />
+                            {lang === "hi"
+                              ? "🎙️ AI सुन रहा है... राशन का नाम और वजन बोलिए"
+                              : "🎙️ AI is listening... speak item names & quantities"}
+                          </span>
+                        ) : recognizedVoiceItems.length > 0 ? (
+                          <span className="inline-flex items-center gap-1.5 text-emerald-200">
+                            <CheckCircle2 className="size-3.5 text-[#E3B341]" />
+                            {lang === "hi"
+                              ? "✨ आवाज़ दर्ज हो गई! नीचे 1-क्लिक में थैला भरें"
+                              : "✨ Voice recorded! Tap below to match"}
+                          </span>
+                        ) : (
+                          <span className="text-white/95">
+                            {lang === "hi"
+                              ? "माइक दबाकर बोलें — जैसे '2 किलो चीनी, 1L तेल'"
+                              : "Tap mic & speak — e.g. '2kg sugar, 1L oil'"}
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-white/70 max-w-sm mx-auto">
                         {isRecording
                           ? lang === "hi"
-                            ? "🎙️ AI सुन रहा है... राशन का नाम और वजन बोलिए"
-                            : "🎙️ Listening... speak items & weights"
+                            ? "बोलना बंद करते ही AI अपने आप पहचान कर लेगा (या लाल बटन दबाएं)"
+                            : "Pausing speech auto-completes, or tap red button to finish"
                           : lang === "hi"
-                            ? "माइक पर टैप करें और बोलकर बताएं"
-                            : "Tap mic to speak in Hindi or English"}
+                            ? "हिन्दी, अंग्रेजी व देहाती नामों (जैसे चना दाल, कोल्हू तेल) को 100% पहचानता है"
+                            : "Recognizes local Hindi terms, brand names & weights accurately"}
                       </p>
-                      <p className="text-[11.5px] text-[#5A655F] mt-1 font-medium">
-                        {lang === "hi"
-                          ? "उदा. '2 किलो चीनी, 1 लीटर सरसों तेल, 1 किलो चना दाल'"
-                          : "e.g. '2 kg sugar, 1 litre oil, 1 kg chana dal'"}
-                      </p>
-
-                      {/* Sound Wave Graphic when recording */}
-                      {isRecording && (
-                        <div className="flex items-center justify-center gap-1 mt-2.5">
-                          <span className="w-1 h-3.5 bg-red-500 rounded-full animate-pulse" />
-                          <span className="w-1 h-6 bg-red-600 rounded-full animate-bounce delay-75" />
-                          <span className="w-1 h-8 bg-red-500 rounded-full animate-bounce delay-150" />
-                          <span className="w-1 h-5 bg-red-600 rounded-full animate-pulse delay-200" />
-                          <span className="w-1 h-7 bg-red-500 rounded-full animate-bounce delay-100" />
-                          <span className="w-1 h-3.5 bg-red-600 rounded-full animate-pulse" />
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Transcript Area */}
-                  <div className="space-y-1.5">
+                  {/* 2. Live Spoken Items Studio Card */}
+                  <div className="rounded-2xl border border-[#E4DFD5] bg-white p-3 sm:p-4 shadow-xs space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-bold text-[#16201A] flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5">
                         <Volume2 className="size-3.5 text-[#145A45]" />
-                        <span>{lang === "hi" ? "पहचाने गए शब्द (Live Voice):" : "Recognized Voice Words:"}</span>
-                      </label>
-                      {inputText && (
-                        <button
-                          type="button"
-                          onClick={() => setInputText("")}
-                          className="text-[10px] font-semibold text-[#8C827A] hover:text-red-600 cursor-pointer"
-                        >
-                          {lang === "hi" ? "साफ़ करें" : "Clear"}
-                        </button>
-                      )}
+                        <span className="text-xs font-bold text-[#16201A]">
+                          {lang === "hi" ? "पहचाने गए राशन सामान" : "Recognized Grocery Items"}
+                        </span>
+                        {recognizedVoiceItems.length > 0 && (
+                          <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-black text-[#145A45]">
+                            {recognizedVoiceItems.length} {lang === "hi" ? "आइटम" : "items"}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Action Controls */}
+                      <div className="flex items-center gap-2">
+                        {inputText && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setIsManualEditing((prev) => !prev)}
+                              className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer flex items-center gap-1"
+                            >
+                              <Edit3 className="size-3" />
+                              <span>
+                                {isManualEditing
+                                  ? lang === "hi"
+                                    ? "चिप्स देखें"
+                                    : "View Chips"
+                                  : lang === "hi"
+                                  ? "एडिट करें"
+                                  : "Edit Text"}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleClearVoice}
+                              className="text-[11px] font-semibold text-[#8C827A] hover:text-red-600 cursor-pointer"
+                            >
+                              {lang === "hi" ? "साफ़ करें" : "Clear"}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    <Textarea
-                      rows={3}
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      placeholder={
-                        lang === "hi"
-                          ? "बोले गए शब्द यहाँ दिखेंगे... (उदा. '2 किलो चीनी, 1 लीटर सरसों तेल')"
-                          : "Spoken words will appear here..."
-                      }
-                      className="rounded-2xl border-[#E4DFD5] bg-white p-3 text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
-                    />
+                    {/* Live Interim Pill when currently speaking */}
+                    {interimText && (
+                      <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200/70 p-2 text-xs text-amber-900 animate-pulse">
+                        <span className="size-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+                        <span className="font-semibold">{lang === "hi" ? "सुन रहे हैं:" : "Hearing:"}</span>
+                        <span className="italic font-medium text-amber-800">"{interimText}..."</span>
+                      </div>
+                    )}
 
-                    {/* Quick 1-Click Action Button right under voice transcript */}
+                    {/* Main Spoken List View */}
+                    {isManualEditing ? (
+                      <Textarea
+                        rows={3}
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder={
+                          lang === "hi"
+                            ? "यहाँ राशन लिस्ट दिखेगी या आप टाइप भी कर सकते हैं..."
+                            : "Spoken items will appear here..."
+                        }
+                        className="rounded-xl border-[#E4DFD5] bg-[#FAF8F5] p-2.5 text-xs focus-visible:border-[#145A45]"
+                      />
+                    ) : recognizedVoiceItems.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {recognizedVoiceItems.map((item, idx) => (
+                          <span
+                            key={`${item}-${idx}`}
+                            className="inline-flex items-center gap-1 rounded-xl bg-[#F2F6F3] border border-[#145A45]/20 px-2.5 py-1 text-xs font-bold text-[#145A45] shadow-2xs"
+                          >
+                            <Check className="size-3 text-emerald-600 shrink-0" />
+                            <span>{item}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : !interimText ? (
+                      <div className="rounded-xl bg-[#FAF8F5] border border-dashed border-[#DCD6CA] p-3 text-center space-y-2">
+                        <p className="text-xs text-[#5A655F]">
+                          {lang === "hi"
+                            ? "अभी कोई सामान नहीं बोला गया है। ऊपर माइक दबाकर बोलें या नीचे से चुनें:"
+                            : "No items spoken yet. Tap mic above or click sample list:"}
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-1.5">
+                          {SAMPLE_LISTS.map((sample) => (
+                            <button
+                              key={sample.label}
+                              type="button"
+                              onClick={() => {
+                                setInputText(sample.text);
+                                finalAccumulatorRef.current = sample.text;
+                              }}
+                              className="rounded-lg bg-white border border-[#D5CEBF] px-2.5 py-1 text-[11px] font-medium text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
+                            >
+                              + {sample.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* 3. High-Converting Instant AI Match Action Button */}
                     {inputText.trim() && (
-                      <button
+                      <Button
                         type="button"
                         onClick={handleProcessWithGemini}
                         disabled={isLoading}
-                        className="w-full mt-2 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white py-2.5 px-4 font-bold text-xs sm:text-sm shadow-[0_3px_10px_rgba(20,90,69,0.25)] transition-all cursor-pointer active:scale-[0.98]"
+                        className="w-full mt-2 rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white py-3 px-4 font-bold text-xs sm:text-sm shadow-[0_4px_14px_rgba(20,90,69,0.25)] transition-all cursor-pointer h-11 gap-2 active:scale-[0.98]"
                       >
-                        <Sparkles className="size-4 text-[#E3B341]" />
-                        <span>
-                          {lang === "hi"
-                            ? "✨ AI से सामान खोजें (1-क्लिक) →"
-                            : "✨ Match Items with AI (1-Click) →"}
-                        </span>
-                      </button>
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin text-[#E3B341]" />
+                            <span>
+                              {statusMessage ||
+                                (lang === "hi" ? "AI सामान मिला रहा है..." : "Matching items with store...")}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="size-4 text-[#E3B341]" />
+                            <span>
+                              {lang === "hi"
+                                ? "✨ AI से पूरा थैला भरें (1-क्लिक मैच) →"
+                                : "✨ Match All Items & Fill Cart (1-Click) →"}
+                            </span>
+                          </>
+                        )}
+                      </Button>
                     )}
                   </div>
                 </div>

@@ -143,3 +143,116 @@ export function isSpeechRecognitionAvailable(): boolean {
     (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
   );
 }
+
+/**
+ * Deduplicates speech recognition results, eliminating:
+ * 1. Mobile Chrome cumulative interim/final repetition ("aata aata daal")
+ * 2. Overlapping phrases between speech segments
+ * 3. Exact repeating sentences or phrases
+ */
+export function cleanDeduplicateSpeech(existing: string, incomingChunk: string): string {
+  const normExisting = existing.trim();
+  const normNew = incomingChunk.trim();
+
+  if (!normExisting) return removeStutteredWords(normNew);
+  if (!normNew) return removeStutteredWords(normExisting);
+
+  // If new chunk is identical to existing
+  if (normExisting.toLowerCase() === normNew.toLowerCase()) {
+    return removeStutteredWords(normExisting);
+  }
+
+  // Android Chrome cumulative interim bug: incoming is a superset that starts with existing
+  if (normNew.toLowerCase().startsWith(normExisting.toLowerCase())) {
+    return removeStutteredWords(normNew);
+  }
+
+  // If existing already ends with incoming
+  if (normExisting.toLowerCase().endsWith(normNew.toLowerCase())) {
+    return removeStutteredWords(normExisting);
+  }
+
+  // If existing already contains incoming as a distinct phrase
+  if (normExisting.toLowerCase().includes(normNew.toLowerCase())) {
+    return removeStutteredWords(normExisting);
+  }
+
+  // Check word-level overlap at the seam
+  const existingWords = normExisting.split(/\s+/);
+  const newWords = normNew.split(/\s+/);
+
+  let maxOverlap = 0;
+  for (let len = 1; len <= Math.min(existingWords.length, newWords.length); len++) {
+    const tail = existingWords.slice(-len).join(" ").toLowerCase();
+    const head = newWords.slice(0, len).join(" ").toLowerCase();
+    if (tail === head) {
+      maxOverlap = len;
+    }
+  }
+
+  let merged = "";
+  if (maxOverlap > 0) {
+    const remaining = newWords.slice(maxOverlap).join(" ");
+    merged = remaining ? `${normExisting} ${remaining}` : normExisting;
+  } else {
+    // Check if ends with punctuation
+    const sep = /[,।\n.]$/.test(normExisting) ? " " : ", ";
+    merged = `${normExisting}${sep}${normNew}`;
+  }
+
+  return removeStutteredWords(merged);
+}
+
+/**
+ * Removes immediate consecutive duplicate words/tokens (e.g. "चीनी चीनी" -> "चीनी", "kilo kilo" -> "kilo")
+ */
+export function removeStutteredWords(text: string): string {
+  if (!text) return "";
+  const tokens = text.split(/\s+/);
+  const cleaned: string[] = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const curr = tokens[i]!;
+    if (!curr) continue;
+    const prev = cleaned[cleaned.length - 1];
+
+    // Normalize for comparison (remove basic trailing punctuation like commas for equality check)
+    const currClean = curr.replace(/[,।.!]/g, "").toLowerCase();
+    const prevClean = prev ? prev.replace(/[,।.!]/g, "").toLowerCase() : "";
+
+    if (prevClean && currClean === prevClean) {
+      // Skip identical consecutive stutter
+      continue;
+    }
+    cleaned.push(curr);
+  }
+
+  return cleaned.join(" ");
+}
+
+/**
+ * Formats a raw spoken grocery string into individual clean product lines/chips.
+ * Splits on commas, newlines, full stops (।), and conjunctions ("और", "and", "evam").
+ */
+export function formatSpokenGroceryList(text: string): string[] {
+  if (!text || !text.trim()) return [];
+
+  const rawParts = text
+    .split(/[\n,|।]+|\s+(?:aur|और|एवं|and|\+)\s+/i)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 1);
+
+  const uniqueItems: string[] = [];
+  const seen = new Set<string>();
+
+  for (const part of rawParts) {
+    const key = part.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueItems.push(part);
+    }
+  }
+
+  return uniqueItems;
+}
+
