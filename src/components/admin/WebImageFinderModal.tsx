@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Search,
   Globe,
@@ -9,16 +9,15 @@ import {
   Sparkles,
   ExternalLink,
   RefreshCw,
-  Eye,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { searchWebProductImages, type WebImageResult } from "@/lib/web-image-search";
+import { searchWebProductImages, type WebImageResult } from "../../lib/web-image-search";
 
-interface WebImageFinderModalProps {
+export interface WebImageFinderModalProps {
   isOpen: boolean;
   onClose: () => void;
   productName: string;
@@ -48,7 +47,36 @@ export function WebImageFinderModal({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string>(currentImageUrl || "");
   const [customUrl, setCustomUrl] = useState<string>("");
-  const [customPreviewValid, setCustomPreviewValid] = useState<boolean | null>(null);
+
+  const handleSearch = useCallback(
+    async (termToSearch?: string) => {
+      const q = (termToSearch !== undefined ? termToSearch : query).trim();
+      if (!q) {
+        toast.error("कृपया कोई सामान या ब्रांड का नाम लिखें।");
+        return;
+      }
+
+      setIsLoading(true);
+      setFailedImageIds(new Set());
+      try {
+        const items = await searchWebProductImages(q);
+        setResults(items);
+        if (items.length === 0) {
+          toast.info(
+            "इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे सीधा इमेज लिंक पेस्ट कर सकते हैं।",
+          );
+        } else {
+          toast.success(`${items.length} असली वेब फोटो मिलीं!`);
+        }
+      } catch (err) {
+        console.warn("Web image search failed:", err);
+        toast.error("वेब फोटो सर्च में समस्या आई।");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [query],
+  );
 
   useEffect(() => {
     if (isOpen && productName) {
@@ -56,38 +84,14 @@ export function WebImageFinderModal({
       setSelectedUrl(currentImageUrl || "");
       setFailedImageIds(new Set());
       setCustomUrl("");
-      setCustomPreviewValid(null);
       void handleSearch(productName);
     }
-  }, [isOpen, productName]);
-
-  async function handleSearch(termToSearch?: string) {
-    const q = (termToSearch !== undefined ? termToSearch : query).trim();
-    if (!q) {
-      toast.error("कृपया कोई सामान या ब्रांड का नाम लिखें।");
-      return;
-    }
-
-    setIsLoading(true);
-    setFailedImageIds(new Set());
-    try {
-      const items = await searchWebProductImages(q);
-      setResults(items);
-      if (items.length === 0) {
-        toast.info("इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे सीधा इमेज लिंक पेस्ट कर सकते हैं।");
-      } else {
-        toast.success(`${items.length} असली वेब फोटो मिलीं!`);
-      }
-    } catch (err) {
-      console.warn("Web image search failed:", err);
-      toast.error("वेब फोटो सर्च में समस्या आई।");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  }, [isOpen, productName, currentImageUrl, handleSearch]);
 
   function handleQuickModifier(suffix: string) {
-    const base = query.replace(/\b(packet|1kg|1L|bottle|box|pouch|grocery|packaging)\b/gi, "").trim();
+    const base = query
+      .replace(/\b(packet|1kg|1L|bottle|box|pouch|grocery|packaging)\b/gi, "")
+      .trim();
     const updated = `${base} ${suffix}`.trim();
     setQuery(updated);
     void handleSearch(updated);
@@ -95,7 +99,10 @@ export function WebImageFinderModal({
 
   function handleApplyCustomUrl() {
     const clean = customUrl.trim();
-    if (!clean || (!clean.startsWith("http://") && !clean.startsWith("https://") && !clean.startsWith("/"))) {
+    if (
+      !clean ||
+      (!clean.startsWith("http://") && !clean.startsWith("https://") && !clean.startsWith("/"))
+    ) {
       toast.error("कृपया कोई मान्य इमेज लिंक (URL) डालें।");
       return;
     }
@@ -132,7 +139,8 @@ export function WebImageFinderModal({
                 वेब से असली प्रोडक्ट फोटो खोजें (Auto Web Image Finder)
               </DialogTitle>
               <p className="text-xs text-[#5A655F] mt-1">
-                गूगल और ई-कॉमर्स (Flipkart, Amazon, Blinkit) से 50+ लाइव पैकेजिंग फोटो में से चुनें या सीधा लिंक डालें।
+                गूगल और ई-कॉमर्स (Flipkart, Amazon, Blinkit) से 50+ लाइव पैकेजिंग फोटो में से चुनें
+                या सीधा लिंक डालें।
               </p>
             </div>
 
@@ -166,7 +174,11 @@ export function WebImageFinderModal({
                 onClick={() => handleSearch()}
                 className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 px-5 text-xs sm:text-sm gap-2 shadow-xs cursor-pointer"
               >
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Search className="size-4" />
+                )}
                 <span>खोजें (50+ फोटो)</span>
               </Button>
             </div>
@@ -205,7 +217,9 @@ export function WebImageFinderModal({
             {isLoading ? (
               <div className="p-16 text-center text-xs text-[#6B746F] space-y-3 bg-[#FAF8F2]/30 rounded-2xl border border-dashed border-[#E8E4DA]">
                 <Loader2 className="size-9 animate-spin mx-auto text-[#145A45]" />
-                <p className="font-bold text-[#1F2924]">इंटरनेट से 50+ असली प्रोडक्ट पैकेजिंग फोटो खोजी जा रही हैं...</p>
+                <p className="font-bold text-[#1F2924]">
+                  इंटरनेट से 50+ असली प्रोडक्ट पैकेजिंग फोटो खोजी जा रही हैं...
+                </p>
                 <p className="text-[11px] text-[#5A655F]">
                   Flipkart, Amazon, BigBasket और Blinkit से सटीक तस्वीरें इकट्ठा की जा रही हैं।
                 </p>
@@ -215,7 +229,8 @@ export function WebImageFinderModal({
                 <ImageIcon className="size-10 mx-auto text-stone-300" />
                 <p className="font-bold text-[#1F2924] text-sm">कोई फोटो नहीं मिली</p>
                 <p className="text-[11px] max-w-md mx-auto">
-                  सर्च नाम बदलकर खोजें (उदा. केवल ब्रांड या सामान का नाम जैसे "Tata Salt" या "Fortune Oil") अथवा नीचे सीधा लिंक पेस्ट करें।
+                  सर्च नाम बदलकर खोजें (उदा. केवल ब्रांड या सामान का नाम जैसे "Tata Salt" या
+                  "Fortune Oil") अथवा नीचे सीधा लिंक पेस्ट करें।
                 </p>
               </div>
             ) : (
@@ -292,10 +307,7 @@ export function WebImageFinderModal({
               <Input
                 placeholder="https://... इमेज URL यहाँ पेस्ट करें"
                 value={customUrl}
-                onChange={(e) => {
-                  setCustomUrl(e.target.value);
-                  setCustomPreviewValid(null);
-                }}
+                onChange={(e) => setCustomUrl(e.target.value)}
                 className="h-10 text-xs rounded-xl bg-white border-[#E8E4DA]"
               />
               <Button
@@ -309,7 +321,8 @@ export function WebImageFinderModal({
               </Button>
             </div>
             <p className="text-[11px] text-[#6B746F]">
-              💡 <strong>टिप:</strong> Google Images या किसी भी वेबसाइट पर फोटो पर राइट-क्लिक करें, "Copy Image Address" (इमेज लिंक कॉपी) दबाएं और यहाँ पेस्ट कर दें।
+              💡 <strong>टिप:</strong> Google Images या किसी भी वेबसाइट पर फोटो पर राइट-क्लिक करें,
+              &ldquo;Copy Image Address&rdquo; (इमेज लिंक कॉपी) दबाएं और यहाँ पेस्ट कर दें।
             </p>
           </div>
 
@@ -325,7 +338,8 @@ export function WebImageFinderModal({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-emerald-950 flex items-center gap-1">
-                  <CheckCircle2 className="size-3.5 text-[#145A45]" /> यह फोटो प्रोडक्ट के लिए चुनी गई है
+                  <CheckCircle2 className="size-3.5 text-[#145A45]" /> यह फोटो प्रोडक्ट के लिए चुनी
+                  गई है
                 </p>
                 <p className="text-[10px] text-emerald-800 truncate mt-0.5">{selectedUrl}</p>
               </div>
@@ -377,3 +391,5 @@ export function WebImageFinderModal({
     </Dialog>
   );
 }
+
+export default WebImageFinderModal;
