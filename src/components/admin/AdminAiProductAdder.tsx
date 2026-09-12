@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { inr } from "@/lib/format";
 import type { Category, Product } from "@/lib/queries";
+import { getProductImage } from "@/lib/product-images";
 import {
   parseSupplierBillWithGemini,
   type ParsedAiProduct,
@@ -207,9 +208,40 @@ export function AdminAiProductAdder({
       });
 
       if (res.success && res.products.length > 0) {
-        setParsedProducts(res.products);
-        setSummaryMessage(res.summary || `AI ने ${res.products.length} सामान निकाले।`);
-        toast.success(`AI ने ${res.products.length} सामान की पहचान कर ली है! नीचे रिव्यू करें।`);
+        // Smart Deduplication & Image Assignment
+        const annotated: ParsedAiProduct[] = res.products.map((p) => {
+          const cleanName = p.name.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+          const match = existingProducts.find((ep) => {
+            const epEn = (ep.name_en || ep.name).toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+            const epHi = (ep.name_hi || "").trim();
+            if (epEn === cleanName || (epHi && p.name.includes(epHi))) return true;
+            if (cleanName.length >= 4 && (epEn.includes(cleanName) || cleanName.includes(epEn))) {
+              return true;
+            }
+            return false;
+          });
+
+          const autoImg = match?.image_url || getProductImage({ name: p.name });
+
+          return {
+            ...p,
+            matched_existing_id: match?.id ?? null,
+            matched_existing_name: match ? (match.name_hi || match.name) : null,
+            action_type: match ? ("update_stock" as const) : ("create_new" as const),
+            image_url: autoImg,
+          };
+        });
+
+        const existingCount = annotated.filter((a) => a.matched_existing_id).length;
+        const newCount = annotated.length - existingCount;
+
+        setParsedProducts(annotated);
+        setSummaryMessage(
+          `AI ने ${annotated.length} सामान निकाले (${existingCount} पहले से मौजूद [स्टॉक रीफिल], ${newCount} नए उत्पाद)`
+        );
+        toast.success(
+          `पहचान पूरी! ${existingCount} सामान पहले से स्टोर में मिले (स्टॉक बढ़ेगा), ${newCount} नए सामान जुड़ेंगे।`
+        );
       } else {
         toast.error(res.error || "AI पर्चा पढ़ने में असमर्थ रहा। कृपया जानकारी दोबारा जांचें।");
       }
@@ -326,66 +358,104 @@ export function AdminAiProductAdder({
         const prod = validToSave[i]!;
         setCurrentSavingName(prod.name);
 
-        // Generate clean unique slug
-        let baseSlug = prod.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-        if (!baseSlug) baseSlug = `item-${Date.now().toString().slice(-4)}`;
+        if (prod.action_type === "update_stock" && prod.matched_existing_id) {
+          // 1. SMART MERGE: Update Stock & Prices on Existing Product
+          const existing = existingProducts.find((p) => p.id === prod.matched_existing_id);
+          const existingVars = existing?.product_variants || [];
 
-        let slug = baseSlug;
-        let counter = 1;
-        while (existingSlugs.has(slug)) {
-          slug = `${baseSlug}-${counter}`;
-          counter++;
+          for (const v of prod.variants) {
+            const cleanLabel = v.label.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const matchedVar = existingVars.find(
+              (ev) => ev.label.toLowerCase().replace(/[^a-z0-9]/g, "") === cleanLabel
+            );
+
+            if (matchedVar) {
+              const updatedStock = (matchedVar.stock || 0) + v.stock;
+              await supabase
+                .from("product_variants")
+                .update({
+                  stock: updatedStock,
+                  price: v.price > 0 ? v.price : matchedVar.price,
+                  mrp: v.mrp > 0 ? Math.max(v.mrp, v.price) : matchedVar.mrp,
+                })
+                .eq("id", matchedVar.id);
+            } else {
+              // Add newly found pack size to existing product
+              await supabase.from("product_variants").insert({
+                product_id: prod.matched_existing_id,
+                label: v.label.trim(),
+                price: v.price,
+                mrp: Math.max(v.mrp, v.price),
+                stock: v.stock,
+                low_stock_threshold: 5,
+                sort_order: existingVars.length + 1,
+              });
+            }
+          }
+          savedCount++;
+        } else {
+          // 2. CREATE NEW PRODUCT
+          let baseSlug = prod.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+          if (!baseSlug) baseSlug = `item-${Date.now().toString().slice(-4)}`;
+
+          let slug = baseSlug;
+          let counter = 1;
+          while (existingSlugs.has(slug)) {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+          }
+          existingSlugs.add(slug);
+
+          const targetCatId = prod.category_id || categories[0]?.id;
+          const finalImg = prod.image_url || getProductImage({ name: prod.name });
+
+          const { data: newProd, error: prodErr } = await supabase
+            .from("products")
+            .insert({
+              name: prod.name.trim(),
+              name_en: prod.name.trim(),
+              name_hi: prod.name_hi?.trim() || null,
+              slug: slug,
+              brand: prod.brand?.trim() || null,
+              category_id: targetCatId ?? null,
+              description: prod.description?.trim() || null,
+              description_en: prod.description?.trim() || null,
+              description_hi: prod.description_hi?.trim() || null,
+              image_url: finalImg,
+              images: finalImg ? [finalImg] : [],
+              is_active: true,
+              is_featured: false,
+              is_popular: false,
+            })
+            .select("id")
+            .single();
+
+          if (prodErr || !newProd) {
+            console.error(`Error saving product "${prod.name}":`, prodErr);
+            failedCount++;
+            continue;
+          }
+
+          const variantsPayload = prod.variants.map((v, vIndex) => ({
+            product_id: newProd.id,
+            label: v.label.trim(),
+            price: v.price,
+            mrp: Math.max(v.mrp, v.price),
+            stock: Math.max(0, v.stock),
+            low_stock_threshold: 5,
+            sort_order: vIndex,
+          }));
+
+          const { error: varErr } = await supabase.from("product_variants").insert(variantsPayload);
+          if (varErr) {
+            console.error(`Error saving variants for "${prod.name}":`, varErr);
+          }
+
+          savedCount++;
         }
-        existingSlugs.add(slug);
-
-        const targetCatId = prod.category_id || categories[0]?.id;
-
-        // 1. Insert product
-        const { data: newProd, error: prodErr } = await supabase
-          .from("products")
-          .insert({
-            name: prod.name.trim(),
-            name_en: prod.name.trim(),
-            name_hi: prod.name_hi?.trim() || null,
-            slug: slug,
-            brand: prod.brand?.trim() || null,
-            category_id: targetCatId ?? null,
-            description: prod.description?.trim() || null,
-            description_en: prod.description?.trim() || null,
-            description_hi: prod.description_hi?.trim() || null,
-            is_active: true,
-            is_featured: false,
-            is_popular: false,
-          })
-          .select("id")
-          .single();
-
-        if (prodErr || !newProd) {
-          console.error(`Error saving product "${prod.name}":`, prodErr);
-          failedCount++;
-          continue;
-        }
-
-        // 2. Insert variants
-        const variantsPayload = prod.variants.map((v, vIndex) => ({
-          product_id: newProd.id,
-          label: v.label.trim(),
-          price: v.price,
-          mrp: Math.max(v.mrp, v.price),
-          stock: Math.max(0, v.stock),
-          low_stock_threshold: 5,
-          sort_order: vIndex,
-        }));
-
-        const { error: varErr } = await supabase.from("product_variants").insert(variantsPayload);
-        if (varErr) {
-          console.error(`Error saving variants for "${prod.name}":`, varErr);
-        }
-
-        savedCount++;
         setSaveProgress(Math.round(((i + 1) / validToSave.length) * 100));
       }
 
@@ -661,8 +731,63 @@ export function AdminAiProductAdder({
                 {parsedProducts.map((prod, pIdx) => (
                   <div
                     key={pIdx}
-                    className="rounded-2xl border border-[#E8E4DA] bg-white p-4 shadow-2xs space-y-3 hover:border-[#145A45]/40 transition-colors"
+                    className={`rounded-2xl border p-4 shadow-2xs space-y-3 transition-colors ${
+                      prod.action_type === "update_stock"
+                        ? "border-amber-300 bg-amber-50/20"
+                        : "border-[#E8E4DA] bg-white hover:border-[#145A45]/40"
+                    }`}
                   >
+                    {/* Status & De-duplication Badge */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E8E4DA]/60">
+                      {prod.matched_existing_id ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-200">
+                            <RefreshCw className="size-3 text-amber-700" />
+                            पहले से मौजूद: "{prod.matched_existing_name}"
+                          </span>
+
+                          <div className="inline-flex rounded-lg bg-stone-100 p-0.5 text-[10px] font-bold">
+                            <button
+                              type="button"
+                              onClick={() => updateProductField(pIdx, "action_type", "update_stock")}
+                              className={`px-2 py-0.5 rounded transition-all ${
+                                prod.action_type === "update_stock"
+                                  ? "bg-[#145A45] text-white shadow-xs"
+                                  : "text-[#5A655F] hover:text-[#1F2924]"
+                              }`}
+                            >
+                              ✓ रीफिल & स्टॉक बढ़ाएं
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateProductField(pIdx, "action_type", "create_new")}
+                              className={`px-2 py-0.5 rounded transition-all ${
+                                prod.action_type === "create_new"
+                                  ? "bg-[#145A45] text-white shadow-xs"
+                                  : "text-[#5A655F] hover:text-[#1F2924]"
+                              }`}
+                            >
+                              + अलग नया बनाएं
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <Sparkles className="size-3 text-emerald-700" />
+                          ✨ नया प्रोडक्ट (New Item)
+                        </span>
+                      )}
+
+                      {/* Auto-Assigned Image Indicator */}
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <span className="text-[10px] text-[#6B746F] font-semibold">फोटो (Auto):</span>
+                        <img
+                          src={prod.image_url || getProductImage({ name: prod.name })}
+                          alt={prod.name}
+                          className="size-7 rounded-lg object-contain bg-[#FAF8F2] border border-[#E8E4DA] p-0.5"
+                        />
+                      </div>
+                    </div>
                     <div className="flex items-start justify-between gap-3">
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1">
                         {/* English Name */}

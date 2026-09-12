@@ -32,6 +32,10 @@ export interface ParsedAiProduct {
   description: string;
   description_hi: string;
   variants: ParsedAiProductVariant[];
+  matched_existing_id?: string | null;
+  matched_existing_name?: string | null;
+  action_type?: "update_stock" | "create_new";
+  image_url?: string | null;
 }
 
 export interface ParseSupplierBillResult {
