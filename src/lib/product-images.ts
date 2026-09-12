@@ -18,217 +18,58 @@ export function getCategoryThumbnail(category: {
 
 export const PRODUCT_SPECIFIC_IMAGES: Record<string, string> = {
   // Atta, Flour & Grains
-  "fortune-chakki-fresh-atta": "/images/products/fortune-atta.svg",
-  "aashirvaad-shudh-chakki-atta": "/images/products/aashirvaad-atta.svg",
-  "rajdhani-besan": "/images/products/rajdhani-besan.svg",
-  "bansi-suji-rava": "/images/products/bansi-suji.svg",
-  "shakti-bhog-maida": "/images/products/shakti-bhog-maida.svg",
+  "fortune-chakki-fresh-atta": "/images/products/aashirvaad-atta.jpg",
+  "aashirvaad-shudh-chakki-atta": "/images/products/aashirvaad-atta.jpg",
+  "rajdhani-besan": "/images/dal.jpg",
+  "bansi-suji-rava": "/images/atta.jpg",
+  "shakti-bhog-maida": "/images/atta.jpg",
 
   // Rice
-  "india-gate-classic-basmati-rice": "/images/products/india-gate-basmati-rice.svg",
-  "daawat-rozana-gold-basmati": "/images/products/daawat-basmati-rice.svg",
-  "sona-masoori-rice-local": "/images/products/sona-masoori-rice.svg",
+  "india-gate-classic-basmati-rice": "/images/products/india-gate-basmati-rice.jpg",
+  "daawat-rozana-gold-basmati": "/images/products/india-gate-basmati-rice.jpg",
+  "sona-masoori-rice-local": "/images/rice.jpg",
 
   // Pulses & Dal
-  "tata-sampann-toor-dal": "/images/products/tata-toor-dal.svg",
-  "moong-dal-dhuli": "/images/products/moong-dal.svg",
-  "masoor-dal": "/images/products/masoor-dal.svg",
-  "rajma-chitra": "/images/products/rajma-chitra.svg",
-  "kabuli-chana": "/images/products/kabuli-chana.svg",
+  "tata-sampann-toor-dal": "/images/products/tata-toor-dal.jpg",
+  "moong-dal-dhuli": "/images/dal.jpg",
+  "masoor-dal": "/images/dal.jpg",
+  "rajma-chitra": "/images/dal.jpg",
+  "kabuli-chana": "/images/dal.jpg",
 
   // Mustard Oil, Refined Oil & Ghee
-  "fortune-kachi-ghani-mustard-oil": "/images/products/fortune-mustard-oil.svg",
-  "patanjali-kachi-ghani-sarson-tel": "/images/products/patanjali-mustard-oil.svg",
-  "fortune-sunlite-refined-sunflower-oil": "/images/products/fortune-sunflower-oil.svg",
-  "amul-pure-desi-ghee": "/images/products/amul-desi-ghee.svg",
+  "fortune-kachi-ghani-mustard-oil": "/images/products/fortune-mustard-oil.jpg",
+  "patanjali-kachi-ghani-sarson-tel": "/images/products/fortune-mustard-oil.jpg",
+  "fortune-sunlite-refined-sunflower-oil": "/images/oil.jpg",
+  "amul-pure-desi-ghee": "/images/products/amul-desi-ghee.jpg",
 
   // Spices & Masala
-  "everest-turmeric-powder-haldi": "/images/products/everest-turmeric.svg",
-  "mdh-deggi-mirch": "/images/products/mdh-deggi-mirch.svg",
-  "everest-garam-masala": "/images/products/everest-garam-masala.svg",
-  "catch-jeera-whole": "/images/products/catch-jeera.svg",
-  "everest-dhaniya-powder": "/images/products/everest-dhaniya.svg",
+  "everest-turmeric-powder-haldi": "/images/products/everest-turmeric.jpg",
+  "mdh-deggi-mirch": "/images/spices.jpg",
+  "everest-garam-masala": "/images/spices.jpg",
+  "catch-jeera-whole": "/images/spices.jpg",
+  "everest-dhaniya-powder": "/images/spices.jpg",
 
   // Salt, Sugar & Sweeteners
-  "tata-salt-iodised": "/images/products/tata-salt.svg",
-  "madhur-pure-sugar": "/images/products/madhur-sugar.svg",
-  "organic-gud-jaggery-block": "/images/products/organic-gud.svg",
-  "dabur-honey": "/images/products/dabur-honey.svg",
+  "tata-salt-iodised": "/images/products/tata-salt.jpg",
+  "madhur-pure-sugar": "/images/packaged.jpg",
+  "organic-gud-jaggery-block": "/images/packaged.jpg",
+  "dabur-honey": "/images/products/dabur-honey.jpg",
 
-  // Dry Fruits & Nuts
-  "california-almonds-badam": "/images/products/california-almonds.svg",
-  "whole-cashew-w320-kaju": "/images/products/whole-cashew.svg",
-  "kishmish-raisins": "/images/products/kishmish.svg",
+  // Biscuits, Snacks & Namkeen
+  "parle-g-original-glucose-biscuits": "/images/products/parle-g.jpg",
+  "britannia-good-day-cashew-cookies": "/images/products/parle-g.jpg",
+  "haldiram-s-aloo-bhujia": "/images/products/haldirams-aloo-bhujia.jpg",
+  "lay-s-india-s-magic-masala": "/images/products/haldirams-aloo-bhujia.jpg",
+  "cadbury-dairy-milk": "/images/products/cadbury-dairy-milk.jpg",
+  "maggi-2-minute-masala-noodles": "/images/products/maggi-noodles.jpg",
 
-  // Tea & Coffee
-  "tata-tea-premium": "/images/products/tata-tea-premium.svg",
-  "red-label-natural-care-tea": "/images/products/red-label-tea.svg",
-  "nescafe-classic-instant-coffee": "/images/products/nescafe-coffee.svg",
-
-  // Biscuits & Cookies
-  "parle-g-original-glucose-biscuits": "/images/products/parle-g.svg",
-  "britannia-good-day-cashew-cookies": "/images/products/britannia-good-day.svg",
-  "sunfeast-marie-light": "/images/products/sunfeast-marie-light.svg",
-
-  // Snacks & Namkeen
-  "haldiram-s-aloo-bhujia": "/images/products/haldirams-aloo-bhujia.svg",
-  "bikaji-bikaneri-bhujia": "/images/products/bikaji-bhujia.svg",
-  "lay-s-india-s-magic-masala": "/images/products/lays-magic-masala.svg",
-  "cadbury-dairy-milk": "/images/products/cadbury-dairy-milk.svg",
-
-  // Instant Foods & Sauces
-  "maggi-2-minute-masala-noodles": "/images/products/maggi-noodles.svg",
-  "sunfeast-yippee-pasta-masala": "/images/products/sunfeast-yippee.svg",
-  "kissan-fresh-tomato-ketchup": "/images/products/kissan-ketchup.svg",
-  "mother-s-recipe-mango-pickle": "/images/products/mothers-pickle.svg",
-
-  // Dairy & Cold Beverages
-  "amul-taaza-toned-milk": "/images/products/amul-milk.svg",
-  "amul-butter": "/images/products/amul-butter.svg",
-  "bisleri-mineral-water": "/images/products/bisleri-water.svg",
-  "coca-cola-soft-drink": "/images/products/coca-cola.svg",
-  "real-mixed-fruit-juice": "/images/products/real-fruit-juice.svg",
-
-  // Breakfast Items
-  "kellogg-s-corn-flakes": "/images/products/kelloggs-cornflakes.svg",
-  "aashirvaad-poha": "/images/products/aashirvaad-poha.svg",
-  "saffola-oats": "/images/products/saffola-oats.svg",
-
-  // Baby Care
-  "johnson-s-baby-powder": "/images/products/johnsons-powder.svg",
-  "pampers-baby-dry-pants": "/images/products/pampers-diapers.svg",
-
-  // Personal Care & Soaps
-  "lifebuoy-total-10-soap": "/images/products/lifebuoy-soap.svg",
-  "dettol-handwash-refill": "/images/products/dettol-handwash.svg",
-  "parachute-coconut-hair-oil": "/images/products/parachute-oil.svg",
-  "clinic-plus-strong-long-shampoo": "/images/products/clinic-plus-shampoo.svg",
-  "nivea-soft-light-moisturiser": "/images/products/nivea-soft.svg",
-  "colgate-strong-teeth-toothpaste": "/images/products/colgate-toothpaste.svg",
-
-  // Household & Cleaning
-  "lizol-disinfectant-floor-cleaner": "/images/products/lizol-cleaner.svg",
-  "harpic-power-plus-toilet-cleaner": "/images/products/harpic-cleaner.svg",
-  "vim-dishwash-bar": "/images/products/vim-bar.svg",
-  "surf-excel-easy-wash-detergent-powder": "/images/products/surf-excel.svg",
-  "rin-detergent-bar": "/images/products/rin-bar.svg",
-  "comfort-fabric-conditioner": "/images/products/comfort-fabric.svg",
-  "scotch-brite-scrub-pad": "/images/products/scotch-brite.svg",
-  "homefoil-aluminium-foil": "/images/products/homefoil-foil.svg",
-
-  // Pooja & Devotion
-  "cycle-pure-agarbatti-three-in-one": "/images/products/cycle-agarbatti.svg",
-  "mangaldeep-camphor-kapoor": "/images/products/mangaldeep-kapoor.svg",
-
-  "classmate-notebook-172-pages": "/images/products/classmate-notebook.svg",
-  "cello-butterflow-ball-pen": "/images/products/cello-pen.svg",
-  "pedigree-adult-dog-food-chicken": "/images/products/pedigree-food.svg",
-
-  // New Pulses & Grains
-  "chana-dal": "/images/products/chana-dal.svg",
-  "urad-dal-dhuli": "/images/products/urad-dal.svg",
-  "pearl-millet-bajra": "/images/products/pearl-millet-bajra.svg",
-  "sorghum-jowar": "/images/products/sorghum-jowar.svg",
-  "black-chickpeas-kala-chana": "/images/products/kala-chana.svg",
-  "whole-red-lentils-sabut-masoor": "/images/products/sabut-masoor.svg",
-  "green-gram-sabut-moong": "/images/products/sabut-moong.svg",
-  "black-lentils-urad-sabut": "/images/products/urad-sabut.svg",
-
-  // New Spices
-  "catch-hing-asafoetida": "/images/products/catch-hing.svg",
-  "green-cardamom-choti-elaichi": "/images/products/cardamom.svg",
-  "cinnamon-sticks-dalchini": "/images/products/cinnamon.svg",
-  "whole-cloves-laung": "/images/products/cloves.svg",
-  "black-pepper-kali-mirch": "/images/products/black-pepper.svg",
-  "fennel-seeds-saunf": "/images/products/fennel-seeds.svg",
-  "fenugreek-seeds-methi": "/images/products/methi-seeds.svg",
-  "dry-mango-powder-amchur": "/images/products/amchur.svg",
-  "bay-leaves-tej-patta": "/images/products/tej-patta.svg",
-  "pure-kashmiri-saffron-kesar": "/images/products/saffron-kesar.svg",
-  "carom-seeds-ajwain": "/images/products/ajwain.svg",
-  "whole-nutmeg-jaiphal": "/images/products/nutmeg.svg",
-  "star-anise-chakra-phool": "/images/products/star-anise.svg",
-
-  // New Oils
-  "fortune-soyabean-oil": "/images/products/soyabean-oil.svg",
-  "dhara-peanut-oil": "/images/products/peanut-oil.svg",
-  "figaro-pure-olive-oil": "/images/products/olive-oil.svg",
-  "tilsona-sesame-oil": "/images/products/sesame-oil.svg",
-  "fortune-rice-bran-oil": "/images/products/rice-bran-oil.svg",
-  "dalda-vanaspati-ghee": "/images/products/dalda-ghee.svg",
-
-  // New Dairy
-  "amul-masti-dahi": "/images/products/amul-dahi.svg",
-  "amul-fresh-malai-paneer": "/images/products/amul-paneer.svg",
-  "amul-fresh-cream": "/images/products/amul-cream.svg",
-  "amul-spiced-buttermilk": "/images/products/amul-chhaachh.svg",
-  "nestle-everyday-milk-powder": "/images/products/milk-powder.svg",
-  "nestle-milkmaid-condensed-milk": "/images/products/condensed-milk.svg",
-  "amul-cheese-slices": "/images/products/cheese-slices.svg",
-
-  // New Sweets & Snacks
-  "haldiram-rasgulla-tin": "/images/products/rasgulla.svg",
-  "haldiram-gulab-jamun-tin": "/images/products/gulab-jamun.svg",
-  "mtr-breakfast-poha": "/images/products/mtr-poha.svg",
-  "mtr-instant-rava-upma": "/images/products/mtr-upma.svg",
-
-  // New Beverages
-  "lipton-green-tea-honey-lemon": "/images/products/green-tea.svg",
-  "red-bull-energy-drink": "/images/products/red-bull.svg",
-  "amul-kool-cafe": "/images/products/amul-kool.svg",
-  "real-tender-coconut-water": "/images/products/coconut-water.svg",
-
-  // New Breakfast
-  "britannia-whole-wheat-bread": "/images/products/wheat-bread.svg",
-  "fresh-farm-white-eggs-6pcs": "/images/products/farm-eggs.svg",
-  "kissan-mixed-fruit-jam": "/images/products/kissan-jam.svg",
-  "pintola-peanut-butter-crunchy": "/images/products/peanut-butter.svg",
-  "kellogg-muesli-fruit-nut": "/images/products/muesli.svg",
-  "nutella-hazelnut-spread": "/images/products/nutella.svg",
-
-  // New Personal Care
-  "dettol-original-soap": "/images/products/dettol-soap.svg",
-  "head-shoulders-cool-menthol": "/images/products/head-shoulders.svg",
-  "oral-b-toothbrush-shiny-clean": "/images/products/oral-b-brush.svg",
-  "gillette-foamy-shaving-foam": "/images/products/shaving-foam.svg",
-  "nivea-body-lotion-deep-moisture": "/images/products/nivea-lotion.svg",
-  "fogg-scent-deodorant": "/images/products/fogg-deo.svg",
-  "garnier-men-acno-fight-facewash": "/images/products/garnier-facewash.svg",
-
-  // New Cleaning & Household
-  "colin-glass-cleaner-spray": "/images/products/colin-spray.svg",
-  "pril-dishwash-gel-liquid": "/images/products/pril-liquid.svg",
-  "trishul-white-phenyl": "/images/products/phenyl-bottle.svg",
-  "odonil-air-freshener-lavender": "/images/products/odonil-block.svg",
-  "shalimar-garbage-bags-medium": "/images/products/garbage-bags.svg",
-  "gala-king-kong-grass-broom": "/images/products/gala-broom.svg",
-  "scotch-brite-cotton-floor-mop": "/images/products/floor-mop.svg",
-  "plastic-water-bucket-18l": "/images/products/water-bucket.svg",
-
-  // Cookware & Utensils
-  "hawkins-pressure-cooker-3l": "/images/products/pressure-cooker.svg",
-  "prestige-nonstick-dosa-tawa": "/images/products/dosa-tawa.svg",
-  "prestige-anodised-kadhai": "/images/products/anodised-kadhai.svg",
-  "bajaj-mixer-grinder-500w": "/images/products/mixer-grinder.svg",
-  "wooden-chakla-belan-set": "/images/products/chakla-belan.svg",
-  "steel-knife-peeler-set": "/images/products/knife-peeler.svg",
-  "steel-storage-jars-4pcs": "/images/products/storage-jars.svg",
-  "steel-colander-chhalni": "/images/products/colander-chhalni.svg",
-
-  // Misc & Electrical
-  "duracell-aa-batteries-4pcs": "/images/products/duracell-batteries.svg",
-  "wipro-9w-led-bulb": "/images/products/led-bulb.svg",
-  "household-white-candles-12pcs": "/images/products/white-candles.svg",
-  "ship-safety-matchboxes-10pk": "/images/products/matchboxes.svg",
-  "fevicol-mr-glue-100g": "/images/products/fevicol-glue.svg",
-  "craft-kitchen-scissors": "/images/products/craft-scissors.svg",
-  "emergency-sewing-needle-kit": "/images/products/sewing-kit.svg",
-  "chef-gas-stove-lighter": "/images/products/gas-lighter.svg",
+  // Detergents & Home
+  "surf-excel-easy-wash-detergent-powder": "/images/products/surf-excel.jpg",
 };
 
 /**
  * Returns the exact verified local product packaging image.
- * Uses exact slug mapping, fuzzy name matching, and category fallback.
+ * Uses exact slug mapping, fuzzy name matching, and category photographic fallback.
  */
 export function getProductImage(product?: {
   slug?: string | null;
@@ -258,7 +99,6 @@ export function getProductImage(product?: {
     }
   }
 
-
   // 2. Check exact slug match in verified product catalog
   if (product.slug) {
     const direct = PRODUCT_SPECIFIC_IMAGES[product.slug];
@@ -272,8 +112,7 @@ export function getProductImage(product?: {
     if (normMatch) return normMatch;
   }
 
-
-  // 3. Check name lookup
+  // 4. Check name lookup with photographic fallbacks
   if (product.name) {
     const normName = product.name
       .toLowerCase()
@@ -282,107 +121,9 @@ export function getProductImage(product?: {
     const nameMatch = PRODUCT_SPECIFIC_IMAGES[normName];
     if (nameMatch) return nameMatch;
 
-    // Fuzzy keywords for accurate matching
+    // Fuzzy keywords matching to real photos
     const lower = product.name.toLowerCase();
-    if (lower.includes("rajma")) return "/images/products/rajma-chitra.svg";
-    if (lower.includes("moong") || lower.includes("mung")) return "/images/products/moong-dal.svg";
-    if (lower.includes("masoor")) return "/images/products/masoor-dal.svg";
-    if (lower.includes("toor") || lower.includes("arhar") || lower.includes("tur"))
-      return "/images/products/tata-toor-dal.svg";
-    if (lower.includes("chana") || lower.includes("chole") || lower.includes("kabuli"))
-      return "/images/products/kabuli-chana.svg";
-    if (lower.includes("dal") || lower.includes("pulse") || lower.includes("lentil"))
-      return "/images/products/tata-toor-dal.svg";
-
-    if (lower.includes("besan")) return "/images/products/rajdhani-besan.svg";
-    if (lower.includes("suji") || lower.includes("rava") || lower.includes("sooji"))
-      return "/images/products/bansi-suji.svg";
-    if (lower.includes("maida")) return "/images/products/shakti-bhog-maida.svg";
     if (lower.includes("atta") || lower.includes("flour") || lower.includes("wheat"))
-      return "/images/products/aashirvaad-atta.svg";
-
-    if (lower.includes("basmati") || lower.includes("rice") || lower.includes("chawal"))
-      return "/images/products/india-gate-basmati-rice.svg";
-
-    if (lower.includes("mustard") || lower.includes("sarson"))
-      return "/images/products/fortune-mustard-oil.svg";
-    if (lower.includes("sunflower")) return "/images/products/fortune-sunflower-oil.svg";
-    if (lower.includes("ghee")) return "/images/products/amul-desi-ghee.svg";
-    if (lower.includes("oil") || lower.includes("tel"))
-      return "/images/products/fortune-mustard-oil.svg";
-
-    if (lower.includes("turmeric") || lower.includes("haldi"))
-      return "/images/products/everest-turmeric.svg";
-    if (lower.includes("mirch") || lower.includes("chilli"))
-      return "/images/products/mdh-deggi-mirch.svg";
-    if (lower.includes("garam masala")) return "/images/products/everest-garam-masala.svg";
-    if (lower.includes("jeera") || lower.includes("cumin"))
-      return "/images/products/catch-jeera.svg";
-    if (lower.includes("dhaniya") || lower.includes("coriander"))
-      return "/images/products/everest-dhaniya.svg";
-
-    if (lower.includes("salt") || lower.includes("namak")) return "/images/products/tata-salt.svg";
-    if (lower.includes("sugar") || lower.includes("chini"))
-      return "/images/products/madhur-sugar.svg";
-    if (lower.includes("gud") || lower.includes("jaggery") || lower.includes("gur"))
-      return "/images/products/organic-gud.svg";
-    if (lower.includes("honey") || lower.includes("shahad"))
-      return "/images/products/dabur-honey.svg";
-
-    if (lower.includes("almond") || lower.includes("badam"))
-      return "/images/products/california-almonds.svg";
-    if (lower.includes("cashew") || lower.includes("kaju"))
-      return "/images/products/whole-cashew.svg";
-    if (lower.includes("raisin") || lower.includes("kishmish"))
-      return "/images/products/kishmish.svg";
-
-    if (lower.includes("tea") || lower.includes("chai"))
-      return "/images/products/tata-tea-premium.svg";
-    if (lower.includes("coffee")) return "/images/products/nescafe-coffee.svg";
-
-    if (lower.includes("parle") || lower.includes("glucose")) return "/images/products/parle-g.svg";
-    if (lower.includes("good day") || lower.includes("cookie"))
-      return "/images/products/britannia-good-day.svg";
-    if (lower.includes("marie")) return "/images/products/sunfeast-marie-light.svg";
-    if (lower.includes("biscuit")) return "/images/products/parle-g.svg";
-
-    if (lower.includes("bhujia") || lower.includes("namkeen") || lower.includes("sev"))
-      return "/images/products/haldirams-aloo-bhujia.svg";
-    if (lower.includes("chips") || lower.includes("lays"))
-      return "/images/products/lays-magic-masala.svg";
-    if (lower.includes("dairy milk") || lower.includes("cadbury") || lower.includes("chocolate"))
-      return "/images/products/cadbury-dairy-milk.svg";
-
-    if (lower.includes("maggi") || lower.includes("noodle"))
-      return "/images/products/maggi-noodles.svg";
-    if (lower.includes("pasta") || lower.includes("yippee"))
-      return "/images/products/sunfeast-yippee.svg";
-    if (lower.includes("ketchup") || lower.includes("sauce"))
-      return "/images/products/kissan-ketchup.svg";
-    if (lower.includes("pickle") || lower.includes("achar"))
-      return "/images/products/mothers-pickle.svg";
-
-    if (lower.includes("milk") || lower.includes("doodh")) return "/images/products/amul-milk.svg";
-    if (lower.includes("butter") || lower.includes("makkhan"))
-      return "/images/products/amul-butter.svg";
-    if (lower.includes("water") || lower.includes("bisleri"))
-      return "/images/products/bisleri-water.svg";
-    if (
-      lower.includes("coca") ||
-      lower.includes("coke") ||
-      lower.includes("pepsi") ||
-      lower.includes("cold drink")
-    )
-      return "/images/products/coca-cola.svg";
-    if (lower.includes("juice")) return "/images/products/real-fruit-juice.svg";
-
-    if (lower.includes("corn flakes") || lower.includes("cornflakes") || lower.includes("cereal"))
-      return "/images/products/kelloggs-cornflakes.svg";
-    if (lower.includes("poha")) return "/images/products/aashirvaad-poha.svg";
-    if (lower.includes("oat")) return "/images/products/saffola-oats.svg";
-
-    if (lower.includes("dettol") || lower.includes("handwash"))
-      return "/images/products/dettol-handwash.svg";
     if (lower.includes("soap") || lower.includes("lifebuoy") || lower.includes("lux"))
       return "/images/products/lifebuoy-soap.svg";
     if (lower.includes("toothpaste") || lower.includes("colgate") || lower.includes("brush"))

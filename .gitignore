@@ -39,3 +39,4 @@ dist-ssr
 
 # Temporary test scripts
 scratch/
+public/images/.svg_backup/

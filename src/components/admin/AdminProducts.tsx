@@ -20,6 +20,7 @@ import {
   FileImage,
   AlertCircle,
   CheckCircle2,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } fro
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
 import { BulkProductImport } from "./BulkProductImport";
 import { AdminAiProductAdder } from "./AdminAiProductAdder";
+import { WebImageFinderModal } from "./WebImageFinderModal";
 import { autoCompleteProductWithGemini } from "@/lib/gemini-admin";
 import { Loader2 } from "lucide-react";
 
@@ -115,6 +117,7 @@ export function AdminProducts({
   const [isUploadingFront, setIsUploadingFront] = useState(false);
   const [isUploadingBack, setIsUploadingBack] = useState(false);
   const [uploadingAdditionalId, setUploadingAdditionalId] = useState<string | null>(null);
+  const [webFinderTarget, setWebFinderTarget] = useState<"front" | "back" | null>(null);
 
   // Variants in Modal
   const [variants, setVariants] = useState<VariantFormItem[]>([
@@ -1371,20 +1374,32 @@ export function AdminProducts({
 
                     {/* Actions & Inputs */}
                     <div className="flex-1 space-y-2 text-xs">
-                      <label className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-[#145A45]/40 bg-[#E6EFE8]/70 text-[#0F4A38] px-2.5 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                        <Upload className="size-3.5" />
-                        <span>{isUploadingFront ? "Uploading..." : "Upload Front Photo"}</span>
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleUploadFront(file);
-                          }}
-                          disabled={isUploadingFront}
-                          className="hidden"
-                        />
-                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#145A45]/40 bg-[#E6EFE8]/70 text-[#0F4A38] px-2 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                          <Upload className="size-3.5" />
+                          <span>{isUploadingFront ? "..." : "Upload Photo"}</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUploadFront(file);
+                            }}
+                            disabled={isUploadingFront}
+                            className="hidden"
+                          />
+                        </label>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setWebFinderTarget("front")}
+                          className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs"
+                        >
+                          <Globe className="size-3.5 text-sky-600" />
+                          <span>वेब से खोजें</span>
+                        </Button>
+                      </div>
 
                       <Input
                         placeholder="Or enter Front Image URL"
@@ -1430,20 +1445,32 @@ export function AdminProducts({
 
                     {/* Actions & Inputs */}
                     <div className="flex-1 space-y-2 text-xs">
-                      <label className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#1F2924] px-2.5 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                        <Upload className="size-3.5 text-[#145A45]" />
-                        <span>{isUploadingBack ? "Uploading..." : "Upload Back Photo"}</span>
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleUploadBack(file);
-                          }}
-                          disabled={isUploadingBack}
-                          className="hidden"
-                        />
-                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#1F2924] px-2 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                          <Upload className="size-3.5 text-[#145A45]" />
+                          <span>{isUploadingBack ? "..." : "Upload Back"}</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleUploadBack(file);
+                            }}
+                            disabled={isUploadingBack}
+                            className="hidden"
+                          />
+                        </label>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setWebFinderTarget("back")}
+                          className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs"
+                        >
+                          <Globe className="size-3.5 text-sky-600" />
+                          <span>वेब से खोजें</span>
+                        </Button>
+                      </div>
 
                       <Input
                         placeholder="Or enter Back Image URL"
@@ -1742,6 +1769,23 @@ export function AdminProducts({
         categories={categories}
         existingProducts={products}
         onSuccess={onRefresh}
+      />
+
+      {/* Web Image Finder Modal (Dual-mode Front & Back) */}
+      <WebImageFinderModal
+        isOpen={webFinderTarget !== null}
+        onClose={() => setWebFinderTarget(null)}
+        productName={`${brand ? brand + " " : ""}${name || ""}`.trim()}
+        currentImageUrl={webFinderTarget === "front" ? frontImageUrl : backImageUrl}
+        onSelectImage={(url) => {
+          if (webFinderTarget === "front") {
+            setFrontImageUrl(url);
+          } else if (webFinderTarget === "back") {
+            setBackImageUrl(url);
+          }
+          setWebFinderTarget(null);
+          toast.success("फोटो अपडेट कर दी गई है!");
+        }}
       />
     </div>
   );
