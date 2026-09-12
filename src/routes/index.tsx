@@ -340,10 +340,9 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
 function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <div className="my-4 sm:my-6 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 group/banner bg-[#F5F2EB] aspect-[21/9]">
-      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10" />
+    <div className="my-3 sm:my-5 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-xs border border-[#EAE6DC]/60 group/banner bg-[#F5F2EB]">
       {!loaded && (
-        <div className="absolute inset-0 bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center z-0">
+        <div className="w-full aspect-[16/6] sm:aspect-[21/7] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center">
           <Sparkles className="size-5 text-[#8A958F]/40" />
         </div>
       )}
@@ -353,8 +352,8 @@ function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string 
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover transition-all duration-700 group-hover/banner:scale-[1.02] ${
-          loaded ? "opacity-100" : "opacity-0"
+        className={`w-full h-auto block transition-all duration-500 group-hover/banner:scale-[1.01] ${
+          loaded ? "opacity-100" : "hidden"
         }`}
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = "none";
@@ -653,15 +652,16 @@ function PremiumStoreHome() {
             {headings.map((heading) => {
               const items = parentCategories.filter((c) => heading.slugs.includes(c.slug));
 
+              const subHeroMap: Record<string, string | null | undefined> = {
+                hero2: settings?.hero2_image_url,
+                hero3: settings?.hero3_image_url,
+                hero4: settings?.hero4_image_url,
+              };
+
               const bannerUrl =
+                (heading.banner_sub && subHeroMap[heading.banner_sub]) ||
                 heading.banner_image_url ||
-                (heading.banner_sub === "hero2"
-                  ? settings?.hero2_image_url
-                  : heading.banner_sub === "hero3"
-                  ? settings?.hero3_image_url
-                  : heading.banner_sub === "hero4"
-                  ? settings?.hero4_image_url
-                  : null);
+                null;
 
               if (items.length === 0 && !bannerUrl) return null;
 

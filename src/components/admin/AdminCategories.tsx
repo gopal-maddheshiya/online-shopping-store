@@ -27,10 +27,10 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { broadcastProductSync } from "@/lib/realtime-sync";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
-import type { Category } from "@/lib/queries";
+import { settingsQuery, type Category } from "@/lib/queries";
 import {
   getCategoryHeadings,
   saveCategoryHeadings,
@@ -53,6 +53,7 @@ export function AdminCategories({
   onNavigateToSettings,
 }: AdminCategoriesProps) {
   const queryClient = useQueryClient();
+  const { data: settings } = useQuery(settingsQuery);
 
   // Headings state (initialized from prop / DB first, fallback to storage)
   const [headings, setHeadings] = useState<CategoryHeading[]>(() =>
@@ -87,6 +88,8 @@ export function AdminCategories({
   const [headingIcon, setHeadingIcon] = useState("📦");
   const [headingSortOrder, setHeadingSortOrder] = useState(1);
   const [headingBannerUrl, setHeadingBannerUrl] = useState("");
+  const [headingBannerSub, setHeadingBannerSub] = useState<"hero2" | "hero3" | "hero4" | null>(null);
+  const [headingBannerSource, setHeadingBannerSource] = useState<"none" | "custom" | "hero2" | "hero3" | "hero4">("none");
   const [isUploadingHeadingBanner, setIsUploadingHeadingBanner] = useState(false);
   const [isSavingHeading, setIsSavingHeading] = useState(false);
 
@@ -231,29 +234,35 @@ export function AdminCategories({
 
     setIsUploadingHeadingBanner(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `banner-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `banners/${fileName}`;
+      toast.loading("सब-हीरो बैनर कंप्रेस व अपलोड हो रहा है...", { id: "heading-banner-upload" });
+      const { blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
+
+      const fileName = `custom_banner_${editingHeading?.id || "new"}_${Date.now()}.webp`;
+      const filePath = `hero/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("products")
-        .upload(filePath, file, { upsert: true });
+        .from("product-images")
+        .upload(filePath, blob, {
+          cacheControl: "31536000",
+          upsert: true,
+          contentType: blob.type || "image/webp",
+        });
 
-      if (uploadError) {
-        const { error: catErr } = await supabase.storage
-          .from("categories")
-          .upload(filePath, file, { upsert: true });
-        if (catErr) throw uploadError;
-        const { data } = supabase.storage.from("categories").getPublicUrl(filePath);
-        setHeadingBannerUrl(data.publicUrl);
-      } else {
-        const { data } = supabase.storage.from("products").getPublicUrl(filePath);
-        setHeadingBannerUrl(data.publicUrl);
+      if (uploadError) throw uploadError;
+
+      const { data: pubData } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(filePath);
+
+      if (pubData?.publicUrl) {
+        setHeadingBannerUrl(pubData.publicUrl);
+        setHeadingBannerSub(null);
+        setHeadingBannerSource("custom");
+        toast.success("सब-हीरो बैनर इमेज अपलोड हो गई!", { id: "heading-banner-upload" });
       }
-      toast.success("सब-हीरो बैनर इमेज अपलोड हो गई!");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Banner upload failed";
-      toast.error(`अपलोड विफल: ${msg}`);
+      toast.error(`अपलोड विफल: ${msg}`, { id: "heading-banner-upload" });
     } finally {
       setIsUploadingHeadingBanner(false);
     }
@@ -265,6 +274,8 @@ export function AdminCategories({
     setHeadingTitleEn("");
     setHeadingIcon("📦");
     setHeadingBannerUrl("");
+    setHeadingBannerSub(null);
+    setHeadingBannerSource("none");
     setHeadingSortOrder(headings.length + 1);
     setIsHeadingModalOpen(true);
   }
@@ -275,11 +286,19 @@ export function AdminCategories({
     setHeadingTitleEn(h.title_en);
     setHeadingIcon(h.icon || "📦");
     setHeadingBannerUrl(h.banner_image_url || "");
+    setHeadingBannerSub(h.banner_sub || null);
+    if (h.banner_sub) {
+      setHeadingBannerSource(h.banner_sub);
+    } else if (h.banner_image_url) {
+      setHeadingBannerSource("custom");
+    } else {
+      setHeadingBannerSource("none");
+    }
     setHeadingSortOrder(h.sort_order || 1);
     setIsHeadingModalOpen(true);
   }
 
-  function handleSaveHeading(e: React.FormEvent) {
+  async function handleSaveHeading(e: React.FormEvent) {
     e.preventDefault();
     if (!headingTitleHi.trim() || !headingTitleEn.trim()) {
       toast.error("कृपया हेडिंग का हिंदी और अंग्रेजी दोनों नाम दर्ज करें");
@@ -289,6 +308,16 @@ export function AdminCategories({
     setIsSavingHeading(true);
     try {
       const currentList = [...getCategoryHeadings()];
+      let finalBannerSub: "hero2" | "hero3" | "hero4" | null = null;
+      let finalBannerUrl: string | null = null;
+
+      if (headingBannerSource === "hero2" || headingBannerSource === "hero3" || headingBannerSource === "hero4") {
+        finalBannerSub = headingBannerSource;
+        finalBannerUrl = null;
+      } else if (headingBannerSource === "custom" && headingBannerUrl.trim()) {
+        finalBannerSub = null;
+        finalBannerUrl = headingBannerUrl.trim();
+      }
 
       if (editingHeading) {
         const idx = currentList.findIndex((h) => h.id === editingHeading.id);
@@ -302,10 +331,14 @@ export function AdminCategories({
             title_en: headingTitleEn.trim(),
             icon: headingIcon.trim() || "📦",
             sort_order: headingSortOrder,
-            banner_image_url: headingBannerUrl.trim() || null,
+            banner_sub: finalBannerSub,
+            banner_image_url: finalBannerUrl,
           };
-          saveCategoryHeadings(currentList);
+          await saveCategoryHeadings(currentList);
           setHeadings(currentList);
+          queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+          queryClient.invalidateQueries({ queryKey: ["categories"] });
+          onRefresh();
           toast.success(`हेडिंग "${headingTitleHi}" अपडेट हो गई!`);
         }
       } else {
@@ -316,13 +349,16 @@ export function AdminCategories({
           title_en: headingTitleEn.trim(),
           icon: headingIcon.trim() || "📦",
           sort_order: headingSortOrder,
-          banner_sub: null,
-          banner_image_url: headingBannerUrl.trim() || null,
+          banner_sub: finalBannerSub,
+          banner_image_url: finalBannerUrl,
           slugs: [],
         };
         currentList.push(newHeading);
-        saveCategoryHeadings(currentList);
+        await saveCategoryHeadings(currentList);
         setHeadings(currentList);
+        queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
+        onRefresh();
         toast.success(`नई हेडिंग "${headingTitleHi}" जुड़ गई!`);
       }
 
@@ -600,65 +636,86 @@ export function AdminCategories({
               </div>
 
               {/* Optional Section Banner Preview & Quick Controls */}
-              {heading.banner_image_url ? (
-                <div className="relative group/banner rounded-2xl overflow-hidden border border-[#E8E4DA] bg-white shadow-2xs">
-                  <div className="relative aspect-[21/7] sm:aspect-[32/9] w-full bg-[#FAF8F2] overflow-hidden">
-                    <img
-                      src={heading.banner_image_url}
-                      alt={heading.title_hi}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/banner:opacity-100 transition-opacity flex items-center justify-between px-4">
-                      <span className="text-white text-xs font-semibold drop-shadow-xs">
-                        होमपेज सेक्शन बैनर (21:9)
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => openEditHeadingModal(heading)}
-                          className="h-8 rounded-xl bg-white text-[#16201A] hover:bg-white/90 text-xs font-bold gap-1 shadow-xs"
-                        >
-                          <Edit2 className="size-3 text-[#145A45]" /> बैनर बदलें
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => {
-                            if (confirm(`क्या आप "${heading.title_hi}" का होमपेज बैनर हटाना चाहते हैं?`)) {
-                              const updated = headings.map((h) =>
-                                h.id === heading.id ? { ...h, banner_image_url: null } : h,
-                              );
-                              setHeadings(updated);
-                              saveCategoryHeadings(updated);
-                              toast.success("बैनर हटा दिया गया");
-                            }
-                          }}
-                          className="h-8 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold gap-1 shadow-xs"
-                        >
-                          <Trash2 className="size-3" /> बैनर हटाएं
-                        </Button>
+              {(() => {
+                const subHeroMap: Record<string, string | null | undefined> = {
+                  hero2: settings?.hero2_image_url,
+                  hero3: settings?.hero3_image_url,
+                  hero4: settings?.hero4_image_url,
+                };
+                const activeBanner =
+                  (heading.banner_sub && subHeroMap[heading.banner_sub]) ||
+                  heading.banner_image_url ||
+                  null;
+
+                if (activeBanner) {
+                  return (
+                    <div className="relative group/banner rounded-2xl overflow-hidden border border-[#E8E4DA] bg-[#FAF8F2] shadow-2xs">
+                      <div className="relative w-full bg-[#FAF8F2] overflow-hidden flex items-center justify-center p-2">
+                        <img
+                          src={activeBanner}
+                          alt={heading.title_hi}
+                          className="w-full h-auto max-h-48 sm:max-h-56 object-contain rounded-xl block"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/banner:opacity-100 transition-opacity flex items-center justify-between px-4 rounded-2xl">
+                          <span className="text-white text-xs font-semibold drop-shadow-xs">
+                            {heading.banner_sub
+                              ? `होमपेज बैनर (Hero Slide ${heading.banner_sub.slice(4)})`
+                              : "कस्टम होमपेज बैनर"}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => openEditHeadingModal(heading)}
+                              className="h-8 rounded-xl bg-white text-[#16201A] hover:bg-white/90 text-xs font-bold gap-1 shadow-xs"
+                            >
+                              <Edit2 className="size-3 text-[#145A45]" /> बैनर बदलें
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={async () => {
+                                if (confirm(`क्या आप "${heading.title_hi}" का होमपेज बैनर हटाना चाहते हैं?`)) {
+                                  const updated = headings.map((h) =>
+                                    h.id === heading.id ? { ...h, banner_image_url: null, banner_sub: null } : h,
+                                  );
+                                  setHeadings(updated);
+                                  await saveCategoryHeadings(updated);
+                                  queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+                                  queryClient.invalidateQueries({ queryKey: ["categories"] });
+                                  onRefresh();
+                                  toast.success("बैनर हटा दिया गया");
+                                }
+                              }}
+                              className="h-8 rounded-xl bg-red-600 text-white hover:bg-red-700 text-xs font-bold gap-1 shadow-xs"
+                            >
+                              <Trash2 className="size-3" /> बैनर हटाएं
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  );
+                }
+
+                return (
+                  <div className="flex items-center justify-between px-3.5 py-2 rounded-2xl border border-dashed border-[#E8E4DA] bg-white/70 hover:bg-white transition-colors">
+                    <div className="flex items-center gap-2 text-xs text-[#5A655F]">
+                      <ImageIcon className="size-4 text-[#8C9590]" />
+                      <span>होमपेज सेक्शन बैनर अभी नहीं जुड़ा है</span>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openEditHeadingModal(heading)}
+                      className="h-7 text-xs font-bold text-[#145A45] hover:bg-[#145A45]/10 gap-1 rounded-lg"
+                    >
+                      <Plus className="size-3" /> बैनर जोड़ें
+                    </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-between px-3.5 py-2 rounded-2xl border border-dashed border-[#E8E4DA] bg-white/70 hover:bg-white transition-colors">
-                  <div className="flex items-center gap-2 text-xs text-[#5A655F]">
-                    <ImageIcon className="size-4 text-[#8C9590]" />
-                    <span>होमपेज सेक्शन बैनर अभी नहीं जुड़ा है</span>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => openEditHeadingModal(heading)}
-                    className="h-7 text-xs font-bold text-[#145A45] hover:bg-[#145A45]/10 gap-1 rounded-lg"
-                  >
-                    <Plus className="size-3" /> बैनर जोड़ें
-                  </Button>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Categories Grid under this Heading */}
               {headingCategories.length === 0 ? (
@@ -1006,56 +1063,145 @@ export function AdminCategories({
               </div>
             </div>
 
-            {/* Sub-Hero Banner Image */}
-            <div className="space-y-2 pt-2 border-t border-[#E8E4DA]/70">
+            {/* Sub-Hero Banner Selector */}
+            <div className="space-y-3 pt-2 border-t border-[#E8E4DA]/70">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
                   <ImageIcon className="size-3.5 text-[#145A45]" />
-                  सब-हीरो बैनर (Sub-Hero Banner - वैकल्पिक)
+                  सब-हीरो बैनर (Sub-Hero Banner)
                 </Label>
-                {headingBannerUrl && (
+                {headingBannerSource !== "none" && (
                   <button
                     type="button"
-                    onClick={() => setHeadingBannerUrl("")}
+                    onClick={() => {
+                      setHeadingBannerSource("none");
+                      setHeadingBannerUrl("");
+                      setHeadingBannerSub(null);
+                    }}
                     className="text-[10px] text-red-600 hover:underline font-semibold"
                   >
-                    हटाएं
+                    बैनर हटाएं
                   </button>
                 )}
               </div>
               <p className="text-[11px] text-[#6B746F] leading-tight">
-                यह इमेज होमपेज पर इस हेडिंग के ठीक नीचे और कैटेगरीज़ के ठीक ऊपर दिखाई देगी।
+                यह इमेज होमपेज पर इस हेडिंग के ठीक नीचे और संबंधित कैटेगरीज़ के ऊपर दिखाई देगी।
               </p>
 
-              {headingBannerUrl && (
-                <div className="relative aspect-[21/9] rounded-xl overflow-hidden border border-[#E8E4DA] bg-neutral-100 shadow-2xs">
-                  <img
-                    src={headingBannerUrl}
-                    alt="Banner Preview"
-                    className="w-full h-full object-cover"
+              {/* Banner Source Tabs */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-[#FAF8F2] border border-[#E8E4DA] rounded-xl text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeadingBannerSource("custom");
+                    setHeadingBannerSub(null);
+                  }}
+                  className={`py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                    headingBannerSource === "custom"
+                      ? "bg-[#145A45] text-white shadow-2xs"
+                      : "text-[#5A655F] hover:bg-white"
+                  }`}
+                >
+                  कस्टम इमेज
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeadingBannerSource("hero2");
+                    setHeadingBannerSub("hero2");
+                  }}
+                  className={`py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                    headingBannerSource === "hero2"
+                      ? "bg-[#145A45] text-white shadow-2xs"
+                      : "text-[#5A655F] hover:bg-white"
+                  }`}
+                >
+                  Hero Slide 2
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeadingBannerSource("hero3");
+                    setHeadingBannerSub("hero3");
+                  }}
+                  className={`py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                    headingBannerSource === "hero3"
+                      ? "bg-[#145A45] text-white shadow-2xs"
+                      : "text-[#5A655F] hover:bg-white"
+                  }`}
+                >
+                  Hero Slide 3
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeadingBannerSource("hero4");
+                    setHeadingBannerSub("hero4");
+                  }}
+                  className={`py-1.5 px-2 rounded-lg font-bold transition-all text-center cursor-pointer ${
+                    headingBannerSource === "hero4"
+                      ? "bg-[#145A45] text-white shadow-2xs"
+                      : "text-[#5A655F] hover:bg-white"
+                  }`}
+                >
+                  Hero Slide 4
+                </button>
+              </div>
+
+              {/* Preview Box */}
+              {(() => {
+                const previewImg =
+                  headingBannerSource === "hero2"
+                    ? settings?.hero2_image_url
+                    : headingBannerSource === "hero3"
+                    ? settings?.hero3_image_url
+                    : headingBannerSource === "hero4"
+                    ? settings?.hero4_image_url
+                    : headingBannerSource === "custom"
+                    ? headingBannerUrl
+                    : null;
+
+                if (!previewImg) return null;
+
+                return (
+                  <div className="relative rounded-xl overflow-hidden border border-[#E8E4DA] bg-[#FAF8F2] p-1.5 shadow-2xs">
+                    <img
+                      src={previewImg}
+                      alt="Banner Preview"
+                      className="w-full h-auto max-h-40 object-contain rounded-lg block mx-auto"
+                    />
+                  </div>
+                );
+              })()}
+
+              {/* Custom Image Upload / URL Input */}
+              {headingBannerSource === "custom" && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://... या इमेज फ़ाइल अपलोड करें"
+                    value={headingBannerUrl}
+                    onChange={(e) => setHeadingBannerUrl(e.target.value)}
+                    className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white"
                   />
+                  <label className="flex items-center justify-center gap-1.5 px-3 rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] hover:bg-[#E6EFE8] cursor-pointer shrink-0 text-xs font-bold text-[#145A45] transition-colors">
+                    <Upload className="size-4" />
+                    <span>{isUploadingHeadingBanner ? "..." : "अपलोड"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleHeadingBannerUpload}
+                      className="hidden"
+                      disabled={isUploadingHeadingBanner}
+                    />
+                  </label>
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://... या इमेज फ़ाइल अपलोड करें"
-                  value={headingBannerUrl}
-                  onChange={(e) => setHeadingBannerUrl(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white"
-                />
-                <label className="flex items-center justify-center gap-1.5 px-3 rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] hover:bg-[#E6EFE8] cursor-pointer shrink-0 text-xs font-bold text-[#145A45] transition-colors">
-                  <Upload className="size-4" />
-                  <span>{isUploadingHeadingBanner ? "..." : "अपलोड"}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleHeadingBannerUpload}
-                    className="hidden"
-                    disabled={isUploadingHeadingBanner}
-                  />
-                </label>
-              </div>
+              {headingBannerSource.startsWith("hero") && (
+                <p className="text-[11px] text-[#145A45] bg-[#E6EFE8]/50 px-2.5 py-1.5 rounded-lg">
+                  यह हेडिंग <strong>Admin Settings → Banners</strong> में सेट किए गए {headingBannerSource.toUpperCase()} से जुड़ी है।
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-[#E8E4DA]">
