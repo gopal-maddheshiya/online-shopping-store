@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { searchWebProductImages, type WebImageResult } from "../../lib/web-image-search";
+import { sanitizeGroceryQuery } from "../../lib/server-image-search";
 
 export interface WebImageFinderModalProps {
   isOpen: boolean;
@@ -24,15 +25,6 @@ export interface WebImageFinderModalProps {
   currentImageUrl?: string | null;
   onSelectImage: (imageUrl: string) => void;
 }
-
-const QUICK_SEARCH_MODIFIERS = [
-  { label: "पैकेट (Packet)", suffix: "packet" },
-  { label: "1 किलो (1kg)", suffix: "1kg pack" },
-  { label: "1 लीटर (1L)", suffix: "1L pouch" },
-  { label: "बोतल (Bottle)", suffix: "bottle" },
-  { label: "डिब्बा (Box)", suffix: "box" },
-  { label: "ग्रॉसरी पैकेजिंग", suffix: "grocery packaging" },
-];
 
 export function WebImageFinderModal({
   isOpen,
@@ -50,8 +42,8 @@ export function WebImageFinderModal({
 
   const handleSearch = useCallback(
     async (termToSearch?: string) => {
-      const q = (termToSearch !== undefined ? termToSearch : query).trim();
-      if (!q) {
+      const rawQ = (termToSearch !== undefined ? termToSearch : query).trim();
+      if (!rawQ) {
         toast.error("कृपया कोई सामान या ब्रांड का नाम लिखें।");
         return;
       }
@@ -59,11 +51,11 @@ export function WebImageFinderModal({
       setIsLoading(true);
       setFailedImageIds(new Set());
       try {
-        const items = await searchWebProductImages(q);
+        const items = await searchWebProductImages(rawQ);
         setResults(items);
         if (items.length === 0) {
           toast.info(
-            "इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे सीधा इमेज लिंक पेस्ट कर सकते हैं।",
+            "इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे दिए गए सुझाव चिप्स आज़माएं या लिंक पेस्ट करें।",
           );
         } else {
           toast.success(`${items.length} असली वेब फोटो मिलीं!`);
@@ -78,23 +70,74 @@ export function WebImageFinderModal({
     [query],
   );
 
+  // When opening, automatically sanitize noisy names (e.g. 'Generic Big Raisins Munakka' -> 'Munakka')
   useEffect(() => {
     if (isOpen && productName) {
-      setQuery(productName);
+      const { cleanWord } = sanitizeGroceryQuery(productName);
+      const initialTerm = cleanWord || productName;
+      setQuery(initialTerm);
       setSelectedUrl(currentImageUrl || "");
       setFailedImageIds(new Set());
       setCustomUrl("");
-      void handleSearch(productName);
+      void handleSearch(initialTerm);
     }
   }, [isOpen, productName, currentImageUrl, handleSearch]);
 
-  function handleQuickModifier(suffix: string) {
-    const base = query
-      .replace(/\b(packet|1kg|1L|bottle|box|pouch|grocery|packaging)\b/gi, "")
-      .trim();
-    const updated = `${base} ${suffix}`.trim();
-    setQuery(updated);
-    void handleSearch(updated);
+  // Contextual smart suggestions based on product nature
+  const contextualChips = useMemo(() => {
+    const raw = (productName || query || "").trim();
+    const { cleanWord } = sanitizeGroceryQuery(raw);
+    const lower = raw.toLowerCase();
+    const chips: string[] = [];
+
+    if (cleanWord) chips.push(cleanWord);
+    if (cleanWord) chips.push(`${cleanWord} packet`);
+
+    if (
+      lower.includes("oil") ||
+      lower.includes("tel") ||
+      lower.includes("ghani") ||
+      lower.includes("sarso")
+    ) {
+      chips.push("Kacchi Ghani 1L", "Mustard Oil bottle", "1L pouch", "5L can");
+    } else if (
+      lower.includes("munakka") ||
+      lower.includes("kaju") ||
+      lower.includes("badam") ||
+      lower.includes("raisin") ||
+      lower.includes("anjeer") ||
+      lower.includes("pista")
+    ) {
+      chips.push("Dry Fruit packet", "250g pack", "500g pouch");
+    } else if (
+      lower.includes("dal") ||
+      lower.includes("daal") ||
+      lower.includes("chana") ||
+      lower.includes("rajma") ||
+      lower.includes("matar")
+    ) {
+      chips.push("1kg packet", "Tata Sampann", "Desi unpolished");
+    } else if (
+      lower.includes("masala") ||
+      lower.includes("mirch") ||
+      lower.includes("haldi") ||
+      lower.includes("dhaniya") ||
+      lower.includes("jeera") ||
+      lower.includes("elaichi")
+    ) {
+      chips.push("Everest Masala", "Catch Spices", "100g pack");
+    } else if (lower.includes("chini") || lower.includes("sugar")) {
+      chips.push("Sugar 1kg", "Sugar 5kg", "Madhur Sugar");
+    } else {
+      chips.push("1kg packet", "Grocery pack", "Branded");
+    }
+
+    return Array.from(new Set(chips)).slice(0, 5);
+  }, [productName, query]);
+
+  function handleChipClick(chipText: string) {
+    setQuery(chipText);
+    void handleSearch(chipText);
   }
 
   function handleApplyCustomUrl() {
@@ -139,9 +182,13 @@ export function WebImageFinderModal({
                 वेब से असली प्रोडक्ट फोटो खोजें (Auto Web Image Finder)
               </DialogTitle>
               <p className="text-xs text-[#5A655F] mt-1">
-                गूगल और ई-कॉमर्स (Flipkart, Amazon, Blinkit) से 50+ लाइव पैकेजिंग फोटो में से चुनें
-                या सीधा लिंक डालें।
+                गूगल और ई-कॉमर्स (Flipkart, Amazon, Blinkit) से 50+ लाइव पैकेजिंग फोटो में से चुनें।
               </p>
+              {productName && (
+                <p className="text-[11px] text-[#8C7A5B] font-medium mt-0.5 truncate">
+                  उत्पाद: <span className="text-[#1F2924] font-semibold">{productName}</span>
+                </p>
+              )}
             </div>
 
             {visibleResults.length > 0 && (
@@ -155,13 +202,13 @@ export function WebImageFinderModal({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* Search Bar & Quick Modifiers */}
+          {/* Search Bar & Smart Dynamic Modifiers */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6B746F]" />
                 <Input
-                  placeholder="सर्च करें (उदा. Tata Salt, Fortune Oil, Basmati Rice, Parle-G)..."
+                  placeholder="सर्च करें (उदा. Munakka, Tata Salt, Fortune Oil, Basmati Rice)..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -183,17 +230,21 @@ export function WebImageFinderModal({
               </Button>
             </div>
 
-            {/* Quick Keyword Pills for Grocery Pack Types */}
+            {/* Smart Contextual Search Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
-              <span className="text-[#6B746F] shrink-0 font-medium mr-1">त्वरित फ़िल्टर:</span>
-              {QUICK_SEARCH_MODIFIERS.map((mod) => (
+              <span className="text-[#6B746F] shrink-0 font-medium mr-1">स्मार्ट सुझाव:</span>
+              {contextualChips.map((chip) => (
                 <button
-                  key={mod.suffix}
+                  key={chip}
                   type="button"
-                  onClick={() => handleQuickModifier(mod.suffix)}
-                  className="rounded-lg bg-[#FAF8F2] hover:bg-[#E6EFE8] border border-[#E0D9CB] hover:border-[#145A45]/30 text-[#145A45] px-2.5 py-1 font-semibold whitespace-nowrap transition-colors cursor-pointer"
+                  onClick={() => handleChipClick(chip)}
+                  className={`rounded-lg border px-2.5 py-1 font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                    query.toLowerCase() === chip.toLowerCase()
+                      ? "bg-[#145A45] text-white border-[#145A45]"
+                      : "bg-[#FAF8F2] hover:bg-[#E6EFE8] border-[#E0D9CB] hover:border-[#145A45]/30 text-[#145A45]"
+                  }`}
                 >
-                  + {mod.label}
+                  🔍 {chip}
                 </button>
               ))}
             </div>
@@ -225,13 +276,29 @@ export function WebImageFinderModal({
                 </p>
               </div>
             ) : visibleResults.length === 0 ? (
-              <div className="p-10 text-center rounded-2xl border border-dashed border-[#E8E4DA] bg-[#FAF8F2]/40 text-xs text-[#6B746F] space-y-2">
+              <div className="p-10 text-center rounded-2xl border border-dashed border-[#E8E4DA] bg-[#FAF8F2]/40 text-xs text-[#6B746F] space-y-3">
                 <ImageIcon className="size-10 mx-auto text-stone-300" />
-                <p className="font-bold text-[#1F2924] text-sm">कोई फोटो नहीं मिली</p>
-                <p className="text-[11px] max-w-md mx-auto">
-                  सर्च नाम बदलकर खोजें (उदा. केवल ब्रांड या सामान का नाम जैसे "Tata Salt" या
-                  "Fortune Oil") अथवा नीचे सीधा लिंक पेस्ट करें।
+                <p className="font-bold text-[#1F2924] text-sm">इस नाम से सीधी फोटो नहीं मिली</p>
+                <p className="text-[11px] max-w-md mx-auto text-[#5A655F]">
+                  ऊपर <strong>स्मार्ट सुझाव</strong> वाले किसी भी बटन (जैसे:{" "}
+                  {contextualChips
+                    .slice(0, 2)
+                    .map((c) => `"${c}"`)
+                    .join(" या ")}
+                  ) पर क्लिक करें, अथवा नीचे सीधा Google Images से लिंक पेस्ट करें।
                 </p>
+                <div className="flex flex-wrap justify-center gap-2 pt-1">
+                  {contextualChips.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => handleChipClick(c)}
+                      className="rounded-lg bg-emerald-700 text-white text-xs px-3 py-1 font-semibold hover:bg-emerald-800 transition-colors cursor-pointer"
+                    >
+                      🔍 "{c}" से खोजें
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 max-h-[52vh] overflow-y-auto p-1.5 rounded-2xl bg-[#FAF8F2]/30 border border-[#E8E4DA]/60">
