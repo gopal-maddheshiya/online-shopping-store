@@ -20,6 +20,7 @@ import {
   Receipt,
   RotateCcw,
   DollarSign,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,9 @@ import { InvoiceView } from "@/components/InvoiceView";
 import type { Invoice } from "@/lib/billing";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery } from "@tanstack/react-query";
+import { productsQuery } from "@/lib/queries";
+import { AdminAiOrderCreator } from "./AdminAiOrderCreator";
 
 type AdminOrdersProps = {
   orders: Order[];
@@ -77,7 +81,9 @@ export function AdminOrders({
   setSelectedOrder: controlledSetSelectedOrder,
 }: AdminOrdersProps) {
   const { lang, language = lang } = useLanguage();
+  const { data: productsData } = useQuery(productsQuery());
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAiOrderCreatorOpen, setIsAiOrderCreatorOpen] = useState(false);
   const [activeQueueTab, setActiveQueueTab] = useState<
     "active" | "placed" | "preparing" | "out_for_delivery" | "delivered" | "cancelled" | "all"
   >("active");
@@ -513,6 +519,15 @@ export function AdminOrders({
                 <SelectItem value="lowest" className="text-xs">Lowest Total</SelectItem>
               </SelectContent>
             </Select>
+
+            <Button
+              type="button"
+              onClick={() => setIsAiOrderCreatorOpen(true)}
+              className="rounded-xl font-bold bg-gradient-to-r from-[#145A45] to-[#1F7A5E] text-white hover:opacity-95 h-11 text-xs shadow-xs shrink-0 gap-1.5"
+            >
+              <Sparkles className="size-4 text-amber-300" />
+              {language === "hi" ? "✨ AI से नया ऑर्डर बनाएं" : "✨ AI New Order"}
+            </Button>
 
             <Button
               onClick={onRefresh}
@@ -1162,6 +1177,14 @@ export function AdminOrders({
         isOpen={invoiceModalOpen}
         onClose={() => setInvoiceModalOpen(false)}
         lang={language as "hi" | "en"}
+      />
+
+      {/* AI Quick Order Creator from WhatsApp / Slip */}
+      <AdminAiOrderCreator
+        isOpen={isAiOrderCreatorOpen}
+        onClose={() => setIsAiOrderCreatorOpen(false)}
+        products={productsData || []}
+        onOrderCreated={onRefresh}
       />
     </div>
   );

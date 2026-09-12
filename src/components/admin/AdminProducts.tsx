@@ -44,8 +44,9 @@ import { broadcastProductSync } from "@/lib/realtime-sync";
 import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } from "@/lib/i18n";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
 import { BulkProductImport } from "./BulkProductImport";
-
-
+import { AdminAiProductAdder } from "./AdminAiProductAdder";
+import { autoCompleteProductWithGemini } from "@/lib/gemini-admin";
+import { Loader2 } from "lucide-react";
 
 
 
@@ -68,6 +69,8 @@ export function AdminProducts({
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(initialOpenAdd);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [isAiProductAdderOpen, setIsAiProductAdderOpen] = useState(false);
+  const [isAiFilling, setIsAiFilling] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -208,6 +211,48 @@ export function AdminProducts({
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, ""),
       );
+    }
+  }
+
+  async function handleAiAutoComplete() {
+    if (!name.trim()) {
+      toast.error("कृपया पहले अंग्रेजी में प्रोडक्ट का नाम लिखें (जैसे: Fortune Oil, Catch Masala)");
+      return;
+    }
+    setIsAiFilling(true);
+    try {
+      const res = await autoCompleteProductWithGemini({
+        productName: name,
+        categories,
+      });
+
+      if (res.success && res.data) {
+        if (!nameHi.trim()) setNameHi(res.data.name_hi);
+        if (!brand.trim()) setBrand(res.data.brand);
+        if (res.data.category_id && (!categoryId || categoryId === parentCategories[0]?.id)) {
+          setCategoryId(res.data.category_id);
+        }
+        if (!description.trim()) setDescription(res.data.description);
+        if (!descriptionHi.trim()) setDescriptionHi(res.data.description_hi);
+        if (res.data.variants.length > 0 && variants.length <= 1 && variants[0]?.price === 100) {
+          setVariants(
+            res.data.variants.map((v) => ({
+              label: v.label,
+              price: v.price,
+              mrp: v.mrp,
+              stock: v.stock,
+              low_stock_threshold: 5,
+            }))
+          );
+        }
+        toast.success("✨ AI ने हिंदी नाम, विवरण व वेरिएंट्स भर दिए!");
+      } else {
+        toast.error(res.error || "AI ऑटो-कंप्लीट नहीं कर सका।");
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "AI ऑटो-कंप्लीट में समस्या आई।");
+    } finally {
+      setIsAiFilling(false);
     }
   }
 
@@ -626,7 +671,14 @@ export function AdminProducts({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+          <Button
+            type="button"
+            onClick={() => setIsAiProductAdderOpen(true)}
+            className="rounded-xl font-bold bg-gradient-to-r from-[#145A45] to-[#1F7A5E] text-white hover:opacity-95 h-11 text-xs shadow-xs shrink-0 gap-1.5"
+          >
+            <Sparkles className="size-4 text-amber-300" /> ✨ AI से सामान जोड़ें
+          </Button>
           <Button
             type="button"
             onClick={() => setIsBulkImportOpen(true)}
@@ -935,12 +987,31 @@ export function AdminProducts({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                {/* English Name */}
+                {/* English Name with 1-Tap AI Auto-Fill */}
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
-                    <span>Product Name (English) <span className="text-red-500">*</span></span>
-                    <span className="text-[10px] text-[#5A655F]">अंग्रेजी नाम</span>
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-[#1F2924] flex items-center gap-1">
+                      <span>Product Name (English) <span className="text-red-500">*</span></span>
+                      <span className="text-[10px] text-[#5A655F]">अंग्रेजी नाम</span>
+                    </Label>
+                    <button
+                      type="button"
+                      disabled={isAiFilling || !name.trim()}
+                      onClick={handleAiAutoComplete}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#145A45]/10 hover:bg-[#145A45]/15 px-2 py-0.5 rounded-md transition-colors disabled:opacity-50"
+                      title="प्रोडक्ट नाम के आधार पर हिंदी नाम, विवरण व अन्य जानकारी अपने आप भरें"
+                    >
+                      {isAiFilling ? (
+                        <>
+                          <Loader2 className="size-3 animate-spin" /> भर रहा है...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="size-3 text-amber-500" /> ✨ AI से भरें
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <Input
                     required
                     placeholder="e.g. Fortune Chakki Fresh Atta"
@@ -1659,6 +1730,15 @@ export function AdminProducts({
       <BulkProductImport
         isOpen={isBulkImportOpen}
         onClose={() => setIsBulkImportOpen(false)}
+        categories={categories}
+        existingProducts={products}
+        onSuccess={onRefresh}
+      />
+
+      {/* AI Smart Product Intake Modal (Invoice / Voice / WhatsApp) */}
+      <AdminAiProductAdder
+        isOpen={isAiProductAdderOpen}
+        onClose={() => setIsAiProductAdderOpen(false)}
         categories={categories}
         existingProducts={products}
         onSuccess={onRefresh}

@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, X, ArrowUpDown, Search, Filter } from "lucide-react";
+import { SlidersHorizontal, X, ArrowUpDown, Search, Filter, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { searchSemanticKiranaQuery } from "@/lib/gemini-admin";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -88,6 +90,9 @@ function Shop() {
   const { data: products, isLoading } = useQuery(productsQuery());
   const { lang, t, getCategoryName, getProductName } = useLanguage();
   const [term, setTerm] = useState(search.q ?? "");
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [semanticProductIds, setSemanticProductIds] = useState<string[] | null>(null);
+  const [semanticReason, setSemanticReason] = useState<string | null>(null);
 
   const allCategories = categories ?? [];
   const allProducts = products ?? [];
@@ -101,10 +106,39 @@ function Shop() {
   );
 
   function update(patch: Partial<ShopSearch>) {
+    setSemanticProductIds(null);
+    setSemanticReason(null);
     void navigate({ search: (prev) => ({ ...prev, ...patch }) });
   }
 
+  async function handleAiSemanticSearch() {
+    const q = (search.q ?? term).trim();
+    if (!q) return;
+    setIsAiSearching(true);
+    try {
+      const res = await searchSemanticKiranaQuery({
+        query: q,
+        availableProducts: allProducts,
+      });
+      if (res.success && res.matchedProductIds.length > 0) {
+        setSemanticProductIds(res.matchedProductIds);
+        setSemanticReason(res.reason || null);
+        toast.success(`✨ AI ने "${q}" से जुड़े जरूरी सामान ढूंढ निकाले!`);
+      } else {
+        toast.info(`AI को "${q}" के लिए कोई विशेष सामान नहीं मिला।`);
+      }
+    } catch {
+      toast.error("AI किराना खोज में समस्या आई।");
+    } finally {
+      setIsAiSearching(false);
+    }
+  }
+
   const results = useMemo(() => {
+    if (semanticProductIds && semanticProductIds.length > 0) {
+      return allProducts.filter((p) => semanticProductIds.includes(p.id));
+    }
+
     let list = allProducts;
     const catId = activeCategory?.id;
     const catSlug = activeCategory?.slug;
@@ -164,7 +198,7 @@ function Shop() {
     else if (search.sort === "discount") sorted.sort((a, b) => disc(b) - disc(a));
     else if (search.sort === "popular") sorted.sort((a, b) => b.sold_count - a.sold_count);
     return sorted;
-  }, [products, categories, activeCategory, search, getProductName]);
+  }, [products, categories, activeCategory, search, getProductName, semanticProductIds]);
 
   const filters = (
     <div className="space-y-5">
@@ -421,6 +455,30 @@ function Shop() {
               );
             })}
           </div>
+          {/* Semantic Search Explainer Banner */}
+          {semanticReason && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 p-3.5 flex items-center justify-between gap-3 text-xs text-emerald-950 shadow-2xs mb-4">
+              <div className="flex items-center gap-2">
+                <span className="size-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Sparkles className="size-3.5" />
+                </span>
+                <span>
+                  <strong>✨ AI किराना खोज:</strong> {semanticReason}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSemanticProductIds(null);
+                  setSemanticReason(null);
+                }}
+                className="text-[11px] font-bold text-emerald-800 hover:underline shrink-0 bg-emerald-100 px-2 py-1 rounded-md"
+              >
+                सामान्य कैटलॉग देखें ✕
+              </button>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="grocery-grid">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -428,21 +486,48 @@ function Shop() {
               ))}
             </div>
           ) : results.length === 0 ? (
-            <div className="card-base p-12 text-center bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="card-base p-8 sm:p-12 text-center bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] space-y-3">
               <p className="font-sans text-base font-bold text-[#16201A]">
                 {t.noProductsFoundTitle}
               </p>
-              <p className="text-xs text-[#5A655F] mt-1">
-                {t.noProductsFoundDesc}
+              <p className="text-xs text-[#5A655F]">
+                {search.q
+                  ? `"${search.q}" नाम से कोई सीधा प्रोडक्ट नहीं मिला।`
+                  : t.noProductsFoundDesc}
               </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-4 rounded-lg text-xs border-[#E4DFD5] bg-white text-[#0F4A38] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]"
-                onClick={() => void navigate({ search: {} })}
-              >
-                {t.resetFiltersBtn}
-              </Button>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                {search.q && (
+                  <Button
+                    type="button"
+                    disabled={isAiSearching}
+                    onClick={handleAiSemanticSearch}
+                    className="rounded-xl text-xs bg-gradient-to-r from-[#145A45] to-[#1F7A5E] text-white hover:opacity-95 shadow-xs gap-1.5 h-10 px-5 font-bold"
+                  >
+                    {isAiSearching ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" /> AI किराना खोज कर रहा है...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-3.5 text-amber-300" /> ✨ AI से ढूंढें: "{search.q}" की सामग्री
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl text-xs border-[#E4DFD5] bg-white text-[#0F4A38] shadow-[0_1px_2px_rgba(0,0,0,0.03)] h-10 px-4"
+                  onClick={() => {
+                    setSemanticProductIds(null);
+                    setSemanticReason(null);
+                    void navigate({ search: {} });
+                  }}
+                >
+                  {t.resetFiltersBtn}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="grocery-grid">
