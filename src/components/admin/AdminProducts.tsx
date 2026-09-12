@@ -306,8 +306,8 @@ export function AdminProducts({
         // 3. Always update clean alphanumeric kebab-case URL slug
         if (res.data.slug) setSlug(res.data.slug);
 
-        // 4. Update brand if detected
-        if (res.data.brand) setBrand(res.data.brand);
+        // 4. Update brand if detected (or clear it if empty/unbranded)
+        setBrand(res.data.brand || "");
 
         // 5. Update category if detected and valid
         if (res.data.category_id) {
@@ -1943,7 +1943,11 @@ export function AdminProducts({
       <WebImageFinderModal
         isOpen={webFinderTarget !== null}
         onClose={() => setWebFinderTarget(null)}
-        productName={`${brand ? brand + " " : ""}${name || ""}`.trim()}
+        productName={(() => {
+          const isGen = /^(generic|local|unbranded|n\/a|none)$/i.test(brand?.trim() || "");
+          const b = isGen ? "" : (brand?.trim() || "");
+          return `${b ? b + " " : ""}${name || ""}`.replace(/^generic\s+/i, "").trim();
+        })()}
         currentImageUrl={webFinderTarget === "front" ? frontImageUrl : backImageUrl}
         onSelectImage={(url) => {
           if (webFinderTarget === "front") {

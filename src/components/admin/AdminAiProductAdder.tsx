@@ -38,7 +38,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { inr } from "@/lib/format";
 import type { Category, Product } from "@/lib/queries";
-import { getProductImage } from "@/lib/product-images";
+import { getProductImage, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
 import { WebImageFinderModal } from "./WebImageFinderModal";
 import {
   parseSupplierBillWithGemini,
@@ -1118,7 +1118,7 @@ export function AdminAiProductAdder({
                             src={prod.image_url || getProductImage({ name: prod.name })}
                             alt={prod.name}
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                              (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_PLACEHOLDER;
                             }}
                             className="size-full object-contain"
                           />
@@ -1359,7 +1359,12 @@ export function AdminAiProductAdder({
       <WebImageFinderModal
         isOpen={webFinderProductIdx !== null}
         onClose={() => setWebFinderProductIdx(null)}
-        productName={`${parsedProducts[webFinderProductIdx].brand || ""} ${parsedProducts[webFinderProductIdx].name}`.trim()}
+        productName={(() => {
+          const item = parsedProducts[webFinderProductIdx];
+          const isGen = /^(generic|local|unbranded|n\/a|none)$/i.test(item.brand?.trim() || "");
+          const b = isGen ? "" : (item.brand?.trim() || "");
+          return `${b ? b + " " : ""}${item.name}`.replace(/^generic\s+/i, "").trim();
+        })()}
         currentImageUrl={parsedProducts[webFinderProductIdx].image_url || getProductImage({ name: parsedProducts[webFinderProductIdx].name })}
         onSelectImage={(url) => {
           updateProductField(webFinderProductIdx, "image_url", url);

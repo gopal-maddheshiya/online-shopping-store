@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Search,
   Globe,
@@ -33,55 +33,67 @@ export function WebImageFinderModal({
   currentImageUrl,
   onSelectImage,
 }: WebImageFinderModalProps) {
-  const [query, setQuery] = useState(productName || "");
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<WebImageResult[]>([]);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string>(currentImageUrl || "");
   const [customUrl, setCustomUrl] = useState<string>("");
+  const prevIsOpenRef = useRef(false);
 
-  const handleSearch = useCallback(
-    async (termToSearch?: string) => {
-      const rawQ = (termToSearch !== undefined ? termToSearch : query).trim();
-      if (!rawQ) {
-        toast.error("कृपया कोई सामान या ब्रांड का नाम लिखें।");
-        return;
+  // Pure search executor that takes explicit term without depending on query state
+  const executeSearch = useCallback(async (term: string) => {
+    const rawQ = term.trim();
+    if (!rawQ) {
+      toast.error("कृपया कोई सामान या ब्रांड का नाम लिखें।");
+      return;
+    }
+
+    setIsLoading(true);
+    setFailedImageIds(new Set());
+    try {
+      const items = await searchWebProductImages(rawQ);
+      setResults(items);
+      if (items.length === 0) {
+        toast.info(
+          "इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे दिए गए सुझाव चिप्स आज़माएं या लिंक पेस्ट करें।",
+        );
+      } else {
+        toast.success(`${items.length} असली वेब फोटो मिलीं!`);
       }
+    } catch (err) {
+      console.warn("Web image search failed:", err);
+      toast.error("वेब फोटो सर्च में समस्या आई।");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-      setIsLoading(true);
-      setFailedImageIds(new Set());
-      try {
-        const items = await searchWebProductImages(rawQ);
-        setResults(items);
-        if (items.length === 0) {
-          toast.info(
-            "इंटरनेट पर कोई सीधी फोटो नहीं मिली। आप नीचे दिए गए सुझाव चिप्स आज़माएं या लिंक पेस्ट करें।",
-          );
-        } else {
-          toast.success(`${items.length} असली वेब फोटो मिलीं!`);
-        }
-      } catch (err) {
-        console.warn("Web image search failed:", err);
-        toast.error("वेब फोटो सर्च में समस्या आई।");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [query],
-  );
-
-  // When opening, automatically sanitize noisy names (e.g. 'Generic Big Raisins Munakka' -> 'Munakka')
+  // When modal opens (transitions from closed to open), sanitize name and run initial search.
+  // CRITICAL: Only triggers on modal opening, NEVER on user typing keystrokes!
   useEffect(() => {
-    if (isOpen && productName) {
-      const { cleanWord } = sanitizeGroceryQuery(productName);
-      const initialTerm = cleanWord || productName;
+    if (isOpen && !prevIsOpenRef.current) {
+      const cleanProductName = (productName || "").replace(/^generic\s+/i, "").trim();
+      const { cleanWord } = sanitizeGroceryQuery(cleanProductName);
+      const initialTerm = cleanWord || cleanProductName || "";
       setQuery(initialTerm);
       setSelectedUrl(currentImageUrl || "");
       setFailedImageIds(new Set());
       setCustomUrl("");
-      void handleSearch(initialTerm);
+      if (initialTerm) {
+        void executeSearch(initialTerm);
+      }
     }
-  }, [isOpen, productName, currentImageUrl, handleSearch]);
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, productName, currentImageUrl, executeSearch]);
+
+  const handleSearch = useCallback(
+    (termToSearch?: string) => {
+      const term = termToSearch !== undefined ? termToSearch : query;
+      void executeSearch(term);
+    },
+    [query, executeSearch],
+  );
 
   // Contextual smart suggestions based on product nature
   const contextualChips = useMemo(() => {
@@ -186,7 +198,7 @@ export function WebImageFinderModal({
               </p>
               {productName && (
                 <p className="text-[11px] text-[#8C7A5B] font-medium mt-0.5 truncate">
-                  उत्पाद: <span className="text-[#1F2924] font-semibold">{productName}</span>
+                  उत्पाद: <span className="text-[#1F2924] font-semibold">{productName.replace(/^generic\s+/i, "")}</span>
                 </p>
               )}
             </div>
@@ -211,8 +223,14 @@ export function WebImageFinderModal({
                   placeholder="सर्च करें (उदा. Munakka, Tata Salt, Fortune Oil, Basmati Rice)..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="pl-9 h-11 text-xs sm:text-sm rounded-xl border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white focus:ring-2 focus:ring-[#145A45]/20"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
+                  autoFocus
+                  className="pl-9 h-11 text-xs sm:text-sm rounded-xl border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white focus:ring-2 focus:ring-[#145A45]/20 font-medium"
                 />
               </div>
               <Button

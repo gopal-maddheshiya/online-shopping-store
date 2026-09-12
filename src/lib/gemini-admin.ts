@@ -112,9 +112,19 @@ export const HINDI_SLUG_DICTIONARY: Record<string, string> = {
 /**
  * Generates a clean, readable, SEO-friendly kebab-case URL slug.
  * Supports transliterating Hindi characters so the slug is never empty.
+ * Never includes 'generic' prefix or suffixes.
  */
 export function generateCleanSlug(text: string, brand?: string): string {
   let clean = (text || "").toLowerCase();
+
+  // Strip generic/unbranded labels from raw product text
+  clean = clean.replace(/\b(generic|unbranded|local|n\/a|none|null)\b/gi, " ");
+
+  // Validate brand: never prepend if generic/unbranded/empty
+  const rawBrand = (brand || "").trim().toLowerCase();
+  const isGenericBrand =
+    !rawBrand ||
+    /^(generic|local|unbranded|n\/a|none|null|लोकल|खुला|देसी|थोक)$/i.test(rawBrand);
 
   // Replace common Hindi keywords if present
   for (const [hi, en] of Object.entries(HINDI_SLUG_DICTIONARY)) {
@@ -123,9 +133,9 @@ export function generateCleanSlug(text: string, brand?: string): string {
     }
   }
 
-  // Prepend brand if not included and brand is present
-  if (brand && brand.trim() && !clean.includes(brand.toLowerCase().trim())) {
-    clean = `${brand.toLowerCase().trim()} ${clean}`;
+  // Prepend real brand only if not generic and not already present
+  if (!isGenericBrand && !clean.includes(rawBrand)) {
+    clean = `${rawBrand} ${clean}`;
   }
 
   // Replace non-alphanumeric characters with hyphens
@@ -133,6 +143,13 @@ export function generateCleanSlug(text: string, brand?: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // remove accents
     .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  // Extra safety: strip any lingering generic prefixes, infixes or suffixes
+  slug = slug
+    .replace(/^generic-+/gi, "")
+    .replace(/-+generic$/gi, "")
+    .replace(/-generic-/gi, "-")
     .replace(/^-+|-+$/g, "");
 
   return slug || "grocery-item";
@@ -349,9 +366,12 @@ AVAILABLE STORE CATEGORIES:
 ${JSON.stringify(categoryIndex)}
 
 RULES:
-1. Product Name: Clean English name (e.g. "Fortune Kachi Ghani Mustard Oil", "Tata Salt Vacuum Evaporated").
-2. Hindi Name: Clear Devanagari Hindi translation (e.g. "फॉर्च्यून कच्ची घानी सरसों तेल", "टाटा नमक").
+1. Product Name: Clean English name (e.g. "Fortune Kachi Ghani Mustard Oil", "Tata Salt Vacuum Evaporated", "Red Chilli Powder"). NEVER prepend "Generic" to product names!
+2. Hindi Name: Clear Devanagari Hindi translation (e.g. "फॉर्च्यून कच्ची घानी सरसों तेल", "टाटा नमक", "लाल मिर्च पाउडर").
 3. Brand: e.g. "Fortune", "Tata", "Aashirvaad", "MDH", "Catch", "Parle", "Amul".
+   - If a specific real manufacturer/brand is mentioned, return it.
+   - If the item is unbranded, loose, commodity, or unknown, set "brand": "" (EMPTY STRING).
+   - STRICTLY NEVER write "Generic", "Local", "Unbranded", "None", or "N/A" as brand name!
 4. Category: Match to one of the provided store categories' "id". If unclear, pick the closest one (e.g. oil -> oil-ghee, flour -> atta-flours).
 5. Variants & Physical Units (STRICT GROCERY LAWS):
    - LIQUIDS (Cooking oils, mustard oil, refined oil, ghee, milk, chaach, juices, drinks, cleaners, shampoo): MUST USE "1 L", "500 ml", "200 ml", "5 L Jar", "Pouch (1 L)". NEVER assign "kg" to edible oils or beverages!
@@ -455,18 +475,27 @@ OUTPUT JSON SCHEMA:
               },
             ];
 
+        let brand = String(item.brand || "").trim();
+        if (/^(generic|local|unbranded|n\/a|none|null|लोकल|खुला|देसी|थोक)$/i.test(brand)) {
+          brand = "";
+        }
+        let name = String(item.name || "Grocery Item").trim();
+        name = name.replace(/^generic\s+/i, "").trim();
+        let nameHi = String(item.name_hi || "").trim();
+        nameHi = nameHi.replace(/^(जेनेरिक|लोकल|सामान्य)\s+/i, "").trim();
+
         // Apply physical retail unit guardrail (L/ml for oils vs kg/g for grains)
         const finalVariants = sanitizeVariantUnits(
-          String(item.name || "").trim(),
+          name,
           variantsList,
-          String(item.brand || "").trim(),
+          brand,
           matchedCat?.name
         );
 
         return {
-          name: String(item.name || "Grocery Item").trim(),
-          name_hi: String(item.name_hi || "").trim(),
-          brand: String(item.brand || "").trim(),
+          name,
+          name_hi: nameHi,
+          brand,
           category_id: matchedCat?.id,
           suggested_category_name: matchedCat?.name || item.suggested_category_name,
           description: String(item.description || "").trim(),
@@ -536,8 +565,16 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
    - E.g. "surf excel bar" -> "Surf Excel Detergent Bar"
    - E.g. "harpic blue" -> "Harpic Power Plus Toilet Cleaner"
    - E.g. "tata namak" -> "Tata Salt Vacuum Evaporated"
+   - E.g. "red chilli powder" -> "Red Chilli Powder"
+   - E.g. "jeera" -> "Cumin Seeds (Jeera)"
+   - CRITICAL: NEVER prepend "Generic" to product names! E.g. write "Red Chilli Powder", NEVER "Generic Red Chilli Powder".
 
-2. HINDI NAME (Devanagari):
+2. BRAND RULES (MANDATORY & CRITICAL):
+   - If a specific real manufacturer/brand is identified or requested (e.g. "Fortune", "Tata", "Aashirvaad", "Catch", "MDH", "Amul", "Dabur", "Patanjali", "Parle", "Britannia", "Everest", "Bail Kolhu", "Chakra"), set "brand" to that brand name.
+   - If the product is unbranded, loose, commodity grain/spice/dry fruit, or no brand is known, SET "brand": "" (EMPTY STRING).
+   - STRICTLY AND ABSOLUTELY NEVER return "Generic", "Local", "Unbranded", "None", or "N/A" as the brand! Leave it completely EMPTY: "".
+
+3. HINDI NAME (Devanagari):
    - Natural, authentic Devanagari Hindi as spoken in Purvanchal / Maharajganj grocery markets.
    - Preserve brand in clean Hindi: Fortune -> फॉर्च्यून, Tata -> टाटा, Aashirvaad -> आशीर्वाद, Amul -> अमूल, Catch -> कैच, MDH -> एमडीएच, Everest -> एवरेस्ट, Dabur -> डाबर, Patanjali -> पतंजलि, Surf Excel -> सर्फ एक्सेल, Vim -> विम, Harpic -> हार्पिक, Lizol -> लाइज़ोल, Parle -> पार्ले, Britannia -> ब्रिटानिया.
    - Use standard Hindi grocery nouns:
@@ -555,15 +592,18 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
    - E.g. "Fortune Kachi Ghani Mustard Oil" -> "फॉर्च्यून कच्ची घानी सरसों का तेल"
    - E.g. "Tata Salt Vacuum Evaporated" -> "टाटा शुद्ध आयोडीन नमक"
    - E.g. "Aashirvaad Chakki Atta" -> "आशीर्वाद शुद्ध चक्की आटा"
+   - E.g. "Red Chilli Powder" -> "शुद्ध पिसी लाल मिर्च पाउडर"
+   - NEVER prepend "जेनेरिक" or "लोकल" to Hindi names!
 
-3. URL SLUG:
+4. URL SLUG:
    - Clean alphanumeric kebab-case URL slug matching brand and product name.
    - Lowercase, no spaces, no special characters.
+   - NEVER contain "generic".
    - E.g. "fortune-kachi-ghani-mustard-oil"
    - E.g. "aashirvaad-shudh-chakki-atta"
-   - E.g. "tata-iodised-salt"
+   - E.g. "red-chilli-powder"
 
-4. PHYSICAL STATE & PACK UNITS (CRITICAL RETAIL PHYSICS):
+5. PHYSICAL STATE & PACK UNITS (CRITICAL RETAIL PHYSICS):
    - **LIQUIDS & FLUIDS (Oils, Ghee, Milk, Chaach, Drinks, Syrups, Cleaners, Shampoos, Liquid Handwash/Gel)**:
      * MUST USE "1 L" (Litre) or "500 ml" (millilitre)!
      * NEVER use "kg" or "g" for cooking oils, beverages, or liquid cleaners!
@@ -575,7 +615,7 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
    - **COUNTABLE / PIECES (Soaps, Biscuits, Toothpaste, Brushes, Matches, Agarbatti, Lighters)**:
      * Use "1 Pack", "Pack of 4", "1 Piece", "1 Bar (100g)", "1 Box".
 
-5. VARIANTS, PRICES & MRP:
+6. VARIANTS, PRICES & MRP:
    - Provide 1 to 3 realistic pack sizes with typical Indian market retail prices (in INR) and MRP (MRP >= price).
    - Default stock: 50.
 
@@ -594,6 +634,21 @@ OUTPUT JSON FORMAT:
   "variants": [
     { "label": "1 L", "price": 155, "mrp": 170, "stock": 50 },
     { "label": "500 ml", "price": 82, "mrp": 90, "stock": 40 }
+  ]
+}
+OR FOR UNBRANDED / LOOSE ITEM:
+{
+  "name": "Red Chilli Powder",
+  "name_hi": "शुद्ध तीखी लाल मिर्च पाउडर",
+  "slug": "red-chilli-powder",
+  "brand": "",
+  "category_id": "spices-masale-id",
+  "nature": "solid",
+  "description": "Pure ground red chilli powder for rich colour and authentic spicy kick.",
+  "description_hi": "शुद्ध पिसी हुई लाल मिर्च पाउडर, जो दे खाने को गहरा रंग और बढ़िया तीखापन।",
+  "variants": [
+    { "label": "100 g", "price": 40, "mrp": 45, "stock": 50 },
+    { "label": "250 g", "price": 95, "mrp": 105, "stock": 50 }
   ]
 }`;
 
@@ -616,9 +671,19 @@ OUTPUT JSON FORMAT:
     );
     if (!matchedCat) matchedCat = categories[0];
 
-    const standardName = String(parsed.name || trimmedInput).trim();
-    const brand = String(parsed.brand || "").trim();
-    const standardNameHi = String(parsed.name_hi || "").trim();
+    // Sanitize brand: NEVER allow 'Generic' or 'Unbranded' to pollute data
+    let brand = String(parsed.brand || "").trim();
+    if (/^(generic|local|unbranded|n\/a|none|null|लोकल|खुला|देसी|थोक)$/i.test(brand)) {
+      brand = "";
+    }
+
+    // Sanitize product title: Strip leading 'Generic '
+    let standardName = String(parsed.name || trimmedInput).trim();
+    standardName = standardName.replace(/^generic\s+/i, "").trim();
+
+    // Sanitize Hindi title
+    let standardNameHi = String(parsed.name_hi || "").trim();
+    standardNameHi = standardNameHi.replace(/^(जेनेरिक|लोकल|सामान्य)\s+/i, "").trim();
 
     // Determine nature and clean slug
     const nature = detectGroceryNature(standardName, brand, matchedCat?.name);
