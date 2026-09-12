@@ -4,6 +4,7 @@ import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { dispatchPaymentApiRoute } from "./lib/server-payment-api";
 import { handleTelegramNotify } from "./lib/server-telegram-api";
+import { handleWebImageSearchRoute } from "./lib/server-image-search";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -59,6 +60,11 @@ export default {
       const url = new URL(request.url);
       if (request.method === "POST" && url.pathname === "/api/notify/telegram") {
         return await handleTelegramNotify(request, env);
+      }
+
+      // 3. Intercept Web Image Search route (/api/search/images)
+      if (url.pathname === "/api/search/images") {
+        return await handleWebImageSearchRoute(request);
       }
 
       // 3. Main SSR & TanStack Start Request Handler
