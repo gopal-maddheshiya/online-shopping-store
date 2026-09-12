@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
   Camera,
@@ -9,6 +9,7 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
+  Check,
   AlertCircle,
   Loader2,
   ArrowRight,
@@ -16,6 +17,9 @@ import {
   Layers,
   Store,
   Globe,
+  Volume2,
+  Edit3,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +46,27 @@ import {
   type ParsedAiProduct,
   type ParsedAiProductVariant,
 } from "@/lib/gemini-admin";
+import {
+  playMicTone,
+  cleanDeduplicateSpeech,
+  removeStutteredWords,
+  formatSpokenGroceryList,
+} from "@/lib/voice";
+
+const ADMIN_SAMPLE_DICTS = [
+  {
+    label: "फॉर्च्यून तेल व नमक",
+    text: "फॉर्च्यून कच्ची घानी सरसों तेल 1 लीटर 50 पाउच खरीद 135 एमआरपी 155, टाटा नमक 1 किलो 100 पैकेट खरीद 24 एमआरपी 28",
+  },
+  {
+    label: "आशीर्वाद आटा व दाल",
+    text: "आशीर्वाद चक्की फ्रेश आटा 5 किलो 30 बैग खरीद 195 एमआरपी 225, अरहर दाल 1 किलो 40 पैकेट खरीद 140 एमआरपी 160",
+  },
+  {
+    label: "मसाला व मैगी",
+    text: "मैगी 4-पैक नूडल्स 50 पैकेट खरीद 48 एमआरपी 60, एवरेस्ट हल्दी 200 ग्राम 30 डिब्बे खरीद 55 एमआरपी 68",
+  },
+];
 
 interface AdminAiProductAdderProps {
   isOpen: boolean;
@@ -69,8 +94,22 @@ export function AdminAiProductAdder({
   const [inputText, setInputText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageMime, setImageMime] = useState<string>("image/jpeg");
+
+  // Voice speech recognition state
+  const [voiceLang, setVoiceLang] = useState<"hi" | "en">("hi");
   const [isRecording, setIsRecording] = useState(false);
+  const [interimText, setInterimText] = useState("");
+  const [recognizedVoiceItems, setRecognizedVoiceItems] = useState<string[]>([]);
+  const [isManualEditing, setIsManualEditing] = useState(false);
+
   const recognitionRef = useRef<any>(null);
+  const finalAccumulatorRef = useRef<string>("");
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep recognizedVoiceItems in sync with inputText
+  useEffect(() => {
+    setRecognizedVoiceItems(formatSpokenGroceryList(inputText));
+  }, [inputText]);
 
   // Parsing & Processing State
   const [isParsing, setIsParsing] = useState(false);
@@ -97,16 +136,12 @@ export function AdminAiProductAdder({
     setSaveProgress(0);
     setCurrentSavingName("");
     setWebFinderProductIdx(null);
+    setInterimText("");
+    setRecognizedVoiceItems([]);
+    finalAccumulatorRef.current = "";
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {
-        // Non-blocking
-      }
-      setIsRecording(false);
-    }
+    stopRecording();
   }
 
   function handleClose() {
@@ -134,20 +169,8 @@ export function AdminAiProductAdder({
     reader.readAsDataURL(file);
   }
 
-  // Speech Recognition Handling
-  function toggleRecording() {
-    if (isRecording) {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch {
-          // Ignore
-        }
-      }
-      setIsRecording(false);
-      return;
-    }
-
+  // Start Voice Recording with zero-duplication accumulator
+  function startRecording(targetLang?: "hi" | "en") {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -157,31 +180,105 @@ export function AdminAiProductAdder({
     }
 
     try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+      }
+
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+
+      const chosenLang = targetLang || voiceLang;
+      finalAccumulatorRef.current = inputText.trim();
+      setInterimText("");
+
       const recognition = new SpeechRecognition();
-      recognition.lang = "hi-IN";
+      recognition.lang = chosenLang === "hi" ? "hi-IN" : "en-IN";
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsRecording(true);
-        toast.info("माइक चालू है — सामान का नाम, पैक साइज और रेट बोलें...");
+        playMicTone("start");
       };
 
       recognition.onresult = (event: any) => {
-        let transcript = "";
-        for (let i = 0; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript + " ";
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+          silenceTimerRef.current = null;
         }
-        setInputText(transcript.trim());
+
+        let latestInterim = "";
+        let newlyFinalized = "";
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const res = event.results[i];
+          if (!res || !res[0]) continue;
+          const chunk = (res[0].transcript || "").trim();
+          if (!chunk) continue;
+
+          if (res.isFinal) {
+            newlyFinalized = newlyFinalized
+              ? cleanDeduplicateSpeech(newlyFinalized, chunk)
+              : chunk;
+          } else {
+            latestInterim = chunk;
+          }
+        }
+
+        if (newlyFinalized) {
+          const mergedFinal = cleanDeduplicateSpeech(
+            finalAccumulatorRef.current,
+            newlyFinalized
+          );
+          const cleanFinal = removeStutteredWords(mergedFinal);
+          finalAccumulatorRef.current = cleanFinal;
+          setInputText(cleanFinal);
+        }
+
+        setInterimText(latestInterim);
+
+        // Auto-silence timer: Stop smoothly after 2.4 seconds of calm
+        silenceTimerRef.current = setTimeout(() => {
+          if (latestInterim) {
+            const promotedFinal = cleanDeduplicateSpeech(
+              finalAccumulatorRef.current,
+              latestInterim
+            );
+            const cleanFinal = removeStutteredWords(promotedFinal);
+            finalAccumulatorRef.current = cleanFinal;
+            setInputText(cleanFinal);
+            setInterimText("");
+          }
+          stopRecording();
+          toast.success("✅ आवाज़ दर्ज हो गई! नीचे 'AI से पार्स करें' बटन दबाएं");
+        }, 2400);
       };
 
       recognition.onerror = (err: any) => {
         console.warn("Speech error:", err);
+        if (err.error === "no-speech") {
+          return;
+        }
         setIsRecording(false);
+        playMicTone("stop");
+
+        if (err.error === "not-allowed" || err.error === "service-not-allowed") {
+          toast.error("माइक की अनुमति बंद है। कृपया ब्राउज़र में ऊपर 🔒 पर क्लिक करके Mic Allow करें।");
+        } else if (err.error === "network") {
+          toast.error("इंटरनेट कनेक्शन की जांच करें।");
+        }
       };
 
       recognition.onend = () => {
         setIsRecording(false);
+        setInterimText("");
       };
 
       recognitionRef.current = recognition;
@@ -189,6 +286,61 @@ export function AdminAiProductAdder({
     } catch (e) {
       console.error("Speech start failed:", e);
       setIsRecording(false);
+      playMicTone("stop");
+    }
+  }
+
+  function stopRecording() {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+    }
+    setIsRecording(false);
+    setInterimText("");
+    playMicTone("stop");
+  }
+
+  function toggleRecording() {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+  function handleSwitchVoiceLang(newLang: "hi" | "en") {
+    setVoiceLang(newLang);
+    if (isRecording) {
+      stopRecording();
+      setTimeout(() => {
+        startRecording(newLang);
+      }, 150);
+    }
+  }
+
+  function handleClearVoice() {
+    setInputText("");
+    finalAccumulatorRef.current = "";
+    setInterimText("");
+    setRecognizedVoiceItems([]);
+  }
+
+  function handleTabChange(tab: "invoice" | "voice" | "text") {
+    if (tab !== "voice" && isRecording) {
+      stopRecording();
+    }
+    setActiveTab(tab);
+    if (tab === "voice" && !isRecording) {
+      setTimeout(() => {
+        startRecording();
+      }, 200);
     }
   }
 
@@ -504,7 +656,7 @@ export function AdminAiProductAdder({
             <div className="inline-flex rounded-xl bg-[#E8E4DA]/50 p-1 self-start sm:self-auto">
               <button
                 type="button"
-                onClick={() => setActiveTab("invoice")}
+                onClick={() => handleTabChange("invoice")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "invoice"
                     ? "bg-[#145A45] text-white shadow-xs"
@@ -515,7 +667,7 @@ export function AdminAiProductAdder({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("voice")}
+                onClick={() => handleTabChange("voice")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "voice"
                     ? "bg-[#145A45] text-white shadow-xs"
@@ -526,7 +678,7 @@ export function AdminAiProductAdder({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("text")}
+                onClick={() => handleTabChange("text")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                   activeTab === "text"
                     ? "bg-[#145A45] text-white shadow-xs"
@@ -613,40 +765,218 @@ export function AdminAiProductAdder({
               </div>
             )}
 
-            {/* Tab 2: Voice Dictation */}
+            {/* Tab 2: Ultra-Clean AI Voice Studio */}
             {activeTab === "voice" && (
-              <div className="space-y-3 text-center sm:text-left">
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <Button
-                    type="button"
-                    onClick={toggleRecording}
-                    className={`rounded-2xl px-6 h-12 font-bold text-xs gap-2 transition-all ${
-                      isRecording
-                        ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
-                        : "bg-[#145A45] hover:bg-[#0E4333] text-white"
-                    }`}
-                  >
-                    {isRecording ? (
+              <div className="space-y-4">
+                {/* 1. Hero Audio Recording Stage */}
+                <div className="relative overflow-hidden rounded-2xl border border-[#145A45]/30 bg-gradient-to-b from-[#0C382A] via-[#145A45] to-[#0A2E22] p-4 sm:p-5 text-white text-center shadow-[0_8px_30px_rgba(20,90,69,0.25)]">
+                  {/* Ambient Glow Orbs */}
+                  <div className="pointer-events-none absolute -right-8 -top-8 size-36 rounded-full bg-[#E3B341]/15 blur-2xl" />
+                  <div className="pointer-events-none absolute -left-8 -bottom-8 size-36 rounded-full bg-emerald-400/10 blur-2xl" />
+
+                  {/* Header Row: Language Selector */}
+                  <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
+                    <div className="inline-flex items-center gap-1 rounded-full bg-black/30 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-200">
+                      <Sparkles className="size-3 text-[#E3B341]" />
+                      <span>AI वॉयस इन्टेक (Voice Intake)</span>
+                    </div>
+
+                    {/* Language Switch Buttons */}
+                    <div className="inline-flex rounded-full bg-black/40 backdrop-blur-md p-0.5 border border-white/15">
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchVoiceLang("hi")}
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all cursor-pointer ${
+                          voiceLang === "hi"
+                            ? "bg-white text-[#145A45] shadow-xs"
+                            : "text-white/70 hover:text-white"
+                        }`}
+                      >
+                        🇮🇳 हिन्दी
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchVoiceLang("en")}
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-all cursor-pointer ${
+                          voiceLang === "en"
+                            ? "bg-white text-[#145A45] shadow-xs"
+                            : "text-white/70 hover:text-white"
+                        }`}
+                      >
+                        🇬🇧 English
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Center Microphone Button */}
+                  <div className="relative my-3 flex items-center justify-center">
+                    {isRecording && (
                       <>
-                        <MicOff className="size-4" /> 🛑 बोलना बंद करें (रिकॉर्डिंग चालू)
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="size-4" /> 🎙️ बोलकर माल दर्ज करना शुरू करें
+                        <div className="absolute size-32 rounded-full bg-red-500/20 animate-ping duration-1000 pointer-events-none" />
+                        <div className="absolute size-24 rounded-full bg-red-500/30 animate-pulse duration-700 pointer-events-none" />
                       </>
                     )}
-                  </Button>
-                  <p className="text-xs text-[#6B746F]">
-                    उदाहरण: <em>"टाटा नमक 1 किलो 100 पैकेट रेट 28 एमआरपी 30, फॉर्च्यून तेल 1 लीटर 50 पाउच..."</em>
-                  </p>
+
+                    <button
+                      type="button"
+                      onClick={toggleRecording}
+                      className={`relative z-10 flex size-16 sm:size-18 items-center justify-center rounded-full transition-all duration-300 active:scale-95 cursor-pointer ${
+                        isRecording
+                          ? "bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] ring-4 ring-red-300/60 scale-105"
+                          : "bg-gradient-to-tr from-white/20 via-white/10 to-white/5 text-white border-2 border-white/40 hover:border-white hover:bg-white/25 shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                      }`}
+                      aria-label={isRecording ? "Stop recording" : "Start recording"}
+                    >
+                      {isRecording ? (
+                        <MicOff className="size-7 sm:size-8 animate-bounce" />
+                      ) : (
+                        <Mic className="size-7 sm:size-8 text-[#E3B341]" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Dynamic Soundwave Equalizer (11 bars) */}
+                  <div className="my-2 flex items-center justify-center gap-1.5 h-6">
+                    {[
+                      { h: "h-2.5", activeH: "h-4.5", delay: "delay-75" },
+                      { h: "h-2", activeH: "h-6", delay: "delay-150" },
+                      { h: "h-3.5", activeH: "h-5", delay: "delay-0" },
+                      { h: "h-2", activeH: "h-6.5", delay: "delay-200" },
+                      { h: "h-2.5", activeH: "h-4.5", delay: "delay-100" },
+                      { h: "h-4", activeH: "h-6", delay: "delay-300" },
+                      { h: "h-2", activeH: "h-5", delay: "delay-75" },
+                      { h: "h-3.5", activeH: "h-6.5", delay: "delay-150" },
+                      { h: "h-2", activeH: "h-4", delay: "delay-250" },
+                      { h: "h-2.5", activeH: "h-5.5", delay: "delay-0" },
+                      { h: "h-2", activeH: "h-3.5", delay: "delay-100" },
+                    ].map((bar, idx) => (
+                      <span
+                        key={idx}
+                        className={`w-1 rounded-full transition-all duration-200 ${
+                          isRecording
+                            ? `${bar.activeH} ${bar.delay} bg-gradient-to-t from-[#E3B341] to-red-400 animate-pulse`
+                            : `${bar.h} bg-white/25`
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Status Helper */}
+                  <div className="relative z-10 space-y-1">
+                    <p className="text-xs sm:text-sm font-extrabold tracking-wide">
+                      {isRecording ? (
+                        <span className="inline-flex items-center gap-1.5 text-red-200">
+                          <span className="size-2 rounded-full bg-red-400 animate-ping" />
+                          🎙️ AI सुन रहा है... माल, वजन, पैकेट और रेट बोलिए
+                        </span>
+                      ) : recognizedVoiceItems.length > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-200">
+                          <CheckCircle2 className="size-3.5 text-[#E3B341]" />
+                          ✨ आवाज़ दर्ज हो गई! नीचे 'AI से पार्स करें' बटन दबाएं
+                        </span>
+                      ) : (
+                        <span className="text-white/95">
+                          माइक दबाएं और बोलें — जैसे "टाटा नमक 1kg 50 पैकेट खरीद 24 MRP 28"
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-[11px] text-white/70 max-w-sm mx-auto">
+                      {isRecording
+                        ? "बोलना बंद करते ही (2.4s शांति पर) AI अपने आप रिकॉर्डिंग पूरी कर लेगा"
+                        : "देहाती व ब्रांड नाम (कोल्हू, आशीर्वाद, पतंजलि, मैगी) सटीक पहचानता है"}
+                    </p>
+                  </div>
                 </div>
 
-                <Textarea
-                  placeholder="यहाँ आपकी बोली हुई लिस्ट दिखेगी..."
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  className="rounded-xl border-[#E8E4DA] bg-white text-xs min-h-[70px] resize-none"
-                />
+                {/* 2. Recognized Items Cards / Chips Studio */}
+                <div className="rounded-2xl border border-[#E8E4DA] bg-white p-3.5 sm:p-4 shadow-xs space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Volume2 className="size-3.5 text-[#145A45]" />
+                      <span className="text-xs font-bold text-[#1F2924]">
+                        पहचाने गए सप्लायर आइटम (Recognized Items)
+                      </span>
+                      {recognizedVoiceItems.length > 0 && (
+                        <span className="rounded-full bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-black text-[#145A45]">
+                          {recognizedVoiceItems.length} आइटम
+                        </span>
+                      )}
+                    </div>
+
+                    {inputText && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsManualEditing((prev) => !prev)}
+                          className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <Edit3 className="size-3" />
+                          <span>{isManualEditing ? "चिप्स देखें" : "एडिट करें"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleClearVoice}
+                          className="text-[11px] font-semibold text-[#8C827A] hover:text-red-600 cursor-pointer"
+                        >
+                          साफ़ करें
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Live Interim Pill when currently speaking */}
+                  {interimText && (
+                    <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200/70 p-2 text-xs text-amber-900 animate-pulse">
+                      <span className="size-2 rounded-full bg-amber-500 animate-ping shrink-0" />
+                      <span className="font-semibold">सुन रहे हैं:</span>
+                      <span className="italic font-medium text-amber-800">"{interimText}..."</span>
+                    </div>
+                  )}
+
+                  {/* Main Spoken List / Textarea */}
+                  {isManualEditing ? (
+                    <Textarea
+                      rows={3}
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder="यहाँ माल की बोली हुई लिस्ट दिखेगी या आप सुधार सकते हैं..."
+                      className="rounded-xl border-[#E8E4DA] bg-[#FAF8F5] p-2.5 text-xs focus-visible:border-[#145A45]"
+                    />
+                  ) : recognizedVoiceItems.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {recognizedVoiceItems.map((item, idx) => (
+                        <span
+                          key={`${item}-${idx}`}
+                          className="inline-flex items-center gap-1 rounded-xl bg-[#F2F6F3] border border-[#145A45]/20 px-2.5 py-1 text-xs font-bold text-[#145A45] shadow-2xs"
+                        >
+                          <Package className="size-3 text-[#145A45] shrink-0" />
+                          <span>{item}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : !interimText ? (
+                    <div className="rounded-xl bg-[#FAF8F5] border border-dashed border-[#DCD6CA] p-3 text-center space-y-2">
+                      <p className="text-xs text-[#5A655F]">
+                        अभी कोई माल नहीं बोला गया है। ऊपर माइक दबाकर बोलें या नीचे से तुरंत आज़माएं:
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-1.5">
+                        {ADMIN_SAMPLE_DICTS.map((sample) => (
+                          <button
+                            key={sample.label}
+                            type="button"
+                            onClick={() => {
+                              setInputText(sample.text);
+                              finalAccumulatorRef.current = sample.text;
+                            }}
+                            className="rounded-lg bg-white border border-[#D5CEBF] px-2.5 py-1 text-[11px] font-medium text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
+                          >
+                            + {sample.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             )}
 

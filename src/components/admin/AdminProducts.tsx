@@ -21,6 +21,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Globe,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +55,7 @@ import {
   detectGroceryNature,
 } from "@/lib/gemini-admin";
 import { Loader2 } from "lucide-react";
+import { playMicTone, removeStutteredWords } from "@/lib/voice";
 
 
 
@@ -213,6 +216,71 @@ export function AdminProducts({
     setName(val);
     if (!editingProduct) {
       setSlug(generateCleanSlug(val, brand));
+    }
+  }
+
+  const [isNameListening, setIsNameListening] = useState(false);
+  const nameRecognitionRef = useRef<any>(null);
+
+  function toggleVoiceName() {
+    if (isNameListening) {
+      if (nameRecognitionRef.current) {
+        try {
+          nameRecognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+      setIsNameListening(false);
+      return;
+    }
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("आवाज़ पहचान उपलब्ध नहीं है। कृपया लिखकर दर्ज करें।");
+      return;
+    }
+
+    try {
+      const rec = new SpeechRecognition();
+      rec.lang = "hi-IN";
+      rec.continuous = false;
+      rec.interimResults = true;
+
+      rec.onstart = () => {
+        setIsNameListening(true);
+        playMicTone("start");
+        toast.info("🎙️ बोलिए... सामान या ब्रांड का नाम बोलें");
+      };
+
+      rec.onresult = (event: any) => {
+        let text = "";
+        for (let i = 0; i < event.results.length; i++) {
+          if (event.results[i] && event.results[i][0]) {
+            text += event.results[i][0].transcript + " ";
+          }
+        }
+        const clean = removeStutteredWords(text).trim();
+        if (clean) {
+          handleNameChange(clean);
+        }
+      };
+
+      rec.onerror = () => {
+        setIsNameListening(false);
+        playMicTone("stop");
+      };
+
+      rec.onend = () => {
+        setIsNameListening(false);
+        playMicTone("stop");
+      };
+
+      nameRecognitionRef.current = rec;
+      rec.start();
+    } catch {
+      setIsNameListening(false);
     }
   }
 
@@ -1019,23 +1087,39 @@ export function AdminProducts({
                       <span>Product Name (English) <span className="text-red-500">*</span></span>
                       <span className="text-[10px] text-[#5A655F]">अंग्रेजी नाम</span>
                     </Label>
-                    <button
-                      type="button"
-                      disabled={isAiFilling || !name.trim()}
-                      onClick={handleAiAutoComplete}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#145A45]/10 hover:bg-[#145A45]/15 px-2 py-0.5 rounded-md transition-colors disabled:opacity-50"
-                      title="प्रोडक्ट नाम के आधार पर हिंदी नाम, विवरण व अन्य जानकारी अपने आप भरें"
-                    >
-                      {isAiFilling ? (
-                        <>
-                          <Loader2 className="size-3 animate-spin" /> भर रहा है...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="size-3 text-amber-500" /> ✨ AI से भरें
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={toggleVoiceName}
+                        className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
+                          isNameListening
+                            ? "bg-red-500 text-white animate-pulse"
+                            : "bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] border border-[#145A45]/20"
+                        }`}
+                        title="बोलकर नाम दर्ज करें"
+                      >
+                        {isNameListening ? <MicOff className="size-3" /> : <Mic className="size-3" />}
+                        <span>{isNameListening ? "सुन रहे हैं..." : "बोलें"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isAiFilling || !name.trim()}
+                        onClick={handleAiAutoComplete}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#145A45]/10 hover:bg-[#145A45]/15 px-2 py-0.5 rounded-md transition-colors disabled:opacity-50"
+                        title="प्रोडक्ट नाम के आधार पर हिंदी नाम, विवरण व अन्य जानकारी अपने आप भरें"
+                      >
+                        {isAiFilling ? (
+                          <>
+                            <Loader2 className="size-3 animate-spin" /> भर रहा है...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="size-3 text-amber-500" /> ✨ AI से भरें
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <Input
                     required
