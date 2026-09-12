@@ -331,7 +331,7 @@ export const settingsQuery = queryOptions({
       getCachedSettingsFallback(),
     );
   },
-  staleTime: 1000 * 60 * 2, // 2 minutes
+  staleTime: 1000 * 5, // 5 seconds for fast live admin updates
 });
 
 export const categoriesQuery = queryOptions({

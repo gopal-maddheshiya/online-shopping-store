@@ -338,26 +338,14 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
 }
 
 function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string }) {
-  const [loaded, setLoaded] = useState(false);
   return (
     <div className="my-3 sm:my-5 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-xs border border-[#EAE6DC]/60 group/banner bg-[#F5F2EB]">
-      {!loaded && (
-        <div className="w-full aspect-[16/6] sm:aspect-[21/7] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse flex items-center justify-center">
-          <Sparkles className="size-5 text-[#8A958F]/40" />
-        </div>
-      )}
       <img
         src={bannerUrl}
         alt={title}
-        loading="lazy"
+        loading="eager"
         decoding="async"
-        onLoad={() => setLoaded(true)}
-        className={`w-full h-auto block transition-all duration-500 group-hover/banner:scale-[1.01] ${
-          loaded ? "opacity-100" : "hidden"
-        }`}
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
+        className="w-full h-auto block transition-all duration-500 group-hover/banner:scale-[1.01]"
       />
     </div>
   );
@@ -498,8 +486,13 @@ function PremiumStoreHome() {
   }, [settings?.category_headings]);
 
   useEffect(() => {
-    const handleUpdate = () => {
-      setHeadings(getCategoryHeadings(settings?.category_headings as CategoryHeading[] | undefined));
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<CategoryHeading[]>;
+      if (customEvent.detail && Array.isArray(customEvent.detail) && customEvent.detail.length > 0) {
+        setHeadings(customEvent.detail);
+      } else {
+        setHeadings(getCategoryHeadings());
+      }
     };
     window.addEventListener("agt:headings-updated", handleUpdate);
     window.addEventListener("storage", handleUpdate);
@@ -507,7 +500,7 @@ function PremiumStoreHome() {
       window.removeEventListener("agt:headings-updated", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };
-  }, [settings?.category_headings]);
+  }, []);
 
   const parentCategories = categories.filter((c) => !c.parent_id);
   const allAssignedSlugs = new Set(headings.flatMap((h) => h.slugs));
@@ -652,16 +645,7 @@ function PremiumStoreHome() {
             {headings.map((heading) => {
               const items = parentCategories.filter((c) => heading.slugs.includes(c.slug));
 
-              const subHeroMap: Record<string, string | null | undefined> = {
-                hero2: settings?.hero2_image_url,
-                hero3: settings?.hero3_image_url,
-                hero4: settings?.hero4_image_url,
-              };
-
-              const bannerUrl =
-                (heading.banner_sub && subHeroMap[heading.banner_sub]) ||
-                heading.banner_image_url ||
-                null;
+              const bannerUrl = heading.banner_image_url || null;
 
               if (items.length === 0 && !bannerUrl) return null;
 
