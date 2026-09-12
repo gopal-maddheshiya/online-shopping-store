@@ -54,6 +54,7 @@ import {
   generateCleanSlug,
   detectGroceryNature,
 } from "@/lib/gemini-admin";
+import { buildProductSearchTitle } from "@/lib/server-image-search";
 import { Loader2 } from "lucide-react";
 import { playMicTone, removeStutteredWords } from "@/lib/voice";
 
@@ -1943,11 +1944,7 @@ export function AdminProducts({
       <WebImageFinderModal
         isOpen={webFinderTarget !== null}
         onClose={() => setWebFinderTarget(null)}
-        productName={(() => {
-          const isGen = /^(generic|local|unbranded|n\/a|none)$/i.test(brand?.trim() || "");
-          const b = isGen ? "" : (brand?.trim() || "");
-          return `${b ? b + " " : ""}${name || ""}`.replace(/^generic\s+/i, "").trim();
-        })()}
+        productName={buildProductSearchTitle(name, brand)}
         currentImageUrl={webFinderTarget === "front" ? frontImageUrl : backImageUrl}
         onSelectImage={(url) => {
           if (webFinderTarget === "front") {

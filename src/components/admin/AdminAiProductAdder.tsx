@@ -40,6 +40,7 @@ import { inr } from "@/lib/format";
 import type { Category, Product } from "@/lib/queries";
 import { getProductImage, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
 import { WebImageFinderModal } from "./WebImageFinderModal";
+import { buildProductSearchTitle } from "@/lib/server-image-search";
 import {
   parseSupplierBillWithGemini,
   generateCleanSlug,
@@ -1359,12 +1360,10 @@ export function AdminAiProductAdder({
       <WebImageFinderModal
         isOpen={webFinderProductIdx !== null}
         onClose={() => setWebFinderProductIdx(null)}
-        productName={(() => {
-          const item = parsedProducts[webFinderProductIdx];
-          const isGen = /^(generic|local|unbranded|n\/a|none)$/i.test(item.brand?.trim() || "");
-          const b = isGen ? "" : (item.brand?.trim() || "");
-          return `${b ? b + " " : ""}${item.name}`.replace(/^generic\s+/i, "").trim();
-        })()}
+        productName={buildProductSearchTitle(
+          parsedProducts[webFinderProductIdx].name,
+          parsedProducts[webFinderProductIdx].brand
+        )}
         currentImageUrl={parsedProducts[webFinderProductIdx].image_url || getProductImage({ name: parsedProducts[webFinderProductIdx].name })}
         onSelectImage={(url) => {
           updateProductField(webFinderProductIdx, "image_url", url);

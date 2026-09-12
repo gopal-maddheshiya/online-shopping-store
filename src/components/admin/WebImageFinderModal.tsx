@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Search,
   Globe,
@@ -10,13 +11,12 @@ import {
   ExternalLink,
   RefreshCw,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { searchWebProductImages, type WebImageResult } from "../../lib/web-image-search";
-import { sanitizeGroceryQuery } from "../../lib/server-image-search";
+import { sanitizeGroceryQuery, buildProductSearchTitle } from "../../lib/server-image-search";
 
 export interface WebImageFinderModalProps {
   isOpen: boolean;
@@ -33,15 +33,23 @@ export function WebImageFinderModal({
   currentImageUrl,
   onSelectImage,
 }: WebImageFinderModalProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WebImageResult[]>([]);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string>(currentImageUrl || "");
   const [customUrl, setCustomUrl] = useState<string>("");
-  const prevIsOpenRef = useRef(false);
 
-  // Pure search executor that takes explicit term without depending on query state
+  const inputRef = useRef<HTMLInputElement>(null);
+  const lastOpenedProductRef = useRef<string>("");
+
+  // Ensure client-side mounting for createPortal SSR compatibility
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Pure search executor that takes explicit search term
   const executeSearch = useCallback(async (term: string) => {
     const rawQ = term.trim();
     if (!rawQ) {
@@ -69,23 +77,40 @@ export function WebImageFinderModal({
     }
   }, []);
 
-  // When modal opens (transitions from closed to open), sanitize name and run initial search.
-  // CRITICAL: Only triggers on modal opening, NEVER on user typing keystrokes!
+  // When modal opens: initialize query only once per open or product change
   useEffect(() => {
-    if (isOpen && !prevIsOpenRef.current) {
-      const cleanProductName = (productName || "").replace(/^generic\s+/i, "").trim();
-      const { cleanWord } = sanitizeGroceryQuery(cleanProductName);
-      const initialTerm = cleanWord || cleanProductName || "";
-      setQuery(initialTerm);
-      setSelectedUrl(currentImageUrl || "");
-      setFailedImageIds(new Set());
-      setCustomUrl("");
-      if (initialTerm) {
-        void executeSearch(initialTerm);
+    if (isOpen) {
+      const cleanTitle = buildProductSearchTitle(productName);
+      const { cleanWord } = sanitizeGroceryQuery(cleanTitle);
+      const initialTerm = cleanWord || cleanTitle || "";
+
+      if (lastOpenedProductRef.current !== productName) {
+        lastOpenedProductRef.current = productName;
+        setQuery(initialTerm);
+        setSelectedUrl(currentImageUrl || "");
+        setFailedImageIds(new Set());
+        setCustomUrl("");
+        if (initialTerm) {
+          void executeSearch(initialTerm);
+        }
       }
+    } else {
+      lastOpenedProductRef.current = "";
     }
-    prevIsOpenRef.current = isOpen;
   }, [isOpen, productName, currentImageUrl, executeSearch]);
+
+  // Smooth focus to the input with cursor placed at end (not whole text selected)
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        const len = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(len, len);
+      }
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   const handleSearch = useCallback(
     (termToSearch?: string) => {
@@ -97,7 +122,7 @@ export function WebImageFinderModal({
 
   // Contextual smart suggestions based on product nature
   const contextualChips = useMemo(() => {
-    const raw = (productName || query || "").trim();
+    const raw = (query || productName || "").trim();
     const { cleanWord } = sanitizeGroceryQuery(raw);
     const lower = raw.toLowerCase();
     const chips: string[] = [];
@@ -106,6 +131,12 @@ export function WebImageFinderModal({
     if (cleanWord) chips.push(`${cleanWord} packet`);
 
     if (
+      lower.includes("coffee") ||
+      lower.includes("nescafe") ||
+      lower.includes("bru")
+    ) {
+      chips.push("Nescafe Classic", "Nescafe sachet", "Coffee pouch");
+    } else if (
       lower.includes("oil") ||
       lower.includes("tel") ||
       lower.includes("ghani") ||
@@ -149,7 +180,8 @@ export function WebImageFinderModal({
 
   function handleChipClick(chipText: string) {
     setQuery(chipText);
-    void handleSearch(chipText);
+    void executeSearch(chipText);
+    inputRef.current?.focus();
   }
 
   function handleApplyCustomUrl() {
@@ -180,37 +212,77 @@ export function WebImageFinderModal({
     return results.filter((img) => !failedImageIds.has(img.id));
   }, [results, failedImageIds]);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col p-0 rounded-3xl border-[#E8E4DA] bg-white overflow-hidden shadow-2xl">
+  if (!isOpen || !isMounted) return null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/75 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-150"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onFocusCapture={(e) => e.stopPropagation()}
+      onKeyDownCapture={(e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="w-[95vw] sm:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col p-0 rounded-3xl border border-[#E8E4DA] bg-white overflow-hidden shadow-2xl relative z-[1000000]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <DialogHeader className="p-4 sm:p-5 border-b border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#F0F5F2] shrink-0">
+        <div className="p-4 sm:p-5 border-b border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#F0F5F2] shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <DialogTitle className="font-sans text-base sm:text-lg font-bold text-[#1F2924] flex items-center gap-2">
-                <span className="size-7 rounded-lg bg-[#145A45] text-white flex items-center justify-center shadow-xs">
-                  <Globe className="size-4" />
-                </span>
-                वेब से असली प्रोडक्ट फोटो खोजें (Auto Web Image Finder)
-              </DialogTitle>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-sans text-base sm:text-lg font-bold text-[#1F2924] flex items-center gap-2">
+                  <span className="size-7 rounded-lg bg-[#145A45] text-white flex items-center justify-center shadow-xs shrink-0">
+                    <Globe className="size-4" />
+                  </span>
+                  <span>वेब से असली प्रोडक्ट फोटो खोजें (Auto Web Image Finder)</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="sm:hidden size-8 rounded-full bg-stone-100 hover:bg-stone-200 text-[#5A655F] hover:text-[#1F2924] flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  title="बंद करें"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
               <p className="text-xs text-[#5A655F] mt-1">
                 गूगल और ई-कॉमर्स (Flipkart, Amazon, Blinkit) से 50+ लाइव पैकेजिंग फोटो में से चुनें।
               </p>
               {productName && (
                 <p className="text-[11px] text-[#8C7A5B] font-medium mt-0.5 truncate">
-                  उत्पाद: <span className="text-[#1F2924] font-semibold">{productName.replace(/^generic\s+/i, "")}</span>
+                  उत्पाद: <span className="text-[#1F2924] font-semibold">{buildProductSearchTitle(productName)}</span>
                 </p>
               )}
             </div>
 
-            {visibleResults.length > 0 && (
-              <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold shrink-0">
-                <Sparkles className="size-3.5 text-emerald-700" />
-                {visibleResults.length} वेब फोटो उपलब्ध
-              </span>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {visibleResults.length > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold shrink-0">
+                  <Sparkles className="size-3.5 text-emerald-700" />
+                  {visibleResults.length} वेब फोटो उपलब्ध
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="hidden sm:flex size-8 rounded-full bg-stone-100 hover:bg-stone-200 text-[#5A655F] hover:text-[#1F2924] items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="बंद करें (Esc)"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
-        </DialogHeader>
+        </div>
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
@@ -218,26 +290,46 @@ export function WebImageFinderModal({
           <div className="space-y-2.5">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6B746F]" />
-                <Input
-                  placeholder="सर्च करें (उदा. Munakka, Tata Salt, Fortune Oil, Basmati Rice)..."
+                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#6B746F] pointer-events-none" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="सर्च करें (उदा. Munakka, Tata Salt, Fortune Oil, Nescafe Coffee)..."
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setQuery(e.target.value);
+                  }}
                   onKeyDown={(e) => {
+                    e.stopPropagation();
                     if (e.key === "Enter") {
                       e.preventDefault();
                       handleSearch();
                     }
                   }}
-                  autoFocus
-                  className="pl-9 h-11 text-xs sm:text-sm rounded-xl border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white focus:ring-2 focus:ring-[#145A45]/20 font-medium"
+                  onFocus={(e) => e.stopPropagation()}
+                  className="w-full pl-9 pr-9 h-11 text-xs sm:text-sm rounded-xl border border-[#E8E4DA] bg-[#FAF8F2]/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#145A45]/30 font-medium text-[#1F2924] transition-all"
                 />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuery("");
+                      inputRef.current?.focus();
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 size-5 rounded-full bg-stone-300/80 hover:bg-stone-400 text-stone-700 flex items-center justify-center text-[10px] font-bold transition-colors cursor-pointer"
+                    title="सर्च टेक्स्ट साफ़ करें"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
               <Button
                 type="button"
                 disabled={isLoading || !query.trim()}
                 onClick={() => handleSearch()}
-                className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 px-5 text-xs sm:text-sm gap-2 shadow-xs cursor-pointer"
+                className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 px-5 text-xs sm:text-sm gap-2 shadow-xs cursor-pointer shrink-0"
               >
                 {isLoading ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -389,11 +481,17 @@ export function WebImageFinderModal({
               या किसी भी वेबसाइट (Google Images / Blinkit / BigBasket) से सीधा फोटो लिंक डालें:
             </label>
             <div className="flex items-center gap-2">
-              <Input
+              <input
+                type="text"
                 placeholder="https://... इमेज URL यहाँ पेस्ट करें"
                 value={customUrl}
-                onChange={(e) => setCustomUrl(e.target.value)}
-                className="h-10 text-xs rounded-xl bg-white border-[#E8E4DA]"
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setCustomUrl(e.target.value);
+                }}
+                onFocus={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="flex-1 h-10 text-xs px-3 rounded-xl bg-white border border-[#E8E4DA] focus:outline-none focus:ring-2 focus:ring-[#145A45]/20 font-medium"
               />
               <Button
                 type="button"
@@ -423,8 +521,7 @@ export function WebImageFinderModal({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-emerald-950 flex items-center gap-1">
-                  <CheckCircle2 className="size-3.5 text-[#145A45]" /> यह फोटो प्रोडक्ट के लिए चुनी
-                  गई है
+                  <CheckCircle2 className="size-3.5 text-[#145A45]" /> यह फोटो प्रोडक्ट के लिए चुनी गई है
                 </p>
                 <p className="text-[10px] text-emerald-800 truncate mt-0.5">{selectedUrl}</p>
               </div>
@@ -472,8 +569,9 @@ export function WebImageFinderModal({
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>,
+    document.body
   );
 }
 

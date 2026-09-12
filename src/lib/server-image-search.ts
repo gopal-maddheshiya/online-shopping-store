@@ -17,6 +17,29 @@ export interface ServerImageResult {
 }
 
 /**
+ * Builds a search-friendly title combining brand and product name
+ * without duplicating words (e.g. 'Nescafe Nescafe Instant Coffee' -> 'Nescafe Instant Coffee')
+ */
+export function buildProductSearchTitle(name: string, brand?: string): string {
+  let cleanName = (name || "").replace(/^generic\s+/i, "").trim();
+  const cleanBrand = (brand || "")
+    .replace(/^(generic|local|unbranded|n\/a|none|null|लोकल|खुला|देसी|थोक)$/i, "")
+    .trim();
+
+  if (cleanBrand) {
+    const startsWithBrand = cleanName.toLowerCase().startsWith(cleanBrand.toLowerCase());
+    if (!startsWithBrand) {
+      cleanName = `${cleanBrand} ${cleanName}`;
+    }
+  }
+
+  // Deduplicate consecutive repeated words (e.g. "Nescafe Nescafe" -> "Nescafe", "Tata Tata" -> "Tata")
+  cleanName = cleanName.replace(/\b(\w+)\s+\1\b/gi, "$1");
+
+  return cleanName.trim();
+}
+
+/**
  * Strips noise, stopwords, internal database labels (like 'Generic', 'Loose'),
  * and packaging units to produce clean, high-yield commercial search terms.
  */
@@ -24,6 +47,9 @@ export function sanitizeGroceryQuery(raw: string): { primary: string; secondary:
   if (!raw) return { primary: "", secondary: "", cleanWord: "" };
 
   let q = raw.trim();
+
+  // Deduplicate consecutive repeated words (e.g. "Nescafe Nescafe" -> "Nescafe")
+  q = q.replace(/\b(\w+)\s+\1\b/gi, "$1");
 
   // 1. Remove database noise words (case insensitive)
   q = q.replace(/\b(generic|local|unbranded|loose|unpolished|fresh|best|pure|original)\b/gi, " ");
@@ -42,6 +68,9 @@ export function sanitizeGroceryQuery(raw: string): { primary: string; secondary:
   // 5. Clean punctuation and excess whitespace
   q = q.replace(/[^\w\s\u0900-\u097F]/g, " ");
   q = q.replace(/\s+/g, " ").trim();
+
+  // Re-deduplicate words after punctuation strip
+  q = q.replace(/\b(\w+)\s+\1\b/gi, "$1");
 
   // If cleaning stripped too much, fallback to original
   if (!q) q = raw.replace(/[^\w\s\u0900-\u097F]/g, " ").trim();
@@ -88,6 +117,9 @@ export function sanitizeGroceryQuery(raw: string): { primary: string; secondary:
   } else if (lower.includes("dal") || lower.includes("daal")) {
     cleanWord = `${q} packet`;
     secondary = q;
+  } else if (lower.includes("coffee") || lower.includes("nescafe") || lower.includes("bru")) {
+    cleanWord = lower.includes("nescafe") ? "Nescafe Coffee" : lower.includes("bru") ? "Bru Coffee" : "Instant Coffee";
+    secondary = "Nescafe Classic sachet";
   }
 
   const primary = `${cleanWord} packet`.trim();
