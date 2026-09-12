@@ -39,8 +39,8 @@ export function ProductCard({ product }: { product: Product }) {
       className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E4DFD5] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_2px_8px_-2px_rgba(15,74,56,0.06),0_1px_2px_rgba(15,74,56,0.03),inset_0_1px_0_0_rgba(255,255,255,1)] hover:shadow-[0_12px_28px_-4px_rgba(15,74,56,0.14),0_4px_10px_-2px_rgba(15,74,56,0.04),inset_0_1px_0_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:-translate-y-1 transition-all duration-300"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* 1. Image Canvas Tile (Slightly taller aspect ratio for elegant grocery presentation) */}
-      <div className="relative w-full aspect-[1/1.08] rounded-xl bg-gradient-to-b from-[#FBFDFA] via-[#F8FAF9] to-[#F1F6F3] border border-[#E7EFEA] p-2 sm:p-2.5 flex items-center justify-center overflow-hidden shadow-[inset_0_1px_2px_rgba(20,90,69,0.03)] group-hover:border-[#145A45]/25 transition-all">
+      {/* 1. Image Canvas Tile (Pure white background so white-bg product photos blend seamlessly) */}
+      <div className="relative w-full aspect-[1/1.08] rounded-xl bg-white p-2 sm:p-2.5 flex items-center justify-center overflow-hidden transition-all">
         {/* Top Floating Discount Badge */}
         <div className="absolute top-1.5 left-1.5 z-10">
           {off > 0 ? (
@@ -245,7 +245,7 @@ export function ProductCardSkeleton() {
       className="group relative flex flex-col justify-between w-full h-full min-h-[295px] sm:min-h-[325px] bg-white rounded-2xl border border-[#E4DFD5] p-2.5 sm:p-3 pb-3 sm:pb-3.5 shadow-[0_2px_8px_-2px_rgba(15,74,56,0.04),inset_0_1px_0_0_rgba(255,255,255,1)]"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      <Skeleton className="w-full aspect-[1/1.08] rounded-xl bg-gradient-to-b from-[#FBFDFA] to-[#F1F6F3] border border-[#E7EFEA]" />
+      <Skeleton className="w-full aspect-[1/1.08] rounded-xl bg-[#FAF8F5]" />
       <div className="flex flex-1 flex-col min-w-0 w-full pt-2 space-y-1.5">
         <Skeleton className="h-3 w-14 bg-[#FAF8F2]" />
         <Skeleton className="h-4 w-full bg-[#FAF8F2]" />

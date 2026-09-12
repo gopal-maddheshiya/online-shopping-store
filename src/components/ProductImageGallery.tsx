@@ -152,7 +152,7 @@ export function ProductImageGallery({
       {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE */}
       <div className="relative w-full max-w-[500px] mx-auto">
         <div
-          className="group relative w-full aspect-square rounded-3xl bg-gradient-to-b from-[#FBFDFA] via-[#F8FAF9] to-[#F1F6F3] border border-[#E0DACF] shadow-[0_4px_24px_-6px_rgba(15,74,56,0.08),inset_0_1px_0_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-6 sm:p-8"
+          className="group relative w-full aspect-square rounded-3xl bg-white border border-[#E0DACF] shadow-[0_4px_24px_-6px_rgba(15,74,56,0.06),inset_0_1px_0_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-6 sm:p-8"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

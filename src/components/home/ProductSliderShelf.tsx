@@ -43,9 +43,10 @@ export function ProductSliderShelf({
   }, [products]);
 
   // Embla setup optimized for silky smooth 60-120 FPS glide (no jerky drag feeling)
+  // align offset prevents leftmost product card from getting clipped when paused
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "start",
+    align: (viewSize) => (viewSize < 640 ? 10 : 14),
     skipSnaps: true,
     duration: 48, // Gentle, progressive, buttery glide curve
   });
@@ -155,7 +156,7 @@ export function ProductSliderShelf({
       <div className="relative group/reel">
         <div
           ref={emblaRef}
-          className="overflow-hidden -mx-1 px-1 py-1.5 cursor-grab active:cursor-grabbing select-none"
+          className="overflow-hidden -mx-2 px-2 py-2 sm:py-2.5 cursor-grab active:cursor-grabbing select-none"
           onMouseEnter={handleUserInteraction}
           onTouchStart={handleUserInteraction}
         >

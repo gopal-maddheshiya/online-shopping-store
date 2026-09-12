@@ -1035,63 +1035,99 @@ function PremiumStoreHome() {
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          11B. 🛒 FULL CATALOG DISCOVERY BANNER
+          11B. 🛒 FULL CATALOG DISCOVERY BANNER (Dynamic Store Inventory)
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl border border-[#F5D061]/40 bg-gradient-to-br from-[#06291E] via-[#0F4A38] to-[#06291E] p-5 sm:p-7 shadow-[0_12px_32px_-6px_rgba(6,41,30,0.45),inset_0_1px_0_rgba(245,208,97,0.3)] text-white">
-          {/* Ambient Glows */}
-          <div className="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-[#E3B341]/15 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-12 -left-12 size-40 rounded-full bg-[#145A45]/40 blur-2xl" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#06241B] via-[#0B3527] to-[#041A14] border border-emerald-500/25 p-5 sm:p-7 md:p-8 text-white shadow-[0_12px_36px_rgba(6,36,27,0.35),inset_0_1px_1px_rgba(255,255,255,0.18)]">
+          {/* Subtle Ambient Aurora Glow */}
+          <div className="pointer-events-none absolute -top-16 -right-16 size-56 rounded-full bg-emerald-400/15 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 -left-16 size-56 rounded-full bg-[#E3B341]/12 blur-3xl" />
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left">
-            <div className="space-y-2.5 max-w-xl">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#E3B341]/20 border border-[#E3B341]/45 px-3 py-1 text-[11px] font-bold text-[#F5D061] shadow-xs">
-                <Sparkles className="size-3 text-[#F5D061]" />
-                <span>{lang === "hi" ? "दुकान की पूरी लिस्टिंग" : "Complete Store Catalog"}</span>
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              {/* Live Inventory Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-emerald-400/25 text-emerald-200 text-[11px] sm:text-xs font-semibold shadow-inner">
+                <span className="relative flex size-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-emerald-400"></span>
+                </span>
+                <Sparkles className="size-3.5 text-amber-300" />
+                <span>
+                  {lang === "hi"
+                    ? "लाइव स्टोर कैटलॉग • 100% शुद्ध राशन"
+                    : "Live Store Inventory • 100% Authentic"}
+                </span>
               </div>
 
-              {/* Title with crisp high-contrast white & gold */}
-              <h3 className="font-sans text-base sm:text-xl md:text-2xl font-black !text-white tracking-tight leading-snug drop-shadow-xs">
+              {/* Dynamic Title */}
+              <h3 className="font-sans text-lg sm:text-2xl md:text-[26px] font-black text-white tracking-tight leading-snug">
                 {lang === "hi" ? (
                   <>
-                    हमारे पास <span className="text-[#F5D061] underline decoration-[#E3B341]/50 underline-offset-4">300+</span> से अधिक किराना सामान उपलब्ध हैं
+                    हमारे पास{" "}
+                    <span className="text-amber-300 font-extrabold">
+                      {products.length > 0 ? `${products.length}+` : "100+"}
+                    </span>{" "}
+                    से अधिक दैनिक किराना सामान उपलब्ध हैं
                   </>
                 ) : (
                   <>
-                    Explore Over <span className="text-[#F5D061] underline decoration-[#E3B341]/50 underline-offset-4">300+</span> Quality Grocery Items
+                    Explore Over{" "}
+                    <span className="text-amber-300 font-extrabold">
+                      {products.length > 0 ? `${products.length}+` : "100+"}
+                    </span>{" "}
+                    Quality Grocery Essentials
                   </>
                 )}
               </h3>
 
               {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-emerald-100/90 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-emerald-100/80 font-normal leading-relaxed">
                 {lang === "hi"
-                  ? "दाल, चावल, शुद्ध तेल, मसाले, साबुन, बिस्कुट और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती दामों में!"
-                  : "Grains, pulses, pure oils, spices, soaps, biscuits and all household essentials at fair prices."}
+                  ? "दाल, चावल, शुद्ध तेल, मसाले, आटा, स्नैक्स और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती असली दुकान रेट पर!"
+                  : "Pure grains, pulses, cooking oils, spices, flour, snacks and household essentials at live fair store rates."}
               </p>
 
-              {/* Category Quick Badges */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-1 text-[11px] text-emerald-100/90 font-medium">
-                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🌾 दाल व चावल</span>
-                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🛢️ सरसों व रिफाइंड तेल</span>
-                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">☕ चाय व नमकीन</span>
-                <span className="rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15">🧼 होमकेयर</span>
+              {/* Dynamic Mini Metrics Strip */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-emerald-100 font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Package className="size-3.5 text-amber-300" />
+                  <span>
+                    <strong className="text-white font-bold">{products.length || 100}+</strong>{" "}
+                    {lang === "hi" ? "कुल सामान" : "Products"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Store className="size-3.5 text-emerald-300" />
+                  <span>
+                    <strong className="text-white font-bold">{categories.length || 8}+</strong>{" "}
+                    {lang === "hi" ? "श्रेणियाँ" : "Categories"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Truck className="size-3.5 text-teal-300" />
+                  <span>{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <ShieldCheck className="size-3.5 text-emerald-300" />
+                  <span>{lang === "hi" ? "उचित दुकान रेट" : "Store Rates"}</span>
+                </div>
               </div>
             </div>
 
-            {/* Premium CTA Button */}
-            <Link
-              to="/shop"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#F5D061] to-[#E3B341] px-6 py-3 text-xs sm:text-sm font-black text-[#0A3628] shadow-lg shadow-amber-950/30 hover:shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all shrink-0 cursor-pointer border border-[#FFF0A0]/60"
-            >
-              <ShoppingBag className="size-4 text-[#0A3628] transition-transform group-hover:-rotate-6" />
-              <span>{lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}</span>
-              <span className="rounded-full bg-black/15 px-2 py-0.5 text-[10px] font-black text-[#0A3628]">
-                {products.length || 300}+
-              </span>
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-            </Link>
+            {/* Classy Modern CTA Button */}
+            <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-2.5 items-start sm:items-center lg:items-end">
+              <Link
+                to="/shop"
+                className="group inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#06241B] px-6 py-3.5 text-xs sm:text-sm font-black shadow-[0_4px_18px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/40 shrink-0"
+              >
+                <ShoppingBag className="size-4 text-[#145A45] transition-transform group-hover:-rotate-6" />
+                <span>{lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}</span>
+                <span className="rounded-lg bg-[#EAF3ED] px-2 py-0.5 text-[11px] font-black text-[#145A45]">
+                  {products.length > 0 ? `${products.length}+` : "100+"}
+                </span>
+                <ArrowRight className="size-3.5 text-[#145A45] transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
