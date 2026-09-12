@@ -28,7 +28,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useLanguage } from "@/lib/i18n";
+import { useLanguage, type ProductLike } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
 import { inr } from "@/lib/format";
 import type { Product } from "@/lib/queries";
@@ -71,7 +71,7 @@ export function SmartRationModal({
   products,
   initialMode = "text",
 }: SmartRationModalProps) {
-  const { lang } = useLanguage();
+  const { lang, getProductName, getVariantLabel } = useLanguage();
   const cart = useCart();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -312,20 +312,31 @@ export function SmartRationModal({
       return;
     }
 
-    const payload = matched.map((item) => ({
-      item: {
-        variantId: item.variant_id!,
-        productId: item.product_id!,
-        slug: item.slug,
+    const payload = matched.map((item) => {
+      const prodObj: ProductLike = {
         name: item.product_name,
-        variantLabel: item.variant_label,
-        price: item.unit_price,
-        mrp: item.mrp || item.unit_price,
-        imageUrl: item.image_url,
-        stock: 99,
-      },
-      qty: item.quantity,
-    }));
+        name_hi: item.product_name_hi ?? null,
+        slug: item.slug,
+      };
+      const localizedName = getProductName(prodObj, item.slug);
+      const localizedVariant = getVariantLabel(item.variant_label);
+
+      return {
+        item: {
+          variantId: item.variant_id!,
+          productId: item.product_id!,
+          slug: item.slug,
+          name: localizedName,
+          name_hi: item.product_name_hi ?? null,
+          variantLabel: localizedVariant || item.variant_label || "1 Unit",
+          price: item.unit_price,
+          mrp: item.mrp || item.unit_price,
+          imageUrl: item.image_url,
+          stock: 99,
+        },
+        qty: item.quantity,
+      };
+    });
 
     cart.addMultiple(payload);
     playNewOrderChime();
@@ -728,10 +739,17 @@ export function SmartRationModal({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="text-xs font-bold text-[#16201A] truncate">
-                            {item.product_name}
+                            {getProductName(
+                              {
+                                name: item.product_name,
+                                name_hi: item.product_name_hi ?? null,
+                                slug: item.slug,
+                              },
+                              item.slug
+                            )}
                           </p>
                           <span className="text-[10px] font-semibold text-[#145A45] bg-[#E6EFE8] px-1.5 py-0.2 rounded-md">
-                            {item.variant_label}
+                            {getVariantLabel(item.variant_label)}
                           </span>
                         </div>
                         <p className="text-[10px] text-[#5A655F] truncate mt-0.5">

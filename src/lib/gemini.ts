@@ -19,6 +19,7 @@ export interface MatchedRationItem {
   product_id: string | null;
   variant_id: string | null;
   product_name: string;
+  product_name_hi?: string | null;
   variant_label: string;
   quantity: number;
   unit_price: number;
@@ -204,6 +205,7 @@ OUTPUT FORMAT EXAMPLE:
             product_id: matchedProd?.id || null,
             variant_id: matchedVariant?.id || null,
             product_name: matchedProd?.name || item.product_name || "किराना सामान",
+            product_name_hi: matchedProd?.name_hi || null,
             variant_label:
               matchedVariant?.label || item.variant_label || "1 Unit",
             quantity: Math.max(1, Number(item.quantity) || 1),
