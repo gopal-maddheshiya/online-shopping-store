@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { type Product } from "@/lib/queries";
 
@@ -27,7 +27,7 @@ export function ProductSliderShelf({
   linkSearch,
   linkLabel,
   autoSlide = true,
-  intervalMs = 4000,
+  intervalMs = 4500,
   isLoading = false,
 }: ProductSliderShelfProps) {
   // Ensure enough items for a truly seamless, unbroken infinite loop
@@ -42,13 +42,12 @@ export function ProductSliderShelf({
     return products;
   }, [products]);
 
-  // Embla setup optimized for 60-120 FPS hardware acceleration
+  // Embla setup optimized for silky smooth 60-120 FPS glide (no jerky drag feeling)
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
-    dragFree: false,
-    skipSnaps: false,
-    duration: 30, // Smooth glide duration
+    skipSnaps: true,
+    duration: 48, // Gentle, progressive, buttery glide curve
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -153,32 +152,67 @@ export function ProductSliderShelf({
       </div>
 
       {/* 2. GPU-Accelerated Zero-Lag Carousel Reel */}
-      <div
-        ref={emblaRef}
-        className="overflow-hidden -mx-1 px-1 py-1.5 cursor-grab active:cursor-grabbing select-none"
-        onMouseEnter={handleUserInteraction}
-        onTouchStart={handleUserInteraction}
-      >
-        {/* Track without gap (padding-based gutter prevents Embla loop overlap) */}
-        <div className="flex -ml-2.5 sm:-ml-3.5 select-none">
-          {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0 pl-2.5 sm:pl-3.5"
-                >
-                  <ProductCardSkeleton />
-                </div>
-              ))
-            : loopProducts.map((product, idx) => (
-                <div
-                  key={`${product.id}-${idx}`}
-                  className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0 pl-2.5 sm:pl-3.5"
-                >
-                  <ProductCard product={product} />
-                </div>
-              ))}
+      <div className="relative group/reel">
+        <div
+          ref={emblaRef}
+          className="overflow-hidden -mx-1 px-1 py-1.5 cursor-grab active:cursor-grabbing select-none"
+          onMouseEnter={handleUserInteraction}
+          onTouchStart={handleUserInteraction}
+        >
+          {/* Hardware-accelerated track prevents dropped frames and stutter */}
+          <div
+            className="flex -ml-2.5 sm:-ml-3.5 select-none"
+            style={{
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden",
+            }}
+          >
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0 pl-2.5 sm:pl-3.5 select-none"
+                  >
+                    <ProductCardSkeleton />
+                  </div>
+                ))
+              : loopProducts.map((product, idx) => (
+                  <div
+                    key={`${product.id}-${idx}`}
+                    className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0 pl-2.5 sm:pl-3.5 select-none"
+                  >
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+          </div>
         </div>
+
+        {/* Previous Button (Desktop / Tablet) */}
+        <button
+          type="button"
+          onClick={() => {
+            emblaApi?.scrollPrev();
+            handleUserInteraction();
+          }}
+          className="hidden md:flex absolute -left-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+
+        {/* Next Button (Desktop / Tablet) */}
+        <button
+          type="button"
+          onClick={() => {
+            emblaApi?.scrollNext();
+            handleUserInteraction();
+          }}
+          className="hidden md:flex absolute -right-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="size-4" />
+        </button>
       </div>
 
       {/* 3. Subtle Interactive Dots Indicator */}

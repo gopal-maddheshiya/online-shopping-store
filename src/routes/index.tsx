@@ -226,8 +226,8 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
-    duration: 30,
-    skipSnaps: false,
+    duration: 48,
+    skipSnaps: true,
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -285,7 +285,14 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
           onMouseEnter={handleUserInteraction}
           onTouchStart={handleUserInteraction}
         >
-          <div className="flex select-none">
+          <div
+            className="flex select-none"
+            style={{
+              willChange: "transform",
+              transform: "translate3d(0, 0, 0)",
+              backfaceVisibility: "hidden",
+            }}
+          >
             {images.map((imgUrl, idx) => (
               <div key={idx} className="shrink-0 grow-0 basis-full min-w-0">
                 <img
