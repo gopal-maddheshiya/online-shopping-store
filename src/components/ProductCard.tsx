@@ -20,6 +20,7 @@ export function ProductCard({ product }: { product: Product }) {
     .sort((a, b) => a.sort_order - b.sort_order);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(variants[0]?.id ?? "");
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const activeVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
   const inCart = items.find((i) => i.variantId === activeVariant?.id);
@@ -83,13 +84,16 @@ export function ProductCard({ product }: { product: Product }) {
         />
       </button>
 
-      {/* 3. Product Image Area (Clean White Canvas) */}
+      {/* 3. Product Image Area (Clean White Canvas with Progressive Shimmer) */}
       <div className="relative w-full">
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="relative w-full aspect-square flex items-center justify-center overflow-hidden py-1 px-1.5"
+          className="relative w-full aspect-square flex items-center justify-center overflow-hidden py-1 px-1.5 rounded-lg"
         >
+          {!imgLoaded && (
+            <div className="absolute inset-2 rounded-lg img-loading-shimmer pointer-events-none" />
+          )}
           <img
             src={getProductImage(product)}
             alt={localizedProductName}
@@ -97,10 +101,14 @@ export function ProductCard({ product }: { product: Product }) {
             decoding="async"
             width={200}
             height={200}
+            onLoad={() => setImgLoaded(true)}
             onError={(e) => {
+              setImgLoaded(true);
               e.currentTarget.src = "/images/packaged.jpg";
             }}
-            className="size-full max-h-[140px] sm:max-h-[160px] object-contain mx-auto transition-transform duration-300 ease-out group-hover:scale-105 select-none"
+            className={`size-full max-h-[140px] sm:max-h-[160px] object-contain mx-auto transition-all duration-300 ease-out group-hover:scale-105 select-none ${
+              imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+            }`}
           />
 
           {/* Out of Stock Overlay */}

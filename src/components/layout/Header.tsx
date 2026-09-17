@@ -73,6 +73,18 @@ export function Header() {
   };
 
   const [term, setTerm] = useState("");
+  const [cartBounce, setCartBounce] = useState(false);
+
+  useEffect(() => {
+    if (cartCount > 0) {
+      setCartBounce(true);
+      const timer = setTimeout(() => setCartBounce(false), 500);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+    return () => {};
+  }, [cartCount]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -537,7 +549,7 @@ export function Header() {
                 <div className="relative flex items-center">
                   <ShoppingBag className="size-4" />
                   {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 grid size-4.5 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9.5px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60">
+                    <span className={`absolute -top-2 -right-2 grid size-4.5 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9.5px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60 ${cartBounce ? "animate-cart-bounce" : ""}`}>
                       {cartCount}
                     </span>
                   )}
@@ -605,7 +617,7 @@ export function Header() {
                 >
                   <div className="relative flex items-center">
                     <ShoppingBag className="size-3.5" />
-                    <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60">
+                    <span className={`absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60 ${cartBounce ? "animate-cart-bounce" : ""}`}>
                       {cartCount}
                     </span>
                   </div>
@@ -618,7 +630,7 @@ export function Header() {
         </div>
 
         {/* Mobile Navigation Drawer */}
-        <SheetContent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF9F5]">
+        <SheetContent data-lenis-prevent side="left" className="w-[320px] sm:w-[350px] p-0 text-[#16201A] flex flex-col h-full bg-[#FAF9F5]">
                   {/* 1. Clean Warm-Neutral Brand & User Profile Header (No overwhelming dark green) */}
                   <SheetHeader className="p-0 border-b border-[#E8E3D9] bg-gradient-to-b from-white via-[#FCFAF6] to-[#F5F1E8] text-[#16201A] text-left shrink-0">
                     <div className="p-4 pb-3.5 space-y-3">

@@ -8,21 +8,26 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
 import { WishlistProvider } from "@/lib/wishlist";
+import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { Toaster } from "@/components/ui/sonner";
 import { useRealtimeSync } from "@/lib/realtime-sync";
-import { GoogleAuthPromptModal } from "@/components/GoogleAuthPromptModal";
 import { settingsQuery } from "@/lib/queries";
 import { SITE_URL } from "@/lib/site-config";
+
+// Lazy-loaded modal to minimize initial bundle size and boost TTI
+const GoogleAuthPromptModal = lazy(() =>
+  import("@/components/GoogleAuthPromptModal").then((m) => ({ default: m.GoogleAuthPromptModal })),
+);
 
 
 function NotFoundComponent() {
@@ -293,22 +298,26 @@ function RootComponent() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <div
-                  className={
-                    isAdminRoute
-                      ? "min-h-screen flex flex-col bg-[#F8FAF9]"
-                      : "flex min-h-screen flex-col pb-16 lg:pb-0"
-                  }
-                >
-                  {!isAdminRoute && <Header />}
-                  <main className="flex-1">
-                    <Outlet />
-                  </main>
-                  {!isAdminRoute && <Footer />}
-                  {!isAdminRoute && <MobileNav />}
-                </div>
-                <Toaster position="top-center" richColors />
-                <GoogleAuthPromptModal />
+                <SmoothScrollProvider>
+                  <div
+                    className={
+                      isAdminRoute
+                        ? "min-h-screen flex flex-col bg-[#F8FAF9]"
+                        : "flex min-h-screen flex-col pb-16 lg:pb-0"
+                    }
+                  >
+                    {!isAdminRoute && <Header />}
+                    <main className="flex-1">
+                      <Outlet />
+                    </main>
+                    {!isAdminRoute && <Footer />}
+                    {!isAdminRoute && <MobileNav />}
+                  </div>
+                  <Toaster position="top-center" richColors />
+                  <Suspense fallback={null}>
+                    <GoogleAuthPromptModal />
+                  </Suspense>
+                </SmoothScrollProvider>
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

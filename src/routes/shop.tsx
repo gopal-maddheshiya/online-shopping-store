@@ -450,7 +450,10 @@ function Shop() {
       {/* Main Layout: Unified Blinkit Category Rail + Products Feed */}
       <div className="mt-2 sm:mt-3 flex flex-row items-start gap-2 sm:gap-3.5 lg:gap-5 w-full min-w-0">
         {/* Category Left Rail (Unified Blinkit Rail on Mobile & Desktop, Premium White & Homepage Squircle) */}
-        <aside className="w-[84px] sm:w-[94px] lg:w-[106px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[#E5E7EB] py-2 sm:py-3 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-7.5rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none">
+        <aside
+          data-lenis-prevent
+          className="w-[84px] sm:w-[94px] lg:w-[106px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[#E5E7EB] py-2 sm:py-3 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-7.5rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
+        >
           {/* All Categories Button */}
           <button
             type="button"

@@ -11,6 +11,7 @@ interface ProductSliderShelfProps {
   subtitle?: string;
   icon?: React.ReactNode;
   iconContainerClassName?: string;
+  className?: string;
   products: Product[];
   linkTo?: string;
   linkSearch?: Record<string, string>;
@@ -25,6 +26,7 @@ export function ProductSliderShelf({
   subtitle,
   icon,
   iconContainerClassName,
+  className,
   products,
   linkTo = "/shop",
   linkSearch,
@@ -119,7 +121,12 @@ export function ProductSliderShelf({
   const maxDots = Math.min(totalOriginal, 6);
 
   return (
-    <section className="container-page space-y-3 sm:space-y-3.5">
+    <section
+      className={cn(
+        "container-page space-y-3 sm:space-y-3.5 gsap-reveal-section shelf-viewport-contain",
+        className,
+      )}
+    >
       {/* 1. Clean Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">

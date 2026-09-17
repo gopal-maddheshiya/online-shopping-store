@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { getCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
@@ -51,9 +51,17 @@ import {
   isOpenNow,
 } from "@/lib/queries";
 import { waHref } from "@/lib/format";
-import { PhoneOrderModal } from "@/components/PhoneOrderModal";
 import { SmartRationBar } from "@/components/home/SmartRationBar";
-import { SmartRationModal } from "@/components/home/SmartRationModal";
+import { gsap } from "@/lib/gsap";
+import { useGSAP } from "@gsap/react";
+
+// Lazy-loaded heavy modals to accelerate initial page paint and CPU performance
+const PhoneOrderModal = lazy(() =>
+  import("@/components/PhoneOrderModal").then((m) => ({ default: m.PhoneOrderModal })),
+);
+const SmartRationModal = lazy(() =>
+  import("@/components/home/SmartRationModal").then((m) => ({ default: m.SmartRationModal })),
+);
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -538,7 +546,7 @@ function CategoryThumbnail({
   return (
     <div className="relative size-full flex items-center justify-center overflow-hidden p-1 sm:p-1.5">
       {!loaded && !hasError && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6DC]/30 via-white/70 to-[#EAE6DC]/30 animate-pulse" />
+        <div className="absolute inset-0 img-loading-shimmer opacity-60 pointer-events-none" />
       )}
       {hasError ? (
         <div className="flex flex-col items-center justify-center text-[#145A45]/60">
@@ -785,6 +793,33 @@ function PremiumStoreHome() {
   const allAssignedSlugs = new Set(headings.flatMap((h) => h.slugs));
   const uncategorizedCategories = parentCategories.filter((c) => !allAssignedSlugs.has(c.slug));
 
+  // GPU-accelerated GSAP ScrollTrigger reveals for category groups and shelves
+  useGSAP(() => {
+    if (typeof window === "undefined") return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const sections = document.querySelectorAll(".gsap-reveal-section");
+    sections.forEach((sec) => {
+      gsap.fromTo(
+        sec,
+        { opacity: 0, y: 22 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.65,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sec,
+            start: "top 90%",
+            toggleActions: "play none none none",
+            once: true,
+          },
+        },
+      );
+    });
+  }, [headings, catLoading, prodLoading]);
+
   // Use only database products
   const allDisplayProducts = products ?? [];
 
@@ -975,7 +1010,7 @@ function PremiumStoreHome() {
               const headingConfig = getCategoryHeadingConfig(heading);
 
               return (
-                <div key={heading.id} className="space-y-2.5 sm:space-y-3">
+                <div key={heading.id} className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                       {/* Category Group Icon Squircle Badge */}
@@ -1037,7 +1072,7 @@ function PremiumStoreHome() {
             })}
 
             {uncategorizedCategories.length > 0 && (
-              <div className="space-y-2.5 sm:space-y-3">
+              <div className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     <div
@@ -1635,13 +1670,17 @@ function PremiumStoreHome() {
         </div>
       </section>
 
-      <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
-      <SmartRationModal
-        open={smartRationOpen}
-        onOpenChange={setSmartRationOpen}
-        products={allDisplayProducts}
-        initialMode={smartRationMode}
-      />
+      <Suspense fallback={null}>
+        {orderModalOpen && <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />}
+        {smartRationOpen && (
+          <SmartRationModal
+            open={smartRationOpen}
+            onOpenChange={setSmartRationOpen}
+            products={allDisplayProducts}
+            initialMode={smartRationMode}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

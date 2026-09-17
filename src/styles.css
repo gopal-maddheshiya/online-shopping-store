@@ -634,3 +634,71 @@
     border-radius: 32px !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Lenis Smooth Scrolling & Performance Architecture
+   ═══════════════════════════════════════════════════════════════ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Offscreen Viewport Gating for Deep Carousels */
+.shelf-viewport-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 410px;
+}
+
+/* Progressive Image Lazy Loading Shimmer & Reveal */
+.img-loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(237, 248, 241, 0.6) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(237, 248, 241, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: img-shimmer 1.8s infinite ease-in-out;
+}
+
+@keyframes img-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Micro-interaction bounce keyframe */
+@keyframes cart-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+}
+
+.animate-cart-bounce {
+  animation: cart-bounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
