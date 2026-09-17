@@ -21,6 +21,8 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { Toaster } from "@/components/ui/sonner";
 import { useRealtimeSync } from "@/lib/realtime-sync";
 import { GoogleAuthPromptModal } from "@/components/GoogleAuthPromptModal";
+import { settingsQuery } from "@/lib/queries";
+import { SITE_URL } from "@/lib/site-config";
 
 
 function NotFoundComponent() {
@@ -58,22 +60,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Unable to load this section. Please try again or return to homepage.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex items-center justify-center gap-3">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-5 py-2.5 text-sm font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all cursor-pointer"
+            type="button"
+            onClick={() => reset()}
+            className="inline-flex items-center justify-center rounded-xl border border-[#D5E0D5] bg-white px-4 py-2 text-sm font-semibold text-[#16201A] shadow-xs hover:bg-[#F4F7F4] active:scale-95 transition-all"
           >
             Try again
           </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-[#E4DFD5] bg-white px-5 py-2.5 text-sm font-bold text-[#16201A] shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-colors hover:bg-[#FAF8F2]"
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-xl bg-[#145A45] px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#104E3C] active:scale-95 transition-all"
           >
-            Go to home
-          </a>
+            Return to Store
+          </Link>
         </div>
       </div>
     </div>
@@ -83,6 +83,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
+  loader: async ({ context }) => {
+    void context.queryClient.ensureQueryData(settingsQuery);
+  },
   head: () => ({
     meta: [
       {
@@ -107,6 +110,10 @@ export const Route = createRootRouteWithContext<{
       {
         property: "og:type",
         content: "website",
+      },
+      {
+        property: "og:url",
+        content: SITE_URL,
       },
       {
         property: "og:title",
@@ -146,6 +153,10 @@ export const Route = createRootRouteWithContext<{
         content: "summary_large_image",
       },
       {
+        name: "twitter:url",
+        content: SITE_URL,
+      },
+      {
         name: "twitter:title",
         content: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज",
       },
@@ -164,6 +175,10 @@ export const Route = createRootRouteWithContext<{
       },
     ],
     links: [
+      {
+        rel: "canonical",
+        href: SITE_URL,
+      },
       {
         rel: "icon",
         type: "image/svg+xml",
@@ -214,8 +229,8 @@ export const Route = createRootRouteWithContext<{
           "@type": "GroceryStore",
           name: "Arun Gopal Traders",
           alternateName: "अरुण गोपाल ट्रेडर्स",
-          url: "https://arungopaltraders.com",
-          logo: "https://arungopaltraders.com/agt-favicon.png",
+          url: SITE_URL,
+          logo: `${SITE_URL}/agt-favicon.png`,
           image: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
           description: "रामनगर, महाराजगंज की विश्वसनीय स्थानीय किराना दुकान — 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
           telephone: "+916388354988",

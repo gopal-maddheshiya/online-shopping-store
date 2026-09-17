@@ -3,4 +3,4 @@ Disallow: /admin
 Disallow: /admin/
 Allow: /
 
-Sitemap: https://arungopaltraders.com/sitemap.xml
+Sitemap: https://arun-gopal-traders.vercel.app/sitemap.xml

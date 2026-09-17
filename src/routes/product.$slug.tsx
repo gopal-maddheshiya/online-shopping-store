@@ -35,11 +35,13 @@ import { getProductImage, getProductImages, getOpenGraphProductImage } from "@/l
 import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/queries";
 import { productReviewsQuery, computeReviewStats } from "@/lib/reviews";
 import { discountPercent, inr } from "@/lib/format";
+import { SITE_URL } from "@/lib/site-config";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params, context }) => {
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     void context.queryClient.ensureQueryData(productsQuery());
+    void context.queryClient.ensureQueryData(settingsQuery);
     return { product };
   },
   head: ({ loaderData, params }) => {
@@ -52,13 +54,16 @@ export const Route = createFileRoute("/product/$slug")({
     const resolvedImg = p ? getOpenGraphProductImage(p) : "/agt-og-image.jpg";
     const absoluteImg = resolvedImg.startsWith("http")
       ? resolvedImg
-      : `https://arungopaltraders.com${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`;
-    const pageUrl = `https://arungopaltraders.com/product/${params.slug}`;
+      : `${SITE_URL}${resolvedImg.startsWith("/") ? "" : "/"}${resolvedImg}`;
+    const pageUrl = `${SITE_URL}/product/${params.slug}`;
 
     const defaultVariant = p?.product_variants?.[0];
     const priceAmount = defaultVariant?.price ? String(Math.round(Number(defaultVariant.price))) : undefined;
 
     return {
+      links: [
+        { rel: "canonical", href: pageUrl },
+      ],
       meta: [
         { title },
         { name: "description", content: desc },
@@ -79,6 +84,7 @@ export const Route = createFileRoute("/product/$slug")({
             ]
           : []),
         { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:url", content: pageUrl },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: desc },
         { name: "twitter:image", content: absoluteImg },
@@ -251,7 +257,7 @@ function ProductPage() {
     // For WhatsApp web crawler to show rich preview cards, the URL must be a live public URL.
     // If testing on localhost / private wifi IP, we fallback to the live domain so WhatsApp crawler can reach it.
     const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.startsWith("192.168."));
-    const baseUrl = isLocal ? "https://arungopaltraders.com" : (typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://arungopaltraders.com");
+    const baseUrl = isLocal ? SITE_URL : (typeof window !== "undefined" && window.location.origin ? window.location.origin : SITE_URL);
     const shareUrl = `${baseUrl}/product/${product.slug}`;
     const priceText = variant
       ? ` (₹${Math.round(Number(variant.price))}${variant.mrp && Number(variant.mrp) > Number(variant.price) ? ` / MRP ₹${Math.round(Number(variant.mrp))}` : ""})`

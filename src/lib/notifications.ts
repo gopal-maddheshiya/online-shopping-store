@@ -5,6 +5,7 @@
 
 import { inr, formatDate } from "@/lib/format";
 import type { Order, StoreSettings } from "@/lib/queries";
+import { SITE_URL } from "@/lib/site-config";
 
 // NOTE: Telegram bot token is now handled server-side only.
 // Do NOT use VITE_TELEGRAM_BOT_TOKEN — that would expose the token in the browser bundle.
@@ -85,7 +86,7 @@ ${itemsText || " • किराना सामान"}
 ⏰ *समय:* ${formatDate(payload.createdAt || new Date().toISOString())}
 ${payload.customerNote ? `📝 *ग्राहक का नोट:* ${payload.customerNote}\n` : ""}━━━━━━━━━━━━━━━━━━━━━━━━
 👉 *एडमिन पैनल में प्रबंधित करें:*
-https://arungopaltraders.com/admin?order=${payload.orderNo}`;
+${SITE_URL}/admin?order=${payload.orderNo}`;
 }
 
 /**
