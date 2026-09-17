@@ -151,14 +151,14 @@ export function Footer() {
           </h4>
           <ul className="mt-3 space-y-2 text-xs text-[#5A655F]">
             <li>
-              <Link to="/shop" search={{ category: "flour-atta" }} className="hover:text-[#145A45]">
+              <Link to="/shop" search={{ category: "atta-flour" }} className="hover:text-[#145A45]">
                 Atta &amp; Flours
               </Link>
             </li>
             <li>
               <Link
                 to="/shop"
-                search={{ category: "rice-grains" }}
+                search={{ category: "rice" }}
                 className="hover:text-[#145A45]"
               >
                 Basmati Rice &amp; Grains

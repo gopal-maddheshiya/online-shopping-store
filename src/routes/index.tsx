@@ -693,101 +693,146 @@ function PremiumStoreHome() {
   // Use only database products
   const allDisplayProducts = products ?? [];
 
-  // Category-based product groups
-  const attaRiceProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "flour-atta" ||
-      p.category_id === "atta-flour" ||
-      p.category_id === "rice-grains" ||
-      p.category_id === "rice" ||
-      p.category_id === "grains-pulses" ||
-      p.name.toLowerCase().includes("atta") ||
-      p.name.toLowerCase().includes("rice") ||
-      p.name.toLowerCase().includes("gehu") ||
-      p.name.toLowerCase().includes("bajra") ||
-      p.name.toLowerCase().includes("jowar") ||
-      p.name.toLowerCase().includes("besan") ||
-      p.name.toLowerCase().includes("suji") ||
-      p.name.toLowerCase().includes("maida"),
+  // Map from category UUID -> slug for 100% accurate category attribution
+  const categorySlugById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of categories) {
+      map.set(c.id, c.slug);
+    }
+    return map;
+  }, [categories]);
+
+  const getProductCategorySlug = useCallback(
+    (p: { category_id: string | null }): string => {
+      if (p.category_id && categorySlugById.has(p.category_id)) {
+        return categorySlugById.get(p.category_id)!;
+      }
+      return p.category_id || "";
+    },
+    [categorySlugById],
   );
-  const dalPulsesProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "pulses-dal" ||
-      p.name.toLowerCase().includes("dal") ||
-      p.name.toLowerCase().includes("chana") ||
-      p.name.toLowerCase().includes("rajma") ||
-      p.name.toLowerCase().includes("lentils") ||
-      p.name.toLowerCase().includes("urad") ||
-      p.name.toLowerCase().includes("moong"),
+
+  // 1. Atta, Rice & Grains (Strict category slug mapping - NO substring pollution)
+  const ATTA_RICE_SLUGS = useMemo(
+    () => new Set(["atta-flour", "flour-atta", "rice", "rice-grains", "grains"]),
+    [],
   );
-  const oilGheeProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "oil-ghee" ||
-      p.category_id === "cooking-oils" ||
-      p.name.toLowerCase().includes("oil") ||
-      p.name.toLowerCase().includes("ghee") ||
-      p.name.toLowerCase().includes("tel") ||
-      p.name.toLowerCase().includes("sarson"),
+  const attaRiceProducts = useMemo(
+    () => allDisplayProducts.filter((p) => ATTA_RICE_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, ATTA_RICE_SLUGS],
   );
-  const spicesMasalaProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "spices-masala" ||
-      p.category_id === "dry-fruits" ||
-      p.category_id === "spices" ||
-      p.category_id === "salt-sugar" ||
-      p.name.toLowerCase().includes("masala") ||
-      p.name.toLowerCase().includes("haldi") ||
-      p.name.toLowerCase().includes("mirch") ||
-      p.name.toLowerCase().includes("hing") ||
-      p.name.toLowerCase().includes("jeera") ||
-      p.name.toLowerCase().includes("cardamom") ||
-      p.name.toLowerCase().includes("kesar") ||
-      p.name.toLowerCase().includes("kaju") ||
-      p.name.toLowerCase().includes("badam") ||
-      p.name.toLowerCase().includes("salt") ||
-      p.name.toLowerCase().includes("sugar"),
+
+  // 2. Pulses & Dal (Strict category slug mapping - NO substring pollution like sandal soap or golochana)
+  const DAL_PULSES_SLUGS = useMemo(() => new Set(["pulses-dal", "dal", "pulses"]), []);
+  const dalPulsesProducts = useMemo(
+    () => allDisplayProducts.filter((p) => DAL_PULSES_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, DAL_PULSES_SLUGS],
   );
-  const snacksBreakfastProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "namkeen-snacks" ||
-      p.category_id === "snacks-namkeen" ||
-      p.category_id === "tea-coffee" ||
-      p.category_id === "breakfast" ||
-      p.category_id === "breakfast-items" ||
-      p.category_id === "snacks-sweets" ||
-      p.category_id === "biscuits" ||
-      p.category_id === "chocolates" ||
-      p.category_id === "noodles-pasta" ||
-      p.category_id === "beverages" ||
-      p.name.toLowerCase().includes("tea") ||
-      p.name.toLowerCase().includes("coffee") ||
-      p.name.toLowerCase().includes("biscuit") ||
-      p.name.toLowerCase().includes("maggi") ||
-      p.name.toLowerCase().includes("chips") ||
-      p.name.toLowerCase().includes("bhujia") ||
-      p.name.toLowerCase().includes("chocolate") ||
-      p.name.toLowerCase().includes("dairy milk") ||
-      p.name.toLowerCase().includes("jam") ||
-      p.name.toLowerCase().includes("bread"),
+
+  // 3. Mustard Oil & Cooking Oil / Ghee (Strict category slug mapping - NO hair oils, NO toilet cleaner)
+  const OIL_GHEE_SLUGS = useMemo(
+    () => new Set(["oil-ghee", "cooking-oils", "edible-oils", "ghee"]),
+    [],
   );
-  const cleaningProducts = allDisplayProducts.filter(
-    (p) =>
-      p.category_id === "household-cleaning" ||
-      p.category_id === "cleaning-supplies" ||
-      p.category_id === "cleaning" ||
-      p.category_id === "laundry" ||
-      p.name.toLowerCase().includes("detergent") ||
-      p.name.toLowerCase().includes("surf") ||
-      p.name.toLowerCase().includes("colin") ||
-      p.name.toLowerCase().includes("pril") ||
-      p.name.toLowerCase().includes("harpic") ||
-      p.name.toLowerCase().includes("broom") ||
-      p.name.toLowerCase().includes("mop") ||
-      p.name.toLowerCase().includes("bucket") ||
-      p.name.toLowerCase().includes("soap") ||
-      p.name.toLowerCase().includes("handwash") ||
-      p.name.toLowerCase().includes("rin"),
+  const oilGheeProducts = useMemo(
+    () => allDisplayProducts.filter((p) => OIL_GHEE_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, OIL_GHEE_SLUGS],
   );
+
+  // 4. Spices & Dry Fruits (Strict category slug mapping - NO detergent powders or biscuits)
+  const SPICES_MASALA_SLUGS = useMemo(
+    () => new Set(["spices-masala", "dry-fruits", "salt-sugar", "spices"]),
+    [],
+  );
+  const spicesMasalaProducts = useMemo(
+    () => allDisplayProducts.filter((p) => SPICES_MASALA_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, SPICES_MASALA_SLUGS],
+  );
+
+  // 5. Tea, Snacks & Biscuits (Strict category slug mapping)
+  const SNACKS_BREAKFAST_SLUGS = useMemo(
+    () =>
+      new Set([
+        "namkeen-snacks",
+        "snacks-namkeen",
+        "biscuits",
+        "breakfast",
+        "tea-coffee",
+        "noodles-pasta",
+      ]),
+    [],
+  );
+  const snacksBreakfastProducts = useMemo(
+    () => allDisplayProducts.filter((p) => SNACKS_BREAKFAST_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, SNACKS_BREAKFAST_SLUGS],
+  );
+
+  // 6. Cleaning & Household (Strict category slug mapping - detergents & cleaning, NO bath soaps)
+  const CLEANING_SLUGS = useMemo(
+    () =>
+      new Set([
+        "household-cleaning",
+        "cleaning-supplies",
+        "bathroom-cleaning",
+        "laundry",
+        "pots-cleaners",
+      ]),
+    [],
+  );
+  const cleaningProducts = useMemo(
+    () => allDisplayProducts.filter((p) => CLEANING_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, CLEANING_SLUGS],
+  );
+
+  // 7. Pooja Samagri & Agarbatti (Kawalgatta, Havan samagri, Agarbatti, Dhoop batti, Kapoor)
+  const POOJA_SLUGS = useMemo(
+    () => new Set(["pooja-items", "agarbatti", "dhoop-batti", "kapoor"]),
+    [],
+  );
+  const poojaProducts = useMemo(
+    () => allDisplayProducts.filter((p) => POOJA_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, POOJA_SLUGS],
+  );
+
+  // 8. Personal Care & Hair Oil (Bath soaps, hair oils, toothpaste, baby care)
+  const PERSONAL_CARE_SLUGS = useMemo(
+    () =>
+      new Set([
+        "personal-care",
+        "hair-care",
+        "oral-care",
+        "skin-care",
+        "baby-products",
+      ]),
+    [],
+  );
+  const personalCareProducts = useMemo(
+    () => allDisplayProducts.filter((p) => PERSONAL_CARE_SLUGS.has(getProductCategorySlug(p))),
+    [allDisplayProducts, getProductCategorySlug, PERSONAL_CARE_SLUGS],
+  );
+
+  // Best Sellers (Cleaned of cattle feed & bathroom cleaning for true grocery appeal)
+  const popularProducts = useMemo(() => {
+    const nonGrocerySlugs = new Set([
+      "kapila-pasuahar",
+      "555-brand-chokar",
+      "kapila-hara-pasuahar",
+      "bathroom-cleaning",
+    ]);
+    const filtered = featuredProducts.filter((p) => {
+      const slug = getProductCategorySlug(p);
+      return !nonGrocerySlugs.has(slug);
+    });
+    if (filtered.length < 8 && allDisplayProducts.length > 0) {
+      const existingIds = new Set(filtered.map((p) => p.id));
+      const candidates = allDisplayProducts.filter((p) => {
+        const slug = getProductCategorySlug(p);
+        return !nonGrocerySlugs.has(slug) && !existingIds.has(p.id);
+      });
+      return [...filtered, ...candidates.slice(0, 12 - filtered.length)];
+    }
+    return filtered;
+  }, [featuredProducts, allDisplayProducts, getProductCategorySlug]);
 
   return (
     <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
@@ -999,7 +1044,7 @@ function PremiumStoreHome() {
             ? "दुकान के सबसे ज्यादा बिकने वाले शुद्ध उत्पाद"
             : "Most ordered grocery essentials"
         }
-        products={featuredProducts}
+        products={popularProducts}
         linkTo="/shop"
         linkLabel={`${t.viewAll} (${products.length || 300}+)`}
         autoSlide={true}
@@ -1016,12 +1061,12 @@ function PremiumStoreHome() {
           title={lang === "hi" ? "आटा, बासमती चावल व अनाज" : "Atta, Rice & Grains"}
           subtitle={
             lang === "hi"
-              ? "आशीर्वाद, फॉर्च्यून चक्की आटा, दावत बासमती"
-              : "Aashirvaad, Fortune Atta & Daawat Basmati"
+              ? "मैदा, बेसन, चक्की आटा व बासमती चावल"
+              : "Maida, Besan, Fresh Atta & Basmati"
           }
           products={attaRiceProducts}
           linkTo="/shop"
-          linkSearch={{ category: "flour-atta" }}
+          linkSearch={{ category: "atta-flour" }}
           linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4200}
@@ -1060,8 +1105,8 @@ function PremiumStoreHome() {
           title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
           subtitle={
             lang === "hi"
-              ? "फॉर्च्यून कच्ची घानी, धारा, अमूल घी"
-              : "Fortune, Dhara & Amul Pure Ghee"
+              ? "फॉर्च्यून कच्ची घानी, बैल कोल्हू, चक्र तेल"
+              : "Bail Kolhu, Chakra & Fortune Cooking Oil"
           }
           products={oilGheeProducts}
           linkTo="/shop"
@@ -1150,8 +1195,8 @@ function PremiumStoreHome() {
           title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
           subtitle={
             lang === "hi"
-              ? "MDH, एवरेस्ट, काजू, बादाम, किशमिश"
-              : "MDH, Everest, Cashews, Almonds"
+              ? "खड़े व पिसे मसाले, काजू, बादाम, किशमिश"
+              : "Whole & Ground Spices, Cashews, Almonds"
           }
           products={spicesMasalaProducts}
           linkTo="/shop"
@@ -1171,12 +1216,12 @@ function PremiumStoreHome() {
           title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
           subtitle={
             lang === "hi"
-              ? "टाटा टी, पारले-जी, गुड डे, हल्दीराम"
-              : "Tata Tea, Parle-G, Good Day, Haldiram"
+              ? "टाटा टी, पारले-जी, गुड डे, नमकीन व सेवई"
+              : "Tata Tea, Parle-G, Good Day, Snacks"
           }
           products={snacksBreakfastProducts}
           linkTo="/shop"
-          linkSearch={{ category: "snacks-namkeen" }}
+          linkSearch={{ category: "namkeen-snacks" }}
           linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4100}
@@ -1189,18 +1234,60 @@ function PremiumStoreHome() {
       {cleaningProducts.length > 0 && (
         <ProductSliderShelf
           icon={<span className="text-base leading-none">🧽</span>}
-          title={lang === "hi" ? "सफाई, डिटर्जेंट व झाड़ू" : "Cleaning & Household"}
+          title={lang === "hi" ? "सफाई, डिटर्जेंट व बर्तन" : "Cleaning & Household"}
           subtitle={
             lang === "hi"
-              ? "सर्फ, हार्पिक, प्रिल, गाला झाड़ू"
-              : "Surf Excel, Harpic, Pril, Gala"
+              ? "सर्फ, हार्पिक, डिटर्जेंट पाउडर व बर्तन धुलाई"
+              : "Surf Excel, Harpic, Detergents"
           }
           products={cleaningProducts}
           linkTo="/shop"
-          linkSearch={{ category: "cleaning-supplies" }}
+          linkSearch={{ category: "household-cleaning" }}
           linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4700}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          11B. 🪔 POOJA SAMAGRI & AGARBATTI (Dedicated Shelf)
+          ═══════════════════════════════════════════════════════ */}
+      {poojaProducts.length > 0 && (
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🪔</span>}
+          title={lang === "hi" ? "पूजा सामग्री, अगरबत्ती व धूप" : "Pooja Samagri & Agarbatti"}
+          subtitle={
+            lang === "hi"
+              ? "शुद्ध हवन सामग्री, अगरबत्ती, धूप बत्ती, केवलगट्टा व कपूर"
+              : "Havan Samagri, Agarbatti, Dhoop Batti & Camphor"
+          }
+          products={poojaProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "pooja-items" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4300}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          11C. 🧴 PERSONAL CARE & SOAPS (Dedicated Shelf)
+          ═══════════════════════════════════════════════════════ */}
+      {personalCareProducts.length > 0 && (
+        <ProductSliderShelf
+          icon={<span className="text-base leading-none">🧴</span>}
+          title={lang === "hi" ? "पर्सनल केयर, साबुन व हेयर ऑयल" : "Personal Care, Soaps & Hair Oil"}
+          subtitle={
+            lang === "hi"
+              ? "नवरत्न, डाबर आंवला, संतूर, डेटॉल, कोलगेट व बेबी सोप"
+              : "Navratna, Dabur Amla, Santoor, Dettol, Colgate"
+          }
+          products={personalCareProducts}
+          linkTo="/shop"
+          linkSearch={{ category: "personal-care" }}
+          linkLabel={`${t.viewAll} →`}
+          autoSlide={true}
+          intervalMs={4500}
         />
       )}
 

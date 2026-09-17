@@ -90,6 +90,10 @@ const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
   "kitchen-essentials": "bathroom-cleaning",
   "stationery": "agarbatti",
   "pots-cceaners": "pots-cleaners",
+  "flour-atta": "atta-flour",
+  "rice-grains": "rice",
+  "cleaning-supplies": "household-cleaning",
+  "snacks-namkeen": "namkeen-snacks",
 };
 
 function Shop() {
