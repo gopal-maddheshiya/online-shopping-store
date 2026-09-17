@@ -255,10 +255,12 @@ export function Header() {
 
             if (!activeText) return (
               <div className="flex items-center justify-between w-full">
-                <div className="hidden md:flex items-center justify-start shrink-0 min-w-[200px] lg:min-w-[260px]">
-                  {deliveryBadge}
-                </div>
-                <div className="flex items-center justify-end shrink-0 min-w-[200px] lg:min-w-[260px]">
+                {isDeliveryEnabled ? (
+                  <div className="hidden md:flex items-center justify-start shrink-0">
+                    {deliveryBadge}
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-end flex-1">
                   {languageAndTiming}
                 </div>
               </div>
@@ -278,6 +280,32 @@ export function Header() {
                   <span className="text-[#F5D061] font-bold">{activeText}</span>
                 )}
               </span>
+            );
+
+            const announcementPill = (
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 px-3.5 py-1 shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-all max-w-full backdrop-blur-xs">
+                <span className="grid size-4.5 place-items-center rounded-full bg-gradient-to-br from-[#E3B341]/35 to-[#F5D061]/20 border border-[#E3B341]/60 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.3)]">
+                  <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
+                </span>
+                <span className="inline-flex items-center rounded-full bg-[#E3B341]/30 border border-[#E3B341]/40 px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider text-[#F5D061] shrink-0">
+                  {lang === "hi" ? "अपडेट" : "UPDATE"}
+                </span>
+                <p className="text-xs font-semibold tracking-wide truncate">
+                  {parts.length > 1 ? (
+                    <>
+                      <span className="text-white/95 font-medium">{parts[0]?.trim()}</span>
+                      <span className="mx-1.5 text-[#E3B341] font-bold">•</span>
+                      <span className="text-[#F5D061] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        {parts.slice(1).join(" • ").trim()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[#F5D061] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                      {activeText}
+                    </span>
+                  )}
+                </p>
+              </div>
             );
 
             return (
@@ -303,40 +331,37 @@ export function Header() {
                   </div>
                 </div>
 
-                {/* ─── LAPTOP / DESKTOP VIEW: Left Slot (Only renders when delivery is ON) ─── */}
-                <div className="hidden md:flex items-center justify-start shrink-0 min-w-[200px] lg:min-w-[260px]">
-                  {deliveryBadge}
-                </div>
+                {/* ─── LAPTOP / DESKTOP VIEW ─── */}
+                {isDeliveryEnabled ? (
+                  <>
+                    {/* When Delivery is ON: 3-column layout */}
+                    <div className="hidden md:flex items-center shrink-0">
+                      {deliveryBadge}
+                    </div>
 
-                {/* Laptop Center Premium Highlight Pill */}
-                <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 px-3.5 py-1 shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-all max-w-full backdrop-blur-xs">
-                    <span className="grid size-4.5 place-items-center rounded-full bg-gradient-to-br from-[#E3B341]/35 to-[#F5D061]/20 border border-[#E3B341]/60 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.3)]">
-                      <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-[#E3B341]/30 border border-[#E3B341]/40 px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider text-[#F5D061] shrink-0">
-                      {lang === "hi" ? "अपडेट" : "UPDATE"}
-                    </span>
-                    <p className="text-xs font-semibold tracking-wide truncate">
-                      {parts.length > 1 ? (
-                        <>
-                          <span className="text-white/95 font-medium">{parts[0]?.trim()}</span>
-                          <span className="mx-1.5 text-[#E3B341] font-bold">•</span>
-                          <span className="text-[#F5D061] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                            {parts.slice(1).join(" • ").trim()}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-[#F5D061] font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                          {activeText}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </div>
+                    <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
+                      {announcementPill}
+                    </div>
 
-                {/* Right Items: Language Switcher + Store Timing */}
-                <div className="flex items-center justify-end shrink-0 min-w-[200px] lg:min-w-[260px]">
+                    <div className="hidden md:flex items-center justify-end shrink-0">
+                      {languageAndTiming}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* When Delivery is OFF: Announcement anchors Left, Timing on Right (Zero awkward gap!) */}
+                    <div className="hidden md:flex items-center flex-1 min-w-0 pr-4">
+                      {announcementPill}
+                    </div>
+
+                    <div className="hidden md:flex items-center justify-end shrink-0">
+                      {languageAndTiming}
+                    </div>
+                  </>
+                )}
+
+                {/* Mobile Right Controls */}
+                <div className="flex md:hidden items-center justify-end shrink-0">
                   {languageAndTiming}
                 </div>
               </>
