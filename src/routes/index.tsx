@@ -182,17 +182,40 @@ const BLINKIT_CATEGORY_TINTS = [
 function HeroBannerSkeleton() {
   return (
     <section className="container-page pt-2 sm:pt-3">
-      <div className="relative overflow-hidden rounded-flipkart-hero w-full aspect-[1536/750] border border-[#EAE6DC]/60 shadow-xs bg-[#F5F2EB]/50">
-        <Skeleton className="size-full rounded-flipkart-hero" />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-xs border border-[#EAE6DC]/80 shadow-xs">
-            <Store className="size-4.5 text-[#145A45] animate-pulse" />
-            <span className="text-xs sm:text-sm font-bold text-[#145A45]">अरुण गोपाल ट्रेडर्स</span>
+      {/* Flipkart-style multi-slide skeleton track (height ~260px on laptop, matches HeroSlider exactly) */}
+      <div className="overflow-hidden rounded-flipkart-hero">
+        <div className="flex select-none gap-0 sm:gap-5 md:gap-6 lg:gap-7">
+          {/* Card 1: Main slide */}
+          <div className="shrink-0 grow-0 basis-full sm:basis-[58%] lg:basis-[45.5%] min-w-0">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+              <Skeleton className="size-full rounded-flipkart-hero" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/85 backdrop-blur-xs border border-[#EAE6DC]/80 shadow-2xs">
+                  <Store className="size-4 text-[#145A45] animate-pulse" />
+                  <span className="text-xs sm:text-sm font-bold text-[#145A45]">अरुण गोपाल ट्रेडर्स</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Second slide (visible on tablet and laptop) */}
+          <div className="hidden sm:block shrink-0 grow-0 sm:basis-[58%] lg:basis-[45.5%] min-w-0">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+              <Skeleton className="size-full rounded-flipkart-hero" />
+            </div>
+          </div>
+
+          {/* Card 3: Peek slide (visible on laptop/desktop) */}
+          <div className="hidden lg:block shrink-0 grow-0 lg:basis-[45.5%] min-w-0">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+              <Skeleton className="size-full rounded-flipkart-hero" />
+            </div>
           </div>
         </div>
       </div>
-      {/* Skeleton Pagination Indicators */}
-      <div className="flex items-center justify-center gap-2 pt-3 pb-1">
+
+      {/* 4 Pagination Indicators */}
+      <div className="flex items-center justify-center gap-2 pt-2.5 sm:pt-3 pb-1">
         <Skeleton className="w-7 sm:w-8 h-1.5 rounded-full" />
         <Skeleton className="w-1.5 h-1.5 rounded-full" />
         <Skeleton className="w-1.5 h-1.5 rounded-full" />
@@ -478,6 +501,9 @@ function CategoryGridSkeleton() {
 function HomepageSkeleton() {
   return (
     <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+      {/* 0. Smart Ration Bar */}
+      <SmartRationBar onOpenModal={() => {}} />
+
       {/* 1. Hero Banner Skeleton */}
       <HeroBannerSkeleton />
 
