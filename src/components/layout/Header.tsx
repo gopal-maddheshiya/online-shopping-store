@@ -178,67 +178,30 @@ export function Header() {
                 : settings?.announcement || settings?.announcement_hi || "";
             const activeText = rawText.trim();
 
-            const deliveryBadge = (
-              <div className="hidden md:flex items-center gap-2 shrink-0">
-                <div
-                  className={`flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${
-                    isDeliveryEnabled
-                      ? "bg-emerald-500/18 border border-emerald-400/35 text-white hover:bg-emerald-500/25"
-                      : "bg-amber-500/18 border border-amber-400/35 text-white hover:bg-amber-500/25"
-                  }`}
-                >
-                  <span
-                    className={`grid size-4.5 place-items-center rounded-full shrink-0 ${
-                      isDeliveryEnabled
-                        ? "bg-[#F5D061]/25 text-[#F5D061]"
-                        : "bg-amber-400/25 text-[#F5D061]"
-                    }`}
-                  >
-                    {isDeliveryEnabled ? (
-                      <Truck className="size-2.5 text-[#F5D061]" />
-                    ) : (
-                      <Store className="size-2.5 text-[#F5D061]" />
-                    )}
-                  </span>
-
-                  {isDeliveryEnabled ? (
-                    <>
-                      <span className="font-bold text-white tracking-tight">
-                        {lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Home Delivery"}
-                      </span>
-                      <span className="opacity-40 text-white">•</span>
-                      <span className="text-[#F5D061] font-bold">
-                        {lang === "hi" ? "30 मिनट में" : "In 30 Mins"}
-                      </span>
-                      {settings?.free_delivery_threshold ? (
-                        <>
-                          <span className="opacity-40 text-white">•</span>
-                          <span className="text-emerald-200 font-medium">
-                            {lang === "hi"
-                              ? `₹${settings.free_delivery_threshold}+ पर मुफ़्त`
-                              : `Free over ₹${settings.free_delivery_threshold}`}
-                          </span>
-                        </>
-                      ) : null}
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-bold text-white tracking-tight">
-                        {lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}
-                      </span>
-                      <span className="opacity-40 text-white">•</span>
-                      <span className="text-[#F5D061] font-bold">
-                        {lang === "hi" ? "उपलब्ध" : "Available"}
-                      </span>
-                      <span className="opacity-40 text-white">•</span>
-                      <span className="text-amber-200/90 font-medium">
-                        {lang === "hi" ? "₹0 डिलीवरी शुल्क" : "Free Pickup"}
-                      </span>
-                    </>
-                  )}
-                </div>
+            const deliveryBadge = isDeliveryEnabled ? (
+              <div className="flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] bg-emerald-500/18 border border-emerald-400/35 text-white hover:bg-emerald-500/25">
+                <span className="grid size-4.5 place-items-center rounded-full shrink-0 bg-[#F5D061]/25 text-[#F5D061]">
+                  <Truck className="size-2.5 text-[#F5D061]" />
+                </span>
+                <span className="font-bold text-white tracking-tight">
+                  {lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Home Delivery"}
+                </span>
+                <span className="opacity-40 text-white">•</span>
+                <span className="text-[#F5D061] font-bold">
+                  {lang === "hi" ? "30 मिनट में" : "In 30 Mins"}
+                </span>
+                {settings?.free_delivery_threshold ? (
+                  <>
+                    <span className="opacity-40 text-white">•</span>
+                    <span className="text-emerald-200 font-medium">
+                      {lang === "hi"
+                        ? `₹${settings.free_delivery_threshold}+ पर मुफ़्त`
+                        : `Free over ₹${settings.free_delivery_threshold}`}
+                    </span>
+                  </>
+                ) : null}
               </div>
-            );
+            ) : null;
 
             const languageAndTiming = (
               <div className="flex items-center gap-2 sm:gap-2.5 text-xs font-medium shrink-0 z-20">
@@ -292,8 +255,12 @@ export function Header() {
 
             if (!activeText) return (
               <div className="flex items-center justify-between w-full">
-                {deliveryBadge}
-                {languageAndTiming}
+                <div className="hidden md:flex items-center justify-start shrink-0 min-w-[200px] lg:min-w-[260px]">
+                  {deliveryBadge}
+                </div>
+                <div className="flex items-center justify-end shrink-0 min-w-[200px] lg:min-w-[260px]">
+                  {languageAndTiming}
+                </div>
               </div>
             );
 
@@ -336,8 +303,10 @@ export function Header() {
                   </div>
                 </div>
 
-                {/* ─── LAPTOP / DESKTOP VIEW: Value Delivery Badge on Left ─── */}
-                {deliveryBadge}
+                {/* ─── LAPTOP / DESKTOP VIEW: Left Slot (Only renders when delivery is ON) ─── */}
+                <div className="hidden md:flex items-center justify-start shrink-0 min-w-[200px] lg:min-w-[260px]">
+                  {deliveryBadge}
+                </div>
 
                 {/* Laptop Center Premium Highlight Pill */}
                 <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
@@ -367,7 +336,9 @@ export function Header() {
                 </div>
 
                 {/* Right Items: Language Switcher + Store Timing */}
-                {languageAndTiming}
+                <div className="flex items-center justify-end shrink-0 min-w-[200px] lg:min-w-[260px]">
+                  {languageAndTiming}
+                </div>
               </>
             );
           })()}
