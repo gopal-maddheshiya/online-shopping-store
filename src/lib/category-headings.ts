@@ -37,7 +37,7 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Household & Cleaning",
     icon: "🧹",
     sort_order: 2,
-    slugs: ["household-cleaning", "laundry", "kitchen-essentials", "pots-cceaners"],
+    slugs: ["household-cleaning", "laundry", "bathroom-cleaning", "pots-cleaners"],
   },
   {
     id: "personal",
@@ -53,7 +53,7 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Pooja, Stationery & More",
     icon: "🪔",
     sort_order: 4,
-    slugs: ["pooja-items", "stationery", "pet-supplies", "misc-items"],
+    slugs: ["pooja-items", "agarbatti", "dhoop-batti", "kapoor"],
   },
   {
     id: "sec_1788513799616",

@@ -85,6 +85,13 @@ export const Route = createFileRoute("/shop")({
   component: Shop,
 });
 
+const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
+  "pet-supplies": "dhoop-batti",
+  "kitchen-essentials": "bathroom-cleaning",
+  "stationery": "agarbatti",
+  "pots-cceaners": "pots-cleaners",
+};
+
 function Shop() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/shop" });
@@ -96,6 +103,17 @@ function Shop() {
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [semanticProductIds, setSemanticProductIds] = useState<string[] | null>(null);
   const [semanticReason, setSemanticReason] = useState<string | null>(null);
+
+  // Auto-redirect legacy mismatched slugs (e.g. pet-supplies -> dhoop-batti)
+  useEffect(() => {
+    if (search.category && LEGACY_CATEGORY_REDIRECTS[search.category]) {
+      const target = LEGACY_CATEGORY_REDIRECTS[search.category];
+      void navigate({
+        search: (prev) => ({ ...prev, category: target }),
+        replace: true,
+      });
+    }
+  }, [search.category, navigate]);
 
   // Dynamic Headings & Database Categories (synchronized with Homepage & Supabase store_settings)
   const [headings, setHeadings] = useState<CategoryHeading[]>(() =>
@@ -177,10 +195,12 @@ function Shop() {
     return groupedCategories.flatMap((g) => g.items);
   }, [groupedCategories]);
 
-  const activeCategory = useMemo(
-    () => allCategories.find((c) => c.slug === search.category || c.id === search.category),
-    [allCategories, search.category],
-  );
+  const activeCategory = useMemo(() => {
+    const raw = search.category;
+    if (!raw) return undefined;
+    const target = LEGACY_CATEGORY_REDIRECTS[raw] || raw;
+    return allCategories.find((c) => c.slug === target || c.id === target || c.slug === raw || c.id === raw);
+  }, [allCategories, search.category]);
 
   const subs = useMemo(
     () =>
