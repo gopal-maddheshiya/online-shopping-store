@@ -17,6 +17,8 @@ import {
   RotateCcw,
   Plus,
   XCircle,
+  Truck,
+  PackageCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -409,13 +411,14 @@ function TrackPage() {
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Title */}
       <div className="text-center">
-        <span className="inline-block rounded-full bg-[#145A45]/10 px-3.5 py-1 text-xs font-bold text-[#145A45]">
-          {language === "hi" ? "लाइव ऑर्डर ट्रैकिंग" : "Live Order Status"}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 text-xs font-bold text-[#065F46] shadow-2xs">
+          <Truck className="size-3.5 text-[#059669]" />
+          <span>{language === "hi" ? "लाइव ऑर्डर ट्रैकिंग" : "Live Order Status"}</span>
         </span>
-        <h1 className="mt-2 font-sans text-3xl font-bold tracking-tight text-[#1F2924] sm:text-4xl">
+        <h1 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#111827]">
           {language === "hi" ? "अपने किराना ऑर्डर को ट्रैक करें" : "Track Your Grocery Order"}
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-xs sm:text-sm text-[#6B746F]">
+        <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-[#4B5563]">
           {language === "hi"
             ? "अपना ऑर्डर नंबर और मोबाइल नंबर दर्ज करें और लाइव डिलीवरी व पैकिंग स्थिति देखें।"
             : "Enter your Order Number and Mobile Number below to see live preparation & delivery updates."}
@@ -423,10 +426,10 @@ function TrackPage() {
       </div>
 
       {/* Lookup Form */}
-      <div className="mx-auto mt-8 max-w-xl rounded-3xl border border-[#E4DFD5] bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
-        <form onSubmit={handleSearch} className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="track-order-no" className="text-xs font-bold text-[#1F2924]">
+      <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-2xs">
+        <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2">
+          <div className="space-y-1">
+            <Label htmlFor="track-order-no" className="text-xs font-bold text-[#111827]">
               {language === "hi" ? "ऑर्डर आईडी / नंबर" : "Order ID / Number"}
             </Label>
             <Input
@@ -434,13 +437,13 @@ function TrackPage() {
               placeholder="e.g. AGT-1001"
               value={orderNoInput}
               onChange={(e) => setOrderNoInput(e.target.value.toUpperCase())}
-              className="rounded-xl font-mono text-sm border-[#E4DFD5] bg-[#FAF8F2]/60 focus:bg-white h-11 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+              className="rounded-xl font-mono text-sm border-[#E5E7EB] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="track-phone" className="text-xs font-bold text-[#1F2924]">
+          <div className="space-y-1">
+            <Label htmlFor="track-phone" className="text-xs font-bold text-[#111827]">
               {language === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
             </Label>
             <Input
@@ -449,7 +452,7 @@ function TrackPage() {
               placeholder="10-digit mobile number"
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              className="rounded-xl text-sm border-[#E4DFD5] bg-[#FAF8F2]/60 focus:bg-white h-11 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+              className="rounded-xl text-sm border-[#E5E7EB] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
               required
             />
           </div>
@@ -457,7 +460,7 @@ function TrackPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="rounded-xl font-bold sm:col-span-2 bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-white hover:from-[#0F4A38] hover:to-[#07271D] h-11 shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer"
+            className="rounded-xl font-bold sm:col-span-2 bg-[#145A45] hover:bg-[#0F4A38] text-white h-10.5 shadow-2xs cursor-pointer active:scale-[0.99] transition-all"
           >
             <Search className="mr-2 size-4" />{" "}
             {loading
@@ -471,7 +474,7 @@ function TrackPage() {
         </form>
 
         {errorMsg ? (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-2.5 text-xs text-destructive">
             <AlertCircle className="mt-0.5 size-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -488,10 +491,10 @@ function TrackPage() {
 
       {/* Order Result View */}
       {searchedOrder && !loading ? (
-        <div className="mx-auto mt-10 max-w-3xl space-y-6">
+        <div className="mx-auto mt-8 max-w-3xl space-y-5">
           {/* Order Header Card */}
-          <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E4DFD5] pb-4">
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E7EB] pb-4">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="font-sans text-2xl font-bold text-[#1F2924]">
@@ -565,9 +568,9 @@ function TrackPage() {
           </div>
 
           {/* Details 2-Column Grid */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             {/* Fulfillment & Address */}
-            <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xs">
               <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
                 <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
               </h3>
@@ -617,7 +620,7 @@ function TrackPage() {
                 {searchedOrder.notes ? (
                   <div className="pt-2">
                     <span className="text-[#6B746F]">Instructions:</span>
-                    <p className="rounded-xl bg-[#FAF8F2] border border-[#E4DFD5] p-2.5 italic text-[#1F2924] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+                    <p className="rounded-xl bg-[#F9FAFB] border border-[#E5E7EB] p-2.5 italic text-[#1F2924]">
                       {searchedOrder.notes}
                     </p>
                   </div>
@@ -626,7 +629,7 @@ function TrackPage() {
             </div>
 
             {/* Payment & Summary */}
-            <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xs">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
                   <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary

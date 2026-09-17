@@ -44,11 +44,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback((product: Product) => {
     setItems((prev) => {
       const exists = prev.some((p) => p.id === product.id);
+      const isHi = typeof window !== "undefined" && localStorage.getItem("agt.lang") !== "en";
+      const displayName = (isHi && product.name_hi) ? product.name_hi : (product.name || product.name_en || "सामान");
       if (exists) {
-        toast.info(`Removed ${product.name} from wishlist`);
+        toast.info(isHi ? `पसंदीदा सूची से हटाया: ${displayName}` : `Removed ${displayName} from wishlist`);
         return prev.filter((p) => p.id !== product.id);
       } else {
-        toast.success(`Saved ${product.name} to wishlist`);
+        toast.success(isHi ? `पसंदीदा सूची में सहेजा गया: ${displayName}` : `Saved ${displayName} to wishlist`);
         return [...prev, product];
       }
     });

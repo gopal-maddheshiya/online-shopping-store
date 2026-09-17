@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   UserPlus,
+  UserCheck,
   LogIn,
   KeyRound,
   ShieldCheck,
@@ -967,11 +968,11 @@ export function AccountPage() {
         <div className="w-full max-w-md space-y-5">
           {/* Brand Header */}
           <div className="text-center space-y-1">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#145A45]/10 px-3 py-1 text-xs font-bold text-[#145A45] mb-1">
-              <Sparkles className="size-3.5" />
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3 py-1 text-xs font-bold text-[#065F46] mb-1.5 shadow-2xs">
+              <UserCheck className="size-3.5 text-[#059669]" />
               <span>{lang === "hi" ? "ग्राहक खाता पोर्टल" : "Customer Portal"}</span>
             </div>
-            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#16201A] tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#111827] tracking-tight">
               {authView === "signup"
                 ? lang === "hi"
                   ? "नया खाता बनाएं"
@@ -984,7 +985,7 @@ export function AccountPage() {
                     ? "खाते में लॉगिन करें"
                     : "Welcome Back"}
             </h1>
-            <p className="text-xs sm:text-sm text-[#5A655F]">
+            <p className="text-xs sm:text-sm text-[#4B5563]">
               {authView === "signup"
                 ? lang === "hi"
                   ? "ऑर्डर हिस्ट्री और 1-क्लिक रीऑर्डर का लाभ उठाएं"
@@ -1000,20 +1001,20 @@ export function AccountPage() {
           </div>
 
           {/* Clean Auth Card */}
-          <div className="rounded-3xl border border-[#E4DFD5] bg-white p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] space-y-5">
+          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] space-y-4 sm:space-y-5">
             {/* Segmented Switcher */}
             {authView !== "forgot" && (
-              <div className="flex rounded-2xl bg-[#FAF8F2] border border-[#E4DFD5] p-1 text-xs font-bold shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+              <div className="flex rounded-xl bg-[#F3F4F6] border border-[#E5E7EB] p-1 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => {
                     setAuthView("signin");
                     setAuthErrorMessage(null);
                   }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 transition-all cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
                     authView === "signin"
-                      ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-[#5A655F] hover:text-[#16201A]"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#4B5563] hover:text-[#111827]"
                   }`}
                 >
                   <LogIn className="size-3.5" />
@@ -1025,10 +1026,10 @@ export function AccountPage() {
                     setAuthView("signup");
                     setAuthErrorMessage(null);
                   }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 transition-all cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
                     authView === "signup"
-                      ? "bg-gradient-to-r from-[#145A45] to-[#104E3C] text-white shadow-[0_2px_6px_rgba(20,90,69,0.2),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-[#5A655F] hover:text-[#16201A]"
+                      ? "bg-[#145A45] text-white shadow-xs"
+                      : "text-[#4B5563] hover:text-[#111827]"
                   }`}
                 >
                   <UserPlus className="size-3.5" />
@@ -1039,12 +1040,12 @@ export function AccountPage() {
 
             {/* Fast 1-Tap Google Login */}
             {authView !== "forgot" && (
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isGoogleSigningIn || isSigningIn || isSigningUp}
-                  className="w-full flex items-center justify-center gap-2.5 h-11 px-4 rounded-2xl border border-[#E4DFD5] bg-white text-[#16201A] font-bold text-xs sm:text-sm hover:bg-[#FAF8F2] hover:border-[#145A45]/40 active:scale-[0.99] transition-all shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-2.5 h-10.5 px-4 rounded-xl border border-[#E5E7EB] bg-white text-[#111827] font-bold text-xs sm:text-sm hover:bg-[#F9FAFB] hover:border-[#D1D5DB] active:scale-[0.99] transition-all shadow-2xs cursor-pointer disabled:opacity-60"
                 >
                   {isGoogleSigningIn ? (
                     <div className="size-4 animate-spin rounded-full border-2 border-[#145A45] border-t-transparent" />
@@ -1081,8 +1082,8 @@ export function AccountPage() {
 
                 {/* Subtle Divider */}
                 <div className="relative flex items-center justify-center">
-                  <div className="w-full border-t border-[#E4DFD5]" />
-                  <span className="absolute bg-white px-2.5 text-[10px] font-bold text-[#7A8680] uppercase tracking-wider">
+                  <div className="w-full border-t border-[#E5E7EB]" />
+                  <span className="absolute bg-white px-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">
                     {lang === "hi" ? "या मोबाइल द्वारा" : "OR WITH MOBILE"}
                   </span>
                 </div>
@@ -1091,7 +1092,7 @@ export function AccountPage() {
 
             {/* Error Message */}
             {authErrorMessage && (
-              <div className="rounded-2xl bg-red-50/80 border border-red-200 p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in duration-150">
+              <div className="rounded-xl bg-red-50 border border-red-200 p-2.5 text-xs text-red-700 flex items-start gap-2 animate-in fade-in duration-150">
                 <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
                 <p className="text-[11px] leading-relaxed font-medium">{authErrorMessage}</p>
               </div>
@@ -1099,13 +1100,13 @@ export function AccountPage() {
 
             {/* VIEW 1: SIGN IN */}
             {authView === "signin" && (
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="signin-phone" className="text-xs font-bold text-[#16201A]">
+              <form onSubmit={handleSignIn} className="space-y-3.5">
+                <div className="space-y-1">
+                  <Label htmlFor="signin-phone" className="text-xs font-bold text-[#111827]">
                     {lang === "hi" ? "मोबाइल नंबर" : "Mobile Number"}
                   </Label>
-                  <div className="flex rounded-2xl border border-[#E4DFD5] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E4DFD5]">
+                  <div className="flex rounded-xl border border-[#E5E7EB] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
+                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#065F46] border-r border-[#E5E7EB]">
                       +91
                     </span>
                     <Input
@@ -1117,14 +1118,14 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
                       value={signInPhone}
                       onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
-                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10.5 placeholder:text-[#A8B2AC] placeholder:font-normal placeholder:text-xs shadow-none"
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#111827] h-10 placeholder:text-[#9CA3AF] placeholder:font-normal placeholder:text-xs shadow-none"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="signin-password" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="signin-password" className="text-xs font-bold text-[#111827]">
                       {lang === "hi" ? "पासवर्ड" : "Password"}
                     </Label>
                     <button
@@ -1134,7 +1135,7 @@ export function AccountPage() {
                         setForgotPhone(signInPhone);
                         setAuthErrorMessage(null);
                       }}
-                      className="text-[11px] font-bold text-[#145A45] hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#065F46] hover:underline cursor-pointer"
                     >
                       {lang === "hi" ? "पासवर्ड भूल गए?" : "Forgot?"}
                     </button>
@@ -1147,12 +1148,12 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "पासवर्ड दर्ज करें" : "Enter password"}
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
-                      className="h-10.5 rounded-2xl border-[#E4DFD5] pr-10 text-sm focus-visible:border-[#145A45] placeholder:text-[#A8B2AC] placeholder:text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      className="h-10 rounded-xl border-[#E5E7EB] pr-10 text-sm focus-visible:border-[#065F46] placeholder:text-[#9CA3AF] placeholder:text-xs shadow-2xs"
                     />
                     <button
                       type="button"
                       onClick={() => setShowSignInPassword(!showSignInPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827]"
                     >
                       {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -1162,7 +1163,7 @@ export function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSigningIn || signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword}
-                  className="w-full h-11 rounded-2xl font-bold shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm"
+                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0F4A38] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm"
                 >
                   {isSigningIn
                     ? lang === "hi"
@@ -1177,9 +1178,9 @@ export function AccountPage() {
 
             {/* VIEW 2: SIGN UP */}
             {authView === "signup" && (
-              <form onSubmit={handleSignUp} className="space-y-3.5">
+              <form onSubmit={handleSignUp} className="space-y-3">
                 <div className="space-y-1">
-                  <Label htmlFor="signup-name" className="text-xs font-bold text-[#16201A]">
+                  <Label htmlFor="signup-name" className="text-xs font-bold text-[#111827]">
                     {lang === "hi" ? "पूरा नाम" : "Full Name"}
                   </Label>
                   <Input
@@ -1188,16 +1189,16 @@ export function AccountPage() {
                     placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                     value={signUpName}
                     onChange={(e) => setSignUpName(e.target.value)}
-                    className="h-10.5 rounded-2xl border-[#E4DFD5] text-xs font-medium placeholder:text-[#A8B2AC] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                    className="h-10 rounded-xl border-[#E5E7EB] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="signup-phone" className="text-xs font-bold text-[#16201A]">
+                  <Label htmlFor="signup-phone" className="text-xs font-bold text-[#111827]">
                     {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "Mobile Number"}
                   </Label>
-                  <div className="flex rounded-2xl border border-[#E4DFD5] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E4DFD5]">
+                  <div className="flex rounded-xl border border-[#E5E7EB] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
+                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#065F46] border-r border-[#E5E7EB]">
                       +91
                     </span>
                     <Input
@@ -1209,14 +1210,14 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
                       value={signUpPhone}
                       onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
-                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10.5 placeholder:text-[#A8B2AC] placeholder:text-xs"
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#111827] h-10 placeholder:text-[#9CA3AF] placeholder:text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="signup-password" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="signup-password" className="text-xs font-bold text-[#111827]">
                       {lang === "hi" ? "पासवर्ड (min 6)" : "Password (min 6)"}
                     </Label>
                     <div className="relative">
@@ -1227,12 +1228,12 @@ export function AccountPage() {
                         placeholder="••••••"
                         value={signUpPassword}
                         onChange={(e) => setSignUpPassword(e.target.value)}
-                        className="h-10.5 rounded-2xl border-[#E4DFD5] pr-8 text-xs font-medium placeholder:text-[#A8B2AC] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                        className="h-10 rounded-xl border-[#E5E7EB] pr-8 text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5A655F] hover:text-[#16201A]"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827]"
                       >
                         {showSignUpPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                       </button>
@@ -1240,7 +1241,7 @@ export function AccountPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#111827]">
                       {lang === "hi" ? "कन्फर्म पासवर्ड" : "Confirm"}
                     </Label>
                     <Input
@@ -1250,7 +1251,7 @@ export function AccountPage() {
                       placeholder="••••••"
                       value={signUpConfirmPassword}
                       onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                      className="h-10.5 rounded-2xl border-[#E4DFD5] text-xs font-medium placeholder:text-[#A8B2AC] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                      className="h-10 rounded-xl border-[#E5E7EB] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                     />
                   </div>
                 </div>
@@ -1258,7 +1259,7 @@ export function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
-                  className="w-full h-11 rounded-2xl font-bold shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
+                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0F4A38] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
                 >
                   {isSigningUp
                     ? lang === "hi"

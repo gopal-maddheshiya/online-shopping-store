@@ -43,7 +43,6 @@ import { inr } from "@/lib/format";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
 import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
 import { DEFAULT_TELEGRAM_BOT_TOKEN, DEFAULT_TELEGRAM_CHAT_ID } from "@/lib/notifications";
-import { getCategoryHeadings, saveCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 import { isOrderSoundEnabled, setOrderSoundEnabled, playNewOrderChime } from "@/lib/sound";
 
 type AdminSettingsProps = {
@@ -145,68 +144,6 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   >({});
 
   const [isSaving, setIsSaving] = useState(false);
-
-  // Dynamic Category Headings for Banners
-  const [headings, setHeadings] = useState<CategoryHeading[]>(() => getCategoryHeadings());
-
-  useEffect(() => {
-    const handleUpdate = () => setHeadings(getCategoryHeadings());
-    window.addEventListener("agt:headings-updated", handleUpdate);
-    return () => window.removeEventListener("agt:headings-updated", handleUpdate);
-  }, []);
-
-  async function handleCustomHeadingBannerUpload(headingId: string, file: File) {
-    try {
-      toast.loading("Uploading banner...", { id: `banner-${headingId}` });
-      const { blob } = await compressAndOptimizeImage(file, 1920, 823, 0.9);
-      const fileName = `custom_banner_${headingId}_${Date.now()}.webp`;
-      const filePath = `hero/${fileName}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("product-images")
-        .upload(filePath, blob, {
-          cacheControl: "31536000",
-          upsert: true,
-          contentType: blob.type || "image/webp",
-        });
-
-      let publicUrl = "";
-      if (!uploadError && uploadData) {
-        const { data: pubData } = supabase.storage.from("product-images").getPublicUrl(filePath);
-        publicUrl = pubData.publicUrl;
-      } else {
-        const { data: uploadData2 } = await supabase.storage.from("products").upload(filePath, blob, { upsert: true });
-        if (uploadData2) {
-          const { data: pubData2 } = supabase.storage.from("products").getPublicUrl(filePath);
-          publicUrl = pubData2.publicUrl;
-        }
-      }
-
-      if (publicUrl) {
-        const currentList = getCategoryHeadings();
-        const target = currentList.find((h) => h.id === headingId);
-        if (target) {
-          target.banner_image_url = publicUrl;
-          saveCategoryHeadings(currentList);
-          setHeadings([...currentList]);
-          toast.success("हेडिंग बैनर इमेज सेव हो गई!", { id: `banner-${headingId}` });
-        }
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Upload failed";
-      toast.error(msg, { id: `banner-${headingId}` });
-    }
-  }
-
-  function handleRemoveCustomHeadingBanner(headingId: string) {
-    const currentList = getCategoryHeadings();
-    const target = currentList.find((h) => h.id === headingId);
-    if (target) {
-      target.banner_image_url = null;
-      saveCategoryHeadings(currentList);
-      setHeadings([...currentList]);
-      toast.success("हेडिंग बैनर हटा दिया गया");
-    }
-  }
 
   async function saveHeroImageToDb(url: string | null) {
     return saveHeroImageFieldToDb("hero_image_url", url);
@@ -767,14 +704,14 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 <ImageIcon className="size-5 text-[#145A45]" /> मुख्य हीरो स्लाइडर बैनर्स (Main Hero Slider Banners)
               </h3>
               <p className="text-xs text-[#6B746F] mt-1">
-                यह होमपेज के सबसे ऊपर ऑटो-स्लाइड होने वाले मुख्य बैनर्स हैं। (Recommended: 1920×1080px या 16:9).
+                Flipkart Standard Layout: अनुशंसित साइज़ <strong className="text-[#145A45]">1536 × 750 px</strong> (Aspect Ratio <strong>2.05:1</strong> • Landscape / Wide format).
               </p>
             </div>
 
             <div className="space-y-3">
               <HeroImageUploader
                 label="Hero Slide 1 (मुख्य बैनर)"
-                description="होमपेज का पहला मुख्य बैनर (Recommended: 1920×1080px या 16:9)"
+                description="होमपेज का पहला मुख्य बैनर (Flipkart Standard: 1536×750px • 2.05:1 Ratio)"
                 fieldKey="hero"
                 value={heroImageUrl}
                 onChange={setHeroImageUrl}
@@ -783,7 +720,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               />
               <HeroImageUploader
                 label="Hero Slide 2 (ऑफर बैनर 2)"
-                description="स्लाइड होने वाला दूसरा ऑफर बैनर"
+                description="स्लाइड होने वाला दूसरा ऑफर बैनर (1536×750px • 2.05:1 Ratio)"
                 fieldKey="hero2"
                 value={hero2ImageUrl}
                 onChange={setHero2ImageUrl}
@@ -792,7 +729,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               />
               <HeroImageUploader
                 label="Hero Slide 3 (ऑफर बैनर 3)"
-                description="स्लाइड होने वाला तीसरा ऑफर बैनर"
+                description="स्लाइड होने वाला तीसरा ऑफर बैनर (1536×750px • 2.05:1 Ratio)"
                 fieldKey="hero3"
                 value={hero3ImageUrl}
                 onChange={setHero3ImageUrl}
@@ -801,7 +738,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               />
               <HeroImageUploader
                 label="Hero Slide 4 (ऑफर बैनर 4)"
-                description="स्लाइड होने वाला चौथा ऑफर बैनर"
+                description="स्लाइड होने वाला चौथा ऑफर बैनर (1536×750px • 2.05:1 Ratio)"
                 fieldKey="hero4"
                 value={hero4ImageUrl}
                 onChange={setHero4ImageUrl}
@@ -810,15 +747,15 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               />
             </div>
 
-            {/* Helpful navigation note */}
+            {/* Helpful standard banner note */}
             <div className="rounded-2xl border border-[#145A45]/20 bg-[#E6EFE8]/40 p-3.5 sm:p-4 flex items-start gap-3">
-              <span className="text-xl shrink-0">📂</span>
+              <span className="text-xl shrink-0">✨</span>
               <div className="space-y-1">
                 <h4 className="text-xs font-bold text-[#145A45]">
-                  कैटेगरी सेक्शन बैनर्स (Category Section Banners)
+                  मुख्य हीरो स्लाइडर बैनर्स (Flipkart Standard 1536×750px)
                 </h4>
                 <p className="text-[11px] text-[#2D3E35] leading-relaxed">
-                  होमपेज पर कैटेगरी हेडिंग्स (जैसे <em>खाने-पीने का सामान, घर की सफ़ाई व बर्तन, पर्सनल केयर व ब्यूटी, पूजा-स्टेशनरी, पशुआहार</em> आदि) के नीचे दिखाई देने वाले बैनर्स अब सीधे <strong>Categories (कैटेगरीज)</strong> टैब में हर हेडिंग के साथ व्यवस्थित हैं। वहां से आप किसी भी हेडिंग का बैनर तुरंत बदल या जोड़ सकते हैं।
+                  होमपेज के मुख्य हीरो बैनर्स <strong>1536×750px (2.05:1 Ratio)</strong> में ऑटो-कंप्रेस होकर अपलोड होते हैं। यह मोबाइल और लैपटॉप दोनों स्क्रीन पर बिना कटे (Natural Aspect Ratio) एक समान शार्प और प्रीमियम दिखाई देते हैं।
                 </p>
               </div>
             </div>

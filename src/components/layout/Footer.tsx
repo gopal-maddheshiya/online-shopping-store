@@ -103,7 +103,7 @@ export function Footer() {
         <div className="space-y-3">
           <Link
             to="/"
-            className="inline-flex items-center gap-2.5 font-sans text-xl font-bold tracking-tight text-[#0F4A38] group"
+            className="inline-flex items-center gap-2.5 font-brand-hindi text-xl font-bold tracking-tight text-[#0B4635] group"
           >
             <div className="grid size-7.5 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] via-[#0F4A38] to-[#0A3628] shadow-xs text-white">
               <Store className="size-4 text-[#F5D061]" />

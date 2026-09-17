@@ -148,18 +148,18 @@ export function ProductImageGallery({
   }
 
   return (
-    <div className={`flex flex-col gap-4 select-none ${className}`}>
+    <div className={`flex flex-col gap-3 select-none ${className}`}>
       {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE */}
-      <div className="relative w-full max-w-[500px] mx-auto">
+      <div className="relative w-full max-w-[420px] mx-auto">
         <div
-          className="group relative w-full aspect-square rounded-3xl bg-white border border-[#E0DACF] shadow-[0_4px_24px_-6px_rgba(15,74,56,0.06),inset_0_1px_0_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-6 sm:p-8"
+          className="group relative w-full aspect-square rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_3px_16px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Top-Left: Badge only (clean & uncluttered) */}
+          {/* Top-Left: Ribbon / Badge flush to top */}
           {badge && (
-            <div className="absolute top-3.5 left-3.5 z-20 pointer-events-none">
+            <div className="absolute top-0 left-2.5 sm:left-3 z-20 pointer-events-none">
               {badge}
             </div>
           )}
@@ -170,9 +170,9 @@ export function ProductImageGallery({
             onClick={() => setIsLightboxOpen(true)}
             title={lang === "hi" ? "बड़ा करके देखें (ज़ूम)" : "Click to zoom"}
             aria-label="View Fullscreen Image"
-            className="absolute top-3.5 right-3.5 z-20 flex size-9 items-center justify-center rounded-full bg-white/90 text-[#16201A] shadow-xs border border-[#EAE6DC] transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 backdrop-blur-xs cursor-pointer"
+            className="absolute top-2.5 right-2.5 z-20 flex size-8 items-center justify-center rounded-full bg-white/90 text-[#374151] shadow-2xs border border-[#E5E7EB] transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 backdrop-blur-xs cursor-pointer"
           >
-            <Maximize2 className="size-4" />
+            <Maximize2 className="size-3.5" />
           </button>
 
           {/* Image View Indicator Pill (e.g. Front View / Back View) */}
@@ -250,8 +250,8 @@ export function ProductImageGallery({
 
       {/* 2. REFINED THUMBNAIL SELECTOR STRIP */}
       {hasMultipleImages && (
-        <div className="w-full max-w-[500px] mx-auto">
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 justify-center">
+        <div className="w-full max-w-[420px] mx-auto">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 px-1 justify-center">
             {safeImages.map((img, idx) => {
               const isSelected = idx === activeIndex;
 
@@ -262,13 +262,13 @@ export function ProductImageGallery({
                   onClick={() => goToIndex(idx)}
                   aria-label={`Select image ${idx + 1}: ${img.label || img.type}`}
                   aria-current={isSelected ? "true" : "false"}
-                  className={`group relative flex flex-col items-center gap-1.5 shrink-0 cursor-pointer focus:outline-none transition-all`}
+                  className={`group relative flex flex-col items-center gap-1 shrink-0 cursor-pointer focus:outline-none transition-all`}
                 >
                   <div
-                    className={`relative size-16 sm:size-18 rounded-2xl overflow-hidden bg-white p-1.5 flex items-center justify-center transition-all duration-200 ${
+                    className={`relative size-12 sm:size-13 rounded-xl overflow-hidden bg-white p-1 flex items-center justify-center transition-all duration-200 ${
                       isSelected
-                        ? "border-2 border-[#145A45] ring-3 ring-[#145A45]/15 shadow-[0_2px_8px_rgba(20,90,69,0.25)] scale-105"
-                        : "border border-[#E0DACF] opacity-80 hover:opacity-100 hover:border-[#145A45]/50 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+                        ? "border-2 border-[#145A45] ring-2 ring-[#145A45]/20 shadow-xs scale-105"
+                        : "border border-[#E5E7EB] opacity-75 hover:opacity-100 hover:border-[#145A45]/50"
                     }`}
                   >
                     <img
@@ -287,7 +287,7 @@ export function ProductImageGallery({
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
                       isSelected
                         ? "bg-[#145A45] text-white shadow-2xs"
-                        : "text-[#5A655F] bg-[#FAF8F2] border border-[#EAE6DC] group-hover:border-[#145A45] group-hover:text-[#145A45]"
+                        : "text-[#5A655F] bg-[#F3F4F6] border border-[#EAE6DC] group-hover:border-[#145A45] group-hover:text-[#145A45]"
                     }`}
                   >
                     {img.type === "front"

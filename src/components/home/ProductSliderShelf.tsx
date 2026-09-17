@@ -126,7 +126,7 @@ export function ProductSliderShelf({
             </div>
           )}
           <div className="min-w-0">
-            <h2 className="font-sans text-sm sm:text-base md:text-lg font-black text-[#16201A] tracking-tight truncate leading-tight">
+            <h2 className="font-sans text-sm sm:text-base md:text-lg font-bold text-[#16201A] tracking-tight truncate leading-tight">
               {title}
             </h2>
             {subtitle && (

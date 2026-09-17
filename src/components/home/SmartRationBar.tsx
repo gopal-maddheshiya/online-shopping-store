@@ -1,272 +1,216 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Camera,
-  ClipboardList,
-  Mic,
-  Sparkles,
+  Store,
   HelpCircle,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
+  Camera,
+  Mic,
+  ClipboardList,
   ArrowRight,
-  Zap,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface SmartRationBarProps {
   onOpenModal: (mode?: "photo" | "text" | "voice") => void;
 }
 
-const ROTATING_EXAMPLES = [
-  {
-    mode: "photo" as const,
-    label_hi: "पर्चा फोटो",
-    label_en: "Slip Photo",
-    prompt_hi: "कागज पर लिखी राशन पर्ची की फोटो खींचें, AI खुद सामान जोड़ देगा",
-    prompt_en: "Snap a photo of your paper slip, AI adds items to cart",
-    badge_hi: "📸 पर्ची स्कैनर",
-    badge_en: "📸 Slip Scanner",
-  },
-  {
-    mode: "voice" as const,
-    label_hi: "बोलकर मंगाएं",
-    label_en: "Voice Order",
-    prompt_hi: "माइक दबाकर बोलें: '2 किलो चीनी, 1L तेल, 500g चना दाल, चाय पत्ती'",
-    prompt_en: "Tap mic & say: '2kg sugar, 1L oil, 500g dal, tea powder'",
-    badge_hi: "🎙️ आवाज से ऑर्डर",
-    badge_en: "🎙️ Voice Order",
-  },
-  {
-    mode: "text" as const,
-    label_hi: "लिस्ट पेस्ट करें",
-    label_en: "Paste List",
-    prompt_hi: "WhatsApp या डायरी की राशन लिस्ट यहाँ पेस्ट करें और 1-क्लिक में ऑर्डर करें",
-    prompt_en: "Paste grocery list from WhatsApp or notes for 1-click cart",
-    badge_hi: "📋 स्मार्ट लिस्ट",
-    badge_en: "📋 Smart List",
-  },
-];
-
 export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
   const { lang } = useLanguage();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFading, setIsFading] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  // Smooth rotating examples
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % ROTATING_EXAMPLES.length);
-        setIsFading(false);
-      }, 200);
-    }, 4800);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const active = ROTATING_EXAMPLES[currentIndex] || ROTATING_EXAMPLES[0]!;
-
   return (
-    <section className="container-page pt-2.5 sm:pt-3.5">
-      {/* ═══ Main Polished AI Concierge Container ═══ */}
-      <div className="relative rounded-2xl sm:rounded-3xl bg-white/95 border border-[#145A45]/18 p-3 sm:p-4 shadow-[0_4px_20px_rgba(20,90,69,0.06),0_1px_3px_rgba(0,0,0,0.03)] hover:border-[#145A45]/30 transition-all duration-300">
-        
-        {/* TOP BAR: Compact Name ("AI राशन सहायक") + Value Tag + "How It Works" Trigger */}
-        <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[#145A45]/10">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Jewel AI Sparkle Icon */}
-            <div className="size-7 sm:size-8 rounded-lg sm:rounded-xl bg-gradient-to-tr from-[#145A45] to-[#258B6D] text-white flex items-center justify-center shadow-xs shrink-0">
-              <Sparkles className="size-3.5 sm:size-4 text-[#F3E5AB]" strokeWidth={2} />
-            </div>
-
-            <div className="min-w-0 flex items-center gap-1.5 flex-wrap">
-              <span className="font-sans text-xs sm:text-sm font-black text-[#16201A] tracking-tight whitespace-nowrap">
-                {lang === "hi" ? "AI राशन सहायक" : "AI Grocery Assistant"}
-              </span>
-              <span className="hidden xs:inline-flex items-center gap-1 text-[10px] font-bold text-[#145A45] bg-[#EAF3ED] px-2 py-0.5 rounded-full border border-[#145A45]/15">
-                <Zap className="size-2.5 text-[#145A45]" strokeWidth={2} />
-                <span>{lang === "hi" ? "10 सेकंड में थैला भरें" : "Instant 10s Cart"}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* "How It Works?" Interactive Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowHowItWorks((prev) => !prev)}
-            className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer select-none shrink-0 ${
-              showHowItWorks
-                ? "bg-[#145A45] text-white shadow-xs"
-                : "bg-[#F5F2EB] text-[#3D4841] hover:text-[#145A45] hover:bg-[#EBE5DA]"
-            }`}
-            aria-expanded={showHowItWorks}
-          >
-            <HelpCircle className="size-3.5 text-current" strokeWidth={2} />
-            <span>{lang === "hi" ? "यह कैसे काम करता है?" : "How it works?"}</span>
-            {showHowItWorks ? (
-              <ChevronUp className="size-3 text-current" strokeWidth={2} />
-            ) : (
-              <ChevronDown className="size-3 text-current" strokeWidth={2} />
-            )}
-          </button>
-        </div>
-
-        {/* EXPANDABLE "HOW IT WORKS" WALKTHROUGH STRIP */}
-        {showHowItWorks && (
-          <div className="mt-3 p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#F7FBF9] to-[#F2F7F4] border border-[#145A45]/15 text-[#16201A] animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-black text-[#145A45] uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-[#145A45]" strokeWidth={2} />
-                <span>{lang === "hi" ? "3 आसान स्टेप्स — सामान खोजने का झंझट खत्म" : "3 Simple Steps — Skip Searching Manually"}</span>
-              </h4>
-              <span className="text-[10px] text-[#5A655F]">
-                {lang === "hi" ? "100% शुद्ध दुकान रेट" : "100% Live Store Rates"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-xs">
-              {/* Step 1 */}
-              <div className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-[#E0DACF]">
-                <div className="size-6 rounded-full bg-[#145A45]/10 text-[#145A45] font-black text-[11px] flex items-center justify-center shrink-0">
-                  1
-                </div>
-                <div>
-                  <p className="font-bold text-[#16201A] text-[11px] sm:text-xs">
-                    {lang === "hi" ? "पर्ची, बोलकर या लिखकर दें" : "Slip, Voice or Text"}
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] text-[#5A655F] leading-snug mt-0.5">
-                    {lang === "hi"
-                      ? "कागज की पर्ची की फोटो खींचें, माइक से बोलें या WhatsApp लिस्ट पेस्ट करें।"
-                      : "Snap paper slip photo, tap mic and speak, or paste list."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-[#E0DACF]">
-                <div className="size-6 rounded-full bg-[#145A45]/10 text-[#145A45] font-black text-[11px] flex items-center justify-center shrink-0">
-                  2
-                </div>
-                <div>
-                  <p className="font-bold text-[#16201A] text-[11px] sm:text-xs">
-                    {lang === "hi" ? "AI दुकान से मैच करेगा" : "AI Matches Store Items"}
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] text-[#5A655F] leading-snug mt-0.5">
-                    {lang === "hi"
-                      ? "AI हर सामान का सही वजन, ब्रांड और असली दुकान रेट अपने आप जोड़ देगा।"
-                      : "AI matches item pack sizes and live fair rates automatically."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-[#E0DACF]">
-                <div className="size-6 rounded-full bg-[#145A45]/10 text-[#145A45] font-black text-[11px] flex items-center justify-center shrink-0">
-                  3
-                </div>
-                <div>
-                  <p className="font-bold text-[#16201A] text-[11px] sm:text-xs">
-                    {lang === "hi" ? "सीधा थैला तैयार व ऑर्डर" : "Instant Cart & Checkout"}
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] text-[#5A655F] leading-snug mt-0.5">
-                    {lang === "hi"
-                      ? "पूरा सामान 1-क्लिक में कार्ट में जुड़ेगा। घर बैठे मंगाएं या दुकान से लें।"
-                      : "Everything ready in your cart for quick delivery or pickup."}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MIDDLE / INTERACTIVE PROMPT BAR */}
-        <div
-          onClick={() => onOpenModal(active.mode)}
-          className="mt-2.5 px-3 py-2 rounded-xl bg-[#FAF8F3] hover:bg-[#F5F0E6] border border-[#E4DFD5] flex items-center justify-between gap-2 cursor-pointer transition-colors group select-none"
-        >
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="text-[10px] sm:text-[11px] font-extrabold text-[#145A45] bg-[#EAF3ED] px-2 py-0.5 rounded-md shrink-0 border border-[#145A45]/15">
-              {lang === "hi" ? active.badge_hi : active.badge_en}
-            </span>
-            <div
-              className={`transition-all duration-200 min-w-0 ${
-                isFading ? "opacity-0 -translate-y-0.5" : "opacity-100 translate-y-0"
-              }`}
+    <>
+      <section className="md:hidden bg-white border-b border-[#E5E7EB] shadow-xs">
+        <div className="container-page py-2">
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2.5">
+            
+            {/* 1. AI सहायक ("thoda lamba sa" Elongated Capsule with Store Icon) */}
+            <button
+              type="button"
+              onClick={() => setShowHowItWorks(true)}
+              className="group flex items-center gap-2 rounded-2xl bg-[#EDF8F1] border border-[#DDF3E4] hover:bg-[#E4F7EA] hover:border-[#CEEED8] px-2.5 py-1.5 text-left transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
+              title={lang === "hi" ? "AI राशन सहायक कैसे काम करता है? देखें" : "How AI Grocery Assistant Works"}
             >
-              <p className="text-xs sm:text-[13px] font-medium text-[#2C3831] truncate group-hover:text-[#145A45]">
-                {lang === "hi" ? active.prompt_hi : active.prompt_en}
-              </p>
+              {/* Clean White Elevated Tile with Store Icon (No Sparkle) */}
+              <div className="grid size-8 place-items-center rounded-xl bg-white border border-[#DDF3E4] text-[#145A45] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                <Store className="size-4.5" strokeWidth={2.2} />
+              </div>
+
+              {/* Text Info */}
+              <div className="flex flex-col leading-tight">
+                <div className="flex items-center gap-1">
+                  <span className="font-sans text-[11px] font-extrabold text-[#145A45] tracking-tight whitespace-nowrap">
+                    {lang === "hi" ? "AI सहायक" : "AI Assistant"}
+                  </span>
+                  <span className="text-[7.5px] font-black text-[#145A45] bg-white/90 border border-[#DDF3E4] px-1 py-0.2 rounded-full leading-none shadow-2xs">
+                    10s
+                  </span>
+                </div>
+                <span className="text-[9.5px] font-semibold text-[#2D5A43] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                  <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works"}</span>
+                  <span className="text-[8.5px] font-bold">ⓘ</span>
+                </span>
+              </div>
+            </button>
+
+            {/* Subtle Vertical Divider */}
+            <div className="h-7.5 w-px bg-[#E5E7EB] shrink-0 mx-0.5" />
+
+            {/* 3 Quick Action Items (Right) */}
+            <div className="flex items-center justify-around flex-1 gap-1">
+              
+              {/* 1. पर्ची (Camera) */}
+              <button
+                type="button"
+                onClick={() => onOpenModal("photo")}
+                className="group flex flex-col items-center justify-center flex-1 py-1 rounded-xl hover:bg-[#F8FAF9] transition-all cursor-pointer select-none text-center active:scale-95"
+                title={lang === "hi" ? "पर्ची की फोटो भेजें" : "Upload Slip"}
+              >
+                <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
+                  <Camera className="size-5" strokeWidth={2.1} />
+                </div>
+                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                  {lang === "hi" ? "पर्ची" : "Slip"}
+                </span>
+              </button>
+
+              {/* 2. बोलें (Mic) */}
+              <button
+                type="button"
+                onClick={() => onOpenModal("voice")}
+                className="group flex flex-col items-center justify-center flex-1 py-1 rounded-xl hover:bg-[#F8FAF9] transition-all cursor-pointer select-none text-center active:scale-95"
+                title={lang === "hi" ? "बोलकर सामान मंगाएं" : "Speak Items"}
+              >
+                <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
+                  <Mic className="size-5" strokeWidth={2.1} />
+                </div>
+                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                  {lang === "hi" ? "बोलें" : "Voice"}
+                </span>
+              </button>
+
+              {/* 3. लिस्ट (ClipboardList) */}
+              <button
+                type="button"
+                onClick={() => onOpenModal("text")}
+                className="group flex flex-col items-center justify-center flex-1 py-1 rounded-xl hover:bg-[#F8FAF9] transition-all cursor-pointer select-none text-center active:scale-95"
+                title={lang === "hi" ? "सामान की लिस्ट लिखें या पेस्ट करें" : "Type/Paste List"}
+              >
+                <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
+                  <ClipboardList className="size-5" strokeWidth={2.1} />
+                </div>
+                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                  {lang === "hi" ? "लिस्ट" : "List"}
+                </span>
+              </button>
+
+            </div>
+
+            {/* Right Help Pill for Tablet */}
+            <button
+              type="button"
+              onClick={() => setShowHowItWorks(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#5A655F] hover:text-[#145A45] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] hover:border-[#145A45]/30 bg-[#FAF8F5] hover:bg-white shadow-2xs transition-all cursor-pointer shrink-0 ml-1"
+            >
+              <HelpCircle className="size-3.5 text-[#145A45]" />
+              <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works?"}</span>
+            </button>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ "How It Works" Clean Popup Dialog ═══ */}
+      <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
+        <DialogContent className="max-w-md sm:max-w-lg p-5 sm:p-6 rounded-3xl bg-white border border-[#E5E7EB]">
+          <DialogHeader className="text-left space-y-1 pb-2 border-b border-[#E5E7EB]">
+            <div className="flex items-center gap-2">
+              <Store className="size-5 sm:size-6 text-[#145A45] shrink-0" strokeWidth={2.2} />
+              <DialogTitle className="text-base sm:text-lg font-black text-[#16201A]">
+                {lang === "hi" ? "AI राशन सहायक कैसे काम करता है?" : "How AI Grocery Assistant Works"}
+              </DialogTitle>
+            </div>
+            <p className="text-xs text-[#5A655F]">
+              {lang === "hi"
+                ? "दुकान में सामान खोजने का झंझट खत्म — 3 आसान तरीकों से 100% सही रेट पर ऑर्डर!"
+                : "Skip searching shelf by shelf — fill your cart in 3 quick steps!"}
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-2.5 py-2 text-xs">
+            {/* Step 1 */}
+            <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#F0F7F2] border border-[#D6EADB]">
+              <div className="size-7 rounded-xl bg-[#145A45] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                1
+              </div>
+              <div>
+                <p className="font-bold text-[#145A45] text-xs sm:text-sm">
+                  {lang === "hi" ? "पर्ची फोटो, आवाज या लिस्ट दें" : "Slip, Voice or Text"}
+                </p>
+                <p className="text-[11px] sm:text-xs text-[#3D4841] leading-relaxed mt-0.5">
+                  {lang === "hi"
+                    ? "कागज पर लिखी पर्ची की फोटो खींचें, माइक दबाकर सामान बोलें, या WhatsApp लिस्ट पेस्ट करें।"
+                    : "Snap a photo of your handwritten paper slip, tap the mic to speak items, or paste a list from WhatsApp."}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#F2F6FF] border border-[#D3E2FD]">
+              <div className="size-7 rounded-xl bg-[#1D4ED8] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                2
+              </div>
+              <div>
+                <p className="font-bold text-[#1D4ED8] text-xs sm:text-sm">
+                  {lang === "hi" ? "AI दुकान से मैच करेगा" : "AI Matches Live Store Items"}
+                </p>
+                <p className="text-[11px] sm:text-xs text-[#3D4841] leading-relaxed mt-0.5">
+                  {lang === "hi"
+                    ? "Gemini AI हर सामान का सही वजन, ब्रांड और दुकान का 100% असली रेट अपने आप सेट कर देगा।"
+                    : "Gemini AI automatically detects quantities, packs, and maps them to Arun Gopal Traders live inventory."}
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-start gap-3 p-3 rounded-2xl bg-[#FFF8EE] border border-[#F6DCBA]">
+              <div className="size-7 rounded-xl bg-[#D97706] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                3
+              </div>
+              <div>
+                <p className="font-bold text-[#D97706] text-xs sm:text-sm">
+                  {lang === "hi" ? "सीधा थैला तैयार व 1-क्लिक ऑर्डर" : "Instant Cart & Fast Delivery"}
+                </p>
+                <p className="text-[11px] sm:text-xs text-[#3D4841] leading-relaxed mt-0.5">
+                  {lang === "hi"
+                    ? "पूरा सामान कार्ट में जुड़ जाएगा। घर बैठे होम डिलीवरी पाएं या दुकान से सीधा पिकअप लें।"
+                    : "Review your items and checkout with fast home delivery or in-store pickup."}
+                </p>
+              </div>
             </div>
           </div>
-          <span className="text-[11px] font-bold text-[#145A45] shrink-0 hidden sm:inline-flex items-center gap-1">
-            <span>{lang === "hi" ? "शुरू करें" : "Try Now"}</span>
-            <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-          </span>
-        </div>
 
-        {/* BOTTOM: 3 Equal-Hierarchy, Consistent Action Cards */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-2.5">
-          {/* 1. Slip Photo */}
-          <button
-            type="button"
-            onClick={() => onOpenModal("photo")}
-            className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 p-2 sm:py-2.5 sm:px-3 rounded-xl bg-[#FAF8F4] hover:bg-white border border-[#E0DACF] hover:border-[#145A45]/40 hover:shadow-xs text-center sm:text-left transition-all cursor-pointer active:scale-97 group"
-          >
-            <div className="size-8 rounded-lg bg-[#EAF3ED] text-[#145A45] flex items-center justify-center shrink-0 border border-[#145A45]/12 group-hover:scale-105 group-hover:bg-[#145A45] group-hover:text-white transition-all duration-200">
-              <Camera className="size-4" strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-[13px] font-bold text-[#16201A] group-hover:text-[#145A45] leading-tight transition-colors">
-                {lang === "hi" ? "पर्चा फोटो" : "Slip Photo"}
-              </p>
-              <p className="hidden sm:block text-[10px] text-[#6A756F] leading-tight mt-0.5">
-                {lang === "hi" ? "कागज की पर्ची स्कैन करें" : "Scan paper slip"}
-              </p>
-            </div>
-          </button>
-
-          {/* 2. Paste List */}
-          <button
-            type="button"
-            onClick={() => onOpenModal("text")}
-            className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 p-2 sm:py-2.5 sm:px-3 rounded-xl bg-[#FAF8F4] hover:bg-white border border-[#E0DACF] hover:border-[#145A45]/40 hover:shadow-xs text-center sm:text-left transition-all cursor-pointer active:scale-97 group"
-          >
-            <div className="size-8 rounded-lg bg-[#EAF3ED] text-[#145A45] flex items-center justify-center shrink-0 border border-[#145A45]/12 group-hover:scale-105 group-hover:bg-[#145A45] group-hover:text-white transition-all duration-200">
-              <ClipboardList className="size-4" strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-[13px] font-bold text-[#16201A] group-hover:text-[#145A45] leading-tight transition-colors">
-                {lang === "hi" ? "लिस्ट पेस्ट करें" : "Paste List"}
-              </p>
-              <p className="hidden sm:block text-[10px] text-[#6A756F] leading-tight mt-0.5">
-                {lang === "hi" ? "WhatsApp या डायरी से" : "From WhatsApp/Notes"}
-              </p>
-            </div>
-          </button>
-
-          {/* 3. Voice Order (Equal Visual Weight & Matching Icon System) */}
-          <button
-            type="button"
-            onClick={() => onOpenModal("voice")}
-            className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 p-2 sm:py-2.5 sm:px-3 rounded-xl bg-[#FAF8F4] hover:bg-white border border-[#E0DACF] hover:border-[#145A45]/40 hover:shadow-xs text-center sm:text-left transition-all cursor-pointer active:scale-97 group"
-          >
-            <div className="size-8 rounded-lg bg-[#EAF3ED] text-[#145A45] flex items-center justify-center shrink-0 border border-[#145A45]/12 group-hover:scale-105 group-hover:bg-[#145A45] group-hover:text-white transition-all duration-200">
-              <Mic className="size-4" strokeWidth={2} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs sm:text-[13px] font-bold text-[#16201A] group-hover:text-[#145A45] leading-tight transition-colors">
-                {lang === "hi" ? "बोलकर मंगाएं" : "Voice Order"}
-              </p>
-              <p className="hidden sm:block text-[10px] text-[#6A756F] leading-tight mt-0.5">
-                {lang === "hi" ? "माइक दबाकर नाम बोलें" : "Speak items into mic"}
-              </p>
-            </div>
-          </button>
-        </div>
-
-      </div>
-    </section>
+          {/* Action CTA Button */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowHowItWorks(false);
+                onOpenModal("photo");
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#145A45] to-[#258B6D] hover:from-[#0F4A38] hover:to-[#1E7259] px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs cursor-pointer transition-all active:scale-98"
+            >
+              <span>{lang === "hi" ? "अभी आज़माएं (पर्चा फोटो या बोलकर)" : "Try AI Now"}</span>
+              <ArrowRight className="size-4" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

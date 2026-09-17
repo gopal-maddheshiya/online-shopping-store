@@ -199,7 +199,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Mukta:wght@600;700;800&display=swap",
       },
       {
         rel: "stylesheet",
@@ -281,7 +281,7 @@ function RootComponent() {
                 <div
                   className={
                     isAdminRoute
-                      ? "min-h-screen flex flex-col bg-[#FAF8F2]"
+                      ? "min-h-screen flex flex-col bg-[#F8FAF9]"
                       : "flex min-h-screen flex-col pb-16 lg:pb-0"
                   }
                 >

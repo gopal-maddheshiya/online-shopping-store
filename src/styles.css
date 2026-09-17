@@ -24,9 +24,11 @@
 
 @theme inline {
   --font-sans:
-    "Poppins", "Hind", "Noto Sans Devanagari", "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Inter", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display:
-    "Poppins", "Hind", "Noto Sans Devanagari", "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Inter", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-brand-hi:
+    "Poppins", "Mukta", "Noto Sans Devanagari", system-ui, sans-serif;
 
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -62,17 +64,17 @@
   --color-border: #e5e0d5;
   --color-input: #e5e0d5;
   --color-ring: #145a45;
-  --color-ring-offset-background: #faf8f2;
+  --color-ring-offset-background: #f8faf9;
   --color-surface: #ffffff;
 
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow-card-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
-  --shadow-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 8px 24px -4px rgba(20, 90, 69, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 8px 24px -4px rgba(20, 90, 69, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
 }
 
 :root {
   --radius: 0.75rem;
-  --background: #faf8f2;
+  --background: #f8faf9;
   --foreground: #16201a;
   --surface: #ffffff;
   --card: #ffffff;
@@ -83,7 +85,7 @@
   --primary-foreground: #ffffff;
   --secondary: #e6efe8;
   --secondary-foreground: #0f4a38;
-  --muted: #f3efe6;
+  --muted: #f1f5f3;
   --muted-foreground: #5a655f;
   --accent: #e6efe8;
   --accent-foreground: #0f4a38;
@@ -93,8 +95,8 @@
   --success-foreground: #ffffff;
   --warning: #d97706;
   --warning-foreground: #ffffff;
-  --border: #e5e0d5;
-  --input: #e5e0d5;
+  --border: #e2e8e4;
+  --input: #e2e8e4;
   --ring: #145a45;
 }
 
@@ -138,14 +140,16 @@
   }
 
   body {
-    background-color: #faf8f2;
+    background-color: #f8faf9;
     background-image:
-      radial-gradient(at 0% 0%, rgba(20, 90, 69, 0.022) 0px, transparent 45%),
-      radial-gradient(at 100% 0%, rgba(217, 119, 6, 0.018) 0px, transparent 40%);
+      radial-gradient(at 50% 0%, rgba(20, 90, 69, 0.038) 0px, transparent 55%),
+      radial-gradient(at 100% 15%, rgba(217, 119, 6, 0.015) 0px, transparent 40%),
+      radial-gradient(at 0% 55%, rgba(20, 90, 69, 0.02) 0px, transparent 50%);
     background-attachment: fixed;
     color: #16201a;
     font-family: var(--font-sans);
-    letter-spacing: -0.01em;
+    font-weight: 400;
+    letter-spacing: -0.011em;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -160,9 +164,9 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 600;
     color: #16201a;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.018em;
     text-rendering: optimizeLegibility;
   }
 }
@@ -299,6 +303,49 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Sleek Category Rail Scrollbar Navigator */
+.category-nav-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #94A3B8 #F1F5F9;
+  -webkit-overflow-scrolling: touch;
+}
+.category-nav-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.category-nav-scrollbar::-webkit-scrollbar-track {
+  background: #F8FAFC;
+  border-radius: 9999px;
+}
+.category-nav-scrollbar::-webkit-scrollbar-thumb {
+  background: #94A3B8;
+  border-radius: 9999px;
+}
+.category-nav-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}
+
+/* Premium Hindi Brand Typography for Store Name */
+.font-brand-hindi {
+  font-family: "Poppins", "Mukta", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.012em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Carousel Slide Progress Fill Animation */
+@keyframes carousel-progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-carousel-progress {
+  animation: carousel-progress 4500ms linear forwards;
 }
 
 /* Grocery Catalog Grid Layout */
@@ -567,4 +614,21 @@
 .animate-marquee-smooth:hover,
 .animate-marquee-smooth:active {
   animation-play-state: paused;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Flipkart Standard Smooth Banner Curvature
+   ═══════════════════════════════════════════════════════════════ */
+.rounded-flipkart-hero {
+  border-radius: 22px !important;
+}
+@media (min-width: 640px) {
+  .rounded-flipkart-hero {
+    border-radius: 28px !important;
+  }
+}
+@media (min-width: 1024px) {
+  .rounded-flipkart-hero {
+    border-radius: 32px !important;
+  }
 }

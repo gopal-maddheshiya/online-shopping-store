@@ -35,7 +35,7 @@ export function HeroImageUploader({
     setIsUploading(true);
     try {
       toast.loading(`Uploading ${fieldKey} banner...`, { id: `${fieldKey}-upload` });
-      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1920, 1080, 0.9);
+      const { dataUrl, blob } = await compressAndOptimizeImage(file, 1536, 750, 0.92);
 
       const fileName = `${fieldKey}_banner_${Date.now()}.webp`;
       const filePath = `hero/${fileName}`;
@@ -128,15 +128,16 @@ export function HeroImageUploader({
       </div>
 
       <p className="text-[10px] text-[#6B746F]">
-        Recommended: 16:9 (उदा. 1920×1080px या 1600×900px). Max 5MB.
+        अनुशंसित साइज़ (Flipkart Standard): <strong className="text-[#145A45]">1536 × 750 px</strong> (Aspect Ratio 2.05:1 Wide Landscape). Max 5MB.
       </p>
 
       {value ? (
-        <div className="mt-2 rounded-xl overflow-hidden border border-[#E8E4DA] shadow-xs relative bg-[#F5F2EB]">
+        <div className="mt-2 rounded-flipkart-hero overflow-hidden border border-[#E8E4DA] shadow-xs relative bg-[#F5F2EB] aspect-[1536/750] isolate">
           <img
             src={value}
             alt={`${label} preview`}
-            className="w-full h-auto block object-contain select-none"
+            className="size-full object-cover select-none rounded-flipkart-hero"
+            style={{ borderRadius: "inherit" }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}

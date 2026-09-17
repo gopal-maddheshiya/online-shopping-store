@@ -16,7 +16,6 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Food & Kitchen Essentials",
     icon: "🍲",
     sort_order: 1,
-    banner_sub: null,
     slugs: [
       "atta-flour",
       "rice",
@@ -38,8 +37,6 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Household & Cleaning",
     icon: "🧹",
     sort_order: 2,
-    banner_sub: null,
-    banner_image_url: null,
     slugs: ["household-cleaning", "laundry", "kitchen-essentials", "pots-cceaners"],
   },
   {
@@ -48,8 +45,6 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Personal Care & Beauty",
     icon: "🧴",
     sort_order: 3,
-    banner_sub: null,
-    banner_image_url: null,
     slugs: ["personal-care", "hair-care", "skin-care", "oral-care", "baby-products"],
   },
   {
@@ -58,8 +53,6 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Pooja, Stationery & More",
     icon: "🪔",
     sort_order: 4,
-    banner_sub: null,
-    banner_image_url: null,
     slugs: ["pooja-items", "stationery", "pet-supplies", "misc-items"],
   },
   {
@@ -68,9 +61,6 @@ export const CANONICAL_HEADINGS: CategoryHeading[] = [
     title_en: "Pasuahar - Chokar",
     icon: "🐄",
     sort_order: 5,
-    banner_sub: null,
-    banner_image_url:
-      "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/hero/custom_banner_sec_1788513799616_1788518803286.webp",
     slugs: ["kapila-pasuahar", "555-brand-chokar", "kapila-hara-pasuahar"],
   },
 ];

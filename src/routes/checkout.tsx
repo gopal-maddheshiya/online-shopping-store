@@ -1661,7 +1661,7 @@ function CheckoutPage() {
 
               <div className="flex justify-between border-t border-[#E4DFD5] pt-3 text-base font-bold text-[#16201A]">
                 <dt>{t.totalAmount}</dt>
-                <dd className="text-[#0F4A38] font-sans text-lg font-black">{inr(grandTotal)}</dd>
+                <dd className="text-[#0F4A38] font-sans text-lg font-bold">{inr(grandTotal)}</dd>
               </div>
             </dl>
 
@@ -1748,7 +1748,7 @@ function CheckoutPage() {
               {/* Exact Amount Banner */}
               <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
                 <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
-                <div className="font-sans text-2xl font-black text-[#0F4A38]">
+                <div className="font-sans text-2xl font-bold text-[#0F4A38]">
                   {inr(activeOrderForPayment.amount)}
                 </div>
                 <span className="text-[11px] font-medium text-[#5A655F]">
@@ -1850,7 +1850,7 @@ function CheckoutPage() {
               {/* Exact Amount Banner */}
               <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
                 <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
-                <div className="font-sans text-2xl font-black text-[#0F4A38]">
+                <div className="font-sans text-2xl font-bold text-[#0F4A38]">
                   {inr(activeOrderForPayment.amount)}
                 </div>
                 <span className="text-[11px] font-medium text-[#5A655F]">

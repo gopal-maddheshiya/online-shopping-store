@@ -14,6 +14,7 @@ import {
   PhoneCall,
   MessageCircle,
   ChevronRight,
+  ChevronLeft,
   Flame,
   Award,
   Store,
@@ -143,7 +144,7 @@ function SectionHeader({
           {icon}
         </div>
         <div>
-          <h2 className="font-sans text-base sm:text-lg font-black text-[#16201A] tracking-tight">
+          <h2 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
             {title}
           </h2>
           <p className="text-[11px] sm:text-xs text-[#5A655F] mt-0.5">{subtitle}</p>
@@ -190,7 +191,7 @@ function HeroBanner({
   if (isLoading || activeImages.length === 0) {
     return (
       <section className="container-page pt-2 sm:pt-3">
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl max-w-4xl lg:max-w-[980px] mx-auto aspect-[16/9] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse border border-[#EAE6DC]/50 flex items-center justify-center shadow-xs">
+        <div className="relative overflow-hidden rounded-flipkart-hero w-full aspect-[1536/750] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse border border-[#EAE6DC]/50 flex items-center justify-center shadow-xs">
           <div className="flex items-center gap-2 text-[#8A958F] text-xs sm:text-sm font-medium">
             <Store className="size-5 opacity-40 animate-pulse text-[#145A45]" />
             <span className="opacity-60">{storeName}</span>
@@ -203,13 +204,14 @@ function HeroBanner({
   if (activeImages.length === 1) {
     return (
       <section className="container-page pt-2 sm:pt-3">
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB]">
+        <div className="relative overflow-hidden rounded-flipkart-hero shadow-xs border border-[#EAE6DC]/60 w-full aspect-[1536/750] bg-[#F5F2EB]">
           <img
             src={activeImages[0]}
             alt={storeName}
             decoding="async"
             fetchPriority="high"
-            className="w-full h-auto block object-contain select-none"
+            className="size-full object-cover select-none rounded-flipkart-hero"
+            style={{ borderRadius: "inherit" }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
             }}
@@ -226,11 +228,13 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
-    duration: 48,
-    skipSnaps: true,
+    duration: 24,
+    skipSnaps: false,
+    dragFree: false,
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const isInteractingRef = useRef(false);
   const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -244,8 +248,15 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
     onSelect();
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
+
+    const handleResize = () => {
+      emblaApi.reInit();
+    };
+    window.addEventListener("resize", handleResize);
+
     return () => {
       emblaApi.off("select", onSelect);
+      window.removeEventListener("resize", handleResize);
     };
   }, [emblaApi, onSelect]);
 
@@ -262,92 +273,134 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("pointerDown", handleUserInteraction);
+    emblaApi.on("scroll", handleUserInteraction);
     return () => {
       emblaApi.off("pointerDown", handleUserInteraction);
+      emblaApi.off("scroll", handleUserInteraction);
     };
   }, [emblaApi, handleUserInteraction]);
 
+  // Synchronized countdown timer for auto-slide (4.5s)
   useEffect(() => {
-    if (!emblaApi || images.length <= 1) return;
-    const timer = setInterval(() => {
-      if (isInteractingRef.current) return;
-      emblaApi.scrollNext();
+    if (!emblaApi || images.length <= 1 || isPaused) return;
+    const timer = setTimeout(() => {
+      if (!isInteractingRef.current) {
+        emblaApi.scrollNext();
+      }
     }, 4500);
-    return () => clearInterval(timer);
-  }, [emblaApi, images.length]);
+    return () => clearTimeout(timer);
+  }, [emblaApi, images.length, selectedIndex, isPaused]);
 
   return (
     <section className="container-page pt-2 sm:pt-3">
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl shadow-md border border-[#EAE6DC]/50 max-w-4xl lg:max-w-[980px] mx-auto bg-[#F5F2EB] group">
+      <div className="relative group">
+        {/* Carousel Viewport with Flipkart Rounded Corners */}
         <div
           ref={emblaRef}
-          className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
-          onMouseEnter={handleUserInteraction}
+          className="overflow-hidden rounded-flipkart-hero cursor-grab active:cursor-grabbing select-none"
+          onMouseEnter={() => {
+            setIsPaused(true);
+            handleUserInteraction();
+          }}
+          onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleUserInteraction}
         >
           <div
-            className="flex select-none"
+            className="flex select-none gap-0 sm:gap-5 md:gap-6 lg:gap-7"
             style={{
               willChange: "transform",
-              transform: "translate3d(0, 0, 0)",
               backfaceVisibility: "hidden",
             }}
           >
             {images.map((imgUrl, idx) => (
-              <div key={idx} className="shrink-0 grow-0 basis-full min-w-0">
-                <img
-                  src={imgUrl}
-                  alt={`${storeName} Offer Banner ${idx + 1}`}
-                  loading={idx === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  fetchPriority={idx === 0 ? "high" : "low"}
-                  className="w-full h-auto block object-contain select-none"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
+              <div
+                key={idx}
+                className="shrink-0 grow-0 basis-full sm:basis-[58%] lg:basis-[45.5%] min-w-0 last:mr-0 last:sm:mr-5 last:md:mr-6 last:lg:mr-7"
+              >
+                <div
+                  className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden shadow-xs border border-[#EAE6DC]/60 bg-[#F5F2EB] group/slide isolate"
+                  style={{ borderRadius: "inherit" }}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`${storeName} Offer Banner ${idx + 1}`}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    fetchPriority={idx === 0 ? "high" : "low"}
+                    className="size-full object-cover select-none rounded-flipkart-hero transition-transform duration-300 group-hover/slide:scale-[1.01]"
+                    style={{ borderRadius: "inherit" }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Navigation Indicator Pills */}
-        <div className="absolute bottom-2.5 sm:bottom-3.5 inset-x-0 flex items-center justify-center gap-1.5 z-20 pointer-events-auto">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/35 backdrop-blur-xs border border-white/20 shadow-xs">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => {
-                  emblaApi?.scrollTo(idx);
-                  handleUserInteraction();
-                }}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  idx === selectedIndex
-                    ? "w-5 sm:w-6 h-1.5 bg-[#F5D061] shadow-2xs"
-                    : "w-1.5 h-1.5 bg-white/70 hover:bg-white"
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        {/* Desktop Left & Right Arrow Navigation (Flipkart Style) */}
+        <button
+          type="button"
+          onClick={() => {
+            emblaApi?.scrollPrev();
+            handleUserInteraction();
+          }}
+          aria-label="Previous banner"
+          className="hidden sm:grid absolute left-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            emblaApi?.scrollNext();
+            handleUserInteraction();
+          }}
+          aria-label="Next banner"
+          className="hidden sm:grid absolute right-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
+
+      {/* Flipkart Standard Pagination Indicators with Animated Progress Fill */}
+      <div
+        className="flex items-center justify-center gap-2 pt-3 sm:pt-3.5 pb-1"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {images.map((_, idx) => {
+          const isActive = idx === selectedIndex;
+          return (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                emblaApi?.scrollTo(idx);
+                handleUserInteraction();
+              }}
+              className={`relative overflow-hidden rounded-full transition-all duration-300 cursor-pointer ${
+                isActive
+                  ? "w-7 sm:w-8 h-1.5 bg-[#D1CBC1] shadow-2xs"
+                  : "w-1.5 h-1.5 bg-[#D1CBC1] hover:bg-[#A8A196]"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            >
+              {isActive && images.length > 1 && (
+                <span
+                  key={`progress-${selectedIndex}`}
+                  className="absolute inset-y-0 left-0 bg-[#2B3831] rounded-full animate-carousel-progress"
+                  style={{
+                    animationPlayState: isPaused ? "paused" : "running",
+                  }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
     </section>
-  );
-}
-
-function SubHeroBanner({ bannerUrl, title }: { bannerUrl: string; title: string }) {
-  return (
-    <div className="my-3 sm:my-5 relative overflow-hidden rounded-xl sm:rounded-2xl shadow-xs border border-[#EAE6DC]/60 group/banner bg-[#F5F2EB]">
-      <img
-        src={bannerUrl}
-        alt={title}
-        loading="eager"
-        decoding="async"
-        className="w-full h-auto block transition-all duration-500 group-hover/banner:scale-[1.01]"
-      />
-    </div>
   );
 }
 
@@ -363,9 +416,9 @@ function CategoryThumbnail({
   const src = getCategoryThumbnail(category);
 
   return (
-    <div className="relative size-full flex items-center justify-center overflow-hidden">
+    <div className="relative size-full flex items-center justify-center overflow-hidden p-1 sm:p-1.5">
       {!loaded && !hasError && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6DC]/50 via-white/80 to-[#EAE6DC]/50 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6DC]/30 via-white/70 to-[#EAE6DC]/30 animate-pulse" />
       )}
       {hasError ? (
         <div className="flex flex-col items-center justify-center text-[#145A45]/60">
@@ -379,7 +432,7 @@ function CategoryThumbnail({
           decoding="async"
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}
-          className={`size-full object-cover transition-all duration-500 ease-out group-hover:scale-108 ${
+          className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-200 group-hover:scale-105 ${
             loaded ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -394,8 +447,8 @@ function CategoryGridSkeleton() {
       {/* Skeleton Heading 1 */}
       <div className="space-y-2.5 sm:space-y-3">
         <div className="flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5">
-            <Skeleton className="size-9 rounded-xl bg-[#E6EFE8]/80" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#E6EFE8]/80 shrink-0" />
             <div className="space-y-1.5">
               <Skeleton className="h-4 w-32 sm:w-40 rounded-md bg-[#EAE6DC]/80" />
               <Skeleton className="h-2.5 w-16 sm:w-20 rounded-md bg-[#EAE6DC]/50" />
@@ -403,13 +456,13 @@ function CategoryGridSkeleton() {
           </div>
           <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5 w-full">
-              <div className="w-full aspect-[4/4.5] rounded-2xl bg-[#F0F4F1] border border-[#E0EAE2] p-1.5 sm:p-2 flex items-center justify-center">
-                <div className="size-full rounded-xl bg-white/60" />
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center w-full">
+              <div className="w-full aspect-[1/1.02] rounded-[13px] bg-[#EDF8F1] border border-[#DDF3E4] p-1.5 flex items-center justify-center">
+                <div className="size-full rounded-lg bg-white/70" />
               </div>
-              <div className="h-3 w-14 bg-[#EAE6DC]/60 rounded-md mt-1" />
+              <div className="h-3 w-14 bg-[#EAE6DC]/60 rounded-md mt-2" />
             </div>
           ))}
         </div>
@@ -418,8 +471,8 @@ function CategoryGridSkeleton() {
       {/* Skeleton Heading 2 */}
       <div className="space-y-2.5 sm:space-y-3">
         <div className="flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5">
-            <Skeleton className="size-9 rounded-xl bg-[#E6EFE8]/80" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#E6EFE8]/80 shrink-0" />
             <div className="space-y-1.5">
               <Skeleton className="h-4 w-28 sm:w-36 rounded-md bg-[#EAE6DC]/80" />
               <Skeleton className="h-2.5 w-14 rounded-md bg-[#EAE6DC]/50" />
@@ -427,19 +480,41 @@ function CategoryGridSkeleton() {
           </div>
           <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-1.5 w-full">
-              <div className="w-full aspect-[4/4.5] rounded-2xl bg-[#FCF5EC] border border-[#F4E3CD] p-1.5 sm:p-2 flex items-center justify-center">
-                <div className="size-full rounded-xl bg-white/60" />
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center w-full">
+              <div className="w-full aspect-[1/1.02] rounded-[13px] bg-[#EDF8F1] border border-[#DDF3E4] p-1.5 flex items-center justify-center">
+                <div className="size-full rounded-lg bg-white/70" />
               </div>
-              <div className="h-3 w-12 bg-[#EAE6DC]/60 rounded-md mt-1" />
+              <div className="h-3 w-12 bg-[#EAE6DC]/60 rounded-md mt-2" />
             </div>
           ))}
         </div>
       </div>
     </div>
   );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Category Heading Icon Mapper (Relevant SVGs instead of OS Emojis)
+   ═══════════════════════════════════════════════════════════════ */
+function getCategoryHeadingIcon(heading: { id: string; title_hi?: string; title_en?: string }) {
+  const id = (heading.id || "").toLowerCase();
+  const text = `${heading.title_hi || ""} ${heading.title_en || ""}`.toLowerCase();
+
+  if (id === "food" || text.includes("खान") || text.includes("food") || text.includes("kitchen") || text.includes("रसोई") || text.includes("राशन")) {
+    return <UtensilsCrossed className="size-5 text-[#145A45]" strokeWidth={2.2} />;
+  }
+  if (id === "household" || text.includes("सफ़ाई") || text.includes("cleaning") || text.includes("house") || text.includes("बर्तन") || text.includes("घरेलू")) {
+    return <Sparkles className="size-5 text-[#145A45]" strokeWidth={2.2} />;
+  }
+  if (id === "personal" || text.includes("पर्सनल") || text.includes("personal") || text.includes("beauty") || text.includes("केयर")) {
+    return <Heart className="size-5 text-[#145A45]" strokeWidth={2.2} />;
+  }
+  if (id === "pooja_misc" || text.includes("पूजा") || text.includes("pooja") || text.includes("स्टेशनरी")) {
+    return <Flame className="size-5 text-[#145A45]" strokeWidth={2.2} />;
+  }
+  return <ShoppingCart className="size-5 text-[#145A45]" strokeWidth={2.2} />;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -471,6 +546,29 @@ function PremiumStoreHome() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [smartRationOpen, setSmartRationOpen] = useState(false);
   const [smartRationMode, setSmartRationMode] = useState<"photo" | "text" | "voice">("text");
+
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ mode?: "photo" | "text" | "voice" }>;
+      setSmartRationMode(customEvent.detail?.mode || "text");
+      setSmartRationOpen(true);
+    };
+    window.addEventListener("open-smart-ration", handleOpen);
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("smartRation");
+      if (mode === "photo" || mode === "text" || mode === "voice") {
+        setSmartRationMode(mode);
+        setSmartRationOpen(true);
+        const url = new URL(window.location.href);
+        url.searchParams.delete("smartRation");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      }
+    }
+
+    return () => window.removeEventListener("open-smart-ration", handleOpen);
+  }, []);
 
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
 
@@ -606,7 +704,17 @@ function PremiumStoreHome() {
   );
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-24 overflow-x-hidden">
+    <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+      {/* ═══════════════════════════════════════════════════════
+          AI SMART RATION QUICK-BAR (Flipkart-style seamless strip)
+          ═══════════════════════════════════════════════════════ */}
+      <SmartRationBar
+        onOpenModal={(mode) => {
+          setSmartRationMode(mode || "text");
+          setSmartRationOpen(true);
+        }}
+      />
+
       {/* ═══════════════════════════════════════════════════════
           1. HERO BANNER IMAGE (Uncropped, Natural Fit, Sleek on Laptop)
           ═══════════════════════════════════════════════════════ */}
@@ -625,16 +733,6 @@ function PremiumStoreHome() {
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          AI SMART RATION QUICK-BAR (Gemini 3.6 Multimodal + Rotating Ticker)
-          ═══════════════════════════════════════════════════════ */}
-      <SmartRationBar
-        onOpenModal={(mode) => {
-          setSmartRationMode(mode || "text");
-          setSmartRationOpen(true);
-        }}
-      />
-
-      {/* ═══════════════════════════════════════════════════════
           2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
@@ -645,59 +743,55 @@ function PremiumStoreHome() {
             {headings.map((heading) => {
               const items = parentCategories.filter((c) => heading.slugs.includes(c.slug));
 
-              const bannerUrl = heading.banner_image_url || null;
-
-              if (items.length === 0 && !bannerUrl) return null;
+              if (items.length === 0) return null;
 
               const headingTitle = lang === "hi" ? heading.title_hi : (heading.title_en || heading.title_hi);
 
               return (
                 <div key={heading.id} className="space-y-2.5 sm:space-y-3">
-                  <div className="flex items-center justify-between gap-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
-                        {heading.icon || "🛒"}
-                      </div>
-                      <div className="space-y-0.5">
-                        <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
+                  <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      {/* Left Forest Green Accent Bar */}
+                      <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-gradient-to-b from-[#145A45] via-[#1B6D55] to-[#2E8B57] shadow-xs shrink-0" />
+
+                      {/* Heading Title & Item Count */}
+                      <div className="min-w-0 space-y-0.5">
+                        <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] tracking-tight leading-tight truncate">
                           {headingTitle}
                         </h3>
-                        <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
-                          {items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                        <p className="text-[11px] sm:text-xs text-[#5A655F] font-medium flex items-center gap-1.5">
+                          <span>{items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}</span>
+                          <span className="text-[#A8B2AC]">•</span>
+                          <span className="text-[#145A45] font-semibold">{lang === "hi" ? "100% शुद्ध व असली" : "100% Genuine"}</span>
                         </p>
                       </div>
                     </div>
+
+                    {/* Flipkart/Blinkit Style 'सब देखें' Button */}
                     <Link
                       to="/shop"
-                      className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#145A45] hover:text-white hover:bg-[#145A45] px-3 py-1 rounded-full border border-[#145A45]/20 transition-all shrink-0"
+                      className="group inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] px-3 sm:px-4 py-1.5 text-xs font-bold shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.18)] transition-all shrink-0 active:scale-95 cursor-pointer"
                     >
                       <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                      <ChevronRight className="size-3.5" />
+                      <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
                   </div>
 
-                  {bannerUrl && (
-                    <SubHeroBanner bannerUrl={bannerUrl} title={headingTitle} />
-                  )}
-
-                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-                    {items.map((c, cIdx) => {
-                      const tint =
-                        BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
-                        BLINKIT_CATEGORY_TINTS[0]!;
+                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+                    {items.map((c) => {
                       return (
                         <Link
                           key={c.id}
                           to="/shop"
                           search={{ category: c.slug }}
-                          className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                          className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                         >
                           <div
-                            className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.95)] group-hover:shadow-[0_10px_24px_-4px_rgba(20,90,69,0.18),inset_0_1px_0_rgba(255,255,255,1)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
+                            className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8] group-hover:scale-[1.03]"
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
-                          <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
+                          <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-medium text-[#222725] group-hover:text-[#0F4A38] leading-[1.28] tracking-tight text-center line-clamp-2 min-h-[2.6em] flex items-start justify-center px-0.5 transition-colors">
                             {getCategoryName(c)}
                           </span>
                         </Link>
@@ -710,40 +804,44 @@ function PremiumStoreHome() {
 
             {uncategorizedCategories.length > 0 && (
               <div className="space-y-2.5 sm:space-y-3">
-                <div className="flex items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#E6EFE8] via-[#D4E8DC] to-[#C9E0CD] border border-[#145A45]/20 shadow-xs text-base select-none">
-                      🛒
-                    </div>
-                    <div className="space-y-0.5">
-                      <h3 className="font-sans text-sm sm:text-base font-bold text-[#16201A] tracking-normal leading-snug pt-0.5">
+                <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-gradient-to-b from-[#145A45] via-[#1B6D55] to-[#2E8B57] shadow-xs shrink-0" />
+                    <div className="min-w-0 space-y-0.5">
+                      <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] tracking-tight leading-tight truncate">
                         {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
                       </h3>
-                      <p className="text-[10px] sm:text-[11px] text-[#5A655F] font-medium">
-                        {uncategorizedCategories.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}
+                      <p className="text-[11px] sm:text-xs text-[#5A655F] font-medium flex items-center gap-1.5">
+                        <span>{uncategorizedCategories.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}</span>
+                        <span className="text-[#A8B2AC]">•</span>
+                        <span className="text-[#145A45] font-semibold">{lang === "hi" ? "किराना व घरेलू जरूरतें" : "Daily Needs"}</span>
                       </p>
                     </div>
                   </div>
+                  <Link
+                    to="/shop"
+                    className="group inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] px-3 sm:px-4 py-1.5 text-xs font-bold shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.18)] transition-all shrink-0 active:scale-95 cursor-pointer"
+                  >
+                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
+                    <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 gap-2 sm:gap-2.5 lg:gap-3">
-                  {uncategorizedCategories.map((c, cIdx) => {
-                    const tint =
-                      BLINKIT_CATEGORY_TINTS[cIdx % BLINKIT_CATEGORY_TINTS.length] ??
-                      BLINKIT_CATEGORY_TINTS[0]!;
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+                  {uncategorizedCategories.map((c) => {
                     return (
                       <Link
                         key={c.id}
                         to="/shop"
                         search={{ category: c.slug }}
-                        className="group flex flex-col items-center gap-1.5 text-center w-full active:scale-[0.96] transition-transform duration-150"
+                        className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                       >
                         <div
-                          className={`relative w-full aspect-square rounded-[1.35rem] overflow-hidden transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.95)] group-hover:shadow-[0_10px_24px_-4px_rgba(20,90,69,0.18),inset_0_1px_0_rgba(255,255,255,1)] group-hover:-translate-y-1 border ${tint.bg} ${tint.border} ${tint.hoverBorder}`}
+                          className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8] group-hover:scale-[1.03]"
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>
-                        <span className="text-[11px] sm:text-xs font-semibold text-[#18231D] group-hover:text-[#145A45] leading-[1.38] sm:leading-[1.42] transition-colors px-0.5 pt-1 pb-0.5 min-h-[3.2em] flex items-start justify-center tracking-normal text-center overflow-visible">
+                        <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-medium text-[#222725] group-hover:text-[#0F4A38] leading-[1.28] tracking-tight text-center line-clamp-2 min-h-[2.6em] flex items-start justify-center px-0.5 transition-colors">
                           {getCategoryName(c)}
                         </span>
                       </Link>
@@ -891,7 +989,7 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {activePromoCoupon && (
         <section className="container-page">
-          <div className="relative overflow-hidden rounded-3xl border border-[#E0DACF] bg-gradient-to-r from-[#FAF8F2] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.08),inset_0_1px_0_rgba(255,255,255,1)]">
+          <div className="relative overflow-hidden rounded-3xl border border-[#E2E8E4] bg-gradient-to-r from-[#F8FAF9] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
             <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="space-y-1.5 text-center sm:text-left">
@@ -903,7 +1001,7 @@ function PremiumStoreHome() {
                       : `SPECIAL OFFER: ${activePromoCoupon.code}`}
                   </span>
                 </div>
-                <h3 className="font-sans text-base sm:text-xl font-black text-[#16201A] tracking-tight">
+                <h3 className="font-sans text-base sm:text-xl font-bold text-[#16201A] tracking-tight">
                   {activePromoCoupon.discount_type === "percent"
                     ? lang === "hi"
                       ? `कोड ${activePromoCoupon.code} के साथ पाएं ${activePromoCoupon.value}% की छूट`
@@ -1022,20 +1120,22 @@ function PremiumStoreHome() {
           11B. 🛒 FULL CATALOG DISCOVERY BANNER (Dynamic Store Inventory)
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#06241B] via-[#0B3527] to-[#041A14] border border-emerald-500/25 p-5 sm:p-7 md:p-8 text-white shadow-[0_12px_36px_rgba(6,36,27,0.35),inset_0_1px_1px_rgba(255,255,255,0.18)]">
-          {/* Subtle Ambient Aurora Glow */}
-          <div className="pointer-events-none absolute -top-16 -right-16 size-56 rounded-full bg-emerald-400/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 -left-16 size-56 rounded-full bg-[#E3B341]/12 blur-3xl" />
+        <div className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#041A13] via-[#0A3628] to-[#03140F] border border-emerald-500/25 p-5 sm:p-7 md:p-8 lg:p-9 text-white shadow-[0_16px_48px_-8px_rgba(4,26,19,0.5),inset_0_1px_1px_rgba(255,255,255,0.18)]">
+          {/* Ambient Lighting & Glows */}
+          <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-[#F5D061]/12 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-emerald-400/15 blur-3xl" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,208,97,0.06),transparent_50%)]" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
-              {/* Live Inventory Badge */}
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+            {/* Left Column (7 cols on laptop): Core Narrative & Live Trust */}
+            <div className="lg:col-span-7 space-y-3.5 sm:space-y-4">
+              {/* Live Inventory Status Beacon */}
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-emerald-400/25 text-emerald-200 text-[11px] sm:text-xs font-semibold shadow-inner">
                 <span className="relative flex size-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full size-2 bg-emerald-400"></span>
                 </span>
-                <Sparkles className="size-3.5 text-amber-300" />
+                <Store className="size-3.5 text-amber-300" />
                 <span>
                   {lang === "hi"
                     ? "लाइव स्टोर कैटलॉग • 100% शुद्ध राशन"
@@ -1043,21 +1143,21 @@ function PremiumStoreHome() {
                 </span>
               </div>
 
-              {/* Dynamic Title */}
-              <h3 className="font-sans text-lg sm:text-2xl md:text-[26px] font-black text-white tracking-tight leading-snug">
+              {/* Dynamic Impact Headline */}
+              <h3 className="font-sans text-xl sm:text-2xl md:text-[27px] lg:text-[30px] font-extrabold text-white tracking-tight leading-snug sm:leading-tight">
                 {lang === "hi" ? (
                   <>
                     हमारे पास{" "}
-                    <span className="text-amber-300 font-extrabold">
-                      {products.length > 0 ? `${products.length}+` : "100+"}
+                    <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
+                      {products.length > 0 ? `${products.length}+` : "150+"}
                     </span>{" "}
                     से अधिक दैनिक किराना सामान उपलब्ध हैं
                   </>
                 ) : (
                   <>
                     Explore Over{" "}
-                    <span className="text-amber-300 font-extrabold">
-                      {products.length > 0 ? `${products.length}+` : "100+"}
+                    <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
+                      {products.length > 0 ? `${products.length}+` : "150+"}
                     </span>{" "}
                     Quality Grocery Essentials
                   </>
@@ -1065,51 +1165,91 @@ function PremiumStoreHome() {
               </h3>
 
               {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-emerald-100/80 font-normal leading-relaxed">
+              <p className="text-xs sm:text-sm text-emerald-100/85 font-normal leading-relaxed max-w-xl">
                 {lang === "hi"
                   ? "दाल, चावल, शुद्ध तेल, मसाले, आटा, स्नैक्स और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती असली दुकान रेट पर!"
                   : "Pure grains, pulses, cooking oils, spices, flour, snacks and household essentials at live fair store rates."}
               </p>
 
-              {/* Dynamic Mini Metrics Strip */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-emerald-100 font-medium">
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Package className="size-3.5 text-amber-300" />
-                  <span>
-                    <strong className="text-white font-bold">{products.length || 100}+</strong>{" "}
+              {/* Dynamic Mini Metrics (Grid on mobile, flex on desktop) */}
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-1 text-xs text-emerald-100 font-medium">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Package className="size-3.5 text-amber-300 shrink-0" />
+                  <span className="truncate">
+                    <strong className="text-white font-bold">{products.length || 150}+</strong>{" "}
                     {lang === "hi" ? "कुल सामान" : "Products"}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Store className="size-3.5 text-emerald-300" />
-                  <span>
-                    <strong className="text-white font-bold">{categories.length || 8}+</strong>{" "}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Store className="size-3.5 text-emerald-300 shrink-0" />
+                  <span className="truncate">
+                    <strong className="text-white font-bold">{categories.length || 20}+</strong>{" "}
                     {lang === "hi" ? "श्रेणियाँ" : "Categories"}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Truck className="size-3.5 text-teal-300" />
-                  <span>{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <Truck className="size-3.5 text-teal-300 shrink-0" />
+                  <span className="truncate">{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <ShieldCheck className="size-3.5 text-emerald-300" />
-                  <span>{lang === "hi" ? "उचित दुकान रेट" : "Store Rates"}</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                  <ShieldCheck className="size-3.5 text-emerald-300 shrink-0" />
+                  <span className="truncate">{lang === "hi" ? "उचित दुकान रेट" : "Store Rates"}</span>
                 </div>
               </div>
             </div>
 
-            {/* Classy Modern CTA Button */}
-            <div className="shrink-0 flex flex-col sm:flex-row lg:flex-col gap-2.5 items-start sm:items-center lg:items-end">
+            {/* Right Column (5 cols on laptop): Category Visual Cards + Action Button */}
+            <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-3.5">
+              {/* Category Quick Showcase: 4 Popular Categories */}
+              {parentCategories.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                  {parentCategories.slice(0, 4).map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug } as never}
+                      className="group flex items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 hover:border-emerald-400/40 p-2 sm:p-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-95 backdrop-blur-xs shadow-xs cursor-pointer"
+                    >
+                      <img
+                        src={getCategoryThumbnail(c)}
+                        alt={getCategoryName(c)}
+                        loading="lazy"
+                        decoding="async"
+                        width={36}
+                        height={36}
+                        className="size-9 sm:size-10 rounded-xl object-cover border border-white/20 shrink-0 bg-white/10 group-hover:scale-105 transition-transform"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[11px] sm:text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate leading-tight">
+                          {getCategoryName(c)}
+                        </span>
+                        <span className="text-[10px] text-emerald-200/70 font-medium flex items-center gap-0.5 mt-0.5">
+                          <span>{lang === "hi" ? "देखें" : "View"}</span>
+                          <span className="text-[8.5px] group-hover:translate-x-0.5 transition-transform">→</span>
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* High-Impact Primary CTA Button */}
               <Link
                 to="/shop"
-                className="group inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#06241B] px-6 py-3.5 text-xs sm:text-sm font-black shadow-[0_4px_18px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.35)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer border border-white/40 shrink-0"
+                className="group flex items-center justify-between w-full rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#06241B] px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer border border-white/80"
               >
-                <ShoppingBag className="size-4 text-[#145A45] transition-transform group-hover:-rotate-6" />
-                <span>{lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}</span>
-                <span className="rounded-lg bg-[#EAF3ED] px-2 py-0.5 text-[11px] font-black text-[#145A45]">
-                  {products.length > 0 ? `${products.length}+` : "100+"}
-                </span>
-                <ArrowRight className="size-3.5 text-[#145A45] transition-transform group-hover:translate-x-1" />
+                <div className="flex items-center gap-2.5">
+                  <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45] transition-transform group-hover:-rotate-6" />
+                  <span className="font-extrabold text-xs sm:text-sm">
+                    {lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="rounded-full bg-[#EAF3ED] px-2.5 py-0.5 text-[11px] sm:text-xs font-extrabold text-[#145A45]">
+                    {products.length > 0 ? `${products.length}+` : "150+"} {lang === "hi" ? "सामान" : "Items"}
+                  </span>
+                  <ArrowRight className="size-3.5 sm:size-4 text-[#145A45] transition-transform group-hover:translate-x-1" />
+                </div>
               </Link>
             </div>
           </div>
@@ -1120,7 +1260,7 @@ function PremiumStoreHome() {
           12. BOTTOM TRUST + WhatsApp CTA
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="rounded-3xl border border-[#E0DACF] bg-gradient-to-br from-white via-[#FAF8F2] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.08),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
+        <div className="rounded-3xl border border-[#E2E8E4] bg-gradient-to-br from-white via-[#F8FAF9] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
           {/* Title */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[#E4DFD5] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
@@ -1131,7 +1271,7 @@ function PremiumStoreHome() {
                   : "Trusted Store in Maharajganj"}
               </span>
             </div>
-            <h2 className="font-sans text-lg sm:text-xl font-black text-[#16201A] tracking-tight">
+            <h2 className="font-sans text-lg sm:text-xl font-bold text-[#16201A] tracking-tight">
               {lang === "hi"
                 ? `क्यों खरीदें ${t.storeName} से?`
                 : `Why Choose ${t.storeName}?`}
