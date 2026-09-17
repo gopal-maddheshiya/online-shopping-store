@@ -27,7 +27,14 @@ import {
   Package,
   ShoppingCart,
   Copy,
+  Wheat,
+  Bean,
+  Droplet,
+  Coffee,
+  Flower2,
+  Utensils,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
@@ -120,6 +127,94 @@ export const Route = createFileRoute("/")({
   pendingComponent: HomepageSkeleton,
   component: PremiumStoreHome,
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   Curated Heading Badges & Icons for Category Groups
+   ═══════════════════════════════════════════════════════════════ */
+function getCategoryHeadingConfig(heading: { id: string; title_hi?: string; title_en?: string }) {
+  const id = (heading.id || "").toLowerCase();
+  const title = `${heading.title_hi || ""} ${heading.title_en || ""}`.toLowerCase();
+
+  // 1. Food & Kitchen Essentials (खाने-पीने का सामान)
+  if (id.includes("food") || id.includes("khana") || title.includes("खान") || title.includes("food")) {
+    return {
+      icon: <Utensils className="size-4 sm:size-4.5 text-emerald-800" strokeWidth={2.2} />,
+      badgeClass:
+        "bg-gradient-to-br from-[#ECFDF5] via-[#D1FAE5] to-[#A7F3D0]/60 border border-emerald-600/30 text-emerald-800 shadow-[0_2px_6px_rgba(5,150,105,0.12)]",
+    };
+  }
+
+  // 2. Household & Cleaning (घर की सफ़ाई व बर्तन)
+  if (
+    id.includes("household") ||
+    id.includes("clean") ||
+    id.includes("safai") ||
+    title.includes("सफ़ाई") ||
+    title.includes("बर्तन") ||
+    title.includes("clean")
+  ) {
+    return {
+      icon: <Sparkles className="size-4 sm:size-4.5 text-sky-700" strokeWidth={2.2} />,
+      badgeClass:
+        "bg-gradient-to-br from-[#F0F9FF] via-[#E0F2FE] to-[#BAE6FD]/60 border border-sky-500/30 text-sky-700 shadow-[0_2px_6px_rgba(2,132,199,0.12)]",
+    };
+  }
+
+  // 3. Personal Care & Beauty (पर्सनल केयर व ब्यूटी)
+  if (
+    id.includes("personal") ||
+    id.includes("beauty") ||
+    id.includes("care") ||
+    title.includes("केयर") ||
+    title.includes("पर्सनल") ||
+    title.includes("beauty")
+  ) {
+    return {
+      icon: <Heart className="size-4 sm:size-4.5 text-pink-700 fill-pink-500/20" strokeWidth={2.2} />,
+      badgeClass:
+        "bg-gradient-to-br from-[#FDF2F8] via-[#FCE7F3] to-[#FBCFE8]/60 border border-pink-500/30 text-pink-700 shadow-[0_2px_6px_rgba(219,39,119,0.12)]",
+    };
+  }
+
+  // 4. Pooja, Stationery & Misc (पूजा सामग्री, अगरबत्ती व अन्य)
+  if (
+    id.includes("pooja") ||
+    id.includes("puja") ||
+    id.includes("misc") ||
+    title.includes("पूजा") ||
+    title.includes("धूप") ||
+    title.includes("pooja")
+  ) {
+    return {
+      icon: <Flame className="size-4 sm:size-4.5 text-amber-700 fill-amber-500/25" strokeWidth={2.2} />,
+      badgeClass:
+        "bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]/60 border border-amber-500/35 text-amber-700 shadow-[0_2px_6px_rgba(217,119,6,0.12)]",
+    };
+  }
+
+  // 5. Cattle Feed / Pashuahar (पशुआहार - चोकर)
+  if (
+    id.includes("chokar") ||
+    id.includes("feed") ||
+    id.includes("pashu") ||
+    id.includes("1788513799616") ||
+    title.includes("पशुआहार") ||
+    title.includes("चोकर")
+  ) {
+    return {
+      icon: <Package className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />,
+      badgeClass:
+        "bg-gradient-to-br from-[#EDF8F1] via-[#E2EEE5] to-[#CCE6D4] border border-[#145A45]/30 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.12)]",
+    };
+  }
+
+  // Default / Other categories
+  return {
+    icon: <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />,
+    badgeClass:
+      "bg-gradient-to-br from-[#EDF8F1] via-[#E4F5EB] to-[#D5EEDD] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.1)]",
+  };
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Reusable Section Header
@@ -877,13 +972,21 @@ function PremiumStoreHome() {
               if (items.length === 0) return null;
 
               const headingTitle = lang === "hi" ? heading.title_hi : (heading.title_en || heading.title_hi);
+              const headingConfig = getCategoryHeadingConfig(heading);
 
               return (
                 <div key={heading.id} className="space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
                     <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                      {/* Left Forest Green Accent Bar */}
-                      <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-gradient-to-b from-[#145A45] via-[#1B6D55] to-[#2E8B57] shadow-xs shrink-0" />
+                      {/* Category Group Icon Squircle Badge */}
+                      <div
+                        className={cn(
+                          "grid size-9 sm:size-10 place-items-center rounded-xl sm:rounded-2xl shrink-0 transition-transform duration-200 shadow-xs",
+                          headingConfig.badgeClass,
+                        )}
+                      >
+                        {headingConfig.icon}
+                      </div>
 
                       {/* Heading Title & Item Count */}
                       <div className="min-w-0 space-y-0.5">
@@ -937,7 +1040,14 @@ function PremiumStoreHome() {
               <div className="space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-gradient-to-b from-[#145A45] via-[#1B6D55] to-[#2E8B57] shadow-xs shrink-0" />
+                    <div
+                      className={cn(
+                        "grid size-9 sm:size-10 place-items-center rounded-xl sm:rounded-2xl shrink-0 transition-transform duration-200 shadow-xs",
+                        "bg-gradient-to-br from-[#EDF8F1] via-[#E4F5EB] to-[#D5EEDD] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.1)]",
+                      )}
+                    >
+                      <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />
+                    </div>
                     <div className="min-w-0 space-y-0.5">
                       <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] tracking-tight leading-tight truncate">
                         {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
@@ -1037,7 +1147,8 @@ function PremiumStoreHome() {
           4. ⭐ BEST SELLERS & POPULAR PRODUCTS (Auto-Sliding)
           ═══════════════════════════════════════════════════════ */}
       <ProductSliderShelf
-        icon={<Sparkles className="size-4 text-amber-600" />}
+        icon={<Sparkles className="size-4.5 sm:size-5 text-amber-600 fill-amber-500/25" strokeWidth={2.2} />}
+        iconContainerClassName="bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B]/25 border border-amber-500/35 text-amber-700 shadow-[0_2px_6px_rgba(217,119,6,0.14)]"
         title={lang === "hi" ? "लोकप्रिय उत्पाद व बेस्ट सेलर्स" : "Popular & Best Sellers"}
         subtitle={
           lang === "hi"
@@ -1057,7 +1168,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {(prodLoading || attaRiceProducts.length > 0) && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🌾</span>}
+          icon={<Wheat className="size-4.5 sm:size-5 text-amber-700" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]/60 border border-amber-600/30 text-amber-800 shadow-[0_2px_6px_rgba(180,83,9,0.12)]"
           title={lang === "hi" ? "आटा, बासमती चावल व अनाज" : "Atta, Rice & Grains"}
           subtitle={
             lang === "hi"
@@ -1079,7 +1191,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {(prodLoading || dalPulsesProducts.length > 0) && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🫘</span>}
+          icon={<Bean className="size-4.5 sm:size-5 text-emerald-700" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#F0FDF4] via-[#DCFCE7] to-[#BBF7D0]/60 border border-emerald-600/30 text-emerald-800 shadow-[0_2px_6px_rgba(5,150,105,0.12)]"
           title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
           subtitle={
             lang === "hi"
@@ -1101,7 +1214,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {oilGheeProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🛢️</span>}
+          icon={<Droplet className="size-4.5 sm:size-5 text-yellow-600 fill-yellow-500/35" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FEFCE8] via-[#FEF9C3] to-[#FEF08A]/70 border border-yellow-600/35 text-yellow-800 shadow-[0_2px_6px_rgba(202,138,4,0.14)]"
           title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
           subtitle={
             lang === "hi"
@@ -1191,7 +1305,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {spicesMasalaProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🌶️</span>}
+          icon={<Flame className="size-4.5 sm:size-5 text-rose-600 fill-rose-500/20" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FFF1F2] via-[#FFE4E6] to-[#FECDD3]/60 border border-rose-500/30 text-rose-800 shadow-[0_2px_6px_rgba(225,29,72,0.12)]"
           title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
           subtitle={
             lang === "hi"
@@ -1212,7 +1327,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {snacksBreakfastProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">☕</span>}
+          icon={<Coffee className="size-4.5 sm:size-5 text-purple-800" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FAF5FF] via-[#F3E8FF] to-[#E9D5FF]/50 border border-purple-600/30 text-purple-900 shadow-[0_2px_6px_rgba(147,51,234,0.12)]"
           title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
           subtitle={
             lang === "hi"
@@ -1233,7 +1349,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {cleaningProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🧽</span>}
+          icon={<Sparkles className="size-4.5 sm:size-5 text-sky-600" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#F0F9FF] via-[#E0F2FE] to-[#BAE6FD]/60 border border-sky-500/30 text-sky-800 shadow-[0_2px_6px_rgba(2,132,199,0.12)]"
           title={lang === "hi" ? "सफाई, डिटर्जेंट व बर्तन" : "Cleaning & Household"}
           subtitle={
             lang === "hi"
@@ -1254,7 +1371,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {poojaProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🪔</span>}
+          icon={<Flower2 className="size-4.5 sm:size-5 text-orange-600" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FFF7ED] via-[#FFEDD5] to-[#FED7AA]/60 border border-orange-500/35 text-orange-800 shadow-[0_2px_6px_rgba(234,88,12,0.14)]"
           title={lang === "hi" ? "पूजा सामग्री, अगरबत्ती व धूप" : "Pooja Samagri & Agarbatti"}
           subtitle={
             lang === "hi"
@@ -1275,7 +1393,8 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {personalCareProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<span className="text-base leading-none">🧴</span>}
+          icon={<Heart className="size-4.5 sm:size-5 text-pink-600 fill-pink-500/25" strokeWidth={2.2} />}
+          iconContainerClassName="bg-gradient-to-br from-[#FDF2F8] via-[#FCE7F3] to-[#FBCFE8]/60 border border-pink-500/30 text-pink-800 shadow-[0_2px_6px_rgba(219,39,119,0.12)]"
           title={lang === "hi" ? "पर्सनल केयर, साबुन व हेयर ऑयल" : "Personal Care, Soaps & Hair Oil"}
           subtitle={
             lang === "hi"

@@ -4,11 +4,13 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { type Product } from "@/lib/queries";
+import { cn } from "@/lib/utils";
 
 interface ProductSliderShelfProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
+  iconContainerClassName?: string;
   products: Product[];
   linkTo?: string;
   linkSearch?: Record<string, string>;
@@ -22,6 +24,7 @@ export function ProductSliderShelf({
   title,
   subtitle,
   icon,
+  iconContainerClassName,
   products,
   linkTo = "/shop",
   linkSearch,
@@ -121,7 +124,13 @@ export function ProductSliderShelf({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           {icon && (
-            <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#EBF3ED] via-[#E2EEE5] to-[#D6E7DB] border border-[#145A45]/20 shrink-0 text-base shadow-[0_2px_8px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div
+              className={cn(
+                "grid size-9 sm:size-10 place-items-center rounded-2xl shrink-0 text-base shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all",
+                iconContainerClassName ||
+                  "bg-gradient-to-br from-[#EBF3ED] via-[#E2EEE5] to-[#D6E7DB] border border-[#145A45]/20 text-[#145A45]"
+              )}
+            >
               {icon}
             </div>
           )}
