@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import { getCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 import {
   ShoppingBag,
@@ -116,6 +117,7 @@ export const Route = createFileRoute("/")({
       </div>
     </div>
   ),
+  pendingComponent: HomepageSkeleton,
   component: PremiumStoreHome,
 });
 
@@ -177,6 +179,29 @@ const BLINKIT_CATEGORY_TINTS = [
 /* ═══════════════════════════════════════════════════════════════
    SKELETON & IMAGE PLACEHOLDER COMPONENTS (Slow network resilience)
    ═══════════════════════════════════════════════════════════════ */
+function HeroBannerSkeleton() {
+  return (
+    <section className="container-page pt-2 sm:pt-3">
+      <div className="relative overflow-hidden rounded-flipkart-hero w-full aspect-[1536/750] border border-[#EAE6DC]/60 shadow-xs bg-[#F5F2EB]/50">
+        <Skeleton className="size-full rounded-flipkart-hero" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-xs border border-[#EAE6DC]/80 shadow-xs">
+            <Store className="size-4.5 text-[#145A45] animate-pulse" />
+            <span className="text-xs sm:text-sm font-bold text-[#145A45]">अरुण गोपाल ट्रेडर्स</span>
+          </div>
+        </div>
+      </div>
+      {/* Skeleton Pagination Indicators */}
+      <div className="flex items-center justify-center gap-2 pt-3 pb-1">
+        <Skeleton className="w-7 sm:w-8 h-1.5 rounded-full" />
+        <Skeleton className="w-1.5 h-1.5 rounded-full" />
+        <Skeleton className="w-1.5 h-1.5 rounded-full" />
+        <Skeleton className="w-1.5 h-1.5 rounded-full" />
+      </div>
+    </section>
+  );
+}
+
 function HeroBanner({
   images,
   storeName,
@@ -189,16 +214,7 @@ function HeroBanner({
   const activeImages = (images || []).filter(Boolean);
 
   if (isLoading || activeImages.length === 0) {
-    return (
-      <section className="container-page pt-2 sm:pt-3">
-        <div className="relative overflow-hidden rounded-flipkart-hero w-full aspect-[1536/750] bg-gradient-to-r from-[#EAE6DC]/60 via-[#F5F2EB] to-[#EAE6DC]/60 animate-pulse border border-[#EAE6DC]/50 flex items-center justify-center shadow-xs">
-          <div className="flex items-center gap-2 text-[#8A958F] text-xs sm:text-sm font-medium">
-            <Store className="size-5 opacity-40 animate-pulse text-[#145A45]" />
-            <span className="opacity-60">{storeName}</span>
-          </div>
-        </div>
-      </section>
-    );
+    return <HeroBannerSkeleton />;
   }
 
   if (activeImages.length === 1) {
@@ -225,23 +241,40 @@ function HeroBanner({
 }
 
 function HeroSlider({ images, storeName }: { images: string[]; storeName: string }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
-    align: "start",
-    duration: 24,
-    skipSnaps: false,
-    dragFree: false,
-  });
+  // If fewer than 5 images, duplicate array for seamless infinite looping in Embla
+  const loopImages = useMemo(() => {
+    if (images.length < 5) {
+      return [...images, ...images];
+    }
+    return images;
+  }, [images]);
+
+  const autoplay = useRef(
+    Autoplay({
+      delay: 4500,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    })
+  );
+
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    {
+      loop: true,
+      align: "start",
+      duration: 25,
+      skipSnaps: false,
+      dragFree: false,
+    },
+    [autoplay.current]
+  );
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const isInteractingRef = useRef(false);
-  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+    setSelectedIndex(emblaApi.selectedScrollSnap() % images.length);
+  }, [emblaApi, images.length]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -260,36 +293,9 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
     };
   }, [emblaApi, onSelect]);
 
-  const handleUserInteraction = useCallback(() => {
-    isInteractingRef.current = true;
-    if (cooldownTimerRef.current) {
-      clearTimeout(cooldownTimerRef.current);
-    }
-    cooldownTimerRef.current = setTimeout(() => {
-      isInteractingRef.current = false;
-    }, 6000);
+  const handleManualAction = useCallback(() => {
+    autoplay.current.reset();
   }, []);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("pointerDown", handleUserInteraction);
-    emblaApi.on("scroll", handleUserInteraction);
-    return () => {
-      emblaApi.off("pointerDown", handleUserInteraction);
-      emblaApi.off("scroll", handleUserInteraction);
-    };
-  }, [emblaApi, handleUserInteraction]);
-
-  // Synchronized countdown timer for auto-slide (4.5s)
-  useEffect(() => {
-    if (!emblaApi || images.length <= 1 || isPaused) return;
-    const timer = setTimeout(() => {
-      if (!isInteractingRef.current) {
-        emblaApi.scrollNext();
-      }
-    }, 4500);
-    return () => clearTimeout(timer);
-  }, [emblaApi, images.length, selectedIndex, isPaused]);
 
   return (
     <section className="container-page pt-2 sm:pt-3">
@@ -298,12 +304,8 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
         <div
           ref={emblaRef}
           className="overflow-hidden rounded-flipkart-hero cursor-grab active:cursor-grabbing select-none"
-          onMouseEnter={() => {
-            setIsPaused(true);
-            handleUserInteraction();
-          }}
+          onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleUserInteraction}
         >
           <div
             className="flex select-none gap-0 sm:gap-5 md:gap-6 lg:gap-7"
@@ -312,7 +314,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
               backfaceVisibility: "hidden",
             }}
           >
-            {images.map((imgUrl, idx) => (
+            {loopImages.map((imgUrl, idx) => (
               <div
                 key={idx}
                 className="shrink-0 grow-0 basis-full sm:basis-[58%] lg:basis-[45.5%] min-w-0 last:mr-0 last:sm:mr-5 last:md:mr-6 last:lg:mr-7"
@@ -323,7 +325,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
                 >
                   <img
                     src={imgUrl}
-                    alt={`${storeName} Offer Banner ${idx + 1}`}
+                    alt={`${storeName} Offer Banner ${(idx % images.length) + 1}`}
                     loading={idx === 0 ? "eager" : "lazy"}
                     decoding="async"
                     fetchPriority={idx === 0 ? "high" : "low"}
@@ -344,7 +346,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
           type="button"
           onClick={() => {
             emblaApi?.scrollPrev();
-            handleUserInteraction();
+            handleManualAction();
           }}
           aria-label="Previous banner"
           className="hidden sm:grid absolute left-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
@@ -355,7 +357,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
           type="button"
           onClick={() => {
             emblaApi?.scrollNext();
-            handleUserInteraction();
+            handleManualAction();
           }}
           aria-label="Next banner"
           className="hidden sm:grid absolute right-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
@@ -378,7 +380,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
               type="button"
               onClick={() => {
                 emblaApi?.scrollTo(idx);
-                handleUserInteraction();
+                handleManualAction();
               }}
               className={`relative overflow-hidden rounded-full transition-all duration-300 cursor-pointer ${
                 isActive
@@ -443,54 +445,112 @@ function CategoryThumbnail({
 
 function CategoryGridSkeleton() {
   return (
-    <div className="space-y-7 sm:space-y-9 animate-pulse">
-      {/* Skeleton Heading 1 */}
-      <div className="space-y-2.5 sm:space-y-3">
-        <div className="flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#E6EFE8]/80 shrink-0" />
-            <div className="space-y-1.5">
-              <Skeleton className="h-4 w-32 sm:w-40 rounded-md bg-[#EAE6DC]/80" />
-              <Skeleton className="h-2.5 w-16 sm:w-20 rounded-md bg-[#EAE6DC]/50" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
-        </div>
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center w-full">
-              <div className="w-full aspect-[1/1.02] rounded-[13px] bg-[#EDF8F1] border border-[#DDF3E4] p-1.5 flex items-center justify-center">
-                <div className="size-full rounded-lg bg-white/70" />
+    <div className="space-y-7 sm:space-y-9">
+      {[1, 2].map((g) => (
+        <div key={g} className="space-y-2.5 sm:space-y-3">
+          <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#145A45]/30 shrink-0" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 sm:h-5 w-32 sm:w-44 rounded-md" />
+                <Skeleton className="h-2.5 sm:h-3 w-20 sm:w-28 rounded-md" />
               </div>
-              <div className="h-3 w-14 bg-[#EAE6DC]/60 rounded-md mt-2" />
             </div>
-          ))}
+            <Skeleton className="h-6 sm:h-7 w-18 sm:w-20 rounded-full" />
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center w-full">
+                <div className="w-full aspect-[1/1.02] rounded-[13px] overflow-hidden bg-[#EDF8F1]/60 border border-[#DDF3E4]/70 p-1.5 flex items-center justify-center shadow-2xs">
+                  <Skeleton className="size-full rounded-[10px]" />
+                </div>
+                <Skeleton className="h-3 w-14 rounded-md mt-2" />
+                <Skeleton className="h-2.5 w-10 rounded-md mt-1" />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ))}
+    </div>
+  );
+}
 
-      {/* Skeleton Heading 2 */}
-      <div className="space-y-2.5 sm:space-y-3">
-        <div className="flex items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#E6EFE8]/80 shrink-0" />
-            <div className="space-y-1.5">
-              <Skeleton className="h-4 w-28 sm:w-36 rounded-md bg-[#EAE6DC]/80" />
-              <Skeleton className="h-2.5 w-14 rounded-md bg-[#EAE6DC]/50" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-16 rounded-full bg-[#EAE6DC]/50" />
-        </div>
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center w-full">
-              <div className="w-full aspect-[1/1.02] rounded-[13px] bg-[#EDF8F1] border border-[#DDF3E4] p-1.5 flex items-center justify-center">
-                <div className="size-full rounded-lg bg-white/70" />
+function HomepageSkeleton() {
+  return (
+    <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+      {/* 1. Hero Banner Skeleton */}
+      <HeroBannerSkeleton />
+
+      {/* 2. Category Grid Skeleton */}
+      <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
+        <CategoryGridSkeleton />
+      </section>
+
+      {/* 3. Mini Trust Strip Skeleton */}
+      <section className="container-page">
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-[#E4DFD5] shadow-xs"
+            >
+              <Skeleton className="size-9 rounded-xl shrink-0" />
+              <div className="min-w-0 space-y-1.5 flex-1">
+                <Skeleton className="h-3.5 w-3/4 rounded-md" />
+                <Skeleton className="h-2.5 w-1/2 rounded-md" />
               </div>
-              <div className="h-3 w-12 bg-[#EAE6DC]/60 rounded-md mt-2" />
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* 4. Product Shelf Skeleton (Popular Products) */}
+      <section className="container-page space-y-3 sm:space-y-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="size-9 rounded-xl shrink-0" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 sm:h-5 w-36 sm:w-48 rounded-md" />
+              <Skeleton className="h-2.5 sm:h-3 w-24 sm:w-32 rounded-md" />
+            </div>
+          </div>
+          <Skeleton className="h-6 sm:h-7 w-20 rounded-full" />
+        </div>
+        <div className="flex gap-2.5 sm:gap-3.5 overflow-hidden py-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0"
+            >
+              <ProductCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. Second Product Shelf Skeleton (Atta & Rice) */}
+      <section className="container-page space-y-3 sm:space-y-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="size-9 rounded-xl shrink-0" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 sm:h-5 w-40 sm:w-52 rounded-md" />
+              <Skeleton className="h-2.5 sm:h-3 w-28 sm:w-36 rounded-md" />
+            </div>
+          </div>
+          <Skeleton className="h-6 sm:h-7 w-20 rounded-full" />
+        </div>
+        <div className="flex gap-2.5 sm:gap-3.5 overflow-hidden py-1">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="shrink-0 grow-0 basis-[48%] sm:basis-[32%] md:basis-[24%] lg:basis-[19%] min-w-0"
+            >
+              <ProductCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -924,7 +984,7 @@ function PremiumStoreHome() {
       {/* ═══════════════════════════════════════════════════════
           5. 🌾 ATTA, RICE & GRAINS (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
-      {attaRiceProducts.length > 0 && (
+      {(prodLoading || attaRiceProducts.length > 0) && (
         <ProductSliderShelf
           icon={<span className="text-base leading-none">🌾</span>}
           title={lang === "hi" ? "आटा, बासमती चावल व अनाज" : "Atta, Rice & Grains"}
@@ -939,13 +999,14 @@ function PremiumStoreHome() {
           linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4200}
+          isLoading={prodLoading}
         />
       )}
 
       {/* ═══════════════════════════════════════════════════════
           6. 🫘 PULSES & DAL (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
-      {dalPulsesProducts.length > 0 && (
+      {(prodLoading || dalPulsesProducts.length > 0) && (
         <ProductSliderShelf
           icon={<span className="text-base leading-none">🫘</span>}
           title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
@@ -960,6 +1021,7 @@ function PremiumStoreHome() {
           linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4600}
+          isLoading={prodLoading}
         />
       )}
 

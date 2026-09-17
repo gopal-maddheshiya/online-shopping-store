@@ -8,6 +8,7 @@ import { getProductImage } from "@/lib/product-images";
 import { type Product } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProductCard({ product }: { product: Product }) {
   const { items, add, setQty } = useCart();
@@ -238,16 +239,37 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div
-      className="flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] animate-pulse"
+      className="flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      <div className="w-full aspect-square rounded-lg bg-[#F3F4F6]" />
-      <div className="w-full h-4 bg-[#F3F4F6] rounded-md mt-2" />
-      <div className="w-3/4 h-3.5 bg-[#F3F4F6] rounded-md mt-1" />
-      <div className="w-12 h-3 bg-[#F3F4F6] rounded-sm mt-1" />
-      <div className="flex items-center justify-between mt-3 pt-1">
-        <div className="w-12 h-4 bg-[#F3F4F6] rounded-md" />
-        <div className="w-16 h-8 bg-[#F3F4F6] rounded-lg" />
+      {/* Product Image & Discount Ribbon Skeleton */}
+      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-[#F2EFE9]/40 border border-[#EAE6DC]/50">
+        <Skeleton className="size-full rounded-lg" />
+        {/* Soft Discount Ribbon Skeleton in corner */}
+        <div className="absolute top-0 left-2 z-10 w-7 h-8 rounded-b-md overflow-hidden bg-blue-100/50 shadow-2xs">
+          <Skeleton className="size-full" />
+        </div>
+      </div>
+
+      {/* Product Information Skeleton */}
+      <div className="flex flex-col flex-1 justify-between pt-2.5 space-y-2">
+        <div className="space-y-1.5">
+          {/* Title line 1 */}
+          <Skeleton className="w-full h-3.5 sm:h-4 rounded-md" />
+          {/* Title line 2 */}
+          <Skeleton className="w-3/4 h-3.5 sm:h-4 rounded-md" />
+          {/* Pack size / unit */}
+          <Skeleton className="w-16 h-3 rounded-sm mt-1" />
+        </div>
+
+        {/* Price & Add Button Footer */}
+        <div className="flex items-center justify-between pt-2 border-t border-[#F0EDE6]">
+          <div className="space-y-1">
+            <Skeleton className="w-14 sm:w-16 h-4 sm:h-5 rounded-md" />
+            <Skeleton className="w-10 h-2.5 rounded-xs" />
+          </div>
+          <Skeleton className="w-16 sm:w-18 h-7 sm:h-8 rounded-lg" />
+        </div>
       </div>
     </div>
   );
