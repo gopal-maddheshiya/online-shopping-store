@@ -575,11 +575,14 @@ export function AdminProducts({
         // 3. Upsert active variants
         for (let i = 0; i < variants.length; i++) {
           const v = variants[i]!;
+          const cleanLabel = (v.label || "Standard").trim();
+          const cleanLabelHi = translateVariantLabel(cleanLabel, "hi");
           if (v.id) {
             await supabase
               .from("product_variants")
               .update({
-                label: v.label,
+                label: cleanLabel,
+                label_hi: cleanLabelHi,
                 price: v.price,
                 mrp: v.mrp,
                 stock: v.stock,
@@ -590,7 +593,8 @@ export function AdminProducts({
           } else {
             await supabase.from("product_variants").insert({
               product_id: editingProduct.id,
-              label: v.label,
+              label: cleanLabel,
+              label_hi: cleanLabelHi,
               price: v.price,
               mrp: v.mrp,
               stock: v.stock,
@@ -628,15 +632,19 @@ export function AdminProducts({
         if (prodError) throw prodError;
 
         // 2. Insert variants
-        const varPayload = variants.map((v, i) => ({
-          product_id: newProd.id,
-          label: v.label,
-          price: v.price,
-          mrp: v.mrp,
-          stock: v.stock,
-          low_stock_threshold: v.low_stock_threshold,
-          sort_order: i,
-        }));
+        const varPayload = variants.map((v, i) => {
+          const cleanLabel = (v.label || "Standard").trim();
+          return {
+            product_id: newProd.id,
+            label: cleanLabel,
+            label_hi: translateVariantLabel(cleanLabel, "hi"),
+            price: v.price,
+            mrp: v.mrp,
+            stock: v.stock,
+            low_stock_threshold: v.low_stock_threshold,
+            sort_order: i,
+          };
+        });
 
         await supabase.from("product_variants").insert(varPayload);
 
@@ -1371,11 +1379,16 @@ export function AdminProducts({
                     >
                       <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-end">
                         <div className="sm:col-span-3">
-                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
-                            Pack Label
-                          </Label>
+                          <div className="flex items-center justify-between mb-1">
+                            <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider block">
+                              Pack Label
+                            </Label>
+                            <span className="text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-1.5 py-0.5 rounded border border-[#145A45]/20">
+                              {translateVariantLabel(v.label, "hi") || "—"}
+                            </span>
+                          </div>
                           <Input
-                            placeholder="e.g. 5 kg"
+                            placeholder="e.g. 500 g, 1 kg, 200 ml"
                             value={v.label}
                             onChange={(e) => updateVariant(idx, "label", e.target.value)}
                             className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"

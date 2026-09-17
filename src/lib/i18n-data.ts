@@ -1375,16 +1375,35 @@ export const PRODUCT_NAMES_BY_NAME_HI: Record<string, string> = {
 };
 
 export function translateVariantLabel(label: string, lang: Language): string {
-  if (lang !== "hi") return label;
-  return label
-    .replace(/kg/gi, "किलो")
-    .replace(/gm|g\b/gi, "ग्राम")
-    .replace(/ltr|l\b/gi, "लीटर")
-    .replace(/ml\b/gi, "मिली")
-    .replace(/pack of/gi, "का पैक")
-    .replace(/pcs|pieces/gi, "पीस")
-    .replace(/pack/gi, "पैकेट");
+  if (!label || lang !== "hi") return label || "";
+
+  let res = label.trim();
+
+  // 1. Pack of N / Multi-packs (must run first before individual pack replacements)
+  res = res.replace(/\bpack\s+of\s+(\d+)\b/gi, (_m, count) => `${count} पीस का पैकेट`);
+  res = res.replace(/\b(\d+)\s*(?:piece|pcs|pc)\s+pack\s+of\s+(\d+)\b/gi, (_m, _each, count) => `${count} पीस का पैकेट`);
+
+  // 2. Specific packaging containers & units
+  res = res.replace(/\b(?:bags?|bori)\b/gi, "बोरी");
+  res = res.replace(/\b(?:sachets?|pouches?|pouch)\b/gi, "पाउच");
+  res = res.replace(/\b(?:bottles?)\b/gi, "बोतल");
+  res = res.replace(/\b(?:bundles?)\b/gi, "बंडल");
+  res = res.replace(/\b(?:boxes?|dabba)\b/gi, "डिब्बा");
+  res = res.replace(/\b(?:packets?|packs?)\b/gi, "पैकेट");
+  res = res.replace(/\b(?:pieces?|pcs|pc)\b/gi, "पीस");
+
+  // 3. Liquid volume units - ALWAYS evaluate ml before ltr/l
+  res = res.replace(/\b(?:ml|milli|millilitre|milliliter)\b/gi, "मिली");
+  res = res.replace(/\b(?:ltr|litres?|liters?|l)\b/gi, "लीटर");
+
+  // 4. Solid weight units - Whole-word match so 'bag' is never touched
+  res = res.replace(/\b(?:kg|kgs|kilo|kilogram|kilograms)\b/gi, "किलो");
+  res = res.replace(/\b(?:gm|gms|grams?|g)\b/gi, "ग्राम");
+
+  // 5. Clean up duplicate spaces
+  return res.replace(/\s+/g, " ").trim();
 }
+
 
 export function formatStoreStatusText(
   status: { open: boolean; text: string },
