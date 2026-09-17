@@ -658,8 +658,10 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
+[data-lenis-prevent],
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .lenis.lenis-stopped {

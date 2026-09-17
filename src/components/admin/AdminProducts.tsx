@@ -1086,7 +1086,10 @@ export function AdminProducts({
 
       {/* Add / Edit Product Modal (Clean, Spacious 3-Tab Architecture) */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-3xl border-[#E8E4DA] bg-white shadow-2xl">
+        <DialogContent
+          data-lenis-prevent
+          className="w-[95vw] sm:max-w-3xl h-[88vh] max-h-[92dvh] flex flex-col gap-0 p-0 overflow-hidden rounded-3xl border-[#E8E4DA] bg-white shadow-2xl"
+        >
           {/* 1. Modal Fixed Header & Tab Navigation Bar */}
           <DialogHeader className="px-4 sm:px-6 pt-5 pb-3 border-b border-[#E8E4DA] bg-white shrink-0 space-y-2">
             <div className="flex items-center justify-between">
@@ -1147,8 +1150,14 @@ export function AdminProducts({
           </DialogHeader>
 
           {/* 2. Scrollable Body Area (Tab Content) */}
-          <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 min-h-0">
-            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
+          <form
+            onSubmit={handleSaveProduct}
+            className="flex flex-col flex-1 min-h-0 h-full overflow-hidden"
+          >
+            <div
+              data-lenis-prevent
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 space-y-4"
+            >
               {/* TAB 1: BASIC INFORMATION */}
               {modalTab === "basic" && (
                 <div className="space-y-4 animate-in fade-in duration-150">

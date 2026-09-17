@@ -41,6 +41,12 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       wheelMultiplier: 1.0,
       infinite: false,
       autoRaf: false, // Driven synchronously via GSAP ticker
+      prevent: (node) => {
+        return (
+          node.hasAttribute?.("data-lenis-prevent") ||
+          Boolean(node.closest?.("[data-lenis-prevent], [role='dialog'], [data-radix-portal], [data-radix-popper-content-wrapper]"))
+        );
+      },
     });
 
     lenisRef.current = lenis;
