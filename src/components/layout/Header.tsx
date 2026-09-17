@@ -25,6 +25,7 @@ import {
   HelpCircle,
   MessageCircle,
   Zap,
+  Truck,
   Lock,
   Camera,
   Mic,
@@ -168,8 +169,8 @@ export function Header() {
   return (
     <>
       {/* 1. Premium Top Announcement Bar */}
-      <div className="relative overflow-hidden border-b border-[#0A3628] bg-gradient-to-r from-[#0A3628] via-[#145A45] to-[#0A3628] text-white shadow-xs select-none">
-        <div className="container-page relative flex items-center justify-between py-1.5 sm:py-2 text-xs gap-2.5 sm:gap-3">
+      <div className="relative overflow-hidden border-b border-[#0A3628] bg-gradient-to-r from-[#07271D] via-[#0E4635] to-[#07271D] text-white shadow-xs select-none">
+        <div className="container-page relative flex items-center justify-between py-1.5 md:py-2 text-xs gap-2.5 sm:gap-3 lg:gap-4">
           {(() => {
             const rawText =
               lang === "hi"
@@ -179,39 +180,74 @@ export function Header() {
 
             const deliveryBadge = (
               <div className="hidden md:flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 border border-white/15 text-white/95 text-[11px] font-medium shadow-2xs">
-                  <Zap className="size-3 text-[#F5D061] fill-[#F5D061]" />
-                  <span>
-                    {isDeliveryEnabled
-                      ? (lang === "hi" ? "तेज़ होम डिलीवरी" : "Fast Home Delivery")
-                      : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")}
+                <div
+                  className={`flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] ${
+                    isDeliveryEnabled
+                      ? "bg-emerald-500/18 border border-emerald-400/35 text-white hover:bg-emerald-500/25"
+                      : "bg-amber-500/18 border border-amber-400/35 text-white hover:bg-amber-500/25"
+                  }`}
+                >
+                  <span
+                    className={`grid size-4.5 place-items-center rounded-full shrink-0 ${
+                      isDeliveryEnabled
+                        ? "bg-[#F5D061]/25 text-[#F5D061]"
+                        : "bg-amber-400/25 text-[#F5D061]"
+                    }`}
+                  >
+                    {isDeliveryEnabled ? (
+                      <Truck className="size-2.5 text-[#F5D061]" />
+                    ) : (
+                      <Store className="size-2.5 text-[#F5D061]" />
+                    )}
                   </span>
-                  <span className="opacity-40 text-white">•</span>
-                  <span className="text-[#F5D061] font-bold">
-                    {isDeliveryEnabled
-                      ? (lang === "hi" ? "30 मिनट में" : "In 30 Mins")
-                      : (lang === "hi" ? "उपलब्ध" : "Available")}
-                  </span>
-                  {settings?.free_delivery_threshold ? (
+
+                  {isDeliveryEnabled ? (
                     <>
+                      <span className="font-bold text-white tracking-tight">
+                        {lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Home Delivery"}
+                      </span>
                       <span className="opacity-40 text-white">•</span>
-                      <span className="text-white/80 hidden xl:inline text-[10.5px]">
-                        {lang === "hi" ? `₹${settings.free_delivery_threshold}+ पर फ्री` : `Free over ₹${settings.free_delivery_threshold}`}
+                      <span className="text-[#F5D061] font-bold">
+                        {lang === "hi" ? "30 मिनट में" : "In 30 Mins"}
+                      </span>
+                      {settings?.free_delivery_threshold ? (
+                        <>
+                          <span className="opacity-40 text-white">•</span>
+                          <span className="text-emerald-200 font-medium">
+                            {lang === "hi"
+                              ? `₹${settings.free_delivery_threshold}+ पर मुफ़्त`
+                              : `Free over ₹${settings.free_delivery_threshold}`}
+                          </span>
+                        </>
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-bold text-white tracking-tight">
+                        {lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}
+                      </span>
+                      <span className="opacity-40 text-white">•</span>
+                      <span className="text-[#F5D061] font-bold">
+                        {lang === "hi" ? "उपलब्ध" : "Available"}
+                      </span>
+                      <span className="opacity-40 text-white">•</span>
+                      <span className="text-amber-200/90 font-medium">
+                        {lang === "hi" ? "₹0 डिलीवरी शुल्क" : "Free Pickup"}
                       </span>
                     </>
-                  ) : null}
+                  )}
                 </div>
               </div>
             );
 
             const languageAndTiming = (
-              <div className="flex items-center gap-2 sm:gap-3 text-xs font-medium shrink-0 z-20">
+              <div className="flex items-center gap-2 sm:gap-2.5 text-xs font-medium shrink-0 z-20">
                 {/* Language Switcher */}
-                <div className="flex items-center rounded-full bg-black/30 border border-white/15 p-0.5 shadow-2xs">
+                <div className="flex items-center rounded-full bg-black/35 border border-white/20 p-0.5 shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setLang("en")}
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider transition-all ${
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider transition-all cursor-pointer ${
                       lang === "en"
                         ? "bg-white text-[#0A3628] shadow-xs"
                         : "text-white/80 hover:text-white"
@@ -222,7 +258,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setLang("hi")}
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider transition-all ${
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold tracking-wider transition-all cursor-pointer ${
                       lang === "hi"
                         ? "bg-white text-[#0A3628] shadow-xs"
                         : "text-white/80 hover:text-white"
@@ -235,13 +271,21 @@ export function Header() {
                 <span className="hidden sm:inline opacity-30 text-white font-light">|</span>
 
                 {/* Store Timing & Status Pill */}
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-white/95 text-[11px] font-medium bg-black/25 rounded-full px-3 py-0.5 border border-white/15 shadow-2xs">
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-white/95 text-[11.5px] font-medium bg-white/[0.08] hover:bg-white/[0.14] rounded-full px-3 py-1 border border-white/20 shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-all">
                   <span className="relative flex size-2">
-                    <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${status.open ? "bg-emerald-400" : "bg-rose-400 animate-pulse"}`} />
-                    <span className={`relative inline-flex size-2 rounded-full ${status.open ? "bg-emerald-400" : "bg-rose-400"}`} />
+                    <span
+                      className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        status.open ? "bg-emerald-400" : "bg-rose-400 animate-pulse"
+                      }`}
+                    />
+                    <span
+                      className={`relative inline-flex size-2 rounded-full ${
+                        status.open ? "bg-emerald-400" : "bg-rose-400"
+                      }`}
+                    />
                   </span>
                   <Clock className="size-3 text-[#E3B341]" />
-                  <span>{formatStatus(status)}</span>
+                  <span className="font-semibold text-white">{formatStatus(status)}</span>
                 </span>
               </div>
             );
@@ -277,8 +321,8 @@ export function Header() {
                     <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
                   </span>
                   <div className="relative flex-1 overflow-hidden min-w-0">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-[#0A3628] to-transparent z-10" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-2.5 bg-gradient-to-l from-[#0A3628] to-transparent z-10" />
+                    <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-[#07271D] to-transparent z-10" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 w-2.5 bg-gradient-to-l from-[#07271D] to-transparent z-10" />
                     <div className="animate-marquee-smooth flex items-center gap-2.5 py-0.5 text-[11px] whitespace-nowrap">
                       {mobileSnippet}
                       <span className="text-[#E3B341]/60 font-bold">•</span>
@@ -296,12 +340,12 @@ export function Header() {
                 {deliveryBadge}
 
                 {/* Laptop Center Premium Highlight Pill */}
-                <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-3">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-black/25 border border-white/15 px-3.5 py-0.5 shadow-2xs hover:bg-black/35 transition-colors max-w-full">
-                    <span className="grid size-4.5 place-items-center rounded-full bg-gradient-to-br from-[#E3B341]/30 via-[#E3B341]/20 to-[#F5D061]/10 border border-[#E3B341]/50 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.25)]">
+                <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 px-3.5 py-1 shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-all max-w-full backdrop-blur-xs">
+                    <span className="grid size-4.5 place-items-center rounded-full bg-gradient-to-br from-[#E3B341]/35 to-[#F5D061]/20 border border-[#E3B341]/60 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.3)]">
                       <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-[#E3B341]/25 px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider text-[#E3B341] shrink-0">
+                    <span className="inline-flex items-center rounded-full bg-[#E3B341]/30 border border-[#E3B341]/40 px-1.5 py-0.2 text-[9px] font-extrabold uppercase tracking-wider text-[#F5D061] shrink-0">
                       {lang === "hi" ? "अपडेट" : "UPDATE"}
                     </span>
                     <p className="text-xs font-semibold tracking-wide truncate">
