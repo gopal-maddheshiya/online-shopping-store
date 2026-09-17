@@ -23,7 +23,14 @@ import {
   Globe,
   Mic,
   MicOff,
+  Tag,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  SlidersHorizontal,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,6 +89,9 @@ export function AdminProducts({
   const [isAiProductAdderOpen, setIsAiProductAdderOpen] = useState(false);
   const [isAiFilling, setIsAiFilling] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [modalTab, setModalTab] = useState<"basic" | "pricing" | "photos">("basic");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(false);
 
   useEffect(() => {
     if (initialOpenAdd) {
@@ -140,6 +150,9 @@ export function AdminProducts({
   const selectedSubcategoryObj = categories.find((c) => c.id === subcategoryId);
 
   function openAddModal() {
+    setModalTab("basic");
+    setShowAdvanced(false);
+    setShowLivePreview(false);
     setEditingProduct(null);
     setName("");
     setNameHi("");
@@ -163,6 +176,9 @@ export function AdminProducts({
   }
 
   function openEditModal(prod: Product) {
+    setModalTab("basic");
+    setShowAdvanced(Boolean(prod.subcategory_id));
+    setShowLivePreview(false);
     setEditingProduct(prod);
     setName(prod.name_en || prod.name);
     setNameHi(prod.name_hi || "");
@@ -777,24 +793,25 @@ export function AdminProducts({
           <Button
             type="button"
             onClick={() => setIsAiProductAdderOpen(true)}
-            className="rounded-xl font-bold bg-gradient-to-r from-[#145A45] to-[#1F7A5E] text-white hover:opacity-95 h-11 text-xs shadow-xs shrink-0 gap-1.5"
+            variant="outline"
+            className="rounded-xl font-bold border-[#145A45]/30 text-[#145A45] hover:bg-[#145A45]/10 h-11 text-xs shrink-0 gap-1.5 shadow-2xs"
           >
-            <Sparkles className="size-4 text-amber-300" /> ✨ AI से सामान जोड़ें
+            <Sparkles className="size-4 text-emerald-600" /> AI बिल / पर्चा स्कैनर
           </Button>
           <Button
             type="button"
             onClick={() => setIsBulkImportOpen(true)}
             variant="outline"
-            className="rounded-xl font-bold border-[#145A45]/30 text-[#145A45] hover:bg-[#145A45]/10 h-11 text-xs shrink-0"
+            className="rounded-xl font-bold border-[#E8E4DA] text-[#5A655F] hover:bg-[#FAF8F2] h-11 text-xs shrink-0"
           >
             <Upload className="mr-1.5 size-4" /> Bulk Import (CSV)
           </Button>
           <Button
             type="button"
             onClick={openAddModal}
-            className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 text-xs shadow-xs shrink-0"
+            className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-11 text-xs shadow-xs shrink-0 gap-1.5"
           >
-            <Plus className="mr-1.5 size-4" /> Add Product
+            <Plus className="size-4" /> नया प्रोडक्ट जोड़ें
           </Button>
         </div>
       </div>
@@ -1067,618 +1084,514 @@ export function AdminProducts({
         </>
       )}
 
-      {/* Add / Edit Product Modal (Organized, Mobile-Friendly) */}
+      {/* Add / Edit Product Modal (Clean, Spacious 3-Tab Architecture) */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl border-[#E8E4DA] bg-white">
-          <DialogHeader className="border-b border-[#E8E4DA] pb-3">
-            <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
-              {editingProduct ? `Edit "${editingProduct.name}"` : "Add New Grocery Product"}
-            </DialogTitle>
+        <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-3xl border-[#E8E4DA] bg-white shadow-2xl">
+          {/* 1. Modal Fixed Header & Tab Navigation Bar */}
+          <DialogHeader className="px-4 sm:px-6 pt-5 pb-3 border-b border-[#E8E4DA] bg-white shrink-0 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
+                  {editingProduct ? `Edit "${editingProduct.name}"` : "नया किराना प्रोडक्ट जोड़ें (Add Product)"}
+                </DialogTitle>
+                <p className="text-[11px] text-[#5A655F] mt-0.5">
+                  दुकान के लिए नाम, सही माप (लीटर/किलो), एमआरपी व फोटो आसानी से दर्ज करें
+                </p>
+              </div>
+            </div>
+
+            {/* Clean 3-Tab Selector Pill Bar */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-[#FAF8F2] rounded-2xl border border-[#E8E4DA]">
+              <button
+                type="button"
+                onClick={() => setModalTab("basic")}
+                className={cn(
+                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  modalTab === "basic"
+                    ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
+                    : "text-[#5A655F] hover:text-[#16201A]"
+                )}
+              >
+                <Package className="size-3.5 shrink-0" />
+                <span className="truncate">1. बुनियादी जानकारी</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModalTab("pricing")}
+                className={cn(
+                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  modalTab === "pricing"
+                    ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
+                    : "text-[#5A655F] hover:text-[#16201A]"
+                )}
+              >
+                <Tag className="size-3.5 shrink-0" />
+                <span className="truncate">2. पैक व रेट ({variants.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModalTab("photos")}
+                className={cn(
+                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  modalTab === "photos"
+                    ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
+                    : "text-[#5A655F] hover:text-[#16201A]"
+                )}
+              >
+                <ImageIcon className="size-3.5 shrink-0" />
+                <span className="truncate">3. फोटो व विवरण</span>
+              </button>
+            </div>
           </DialogHeader>
 
-          <form onSubmit={handleSaveProduct} className="space-y-4 py-2">
-            {/* Section 1: Basic & Bilingual Info */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#145A45]">
-                  1. Product Details (द्विभाषी नाम / Bilingual Info)
-                </h4>
-                <span className="text-[10px] text-[#5A655F] font-semibold">
-                  English &amp; Hindi Fields
-                </span>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                {/* English Name with 1-Tap AI Auto-Fill */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-[#1F2924] flex items-center gap-1">
-                      <span>Product Name (English) <span className="text-red-500">*</span></span>
-                      <span className="text-[10px] text-[#5A655F]">अंग्रेजी नाम</span>
-                    </Label>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={toggleVoiceName}
-                        className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md transition-colors cursor-pointer ${
-                          isNameListening
-                            ? "bg-red-500 text-white animate-pulse"
-                            : "bg-[#FAF8F2] hover:bg-[#E6EFE8] text-[#145A45] border border-[#145A45]/20"
-                        }`}
-                        title="बोलकर नाम दर्ज करें"
-                      >
-                        {isNameListening ? <MicOff className="size-3" /> : <Mic className="size-3" />}
-                        <span>{isNameListening ? "सुन रहे हैं..." : "बोलें"}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={isAiFilling || !name.trim()}
-                        onClick={handleAiAutoComplete}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#145A45]/10 hover:bg-[#145A45]/15 px-2 py-0.5 rounded-md transition-colors disabled:opacity-50"
-                        title="प्रोडक्ट नाम के आधार पर हिंदी नाम, विवरण व अन्य जानकारी अपने आप भरें"
-                      >
-                        {isAiFilling ? (
-                          <>
-                            <Loader2 className="size-3 animate-spin" /> भर रहा है...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="size-3 text-amber-500" /> ✨ AI से भरें
-                          </>
-                        )}
-                      </button>
+          {/* 2. Scrollable Body Area (Tab Content) */}
+          <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
+              {/* TAB 1: BASIC INFORMATION */}
+              {modalTab === "basic" && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  {/* Smart 1-Click AI Assistant Banner */}
+                  <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50/90 to-[#FAF8F2] p-3 text-xs text-emerald-900 shadow-2xs flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="size-4 text-emerald-700 shrink-0" />
+                      <p className="text-[11px] leading-relaxed">
+                        <strong>1-क्लिक AI ऑटो-फिल:</strong> केवल प्रोडक्ट का नाम लिखें (जैसे <em>"Fortune tel 1 ltr"</em> या <em>"Tata namak"</em>) और AI बटन दबाएं। हिंदी नाम, ब्रांड, सही माप (लीटर/किलो) व रेट अपने आप भर जाएंगे।
+                      </p>
                     </div>
                   </div>
-                  <Input
-                    required
-                    placeholder="e.g. Fortune Chakki Fresh Atta"
-                    value={name}
-                    onChange={(e) => handleNameChange(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] text-xs h-9 font-medium"
-                  />
-                </div>
 
-                {/* Hindi Name */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
-                    <span>उत्पाद का नाम (हिंदी / Hindi)</span>
-                    <span className="text-[10px] text-[#145A45] font-semibold">देहात/स्थानीय ग्राहकों हेतु</span>
-                  </Label>
-                  <Input
-                    placeholder="उदा. फॉर्च्यून चक्की फ्रेश शुद्ध आटा"
-                    value={nameHi}
-                    onChange={(e) => setNameHi(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] text-xs h-9 font-medium"
-                  />
-                </div>
+                  <div className="grid gap-3.5 sm:grid-cols-2">
+                    {/* English Name with Voice & AI Auto-fill buttons */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
+                          <span>Product Name (English) <span className="text-red-500">*</span></span>
+                          <span className="text-[10px] text-[#5A655F] font-normal">अंग्रेजी नाम</span>
+                        </Label>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={toggleVoiceName}
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-2xs ${
+                              isNameListening
+                                ? "bg-red-500 text-white animate-pulse"
+                                : "bg-white hover:bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]"
+                            }`}
+                            title="बोलकर नाम दर्ज करें"
+                          >
+                            {isNameListening ? <MicOff className="size-3" /> : <Mic className="size-3 text-[#145A45]" />}
+                            <span>{isNameListening ? "सुन रहे हैं..." : "बोलें"}</span>
+                          </button>
 
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#1F2924]">
-                    URL Slug <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    required
-                    placeholder="fortune-chakki-fresh-atta"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
-                  />
-                </div>
+                          <button
+                            type="button"
+                            disabled={isAiFilling || !name.trim()}
+                            onClick={handleAiAutoComplete}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-[#145A45] hover:bg-[#0E4333] px-3 py-1 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+                            title="नाम के आधार पर हिंदी अनुवाद, ब्रांड, श्रेणी व सही पैक साइज भरें"
+                          >
+                            {isAiFilling ? (
+                              <>
+                                <Loader2 className="size-3 animate-spin" /> AI भर रहा है...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="size-3 text-amber-300" /> 1-क्लिक AI ऑटो-फिल
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <Input
+                        required
+                        placeholder="उदा. Fortune Kachi Ghani Mustard Oil, Tata Salt, Maggi Noodles..."
+                        value={name}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white"
+                      />
+                    </div>
 
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#1F2924]">Brand / Manufacturer</Label>
-                  <Input
-                    placeholder="e.g. Fortune, Tata, MDH, Amul"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    className="rounded-xl border-[#E8E4DA] text-xs h-9"
-                  />
-                </div>
+                    {/* Hindi Name */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-[#1F2924] flex items-center justify-between">
+                        <span>उत्पाद का नाम (हिंदी / Hindi)</span>
+                        <span className="text-[10px] text-[#145A45] font-semibold">स्थानीय ग्राहकों हेतु</span>
+                      </Label>
+                      <Input
+                        placeholder="उदा. फॉर्च्यून कच्ची घानी सरसों का तेल"
+                        value={nameHi}
+                        onChange={(e) => setNameHi(e.target.value)}
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white"
+                      />
+                    </div>
 
-                <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-xs font-semibold text-[#1F2924] flex items-center justify-between">
-                    <span>
-                      Category &amp; Subcategory <span className="text-red-500">*</span>
-                    </span>
-                    <span className="text-[10px] text-[#5A655F]">श्रेणी / उपश्रेणी</span>
-                  </Label>
+                    {/* Brand / Manufacturer */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-[#1F2924]">
+                        Brand / कंपनी का नाम
+                      </Label>
+                      <Input
+                        placeholder="उदा. Fortune, Tata, Aashirvaad, Amul, MDH..."
+                        value={brand}
+                        onChange={(e) => setBrand(e.target.value)}
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white"
+                      />
+                    </div>
 
-                  <div className="rounded-xl border border-[#E8E4DA] bg-[#FAF8F2] p-2.5 space-y-2">
-                    <Select
-                      value={categoryId}
-                      onValueChange={(v) => {
-                        setCategoryId(v);
-                        setSubcategoryId("");
-                      }}
-                    >
-                      <SelectTrigger className="rounded-lg border-[#E8E4DA] text-xs h-9 bg-white font-semibold">
-                        <SelectValue placeholder="Choose parent category…" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {parentCategories.map((c) => {
-                          const subs = categories.filter((sub) => sub.parent_id === c.id);
-                          return (
-                            <SelectItem
-                              key={c.id}
-                              value={c.id}
-                              className="text-xs font-semibold"
-                            >
-                              <span className="flex items-center gap-1.5">
-                                <span>{c.icon ?? "📦"}</span>
-                                <span>{c.name_en || c.name}</span>
-                                {c.name_hi ? (
-                                  <span className="text-[10px] text-[#145A45]">({c.name_hi})</span>
-                                ) : null}
-                                {subs.length > 0 ? (
-                                  <span className="rounded bg-white border border-[#E8E4DA] px-1 text-[9px] text-[#5A655F]">
-                                    {subs.length} sub
-                                  </span>
-                                ) : null}
-                              </span>
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
+                    {/* Category Selector */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <Label className="text-xs font-bold text-[#1F2924] flex items-center justify-between">
+                        <span>मुख्य कैटेगरी (Category) <span className="text-red-500">*</span></span>
+                        <span className="text-[10px] text-[#5A655F]">किस श्रेणी का सामान है</span>
+                      </Label>
 
-                    {categoryId && subcategories.length > 0 ? (
-                      <div className="space-y-1.5 pt-1 border-t border-[#E8E4DA]/70">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 flex items-center gap-1">
-                          <span>↳</span>
-                          <span>Select Subcategory (Optional)</span>
-                        </p>
-                        <Select value={subcategoryId} onValueChange={setSubcategoryId}>
-                          <SelectTrigger className="rounded-lg border-[#E8E4DA] text-xs h-9 bg-white">
-                            <SelectValue placeholder="— No Subcategory (Top-level) —" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {subcategories.map((s) => (
-                              <SelectItem key={s.id} value={s.id} className="text-xs">
-                                <span className="flex items-center gap-1.5">
-                                  <span>└</span>
-                                  <span className="font-semibold">
-                                    {s.name_en || s.name}
-                                  </span>
-                                  {s.name_hi ? (
-                                    <span className="text-[10px] text-[#145A45]">
-                                      ({s.name_hi})
-                                    </span>
+                      <Select
+                        value={categoryId}
+                        onValueChange={(v) => {
+                          setCategoryId(v);
+                          setSubcategoryId("");
+                        }}
+                      >
+                        <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white font-semibold">
+                          <SelectValue placeholder="कैटेगरी चुनें…" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-72">
+                          {parentCategories.map((c) => {
+                            const subs = categories.filter((sub) => sub.parent_id === c.id);
+                            return (
+                              <SelectItem
+                                key={c.id}
+                                value={c.id}
+                                className="text-xs font-semibold"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <span>{c.icon ?? "📦"}</span>
+                                  <span>{c.name_en || c.name}</span>
+                                  {c.name_hi ? (
+                                    <span className="text-[10px] text-[#145A45]">({c.name_hi})</span>
                                   ) : null}
+                                  {subs.length > 0 && (
+                                    <span className="rounded bg-[#FAF8F2] border border-[#E8E4DA] px-1 text-[9px] text-[#5A655F]">
+                                      {subs.length} sub
+                                    </span>
+                                  )}
                                 </span>
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ) : null}
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                    {categoryId ? (
-                      <div className="flex items-center gap-1.5 text-[10px] pt-1 border-t border-[#E8E4DA]/70">
-                        <span className="text-[#5A655F] font-semibold">Selected:</span>
-                        <span className="inline-flex items-center gap-1 rounded-md bg-white border border-[#E8E4DA] px-1.5 py-0.5 text-[10px] font-bold text-[#0F4A38]">
-                          {selectedCategoryObj?.icon ?? "📦"}{" "}
-                          {selectedCategoryObj
-                            ? selectedCategoryObj.name_en || selectedCategoryObj.name
-                            : ""}
-                        </span>
-                        {selectedSubcategoryObj ? (
-                          <>
-                            <span className="text-[#5A655F]">›</span>
-                            <span className="inline-flex items-center gap-1 rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-1.5 py-0.5 text-[10px] font-bold text-[#0F4A38]">
-                              └{" "}
-                              {selectedSubcategoryObj.name_en || selectedSubcategoryObj.name}
-                            </span>
-                          </>
-                        ) : subcategories.length > 0 ? (
-                          <span className="text-[10px] text-[#5A655F] italic">
-                            (no subcategory)
-                          </span>
-                        ) : null}
+                  {/* Collapsible Advanced Settings (URL Slug & Subcategory) */}
+                  <div className="pt-2 border-t border-[#E8E4DA]/70">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#145A45] hover:text-[#0E4333] cursor-pointer"
+                    >
+                      {showAdvanced ? (
+                        <ChevronUp className="size-3.5" />
+                      ) : (
+                        <ChevronDown className="size-3.5" />
+                      )}
+                      <span>
+                        {showAdvanced ? "एडवांस्ड सेटिंग्स छुपायें" : "एडवांस्ड सेटिंग्स (URL Slug व उप-श्रेणी)"}
+                      </span>
+                    </button>
+
+                    {showAdvanced && (
+                      <div className="mt-3 p-3 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] space-y-3 animate-in fade-in duration-150">
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold text-[#1F2924]">
+                              URL Slug <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              required
+                              placeholder="fortune-mustard-oil"
+                              value={slug}
+                              onChange={(e) => setSlug(e.target.value)}
+                              className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                            />
+                            <p className="text-[10px] text-[#5A655F]">वेबसाइट एड्रेस के लिए ऑटो-जनरेटेड यूनिक स्लग</p>
+                          </div>
+
+                          {subcategories.length > 0 && (
+                            <div className="space-y-1">
+                              <Label className="text-xs font-semibold text-[#1F2924]">
+                                उप-श्रेणी (Subcategory - Optional)
+                              </Label>
+                              <Select value={subcategoryId} onValueChange={setSubcategoryId}>
+                                <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-9 bg-white">
+                                  <SelectValue placeholder="— उप-श्रेणी चुनें —" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {subcategories.map((s) => (
+                                    <SelectItem key={s.id} value={s.id} className="text-xs">
+                                      <span>{s.name_en || s.name} {s.name_hi ? `(${s.name_hi})` : ""}</span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    ) : null}
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Section 2: Variants, Pricing & Stock */}
-            <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2] p-3.5 sm:p-4 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#1F2924]">
-                    2. Pack Sizes, Pricing &amp; Inventory
-                  </h4>
-                  <p className="text-[10px] sm:text-[11px] text-[#6B746F]">
-                    Set pack label, MRP, selling price, and stock quantity.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  onClick={addVariantRow}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl text-xs border-[#E8E4DA] bg-white text-[#145A45] hover:bg-[#FAF8F2] h-7.5"
-                >
-                  <Plus className="size-3.5 mr-1" /> Add Pack
-                </Button>
-              </div>
+              {/* TAB 2: PACK SIZES, PRICING & INVENTORY */}
+              {modalTab === "pricing" && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E8E4DA] pb-2">
+                    <div>
+                      <h4 className="font-sans font-bold text-xs sm:text-sm text-[#1F2924]">
+                        पैक साइज, एमआरपी, बिक्री मूल्य व स्टॉक
+                      </h4>
+                      <p className="text-[10px] sm:text-[11px] text-[#5A655F]">
+                        हर पैक का लेबल (उदा. 1 L, 500 g), एमआरपी, दुकान का रेट और उपलब्ध मात्रा भरें
+                      </p>
+                    </div>
 
-              {/* Quick Unit Presets for Easy 1-Tap Manual Entry */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                <span className="text-[10px] font-bold text-[#5A655F]">
-                  त्वरित पैक साइज ({detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? "तरल / Liquid" : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? "ठोस / Solid" : "पैकेट / Piece"}):
-                </span>
-                {detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? (
-                  <>
-                    {["1 L", "500 ml", "200 ml", "2 L", "5 L Jar", "Pouch (1 L)"].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          setVariants((prev) => [
-                            ...prev,
-                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
-                          ]);
-                        }}
-                        className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </>
-                ) : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? (
-                  <>
-                    {["1 kg", "500 g", "250 g", "100 g", "5 kg", "10 kg"].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          setVariants((prev) => [
-                            ...prev,
-                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
-                          ]);
-                        }}
-                        className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {["1 Pack", "Pack of 4", "1 Piece", "1 Box", "1 Bar (100g)"].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          setVariants((prev) => [
-                            ...prev,
-                            { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
-                          ]);
-                        }}
-                        className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2 py-0.5 font-bold shadow-2xs transition-colors text-[10px]"
-                      >
-                        + {preset}
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              <div className="space-y-2.5">
-                {variants.map((v, idx) => {
-                  const disc =
-                    v.mrp > 0 && v.price > 0 && v.mrp > v.price
-                      ? Math.round(((v.mrp - v.price) / v.mrp) * 100)
-                      : 0;
-                  return (
-                    <div
-                      key={idx}
-                      className="rounded-xl bg-white p-3.5 border border-[#E8E4DA] text-xs shadow-2xs space-y-3"
+                    <Button
+                      type="button"
+                      onClick={addVariantRow}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] font-bold h-8 cursor-pointer shadow-2xs"
                     >
-                      <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-end">
-                        <div className="sm:col-span-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider block">
-                              Pack Label
-                            </Label>
-                            <span className="text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-1.5 py-0.5 rounded border border-[#145A45]/20">
-                              {translateVariantLabel(v.label, "hi") || "—"}
-                            </span>
-                          </div>
-                          <Input
-                            placeholder="e.g. 500 g, 1 kg, 200 ml"
-                            value={v.label}
-                            onChange={(e) => updateVariant(idx, "label", e.target.value)}
-                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
-                          />
-                        </div>
+                      <Plus className="size-3.5 mr-1" /> नया पैक जोड़ें
+                    </Button>
+                  </div>
 
-                        <div className="sm:col-span-2">
-                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
-                            MRP (₹)
-                          </Label>
-                          <Input
-                            type="number"
-                            inputMode="decimal"
-                            min="0"
-                            step="1"
-                            placeholder="300"
-                            value={v.mrp}
-                            onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
-                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-bold"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-3">
-                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
-                            Selling Price (₹)
-                          </Label>
-                          <Input
-                            type="number"
-                            inputMode="decimal"
-                            min="0"
-                            step="1"
-                            placeholder="275"
-                            value={v.price}
-                            onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
-                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-bold"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
-                            Stock Qty
-                          </Label>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            min="0"
-                            step="1"
-                            placeholder="50"
-                            value={v.stock}
-                            onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
-                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
-                            Low Alert
-                          </Label>
-                          <Input
-                            type="number"
-                            inputMode="numeric"
-                            min="0"
-                            step="1"
-                            placeholder="5"
-                            value={v.low_stock_threshold}
-                            onChange={(e) =>
-                              updateVariant(idx, "low_stock_threshold", Number(e.target.value))
-                            }
-                            className="h-10 text-sm rounded-lg border-[#E8E4DA] font-semibold"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-dashed border-[#E8E4DA]">
-                        <div className="flex items-center gap-2 text-[11px]">
-                          <span className="rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-2 py-0.5 text-[10px] font-bold text-[#0F4A38]">
-                            Margin: {v.mrp > 0 && v.price > 0 ? inr(v.mrp - v.price) : "—"}
-                          </span>
-                          <span
-                            className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
-                              disc > 0
-                                ? "bg-amber-50 text-amber-800 border-amber-300"
-                                : "bg-stone-50 text-stone-500 border-stone-200"
-                            }`}
-                          >
-                            Discount: {disc > 0 ? `${disc}% OFF` : "No discount"}
-                          </span>
-                        </div>
-
-                        {variants.length > 1 && (
-                          <Button
+                  {/* 1-Tap Quick Unit Presets based on Product Nature */}
+                  <div className="rounded-xl bg-[#FAF8F2] p-2.5 border border-[#E8E4DA] space-y-1.5">
+                    <span className="text-[10px] font-bold text-[#5A655F] uppercase tracking-wider block">
+                      ⚡ 1-क्लिक त्वरित पैक चिप्स जोड़ें ({detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? "तरल / Liquid" : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? "ठोस / Solid" : "पैकेट / Pieces"}):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? (
+                        ["1 L", "500 ml", "200 ml", "2 L", "5 L Jar", "Pouch (1 L)"].map((preset) => (
+                          <button
+                            key={preset}
                             type="button"
-                            onClick={() => removeVariantRow(idx)}
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2.5 text-xs text-red-600 hover:bg-red-50 rounded-lg"
+                            onClick={() => {
+                              setVariants((prev) => [
+                                ...prev,
+                                { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+                              ]);
+                            }}
+                            className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
                           >
-                            <Trash2 className="size-3.5 mr-1" /> Remove
-                          </Button>
+                            + {preset}
+                          </button>
+                        ))
+                      ) : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? (
+                        ["1 kg", "500 g", "250 g", "100 g", "5 kg", "10 kg", "25 kg"].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setVariants((prev) => [
+                                ...prev,
+                                { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+                              ]);
+                            }}
+                            className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
+                          >
+                            + {preset}
+                          </button>
+                        ))
+                      ) : (
+                        ["1 Pack", "Pack of 4", "1 Piece", "1 Box", "1 Bar (100g)"].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setVariants((prev) => [
+                                ...prev,
+                                { label: preset, price: 50, mrp: 60, stock: 50, low_stock_threshold: 5 },
+                              ]);
+                            }}
+                            className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
+                          >
+                            + {preset}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Clean Variant Cards */}
+                  <div className="space-y-2.5">
+                    {variants.map((v, idx) => {
+                      const disc =
+                        v.mrp > 0 && v.price > 0 && v.mrp > v.price
+                          ? Math.round(((v.mrp - v.price) / v.mrp) * 100)
+                          : 0;
+                      return (
+                        <div
+                          key={idx}
+                          className="rounded-2xl bg-white p-3 sm:p-3.5 border border-[#E8E4DA] text-xs shadow-2xs space-y-2.5"
+                        >
+                          <div className="grid grid-cols-2 sm:grid-cols-12 gap-2 sm:gap-2.5 items-end">
+                            {/* Pack Label */}
+                            <div className="col-span-2 sm:col-span-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider block">
+                                  Pack Label
+                                </Label>
+                                <span className="text-[10px] font-bold text-[#145A45] bg-[#E6EFE8] px-1.5 py-0.2 rounded border border-[#145A45]/20">
+                                  {translateVariantLabel(v.label, "hi") || "—"}
+                                </span>
+                              </div>
+                              <Input
+                                placeholder="उदा. 1 L, 1 kg, 500 g"
+                                value={v.label}
+                                onChange={(e) => updateVariant(idx, "label", e.target.value)}
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                              />
+                            </div>
+
+                            {/* MRP */}
+                            <div className="sm:col-span-2">
+                              <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                                MRP (₹)
+                              </Label>
+                              <Input
+                                type="number"
+                                inputMode="decimal"
+                                min="0"
+                                step="1"
+                                placeholder="150"
+                                value={v.mrp}
+                                onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-bold text-stone-600"
+                              />
+                            </div>
+
+                            {/* Selling Price */}
+                            <div className="sm:col-span-3">
+                              <Label className="text-[10px] text-[#145A45] font-bold uppercase tracking-wider mb-1 block">
+                                बिक्री मूल्य / Price (₹)
+                              </Label>
+                              <Input
+                                type="number"
+                                inputMode="decimal"
+                                min="0"
+                                step="1"
+                                placeholder="135"
+                                value={v.price}
+                                onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
+                                className="h-9.5 text-xs rounded-xl border-[#145A45]/40 font-extrabold text-[#145A45] bg-emerald-50/30"
+                              />
+                            </div>
+
+                            {/* Stock Quantity */}
+                            <div className="sm:col-span-2">
+                              <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                                स्टॉक मात्रा
+                              </Label>
+                              <Input
+                                type="number"
+                                inputMode="numeric"
+                                min="0"
+                                step="1"
+                                placeholder="50"
+                                value={v.stock}
+                                onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                              />
+                            </div>
+
+                            {/* Low Stock Threshold */}
+                            <div className="sm:col-span-2">
+                              <Label className="text-[10px] text-[#6B746F] font-bold uppercase tracking-wider mb-1 block">
+                                लो अलर्ट
+                              </Label>
+                              <Input
+                                type="number"
+                                inputMode="numeric"
+                                min="0"
+                                step="1"
+                                placeholder="5"
+                                value={v.low_stock_threshold}
+                                onChange={(e) =>
+                                  updateVariant(idx, "low_stock_threshold", Number(e.target.value))
+                                }
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Pills Row: Margin, Discount & Remove */}
+                          <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-dashed border-[#E8E4DA]">
+                            <div className="flex items-center gap-2 text-[11px]">
+                              <span className="rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-2 py-0.5 text-[10px] font-bold text-[#0F4A38]">
+                                बचत / मार्जिन: {v.mrp > 0 && v.price > 0 ? inr(v.mrp - v.price) : "—"}
+                              </span>
+                              <span
+                                className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
+                                  disc > 0
+                                    ? "bg-amber-50 text-amber-800 border-amber-300"
+                                    : "bg-stone-50 text-stone-500 border-stone-200"
+                                }`}
+                              >
+                                {disc > 0 ? `${disc}% छूट` : "कोई छूट नहीं"}
+                              </span>
+                            </div>
+
+                            {variants.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeVariantRow(idx)}
+                                className="h-7 px-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg inline-flex items-center gap-1 cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="size-3.5" />
+                                <span>हटाएं</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: PHOTOS, DESCRIPTIONS & VISIBILITY */}
+              {modalTab === "photos" && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  {/* Front & Back Photo Cards */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {/* Front Image */}
+                    <div className="rounded-2xl bg-white p-3.5 border-2 border-[#145A45]/30 shadow-2xs space-y-2.5">
+                      <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-1.5">
+                        <span className="rounded-md bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#0F4A38] flex items-center gap-1">
+                          <Star className="size-3 fill-[#0F4A38]" /> मुख्य फोटो (Front View)
+                        </span>
+                        {frontImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setFrontImageUrl("")}
+                            className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
+                          >
+                            हटाएं
+                          </button>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Section 3: Dedicated Front & Back Product Images */}
-            <div className="rounded-2xl border border-[#E5E0D5] bg-[#FAF8F2] p-3.5 sm:p-4 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#16201A] flex items-center gap-2">
-                    <ImageIcon className="size-4 text-[#145A45]" />
-                    3. Product Images (Front &amp; Back Photos)
-                  </h4>
-                  <p className="text-[10px] sm:text-[11px] text-[#5A655F]">
-                    Upload crisp photos for front display and back packaging/nutrition. Both are independently editable.
-                  </p>
-                </div>
-
-                <Button
-                  type="button"
-                  onClick={addAdditionalImageSlot}
-                  variant="outline"
-                  size="sm"
-                  className="h-7.5 rounded-lg text-xs border-[#E5E0D5] bg-white text-[#145A45] hover:bg-[#FAF8F2] shadow-2xs"
-                >
-                  <Plus className="size-3 mr-1" /> Add Extra Photo
-                </Button>
-              </div>
-
-              {/* Grid: 1. Front Image Card & 2. Back Image Card */}
-              <div className="grid gap-3.5 sm:grid-cols-2">
-                {/* 1. Front Image (Primary) */}
-                <div className="rounded-2xl bg-white p-3.5 border-2 border-[#145A45]/40 ring-1 ring-[#145A45]/20 shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#E5E0D5]/70 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="rounded-md bg-[#E6EFE8] px-2 py-0.5 text-[10px] font-bold text-[#0F4A38] border border-[#145A45]/30 flex items-center gap-1">
-                        <Star className="size-3 fill-[#0F4A38]" /> Front Image (मुख्य फोटो)
-                      </span>
-                    </div>
-                    {frontImageUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setFrontImageUrl("")}
-                        className="text-[10px] font-bold text-red-600 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3 items-center">
-                    {/* Thumbnail */}
-                    <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
-                      <img
-                        src={frontImageUrl || "/images/packaged.jpg"}
-                        alt="Front View Preview"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                        }}
-                        className="size-full object-contain"
-                      />
-                    </div>
-
-                    {/* Actions & Inputs */}
-                    <div className="flex-1 space-y-2 text-xs">
-                      <div className="grid grid-cols-2 gap-2">
-                        <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#145A45]/40 bg-[#E6EFE8]/70 text-[#0F4A38] px-2 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                          <Upload className="size-3.5" />
-                          <span>{isUploadingFront ? "..." : "Upload Photo"}</span>
-                          <input
-                            type="file"
-                            accept="image/png,image/jpeg,image/jpg,image/webp"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleUploadFront(file);
-                            }}
-                            disabled={isUploadingFront}
-                            className="hidden"
-                          />
-                        </label>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setWebFinderTarget("front")}
-                          className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs"
-                        >
-                          <Globe className="size-3.5 text-sky-600" />
-                          <span>वेब से खोजें</span>
-                        </Button>
-                      </div>
-
-                      <Input
-                        placeholder="Or enter Front Image URL"
-                        value={frontImageUrl}
-                        onChange={(e) => setFrontImageUrl(e.target.value)}
-                        className="h-7 text-xs rounded-lg border-[#E5E0D5]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Back Image (Nutrition / Details) */}
-                <div className="rounded-2xl bg-white p-3.5 border border-[#E5E0D5] shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#E5E0D5]/70 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="rounded-md bg-[#FAF8F2] px-2 py-0.5 text-[10px] font-bold text-[#5A655F] border border-[#E5E0D5] flex items-center gap-1">
-                        <Boxes className="size-3 text-[#5A655F]" /> Back Image (पीछे का फोटो / पोषण)
-                      </span>
-                    </div>
-                    {backImageUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setBackImageUrl("")}
-                        className="text-[10px] font-bold text-red-600 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex gap-3 items-center">
-                    {/* Thumbnail */}
-                    <div className="relative size-20 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
-                      <img
-                        src={backImageUrl || "/images/packaged.jpg"}
-                        alt="Back View Preview"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                        }}
-                        className="size-full object-contain"
-                      />
-                    </div>
-
-                    {/* Actions & Inputs */}
-                    <div className="flex-1 space-y-2 text-xs">
-                      <div className="grid grid-cols-2 gap-2">
-                        <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#E5E0D5] bg-[#FAF8F2] text-[#1F2924] px-2 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                          <Upload className="size-3.5 text-[#145A45]" />
-                          <span>{isUploadingBack ? "..." : "Upload Back"}</span>
-                          <input
-                            type="file"
-                            accept="image/png,image/jpeg,image/jpg,image/webp"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleUploadBack(file);
-                            }}
-                            disabled={isUploadingBack}
-                            className="hidden"
-                          />
-                        </label>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setWebFinderTarget("back")}
-                          className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs"
-                        >
-                          <Globe className="size-3.5 text-sky-600" />
-                          <span>वेब से खोजें</span>
-                        </Button>
-                      </div>
-
-                      <Input
-                        placeholder="Or enter Back Image URL"
-                        value={backImageUrl}
-                        onChange={(e) => setBackImageUrl(e.target.value)}
-                        className="h-7 text-xs rounded-lg border-[#E5E0D5]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Additional Image Slots (if any) */}
-              {additionalImages.length > 0 && (
-                <div className="space-y-2.5 pt-2 border-t border-[#E5E0D5]/70">
-                  <Label className="text-xs font-bold text-[#16201A]">Additional Product Photos</Label>
-                  <div className="grid gap-2.5 sm:grid-cols-2">
-                    {additionalImages.map((addImg, idx) => (
-                      <div
-                        key={addImg.id}
-                        className="rounded-xl bg-white p-2.5 border border-[#E5E0D5] flex items-center gap-2.5 text-xs shadow-2xs"
-                      >
-                        <div className="relative size-14 rounded-lg bg-[#FAF8F2] border border-[#E5E0D5] p-1 flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="flex gap-3 items-center">
+                        <div className="relative size-18 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 flex items-center justify-center overflow-hidden shrink-0">
                           <img
-                            src={addImg.url || "/images/packaged.jpg"}
-                            alt=""
+                            src={frontImageUrl || "/images/packaged.jpg"}
+                            alt="Front View"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "/images/packaged.jpg";
                             }}
@@ -1686,250 +1599,345 @@ export function AdminProducts({
                           />
                         </div>
 
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              placeholder="Image URL"
-                              value={addImg.url}
-                              onChange={(e) =>
-                                setAdditionalImages((prev) =>
-                                  prev.map((item) =>
-                                    item.id === addImg.id ? { ...item, url: e.target.value } : item,
-                                  ),
-                                )
-                              }
-                              className="h-6.5 text-[11px] rounded-md border-[#E5E0D5]"
-                            />
-                            <label className="flex h-6.5 shrink-0 items-center gap-1 rounded-md border border-[#E5E0D5] bg-[#FAF8F2] px-2 text-[10px] font-bold text-[#145A45] hover:bg-white cursor-pointer">
-                              <Upload className="size-2.5" />
+                        <div className="flex-1 space-y-1.5 text-xs">
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <label className="flex h-8 items-center justify-center gap-1 rounded-lg border border-[#145A45]/30 bg-[#E6EFE8]/70 text-[#0F4A38] px-2 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                              <Upload className="size-3" />
+                              <span>{isUploadingFront ? "..." : "फोटो अपलोड"}</span>
                               <input
                                 type="file"
-                                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                                accept="image/png,image/jpeg,image/jpg,image/webp"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
-                                  if (file) handleUploadAdditional(addImg.id, file);
+                                  if (file) handleUploadFront(file);
                                 }}
-                                disabled={uploadingAdditionalId === addImg.id}
+                                disabled={isUploadingFront}
                                 className="hidden"
                               />
                             </label>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setWebFinderTarget("front")}
+                              className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs cursor-pointer"
+                            >
+                              <Globe className="size-3 text-sky-600" />
+                              <span>वेब से खोजें</span>
+                            </Button>
+                          </div>
+
+                          <Input
+                            placeholder="या फोटो का सीधा URL पेस्ट करें"
+                            value={frontImageUrl}
+                            onChange={(e) => setFrontImageUrl(e.target.value)}
+                            className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Back Image */}
+                    <div className="rounded-2xl bg-white p-3.5 border border-[#E8E4DA] shadow-2xs space-y-2.5">
+                      <div className="flex items-center justify-between border-b border-[#E8E4DA] pb-1.5">
+                        <span className="rounded-md bg-[#FAF8F2] px-2 py-0.5 text-[10px] font-bold text-[#5A655F] flex items-center gap-1">
+                          <Boxes className="size-3 text-[#5A655F]" /> पीछे की फोटो / पोषण (Back View)
+                        </span>
+                        {backImageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setBackImageUrl("")}
+                            className="text-[10px] font-bold text-red-600 hover:underline cursor-pointer"
+                          >
+                            हटाएं
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3 items-center">
+                        <div className="relative size-18 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 flex items-center justify-center overflow-hidden shrink-0">
+                          <img
+                            src={backImageUrl || "/images/packaged.jpg"}
+                            alt="Back View"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                            }}
+                            className="size-full object-contain"
+                          />
+                        </div>
+
+                        <div className="flex-1 space-y-1.5 text-xs">
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <label className="flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] px-2 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
+                              <Upload className="size-3 text-[#145A45]" />
+                              <span>{isUploadingBack ? "..." : "अपलोड"}</span>
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg,image/webp"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleUploadBack(file);
+                                }}
+                                disabled={isUploadingBack}
+                                className="hidden"
+                              />
+                            </label>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setWebFinderTarget("back")}
+                              className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs cursor-pointer"
+                            >
+                              <Globe className="size-3 text-sky-600" />
+                              <span>वेब से खोजें</span>
+                            </Button>
+                          </div>
+
+                          <Input
+                            placeholder="या Back Photo URL पेस्ट करें"
+                            value={backImageUrl}
+                            onChange={(e) => setBackImageUrl(e.target.value)}
+                            className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Grocery Image Presets Chips */}
+                  <div className="rounded-xl bg-[#FAF8F2] p-2.5 border border-[#E8E4DA] space-y-1">
+                    <Label className="text-[10px] font-bold text-[#5A655F] uppercase tracking-wider block">
+                      त्वरित फोटो प्रीसेट (1-क्लिक में फ्रंट फोटो सेट करें):
+                    </Label>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        { label: "🌾 Atta", url: "/images/atta.jpg" },
+                        { label: "🍚 Rice", url: "/images/rice.jpg" },
+                        { label: "🫘 Dal", url: "/images/dal.jpg" },
+                        { label: "🛢️ Mustard Oil", url: "/images/fortune_mustard_oil_1787801798943.jpg" },
+                        { label: "🧈 Amul Ghee", url: "/images/amul_desi_ghee_1787801851052.jpg" },
+                        { label: "🌶️ Spices", url: "/images/spices.jpg" },
+                        { label: "🧂 Tata Salt", url: "/images/tata_salt_pack_1787801868973.jpg" },
+                        { label: "🍪 Parle-G", url: "/images/parle_g_biscuits_1787801925687.jpg" },
+                        { label: "🥨 Bhujia", url: "/images/haldirams_aloo_bhujia_1787801945399.jpg" },
+                        { label: "🍫 Cadbury", url: "/images/cadbury_dairy_milk_1787801969771.jpg" },
+                        { label: "🧼 Surf Excel", url: "/images/surf_excel_detergent_1787801991917.jpg" },
+                        { label: "📦 General", url: "/images/packaged.jpg" },
+                      ].map((preset) => (
+                        <button
+                          key={preset.url}
+                          type="button"
+                          onClick={() => {
+                            setFrontImageUrl(preset.url);
+                            toast.success(`Front Photo सेट हो गई: ${preset.label}`);
+                          }}
+                          className="rounded-md border border-[#E8E4DA] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#16201A] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Descriptions (English & Hindi) */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-[#16201A]">
+                        Description (English)
+                      </Label>
+                      <Textarea
+                        rows={2}
+                        placeholder="Pure stone ground whole wheat flour with natural dietary fiber..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="rounded-xl text-xs border-[#E8E4DA] bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-[#16201A]">
+                        उत्पाद विवरण (हिंदी)
+                      </Label>
+                      <Textarea
+                        rows={2}
+                        placeholder="100% शुद्ध संपूर्ण गेहूं के दानों से बना चक्की आटा..."
+                        value={descriptionHi}
+                        onChange={(e) => setDescriptionHi(e.target.value)}
+                        className="rounded-xl text-xs border-[#E8E4DA] bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Visibility Checkboxes */}
+                  <div className="flex flex-wrap gap-4 pt-2 border-t border-[#E8E4DA]">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[#1F2924]">
+                      <Checkbox checked={isFeatured} onCheckedChange={(c) => setIsFeatured(Boolean(c))} />
+                      <span>होमपेज पर दिखाएं (Featured)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[#1F2924]">
+                      <Checkbox checked={isPopular} onCheckedChange={(c) => setIsPopular(Boolean(c))} />
+                      <span>महराजगंज में लोकप्रिय (Popular)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[#1F2924]">
+                      <Checkbox checked={isActive} onCheckedChange={(c) => setIsActive(Boolean(c))} />
+                      <span>सक्रिय रखें (Active &amp; Visible)</span>
+                    </label>
+                  </div>
+
+                  {/* Collapsible Customer Live Card Preview */}
+                  <div className="pt-2 border-t border-[#E8E4DA]/70">
+                    <button
+                      type="button"
+                      onClick={() => setShowLivePreview(!showLivePreview)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#145A45] hover:text-[#0E4333] cursor-pointer"
+                    >
+                      {showLivePreview ? (
+                        <ChevronUp className="size-3.5" />
+                      ) : (
+                        <ChevronDown className="size-3.5" />
+                      )}
+                      <span>
+                        {showLivePreview ? "कस्टमर कार्ड प्रिव्यू छुपायें" : "कस्टमर कार्ड प्रिव्यू देखें (ग्राहक को कैसा दिखेगा)"}
+                      </span>
+                    </button>
+
+                    {showLivePreview && (
+                      <div className="mt-3 p-3.5 rounded-2xl bg-[#FAF8F2] border border-[#E8E4DA] space-y-3 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#145A45]">Live Preview:</span>
+                          <div className="flex items-center rounded-xl bg-white p-0.5 border border-[#E8E4DA] shadow-2xs">
+                            <button
+                              type="button"
+                              onClick={() => setPreviewLang("hi")}
+                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
+                                previewLang === "hi"
+                                  ? "bg-[#145A45] text-white"
+                                  : "text-[#5A655F]"
+                              }`}
+                            >
+                              हिंदी
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewLang("en")}
+                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
+                                previewLang === "en"
+                                  ? "bg-[#145A45] text-white"
+                                  : "text-[#5A655F]"
+                              }`}
+                            >
+                              English
+                            </button>
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => removeAdditionalImageSlot(addImg.id)}
-                          className="size-6 text-red-500 hover:text-red-700 flex items-center justify-center shrink-0"
-                          title="Remove Photo"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        <div className="max-w-[240px] mx-auto rounded-2xl bg-white p-3 border border-[#E8E4DA] shadow-xs space-y-2">
+                          <div className="h-24 rounded-xl bg-[#FAF8F2] flex items-center justify-center p-1 overflow-hidden border border-[#E8E4DA]/60">
+                            <img
+                              src={frontImageUrl || backImageUrl || "/images/packaged.jpg"}
+                              alt="Preview"
+                              className="size-full object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <p className="font-bold text-xs text-[#16201A] line-clamp-2">
+                              {previewLang === "hi"
+                                ? nameHi.trim() || name.trim() || "उत्पाद का नाम"
+                                : name.trim() || "Product Name"}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-1 border-t border-[#E8E4DA]">
+                            <span className="text-xs font-extrabold text-[#145A45]">
+                              {inr(variants[0]?.price ?? 100)}
+                            </span>
+                            <span className="rounded-md bg-[#145A45] px-2 py-0.5 text-[9px] font-bold text-white">
+                              {previewLang === "hi" ? "जोड़ें +" : "Add +"}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}
-
-              {/* Quick Grocery Presets Selector */}
-              <div className="space-y-1.5 pt-2 border-t border-[#E5E0D5]/60">
-                <Label className="text-[11px] font-semibold text-[#5A655F]">
-                  Quick Presets (Click to set as Front Image):
-                </Label>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    { label: "🌾 Atta", url: "/images/atta.jpg" },
-                    { label: "🍚 Rice", url: "/images/rice.jpg" },
-                    { label: "🫘 Dal", url: "/images/dal.jpg" },
-                    { label: "🛢️ Mustard Oil", url: "/images/fortune_mustard_oil_1787801798943.jpg" },
-                    { label: "🧈 Amul Ghee", url: "/images/amul_desi_ghee_1787801851052.jpg" },
-                    { label: "🌶️ Spices", url: "/images/spices.jpg" },
-                    { label: "🧂 Tata Salt", url: "/images/tata_salt_pack_1787801868973.jpg" },
-                    { label: "🍪 Parle-G", url: "/images/parle_g_biscuits_1787801925687.jpg" },
-                    { label: "🥨 Bhujia", url: "/images/haldirams_aloo_bhujia_1787801945399.jpg" },
-                    { label: "🍫 Cadbury", url: "/images/cadbury_dairy_milk_1787801969771.jpg" },
-                    { label: "🍯 Honey", url: "/images/dabur_honey_jar_1787802014923.jpg" },
-                    { label: "🧼 Surf Excel", url: "/images/surf_excel_detergent_1787801991917.jpg" },
-                    { label: "📦 General Pack", url: "/images/packaged.jpg" },
-                  ].map((preset) => (
-                    <button
-                      key={preset.url}
-                      type="button"
-                      onClick={() => {
-                        setFrontImageUrl(preset.url);
-                        toast.success(`Set Front Image to ${preset.label}`);
-                      }}
-                      className="rounded-md border border-[#E5E0D5] bg-white px-2 py-1 text-[10px] font-medium text-[#16201A] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-colors shadow-2xs"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-
-              {/* Section 3.2: Bilingual Descriptions / Highlights */}
-              <div className="grid gap-3 sm:grid-cols-2 pt-2 border-t border-[#E5E0D5]/60">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#16201A] flex items-center justify-between">
-                    <span>Description (English)</span>
-                    <span className="text-[10px] text-[#5A655F]">अंग्रेजी विवरण</span>
-                  </Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="Pure stone ground whole wheat flour with natural dietary fiber..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="rounded-xl text-xs border-[#E5E0D5] bg-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold text-[#16201A] flex items-center justify-between">
-                    <span>उत्पाद विवरण (हिंदी / Hindi)</span>
-                    <span className="text-[10px] text-[#145A45] font-semibold">हिंदी विवरण</span>
-                  </Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="100% शुद्ध संपूर्ण गेहूं के दानों से बना चक्की आटा, पौष्टिक व स्वच्छ पैकिंग..."
-                    value={descriptionHi}
-                    onChange={(e) => setDescriptionHi(e.target.value)}
-                    className="rounded-xl text-xs border-[#E5E0D5] bg-white"
-                  />
-                </div>
-              </div>
             </div>
 
-            {/* Section 4: Visibility & Badges */}
-            <div className="flex flex-wrap gap-4 pt-2 border-t border-[#E8E4DA]">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
-                <Checkbox checked={isFeatured} onCheckedChange={(c) => setIsFeatured(Boolean(c))} />
-                <span>Featured on Homepage</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
-                <Checkbox checked={isPopular} onCheckedChange={(c) => setIsPopular(Boolean(c))} />
-                <span>Popular in Maharajganj</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#1F2924]">
-                <Checkbox checked={isActive} onCheckedChange={(c) => setIsActive(Boolean(c))} />
-                <span>Active &amp; Visible</span>
-              </label>
-            </div>
-
-            {/* Section 5: Live Customer View Preview (ग्राहक को कैसा दिखेगा) */}
-            <div className="rounded-2xl border border-[#145A45]/30 bg-[#FAF8F2] p-3.5 sm:p-4 space-y-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h4 className="font-sans font-bold text-xs sm:text-sm text-[#145A45] flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-[#145A45]" /> 5. Live Customer Preview (ग्राहक को कैसा दिखेगा)
-                  </h4>
-                  <p className="text-[10px] text-[#5A655F]">
-                    Switch tabs to verify how rural Hindi customers vs English visitors will see this product card.
-                  </p>
-                </div>
-
-                <div className="flex items-center rounded-xl bg-white p-0.5 border border-[#E8E4DA] shadow-2xs">
-                  <button
+            {/* 3. Modal Fixed Footer with Step Navigation */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-t border-[#E8E4DA] bg-[#FAF8F2] shrink-0 gap-2">
+              {/* Left Button */}
+              <div>
+                {modalTab === "basic" ? (
+                  <Button
                     type="button"
-                    onClick={() => setPreviewLang("hi")}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                      previewLang === "hi"
-                        ? "bg-[#145A45] text-white shadow-2xs"
-                        : "text-[#5A655F] hover:text-[#16201A]"
-                    }`}
+                    onClick={() => setIsAddModalOpen(false)}
+                    variant="ghost"
+                    className="rounded-xl text-xs text-[#5A655F] hover:bg-white h-9.5 px-3 cursor-pointer"
                   >
-                    🇮🇳 Customer view — Hindi
-                  </button>
-                  <button
+                    रद्द करें (Cancel)
+                  </Button>
+                ) : (
+                  <Button
                     type="button"
-                    onClick={() => setPreviewLang("en")}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${
-                      previewLang === "en"
-                        ? "bg-[#145A45] text-white shadow-2xs"
-                        : "text-[#5A655F] hover:text-[#16201A]"
-                    }`}
+                    onClick={() => setModalTab(modalTab === "photos" ? "pricing" : "basic")}
+                    variant="outline"
+                    className="rounded-xl text-xs border-[#E8E4DA] bg-white text-[#1F2924] hover:bg-[#FAF8F2] h-9.5 px-3.5 font-bold cursor-pointer shadow-2xs"
                   >
-                    🇬🇧 Customer view — English
-                  </button>
-                </div>
+                    <ChevronLeft className="size-4 mr-1" /> पिछला
+                  </Button>
+                )}
               </div>
 
-              {/* Preview Card */}
-              <div className="max-w-xs mx-auto rounded-2xl bg-white p-3.5 border border-[#E5E0D5] shadow-xs space-y-2">
-                <div className="flex items-center justify-between text-[10px]">
-                  <span className="rounded bg-[#E6EFE8] px-1.5 py-0.5 font-bold text-[#0F4A38]">
-                    {previewLang === "hi" ? "ताज़ा" : "Fresh"}
-                  </span>
-                  <span className="text-[#5A655F] uppercase font-bold text-[9px]">
-                    {brand || (previewLang === "hi" ? "दैनिक राशन" : "Grocery")}
-                  </span>
-                </div>
+              {/* Right Action Buttons */}
+              <div className="flex items-center gap-2">
+                {modalTab !== "photos" && (
+                  <Button
+                    type="submit"
+                    disabled={isSaving || !name.trim()}
+                    variant="outline"
+                    className="rounded-xl text-xs border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] h-9.5 px-3 font-bold hidden sm:inline-flex cursor-pointer"
+                  >
+                    तुरंत सेव करें
+                  </Button>
+                )}
 
-                <div className="h-28 rounded-xl bg-[#FAF8F2] flex items-center justify-center p-1 overflow-hidden border border-[#E5E0D5]/60">
-                  <img
-                    src={frontImageUrl || backImageUrl || "/images/packaged.jpg"}
-                    alt="Preview"
-                    className="h-full w-auto object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                    }}
-                  />
-                </div>
+                {modalTab === "basic" && (
+                  <Button
+                    type="button"
+                    onClick={() => setModalTab("pricing")}
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-4 cursor-pointer"
+                  >
+                    <span>आगे: पैक और रेट</span>
+                    <ChevronRight className="size-4 ml-1" />
+                  </Button>
+                )}
 
-                <div>
-                  <p className="font-bold text-xs text-[#16201A] line-clamp-2">
-                    {previewLang === "hi"
-                      ? nameHi.trim() || name.trim() || "उत्पाद का नाम यहाँ दिखेगा"
-                      : name.trim() || "Product Name Here"}
-                  </p>
-                  <p className="text-[10px] text-[#5A655F] line-clamp-1 mt-0.5">
-                    {previewLang === "hi"
-                      ? descriptionHi.trim() || description.trim() || "100% शुद्ध, असली और स्वच्छ पैकिंग में उपलब्ध।"
-                      : description.trim() || "100% authentic, hygienically packed for home delivery."}
-                  </p>
-                </div>
+                {modalTab === "pricing" && (
+                  <Button
+                    type="button"
+                    onClick={() => setModalTab("photos")}
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-4 cursor-pointer"
+                  >
+                    <span>आगे: फोटो और विवरण</span>
+                    <ChevronRight className="size-4 ml-1" />
+                  </Button>
+                )}
 
-                <div className="flex items-center justify-between pt-1 border-t border-[#E5E0D5]/70">
-                  <div>
-                    <span className="text-xs font-extrabold text-[#145A45]">
-                      {inr(variants[0]?.price ?? 100)}
-                    </span>
-                    {variants[0]?.mrp && variants[0].mrp > variants[0].price && (
-                      <span className="text-[10px] text-[#5A655F] line-through ml-1.5">
-                        {inr(variants[0].mrp)}
-                      </span>
-                    )}
-                    <span className="block text-[9px] text-[#5A655F]">
-                      {previewLang === "hi"
-                        ? translateVariantLabel(variants[0]?.label || "1 kg", "hi")
-                        : variants[0]?.label || "1 kg"}
-                    </span>
-                  </div>
-
-                  <span className="rounded-lg bg-[#145A45] px-2.5 py-1 text-[10px] font-bold text-white shadow-2xs">
-                    {previewLang === "hi" ? "जोड़ें +" : "Add +"}
-                  </span>
-                </div>
+                {modalTab === "photos" && (
+                  <Button
+                    type="submit"
+                    disabled={isSaving}
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-5 cursor-pointer"
+                  >
+                    {isSaving ? "सेव हो रहा है…" : editingProduct ? "अपडेट सुरक्षित करें" : "प्रोडक्ट सेव करें"}
+                  </Button>
+                )}
               </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-[#E8E4DA]">
-              <Button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                variant="outline"
-                className="rounded-xl text-xs border-[#E8E4DA] text-[#1F2924] hover:bg-[#FAF8F2] h-9"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSaving}
-                className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs"
-              >
-                {isSaving ? "Saving…" : editingProduct ? "Update Product" : "Create Product"}
-              </Button>
             </div>
           </form>
         </DialogContent>
