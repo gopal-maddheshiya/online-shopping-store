@@ -172,7 +172,7 @@ export function ProductSliderShelf({
       <div className="relative group/reel">
         <div
           ref={emblaRef}
-          className="overflow-hidden -mx-2 px-2 py-2 sm:py-2.5 cursor-grab active:cursor-grabbing select-none"
+          className="overflow-hidden -mx-2 px-2 py-2 sm:py-2.5 cursor-grab active:cursor-grabbing select-none touch-pan-y"
           onMouseEnter={handleUserInteraction}
           onTouchStart={handleUserInteraction}
         >
@@ -181,7 +181,6 @@ export function ProductSliderShelf({
             className="flex -ml-2.5 sm:-ml-3.5 select-none"
             style={{
               willChange: "transform",
-              transform: "translate3d(0, 0, 0)",
               backfaceVisibility: "hidden",
             }}
           >

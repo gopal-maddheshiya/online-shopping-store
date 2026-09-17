@@ -36,7 +36,8 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      touchMultiplier: 1.25,
+      syncTouch: false, // Ensure 100% native mobile touch momentum at 120Hz
+      touchMultiplier: 1.0,
       wheelMultiplier: 1.0,
       infinite: false,
       autoRaf: false, // Driven synchronously via GSAP ticker

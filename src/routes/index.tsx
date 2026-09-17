@@ -429,7 +429,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
         {/* Carousel Viewport with Flipkart Rounded Corners */}
         <div
           ref={emblaRef}
-          className="overflow-hidden rounded-flipkart-hero cursor-grab active:cursor-grabbing select-none"
+          className="overflow-hidden rounded-flipkart-hero cursor-grab active:cursor-grabbing select-none touch-pan-y"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -799,24 +799,45 @@ function PremiumStoreHome() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
-    const sections = document.querySelectorAll(".gsap-reveal-section");
+    // Only target sections that haven't been revealed yet (prevents re-trigger flashes when queries resolve)
+    const sections = document.querySelectorAll<HTMLElement>(".gsap-reveal-section:not([data-gsap-revealed='true'])");
     sections.forEach((sec) => {
-      gsap.fromTo(
-        sec,
-        { opacity: 0, y: 22 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.65,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sec,
-            start: "top 90%",
-            toggleActions: "play none none none",
-            once: true,
+      sec.setAttribute("data-gsap-revealed", "true");
+      const inView = sec.getBoundingClientRect().top < window.innerHeight * 0.95;
+
+      if (inView) {
+        // Elements already in the viewport reveal smoothly without opacity flicker
+        gsap.fromTo(
+          sec,
+          { opacity: 0.85, y: 8 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.35,
+            ease: "power2.out",
+            clearProps: "opacity,transform",
+          }
+        );
+      } else {
+        // Offscreen elements reveal on scroll via ScrollTrigger
+        gsap.fromTo(
+          sec,
+          { opacity: 0, y: 22 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: sec,
+              start: "top 92%",
+              toggleActions: "play none none none",
+              once: true,
+            },
+            clearProps: "opacity,transform",
           },
-        },
-      );
+        );
+      }
     });
   }, [headings, catLoading, prodLoading]);
 

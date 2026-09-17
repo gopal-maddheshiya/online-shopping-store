@@ -108,7 +108,7 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(20, 90, 69, 0.25) transparent;
   }
@@ -141,13 +141,10 @@
 
   body {
     background-color: #f8faf9;
-    background-image:
-      radial-gradient(at 50% 0%, rgba(20, 90, 69, 0.038) 0px, transparent 55%),
-      radial-gradient(at 100% 15%, rgba(217, 119, 6, 0.015) 0px, transparent 40%),
-      radial-gradient(at 0% 55%, rgba(20, 90, 69, 0.02) 0px, transparent 50%);
-    background-attachment: fixed;
     color: #16201a;
     font-family: var(--font-sans);
+    position: relative;
+    min-height: 100vh;
     font-weight: 400;
     letter-spacing: -0.011em;
     overflow-x: hidden;
@@ -155,6 +152,20 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* High-Performance Fixed Background Layer (Zero repaint during scrolling) */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(at 50% 0%, rgba(20, 90, 69, 0.038) 0px, transparent 55%),
+      radial-gradient(at 100% 15%, rgba(217, 119, 6, 0.015) 0px, transparent 40%),
+      radial-gradient(at 0% 55%, rgba(20, 90, 69, 0.02) 0px, transparent 50%);
+    transform: translateZ(0);
   }
 
   h1,
@@ -659,10 +670,9 @@ html.lenis body {
   pointer-events: none;
 }
 
-/* Offscreen Viewport Gating for Deep Carousels */
+/* DOM & Layout Performance Isolation for Carousels */
 .shelf-viewport-contain {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 410px;
+  contain: layout style;
 }
 
 /* Progressive Image Lazy Loading Shimmer & Reveal */

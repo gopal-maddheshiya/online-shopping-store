@@ -33,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] hover:border-[#145A45]/60 p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_12px_26px_-4px_rgba(20,90,69,0.13),0_4px_10px_-2px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-200 overflow-hidden"
+      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] hover:border-[#145A45]/60 p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_12px_26px_-4px_rgba(20,90,69,0.13),0_4px_10px_-2px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-[transform,box-shadow,border-color] duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* 1. Discount Ribbon (% OFF Flag with soft scalloped bottom) */}
@@ -106,14 +106,14 @@ export function ProductCard({ product }: { product: Product }) {
               setImgLoaded(true);
               e.currentTarget.src = "/images/packaged.jpg";
             }}
-            className={`size-full max-h-[140px] sm:max-h-[160px] object-contain mx-auto transition-all duration-300 ease-out group-hover:scale-105 select-none ${
+            className={`size-full max-h-[140px] sm:max-h-[160px] object-contain mx-auto transition-[transform,opacity] duration-300 ease-out group-hover:scale-105 select-none ${
               imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
           />
 
           {/* Out of Stock Overlay */}
           {stock <= 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-[1px] rounded-lg z-20">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-lg z-20">
               <span className="rounded-md bg-white border border-[#E5E7EB] px-2 py-0.5 text-[10px] font-bold text-[#6B7280] shadow-xs">
                 {t.outOfStock}
               </span>
