@@ -1075,17 +1075,9 @@ function PremiumStoreHome() {
           4. ⭐ BEST SELLERS & POPULAR PRODUCTS (Auto-Sliding)
           ═══════════════════════════════════════════════════════ */}
       <ProductSliderShelf
-        icon={<Sparkles className="size-4.5 sm:size-5 text-amber-600 fill-amber-500/25" strokeWidth={2.2} />}
-        iconContainerClassName="bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B]/25 border border-amber-500/35 text-amber-700 shadow-[0_2px_6px_rgba(217,119,6,0.14)]"
         title={lang === "hi" ? "लोकप्रिय उत्पाद व बेस्ट सेलर्स" : "Popular & Best Sellers"}
-        subtitle={
-          lang === "hi"
-            ? "दुकान के सबसे ज्यादा बिकने वाले शुद्ध उत्पाद"
-            : "Most ordered grocery essentials"
-        }
         products={popularProducts}
         linkTo="/shop"
-        linkLabel={`${t.viewAll} (${products.length || 300}+)`}
         autoSlide={true}
         intervalMs={3500}
         isLoading={featLoading}
@@ -1096,18 +1088,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {(prodLoading || attaRiceProducts.length > 0) && (
         <ProductSliderShelf
-          icon={<Wheat className="size-4.5 sm:size-5 text-amber-700" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]/60 border border-amber-600/30 text-amber-800 shadow-[0_2px_6px_rgba(180,83,9,0.12)]"
           title={lang === "hi" ? "आटा, बासमती चावल व अनाज" : "Atta, Rice & Grains"}
-          subtitle={
-            lang === "hi"
-              ? "मैदा, बेसन, चक्की आटा व बासमती चावल"
-              : "Maida, Besan, Fresh Atta & Basmati"
-          }
           products={attaRiceProducts}
           linkTo="/shop"
           linkSearch={{ category: "atta-flour" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4200}
           isLoading={prodLoading}
@@ -1119,18 +1103,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {(prodLoading || dalPulsesProducts.length > 0) && (
         <ProductSliderShelf
-          icon={<Bean className="size-4.5 sm:size-5 text-emerald-700" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#F0FDF4] via-[#DCFCE7] to-[#BBF7D0]/60 border border-emerald-600/30 text-emerald-800 shadow-[0_2px_6px_rgba(5,150,105,0.12)]"
           title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
-          subtitle={
-            lang === "hi"
-              ? "अरहर, मूंग, चना दाल, राजमा व काबुली चना"
-              : "Arhar, Moong, Chana Dal, Rajma"
-          }
           products={dalPulsesProducts}
           linkTo="/shop"
           linkSearch={{ category: "pulses-dal" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4600}
           isLoading={prodLoading}
@@ -1142,18 +1118,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {oilGheeProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Droplet className="size-4.5 sm:size-5 text-yellow-600 fill-yellow-500/35" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FEFCE8] via-[#FEF9C3] to-[#FEF08A]/70 border border-yellow-600/35 text-yellow-800 shadow-[0_2px_6px_rgba(202,138,4,0.14)]"
           title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
-          subtitle={
-            lang === "hi"
-              ? "फॉर्च्यून कच्ची घानी, बैल कोल्हू, चक्र तेल"
-              : "Bail Kolhu, Chakra & Fortune Cooking Oil"
-          }
           products={oilGheeProducts}
           linkTo="/shop"
           linkSearch={{ category: "oil-ghee" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4000}
         />
@@ -1233,18 +1201,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {spicesMasalaProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Flame className="size-4.5 sm:size-5 text-rose-600 fill-rose-500/20" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FFF1F2] via-[#FFE4E6] to-[#FECDD3]/60 border border-rose-500/30 text-rose-800 shadow-[0_2px_6px_rgba(225,29,72,0.12)]"
           title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
-          subtitle={
-            lang === "hi"
-              ? "खड़े व पिसे मसाले, काजू, बादाम, किशमिश"
-              : "Whole & Ground Spices, Cashews, Almonds"
-          }
           products={spicesMasalaProducts}
           linkTo="/shop"
           linkSearch={{ category: "spices-masala" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4400}
         />
@@ -1255,18 +1215,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {snacksBreakfastProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Coffee className="size-4.5 sm:size-5 text-purple-800" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FAF5FF] via-[#F3E8FF] to-[#E9D5FF]/50 border border-purple-600/30 text-purple-900 shadow-[0_2px_6px_rgba(147,51,234,0.12)]"
           title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
-          subtitle={
-            lang === "hi"
-              ? "टाटा टी, पारले-जी, गुड डे, नमकीन व सेवई"
-              : "Tata Tea, Parle-G, Good Day, Snacks"
-          }
           products={snacksBreakfastProducts}
           linkTo="/shop"
           linkSearch={{ category: "namkeen-snacks" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4100}
         />
@@ -1277,18 +1229,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {cleaningProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Sparkles className="size-4.5 sm:size-5 text-sky-600" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#F0F9FF] via-[#E0F2FE] to-[#BAE6FD]/60 border border-sky-500/30 text-sky-800 shadow-[0_2px_6px_rgba(2,132,199,0.12)]"
           title={lang === "hi" ? "सफाई, डिटर्जेंट व बर्तन" : "Cleaning & Household"}
-          subtitle={
-            lang === "hi"
-              ? "सर्फ, हार्पिक, डिटर्जेंट पाउडर व बर्तन धुलाई"
-              : "Surf Excel, Harpic, Detergents"
-          }
           products={cleaningProducts}
           linkTo="/shop"
           linkSearch={{ category: "household-cleaning" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4700}
         />
@@ -1299,18 +1243,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {poojaProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Flower2 className="size-4.5 sm:size-5 text-orange-600" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FFF7ED] via-[#FFEDD5] to-[#FED7AA]/60 border border-orange-500/35 text-orange-800 shadow-[0_2px_6px_rgba(234,88,12,0.14)]"
           title={lang === "hi" ? "पूजा सामग्री, अगरबत्ती व धूप" : "Pooja Samagri & Agarbatti"}
-          subtitle={
-            lang === "hi"
-              ? "शुद्ध हवन सामग्री, अगरबत्ती, धूप बत्ती, केवलगट्टा व कपूर"
-              : "Havan Samagri, Agarbatti, Dhoop Batti & Camphor"
-          }
           products={poojaProducts}
           linkTo="/shop"
           linkSearch={{ category: "pooja-items" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4300}
         />
@@ -1321,18 +1257,10 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {personalCareProducts.length > 0 && (
         <ProductSliderShelf
-          icon={<Heart className="size-4.5 sm:size-5 text-pink-600 fill-pink-500/25" strokeWidth={2.2} />}
-          iconContainerClassName="bg-gradient-to-br from-[#FDF2F8] via-[#FCE7F3] to-[#FBCFE8]/60 border border-pink-500/30 text-pink-800 shadow-[0_2px_6px_rgba(219,39,119,0.12)]"
           title={lang === "hi" ? "पर्सनल केयर, साबुन व हेयर ऑयल" : "Personal Care, Soaps & Hair Oil"}
-          subtitle={
-            lang === "hi"
-              ? "नवरत्न, डाबर आंवला, संतूर, डेटॉल, कोलगेट व बेबी सोप"
-              : "Navratna, Dabur Amla, Santoor, Dettol, Colgate"
-          }
           products={personalCareProducts}
           linkTo="/shop"
           linkSearch={{ category: "personal-care" }}
-          linkLabel={`${t.viewAll} →`}
           autoSlide={true}
           intervalMs={4500}
         />

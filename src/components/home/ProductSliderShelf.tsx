@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { type Product } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -127,45 +127,23 @@ export function ProductSliderShelf({
         className,
       )}
     >
-      {/* 1. Clean Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-          {icon && (
-            <div
-              className={cn(
-                "grid size-9 sm:size-10 place-items-center rounded-2xl shrink-0 text-base shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] transition-all",
-                iconContainerClassName ||
-                  "bg-gradient-to-br from-[#EBF3ED] via-[#E2EEE5] to-[#D6E7DB] border border-[#145A45]/20 text-[#145A45]"
-              )}
-            >
-              {icon}
-            </div>
-          )}
-          <div className="min-w-0">
-            <h2 className="font-sans text-sm sm:text-base md:text-lg font-bold text-[#16201A] tracking-tight truncate leading-tight">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-[10px] sm:text-xs text-[#5A655F] font-medium truncate mt-0.5">
-                {subtitle}
-              </p>
-            )}
-          </div>
-        </div>
+      {/* 1. Clean Header (Flipkart Grocery Style) */}
+      <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+        <h2 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight truncate leading-tight">
+          {title}
+        </h2>
 
-        {/* View All Button */}
-        <div className="flex items-center gap-2 shrink-0">
-          {linkLabel && (
-            <Link
-              to={linkTo as any}
-              search={linkSearch as any}
-              className="inline-flex items-center gap-1 rounded-full bg-white hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#0F4A38] hover:text-white px-3 py-1 text-[11px] sm:text-xs font-bold transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.2)] shrink-0"
-            >
-              <span>{linkLabel}</span>
-              <ArrowRight className="size-3" />
-            </Link>
-          )}
-        </div>
+        {/* Flipkart Style Clean Arrow Button */}
+        {linkTo && (
+          <Link
+            to={linkTo as any}
+            search={linkSearch as any}
+            aria-label={`View all ${title}`}
+            className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-white hover:bg-[#145A45] text-[#18221D] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] shadow-2xs hover:shadow-xs transition-all shrink-0 active:scale-90 cursor-pointer"
+          >
+            <ChevronRight className="size-4" />
+          </Link>
+        )}
       </div>
 
       {/* 2. GPU-Accelerated Zero-Lag Carousel Reel */}
