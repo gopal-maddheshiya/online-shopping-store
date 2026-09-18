@@ -33,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] hover:border-[#145A45]/60 p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_12px_26px_-4px_rgba(20,90,69,0.13),0_4px_10px_-2px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-[transform,box-shadow,border-color] duration-200 overflow-hidden"
+      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-[8px] border border-[#CCD3CE] hover:border-[#145A45]/60 p-2.5 sm:p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_8px_20px_-4px_rgba(20,90,69,0.12),0_2px_6px_-2px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 transition-[transform,box-shadow,border-color] duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* 1. Discount Ribbon (% OFF Flag with soft scalloped bottom) */}
@@ -89,10 +89,10 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="relative w-full aspect-square flex items-center justify-center overflow-hidden py-1 px-1.5 rounded-lg"
+          className="relative w-full aspect-square flex items-center justify-center overflow-hidden py-1 px-1.5 rounded-[6px]"
         >
           {!imgLoaded && (
-            <div className="absolute inset-2 rounded-lg img-loading-shimmer pointer-events-none" />
+            <div className="absolute inset-2 rounded-[6px] img-loading-shimmer pointer-events-none" />
           )}
           <img
             src={getProductImage(product)}
@@ -113,7 +113,7 @@ export function ProductCard({ product }: { product: Product }) {
 
           {/* Out of Stock Overlay */}
           {stock <= 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-lg z-20">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-[6px] z-20">
               <span className="rounded-md bg-white border border-[#E5E7EB] px-2 py-0.5 text-[10px] font-bold text-[#6B7280] shadow-xs">
                 {t.outOfStock}
               </span>
@@ -175,11 +175,11 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Action Button */}
           <div className="shrink-0">
             {stock <= 0 ? (
-              <div className="h-7 sm:h-8 px-2.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-[10px] sm:text-xs font-bold flex items-center justify-center select-none">
+              <div className="h-7 sm:h-8 px-2.5 rounded-[6px] border border-stone-200 bg-stone-50 text-stone-400 text-[10px] sm:text-xs font-bold flex items-center justify-center select-none">
                 {t.outOfStock || "Out of Stock"}
               </div>
             ) : inCart ? (
-              <div className="flex h-7 sm:h-8 min-w-[68px] sm:min-w-[74px] items-center justify-between rounded-lg bg-[#145A45] text-white px-1.5 shadow-2xs">
+              <div className="flex h-7 sm:h-8 min-w-[68px] sm:min-w-[74px] items-center justify-between rounded-[6px] bg-[#145A45] text-white px-1.5 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
@@ -225,7 +225,7 @@ export function ProductCard({ product }: { product: Product }) {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className={`h-7 sm:h-8 min-w-[66px] sm:min-w-[74px] px-2.5 rounded-lg border-2 border-[#145A45] bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white font-extrabold text-xs sm:text-[13px] tracking-wider uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex flex-col items-center justify-center leading-tight ${
+                className={`h-7 sm:h-8 min-w-[66px] sm:min-w-[74px] px-2.5 rounded-[6px] border-2 border-[#145A45] bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white font-extrabold text-xs sm:text-[13px] tracking-wider uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex flex-col items-center justify-center leading-tight ${
                   variants.length > 1 ? "py-0.5" : ""
                 }`}
               >
@@ -247,14 +247,14 @@ export function ProductCard({ product }: { product: Product }) {
 export function ProductCardSkeleton() {
   return (
     <div
-      className="flex flex-col justify-between w-full h-full bg-white rounded-xl border border-[#CCD3CE] p-2.5 sm:p-3 shadow-[0_3px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden"
+      className="flex flex-col justify-between w-full h-full bg-white rounded-[8px] border border-[#CCD3CE] p-2.5 sm:p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* Product Image & Discount Ribbon Skeleton */}
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-[#F2EFE9]/40 border border-[#EAE6DC]/50">
-        <Skeleton className="size-full rounded-lg" />
+      <div className="relative w-full aspect-square rounded-[6px] overflow-hidden bg-[#F2EFE9]/40 border border-[#EAE6DC]/50">
+        <Skeleton className="size-full rounded-[6px]" />
         {/* Soft Discount Ribbon Skeleton in corner */}
-        <div className="absolute top-0 left-2 z-10 w-7 h-8 rounded-b-md overflow-hidden bg-blue-100/50 shadow-2xs">
+        <div className="absolute top-0 left-2 z-10 w-7 h-8 rounded-b-[4px] overflow-hidden bg-blue-100/50 shadow-2xs">
           <Skeleton className="size-full" />
         </div>
       </div>
@@ -276,7 +276,7 @@ export function ProductCardSkeleton() {
             <Skeleton className="w-14 sm:w-16 h-4 sm:h-5 rounded-md" />
             <Skeleton className="w-10 h-2.5 rounded-xs" />
           </div>
-          <Skeleton className="w-16 sm:w-18 h-7 sm:h-8 rounded-lg" />
+          <Skeleton className="w-16 sm:w-18 h-7 sm:h-8 rounded-[6px]" />
         </div>
       </div>
     </div>
