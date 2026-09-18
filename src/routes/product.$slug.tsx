@@ -389,7 +389,7 @@ function ProductPage() {
               </div>
             </div>
 
-            <h1 className="font-sans text-xl sm:text-2xl font-bold text-[#111827] mt-1.5 leading-snug tracking-tight">
+            <h1 className="font-sans text-xl sm:text-2xl font-bold text-[#18221D] mt-1.5 leading-[1.35] tracking-tight">
               {localizedName}
             </h1>
 
@@ -433,13 +433,13 @@ function ProductPage() {
           {/* Compact Clean Pricing Card */}
           <div className="rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] p-3 shadow-2xs space-y-1">
             <div className="flex items-baseline flex-wrap gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-[#065F46] tracking-tight">
+              <span className="text-2xl sm:text-3xl font-black text-[#145A45] tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
               </span>
 
               {off > 0 && variant?.mrp ? (
                 <>
-                  <span className="text-sm sm:text-base text-[#9CA3AF] line-through font-semibold">
+                  <span className="text-sm sm:text-base text-[#878787] line-through font-semibold price-flipkart">
                     {inr(variant.mrp)}
                   </span>
                   <span className="rounded-md bg-blue-50 text-[#256FEF] border border-blue-200/70 px-1.5 py-0.2 text-[11px] font-bold tracking-tight">

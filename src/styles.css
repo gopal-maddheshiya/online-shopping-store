@@ -27,8 +27,10 @@
     "Inter", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display:
     "Inter", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-hindi:
+    "Noto Sans Devanagari", "Mukta", system-ui, -apple-system, sans-serif;
   --font-brand-hi:
-    "Poppins", "Mukta", "Noto Sans Devanagari", system-ui, sans-serif;
+    "Mukta", "Noto Sans Devanagari", "Poppins", system-ui, sans-serif;
 
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -141,7 +143,7 @@
 
   body {
     background-color: #f8faf9;
-    color: #16201a;
+    color: #18221d;
     font-family: var(--font-sans);
     position: relative;
     min-height: 100vh;
@@ -151,7 +153,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
   }
 
   /* High-Performance Fixed Background Layer (Zero repaint during scrolling) */
@@ -175,10 +177,36 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    font-weight: 600;
-    color: #16201a;
-    letter-spacing: -0.018em;
+    font-weight: 700;
+    color: #18221d;
+    letter-spacing: -0.02em;
     text-rendering: optimizeLegibility;
+  }
+
+  /* Flipkart Grocery Tabular Figures for Accurate Currency & Unit Alignment */
+  .price-flipkart,
+  [data-price] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.015em;
+  }
+
+  /* Grocery-Grade Devanagari & Hindi Typography Balancing */
+  :lang(hi),
+  [lang="hi"],
+  .font-hindi {
+    letter-spacing: 0.005em;
+    line-height: 1.38;
+    font-family: "Noto Sans Devanagari", "Mukta", var(--font-sans);
+  }
+
+  /* Balanced optical weight for Devanagari headings alongside English */
+  .font-hindi-title {
+    font-family: "Noto Sans Devanagari", "Mukta", var(--font-sans);
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    line-height: 1.38;
+    color: #18221d;
   }
 }
 

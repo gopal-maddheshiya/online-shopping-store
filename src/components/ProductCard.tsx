@@ -128,7 +128,7 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 text-xs sm:text-[13px] font-medium sm:font-semibold text-[#1F2937] group-hover:text-[#0C831F] transition-colors leading-[1.3] mt-0.5 break-words min-h-[2.4rem] sm:min-h-[2.6rem]"
+          className="line-clamp-2 text-xs sm:text-[13.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] transition-colors leading-[1.38] mt-0.5 break-words min-h-[2.4rem] sm:min-h-[2.7rem]"
           title={localizedProductName}
         >
           {localizedProductName}
@@ -143,7 +143,7 @@ export function ProductCard({ product }: { product: Product }) {
                 e.stopPropagation();
                 setSelectedVariantId(e.target.value);
               }}
-              className="text-[11px] sm:text-xs text-[#6B7280] hover:text-[#111827] font-medium bg-transparent border-0 p-0 pr-3 focus:ring-0 cursor-pointer underline decoration-dotted underline-offset-2"
+              className="text-[11px] sm:text-xs text-[#5A655F] hover:text-[#18221D] font-medium bg-transparent border-0 p-0 pr-3 focus:ring-0 cursor-pointer underline decoration-dotted underline-offset-2"
             >
               {variants.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -153,20 +153,20 @@ export function ProductCard({ product }: { product: Product }) {
             </select>
           </div>
         ) : (
-          <div className="text-[11px] sm:text-xs text-[#6B7280] font-normal truncate mt-0.5">
+          <div className="text-[11px] sm:text-xs text-[#5A655F] font-medium truncate mt-0.5">
             {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
           </div>
         )}
 
-        {/* 5. Bottom Price & Blinkit ADD Button Row */}
+        {/* 5. Bottom Price & ADD Button Row */}
         <div className="mt-auto pt-2.5 flex items-end justify-between gap-2 w-full">
           {/* Price Stack */}
           <div className="flex flex-col leading-none">
-            <span className="text-xs sm:text-sm font-bold text-[#1F2937]">
+            <span className="text-sm sm:text-base font-extrabold text-[#145A45] tracking-tight font-sans price-flipkart">
               {inr(activeVariant?.price ?? 0)}
             </span>
             {off > 0 && activeVariant?.mrp ? (
-              <span className="text-[10px] sm:text-[11px] text-[#9CA3AF] line-through font-normal mt-1">
+              <span className="text-[10px] sm:text-[11px] text-[#878787] line-through font-normal mt-0.5 price-flipkart">
                 {inr(activeVariant.mrp)}
               </span>
             ) : null}
@@ -179,7 +179,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {t.outOfStock || "Out of Stock"}
               </div>
             ) : inCart ? (
-              <div className="flex h-7 sm:h-8 min-w-[68px] sm:min-w-[74px] items-center justify-between rounded-lg bg-[#0C831F] text-white px-1.5 shadow-2xs">
+              <div className="flex h-7 sm:h-8 min-w-[68px] sm:min-w-[74px] items-center justify-between rounded-lg bg-[#145A45] text-white px-1.5 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
@@ -188,7 +188,7 @@ export function ProductCard({ product }: { product: Product }) {
                 >
                   <Minus className="size-3 stroke-[3]" />
                 </button>
-                <span className="text-xs font-bold text-white px-1 text-center select-none">
+                <span className="text-xs font-extrabold text-white px-1 text-center select-none price-flipkart">
                   {inCart.qty}
                 </span>
                 <button
@@ -222,16 +222,16 @@ export function ProductCard({ product }: { product: Product }) {
                     stock: activeVariant.stock,
                   });
                   toast.success(`${localizedProductName} ${t.added.toLowerCase()}`, {
-                    icon: <Check className="size-4 text-[#0C831F]" />,
+                    icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className={`h-7 sm:h-8 min-w-[66px] sm:min-w-[72px] px-2.5 rounded-lg border border-[#0C831F] bg-white hover:bg-[#0C831F]/5 text-[#0C831F] font-bold text-xs sm:text-[13px] tracking-wide uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex flex-col items-center justify-center leading-tight ${
+                className={`h-7 sm:h-8 min-w-[66px] sm:min-w-[74px] px-2.5 rounded-lg border-2 border-[#145A45] bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white font-extrabold text-xs sm:text-[13px] tracking-wider uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex flex-col items-center justify-center leading-tight ${
                   variants.length > 1 ? "py-0.5" : ""
                 }`}
               >
                 <span>{t.add || "ADD"}</span>
                 {variants.length > 1 && (
-                  <span className="text-[8.5px] font-semibold text-[#0C831F]/80 lowercase -mt-0.5">
+                  <span className="text-[8.5px] font-semibold text-current opacity-80 lowercase -mt-0.5">
                     {variants.length} options
                   </span>
                 )}

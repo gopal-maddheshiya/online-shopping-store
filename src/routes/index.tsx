@@ -1081,7 +1081,7 @@ function PremiumStoreHome() {
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
-                          <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-medium text-[#222725] group-hover:text-[#0F4A38] leading-[1.28] tracking-tight text-center line-clamp-2 min-h-[2.6em] flex items-start justify-center px-0.5 transition-colors">
+                          <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.35] tracking-normal text-center line-clamp-2 min-h-[2.7em] flex items-start justify-center px-0.5 transition-colors">
                             {getCategoryName(c)}
                           </span>
                         </Link>
@@ -1138,7 +1138,7 @@ function PremiumStoreHome() {
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>
-                        <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-medium text-[#222725] group-hover:text-[#0F4A38] leading-[1.28] tracking-tight text-center line-clamp-2 min-h-[2.6em] flex items-start justify-center px-0.5 transition-colors">
+                        <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.35] tracking-normal text-center line-clamp-2 min-h-[2.7em] flex items-start justify-center px-0.5 transition-colors">
                           {getCategoryName(c)}
                         </span>
                       </Link>
