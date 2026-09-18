@@ -136,93 +136,7 @@ export const Route = createFileRoute("/")({
   component: PremiumStoreHome,
 });
 
-/* ═══════════════════════════════════════════════════════════════
-   Curated Heading Badges & Icons for Category Groups
-   ═══════════════════════════════════════════════════════════════ */
-function getCategoryHeadingConfig(heading: { id: string; title_hi?: string; title_en?: string }) {
-  const id = (heading.id || "").toLowerCase();
-  const title = `${heading.title_hi || ""} ${heading.title_en || ""}`.toLowerCase();
 
-  // 1. Food & Kitchen Essentials (खाने-पीने का सामान)
-  if (id.includes("food") || id.includes("khana") || title.includes("खान") || title.includes("food")) {
-    return {
-      icon: <Utensils className="size-4 sm:size-4.5 text-emerald-800" strokeWidth={2.2} />,
-      badgeClass:
-        "bg-gradient-to-br from-[#ECFDF5] via-[#D1FAE5] to-[#A7F3D0]/60 border border-emerald-600/30 text-emerald-800 shadow-[0_2px_6px_rgba(5,150,105,0.12)]",
-    };
-  }
-
-  // 2. Household & Cleaning (घर की सफ़ाई व बर्तन)
-  if (
-    id.includes("household") ||
-    id.includes("clean") ||
-    id.includes("safai") ||
-    title.includes("सफ़ाई") ||
-    title.includes("बर्तन") ||
-    title.includes("clean")
-  ) {
-    return {
-      icon: <Sparkles className="size-4 sm:size-4.5 text-sky-700" strokeWidth={2.2} />,
-      badgeClass:
-        "bg-gradient-to-br from-[#F0F9FF] via-[#E0F2FE] to-[#BAE6FD]/60 border border-sky-500/30 text-sky-700 shadow-[0_2px_6px_rgba(2,132,199,0.12)]",
-    };
-  }
-
-  // 3. Personal Care & Beauty (पर्सनल केयर व ब्यूटी)
-  if (
-    id.includes("personal") ||
-    id.includes("beauty") ||
-    id.includes("care") ||
-    title.includes("केयर") ||
-    title.includes("पर्सनल") ||
-    title.includes("beauty")
-  ) {
-    return {
-      icon: <Heart className="size-4 sm:size-4.5 text-pink-700 fill-pink-500/20" strokeWidth={2.2} />,
-      badgeClass:
-        "bg-gradient-to-br from-[#FDF2F8] via-[#FCE7F3] to-[#FBCFE8]/60 border border-pink-500/30 text-pink-700 shadow-[0_2px_6px_rgba(219,39,119,0.12)]",
-    };
-  }
-
-  // 4. Pooja, Stationery & Misc (पूजा सामग्री, अगरबत्ती व अन्य)
-  if (
-    id.includes("pooja") ||
-    id.includes("puja") ||
-    id.includes("misc") ||
-    title.includes("पूजा") ||
-    title.includes("धूप") ||
-    title.includes("pooja")
-  ) {
-    return {
-      icon: <Flame className="size-4 sm:size-4.5 text-amber-700 fill-amber-500/25" strokeWidth={2.2} />,
-      badgeClass:
-        "bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]/60 border border-amber-500/35 text-amber-700 shadow-[0_2px_6px_rgba(217,119,6,0.12)]",
-    };
-  }
-
-  // 5. Cattle Feed / Pashuahar (पशुआहार - चोकर)
-  if (
-    id.includes("chokar") ||
-    id.includes("feed") ||
-    id.includes("pashu") ||
-    id.includes("1788513799616") ||
-    title.includes("पशुआहार") ||
-    title.includes("चोकर")
-  ) {
-    return {
-      icon: <Package className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />,
-      badgeClass:
-        "bg-gradient-to-br from-[#EDF8F1] via-[#E2EEE5] to-[#CCE6D4] border border-[#145A45]/30 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.12)]",
-    };
-  }
-
-  // Default / Other categories
-  return {
-    icon: <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />,
-    badgeClass:
-      "bg-gradient-to-br from-[#EDF8F1] via-[#E4F5EB] to-[#D5EEDD] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.1)]",
-  };
-}
 
 /* ═══════════════════════════════════════════════════════════════
    Reusable Section Header
@@ -575,14 +489,8 @@ function CategoryGridSkeleton() {
       {[1, 2].map((g) => (
         <div key={g} className="space-y-2.5 sm:space-y-3">
           <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              <div className="h-6 sm:h-7 w-1 sm:w-1.2 rounded-full bg-[#145A45]/30 shrink-0" />
-              <div className="space-y-1">
-                <Skeleton className="h-4 sm:h-5 w-32 sm:w-44 rounded-md" />
-                <Skeleton className="h-2.5 sm:h-3 w-20 sm:w-28 rounded-md" />
-              </div>
-            </div>
-            <Skeleton className="h-6 sm:h-7 w-18 sm:w-20 rounded-full" />
+            <Skeleton className="h-5 sm:h-6 w-36 sm:w-52 rounded-md" />
+            <Skeleton className="size-7 sm:size-8 rounded-full" />
           </div>
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -1028,42 +936,21 @@ function PremiumStoreHome() {
               if (items.length === 0) return null;
 
               const headingTitle = lang === "hi" ? heading.title_hi : (heading.title_en || heading.title_hi);
-              const headingConfig = getCategoryHeadingConfig(heading);
 
               return (
                 <div key={heading.id} className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                      {/* Category Group Icon Squircle Badge */}
-                      <div
-                        className={cn(
-                          "grid size-9 sm:size-10 place-items-center rounded-xl sm:rounded-2xl shrink-0 transition-transform duration-200 shadow-xs",
-                          headingConfig.badgeClass,
-                        )}
-                      >
-                        {headingConfig.icon}
-                      </div>
+                    <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight leading-tight truncate">
+                      {headingTitle}
+                    </h3>
 
-                      {/* Heading Title & Item Count */}
-                      <div className="min-w-0 space-y-0.5">
-                        <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] tracking-tight leading-tight truncate">
-                          {headingTitle}
-                        </h3>
-                        <p className="text-[11px] sm:text-xs text-[#5A655F] font-medium flex items-center gap-1.5">
-                          <span>{items.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}</span>
-                          <span className="text-[#A8B2AC]">•</span>
-                          <span className="text-[#145A45] font-semibold">{lang === "hi" ? "100% शुद्ध व असली" : "100% Genuine"}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Flipkart/Blinkit Style 'सब देखें' Button */}
+                    {/* Flipkart Style Clean Arrow Button */}
                     <Link
                       to="/shop"
-                      className="group inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] px-3 sm:px-4 py-1.5 text-xs font-bold shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.18)] transition-all shrink-0 active:scale-95 cursor-pointer"
+                      aria-label={lang === "hi" ? `${headingTitle} - सभी देखें` : `View all ${headingTitle}`}
+                      className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-white hover:bg-[#145A45] text-[#18221D] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] shadow-2xs hover:shadow-xs transition-all shrink-0 active:scale-90 cursor-pointer"
                     >
-                      <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                      <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      <ChevronRight className="size-4" />
                     </Link>
                   </div>
 
@@ -1095,32 +982,17 @@ function PremiumStoreHome() {
             {uncategorizedCategories.length > 0 && (
               <div className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div
-                      className={cn(
-                        "grid size-9 sm:size-10 place-items-center rounded-xl sm:rounded-2xl shrink-0 transition-transform duration-200 shadow-xs",
-                        "bg-gradient-to-br from-[#EDF8F1] via-[#E4F5EB] to-[#D5EEDD] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.1)]",
-                      )}
-                    >
-                      <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45]" strokeWidth={2.2} />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] tracking-tight leading-tight truncate">
-                        {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
-                      </h3>
-                      <p className="text-[11px] sm:text-xs text-[#5A655F] font-medium flex items-center gap-1.5">
-                        <span>{uncategorizedCategories.length} {lang === "hi" ? "श्रेणियाँ" : "categories"}</span>
-                        <span className="text-[#A8B2AC]">•</span>
-                        <span className="text-[#145A45] font-semibold">{lang === "hi" ? "किराना व घरेलू जरूरतें" : "Daily Needs"}</span>
-                      </p>
-                    </div>
-                  </div>
+                  <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight leading-tight truncate">
+                    {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
+                  </h3>
+
+                  {/* Flipkart Style Clean Arrow Button */}
                   <Link
                     to="/shop"
-                    className="group inline-flex items-center gap-1.5 rounded-full bg-white hover:bg-[#145A45] text-[#145A45] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] px-3 sm:px-4 py-1.5 text-xs font-bold shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] hover:shadow-[0_4px_12px_rgba(20,90,69,0.18)] transition-all shrink-0 active:scale-95 cursor-pointer"
+                    aria-label={lang === "hi" ? "अन्य श्रेणियाँ - सभी देखें" : "View all other categories"}
+                    className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-white hover:bg-[#145A45] text-[#18221D] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] shadow-2xs hover:shadow-xs transition-all shrink-0 active:scale-90 cursor-pointer"
                   >
-                    <span>{lang === "hi" ? "सब देखें" : "View All"}</span>
-                    <ChevronRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="size-4" />
                   </Link>
                 </div>
 
