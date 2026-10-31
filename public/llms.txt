@@ -1,0 +1,44 @@
+# Arun Gopal Traders — अरुण गोपाल ट्रेडर्स
+
+> Arun Gopal Traders is the premier online & local grocery store (किराना एवं जनरल स्टोर) located at Ramnagar Chauraha, Adda Bazar Road, Maharajganj, Uttar Pradesh (PIN 273303). The store provides 100% genuine daily staples, atta, rice, pulses (dal), edible oils, ghee, spices, dry fruits, puja samagri, beverages, personal care, and household cleaning supplies with doorstep delivery across Maharajganj and surrounding rural/semi-urban areas, as well as fast counter pickup.
+
+## Core Store Details
+- **Store Name**: Arun Gopal Traders (अरुण गोपाल ट्रेडर्स)
+- **Proprietor / Contact**: Gopal Maddheshiya
+- **Phone / Support**: +91 6388354988
+- **WhatsApp Ordering**: [Order on WhatsApp](https://wa.me/916388354988)
+- **Email**: gopalmaddheshiya138@gmail.com
+- **Physical Address**: Ramnagar Chauraha, Adda Bazar Road, Maharajganj, Uttar Pradesh, 273303, India
+- **Geo Coordinates**: Latitude 27.1472 N, Longitude 83.5619 E
+- **Store Timings**: 7:00 AM to 9:00 PM (IST), Open 7 days a week (Monday to Sunday)
+- **Primary Website**: https://arun-gopal-traders.vercel.app/
+
+## Service & Delivery Policies
+- **Home Delivery Area**: Maharajganj city, Ramnagar, Adda Bazar, and adjacent localities within 10-15 km.
+- **Delivery Timeline**: Same-day delivery (typically within 2 to 4 hours for local orders).
+- **Free Delivery**: Free home delivery on orders above ₹499 (Standard delivery fee applies below ₹499).
+- **Store Pickup**: 15-minute quick counter pickup available at Ramnagar Chauraha.
+- **Payment Modes**: Cash on Delivery (COD), UPI (Google Pay, PhonePe, Paytm, BHIM), Instant QR Code Scan, and Net Banking.
+- **Return & Purity Guarantee**: 100% genuine sealed branded products. Easy same-day replacement for any damaged or incorrect items.
+
+## Key Product Categories
+- [Flour & Atta (आटा व अनाज)](https://arun-gopal-traders.vercel.app/shop?category=atta-flour-grains): Chakki fresh whole wheat atta, maida, sooji, besan (Aashirvaad, Fortune, Shakti Bhog).
+- [Rice & Grains (चावल)](https://arun-gopal-traders.vercel.app/shop?category=rice): Basmati, regular daily rice, Govindbhog, sona masoori, poha, murmura (India Gate, Daawat).
+- [Pulses & Dal (दालें व दलहन)](https://arun-gopal-traders.vercel.app/shop?category=pulses-dal): Arhar (Tur), Chana, Moong, Urad, Masoor, Rajma, Kabuli Chana (Tata Sampann).
+- [Edible Oil & Ghee (तेल व देसी घी)](https://arun-gopal-traders.vercel.app/shop?category=oil-ghee): Pure Kachi Ghani Mustard oil, refined sunflower/soybean oil, pure Desi Cow Ghee (Fortune, Engine, Bail Kolhu, Amul, Patanjali).
+- [Spices & Masala (शुद्ध मसाले)](https://arun-gopal-traders.vercel.app/shop?category=spices-masala): Turmeric (haldi), chili (mirch), coriander (dhaniya), garam masala, hing, whole spices (MDH, Everest, Catch, Rajesh Masala).
+- [Salt, Sugar & Jaggery (नमक, चीनी व गुड़)](https://arun-gopal-traders.vercel.app/shop?category=salt-sugar-jaggery): Tata Salt, pure sulphurless sugar, desi organic jaggery.
+- [Tea, Coffee & Beverages (चाय व कॉफी)](https://arun-gopal-traders.vercel.app/shop?category=tea-coffee): Red Label, Tata Tea Gold, Taaza, Nescafe, Bru.
+- [Snacks & Biscuits (नमकीन व बिस्कुट)](https://arun-gopal-traders.vercel.app/shop?category=snacks-namkeen): Parle-G, Britannia, Sunfeast, Haldiram's namkeen, Bikaji.
+- [Puja Samagri (पूजा सामग्री)](https://arun-gopal-traders.vercel.app/shop?category=dhoop-batti): Dhoop batti, agarbatti (Zed Black, Cycle), camphor (kapoor), diya batti, hawan samagri.
+- [Household & Personal Care (घरेलू सफाई व देखभाल)](https://arun-gopal-traders.vercel.app/shop?category=household-cleaning): Detergents, soaps, dishwash, toothpastes, shampoos (Surf Excel, Rin, Vim, Dettol, Lifebuoy, Colgate).
+
+## Digital Ordering Options
+- **Web App**: Browse full live catalog and live stock at https://arun-gopal-traders.vercel.app/shop
+- **WhatsApp Express**: Send a grocery list text or photo to +91 6388354988.
+- **Phone Call**: Call +91 6388354988 for direct assisted phone orders.
+- **Live Order Tracking**: https://arun-gopal-traders.vercel.app/track
+
+## Extended Documentation
+- [Comprehensive LLM Store Knowledge Base](https://arun-gopal-traders.vercel.app/llms-full.txt): Full product catalog details, detailed FAQs, business registration context, and semantic query mappings.
+

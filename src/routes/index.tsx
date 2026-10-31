@@ -52,6 +52,8 @@ import {
 } from "@/lib/queries";
 import { waHref } from "@/lib/format";
 import { SmartRationBar } from "@/components/home/SmartRationBar";
+import { HomeFaqSection } from "@/components/home/HomeFaqSection";
+import { getStoreFaqSchema } from "@/lib/seo";
 import { gsap } from "@/lib/gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -114,6 +116,12 @@ export const Route = createFileRoute("/")({
       {
         name: "twitter:image",
         content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(getStoreFaqSchema("hi")),
       },
     ],
   }),
@@ -1490,6 +1498,10 @@ function PremiumStoreHome() {
           </div>
         </div>
       </section>
+
+      
+      {/* 13. AEO FREQUENTLY ASKED QUESTIONS (FAQ) */}
+      <HomeFaqSection storePhone={settings?.phone} storeWhatsApp={storeWhatsApp} />
 
       <Suspense fallback={null}>
         {orderModalOpen && <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />}

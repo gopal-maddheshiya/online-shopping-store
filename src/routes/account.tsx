@@ -48,10 +48,12 @@ import { getProductImage } from "@/lib/product-images";
 import { InvoiceView } from "@/components/InvoiceView";
 import { CancelOrderModal } from "@/components/CancelOrderModal";
 import type { Invoice } from "@/lib/billing";
+import { NOINDEX_ROBOTS_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
+      ...NOINDEX_ROBOTS_META,
       { title: "Arun Gopal Traders | Customer Account & Orders" },
       {
         name: "description",
@@ -968,11 +970,11 @@ export function AccountPage() {
         <div className="w-full max-w-md space-y-5">
           {/* Brand Header */}
           <div className="text-center space-y-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3 py-1 text-xs font-bold text-[#065F46] mb-1.5 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3 py-1 text-xs font-bold text-[#0E3F31] mb-1.5 shadow-2xs">
               <UserCheck className="size-3.5 text-[#059669]" />
               <span>{lang === "hi" ? "ग्राहक खाता पोर्टल" : "Customer Portal"}</span>
             </div>
-            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#111827] tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#1F2A24] tracking-tight">
               {authView === "signup"
                 ? lang === "hi"
                   ? "नया खाता बनाएं"
@@ -985,7 +987,7 @@ export function AccountPage() {
                     ? "खाते में लॉगिन करें"
                     : "Welcome Back"}
             </h1>
-            <p className="text-xs sm:text-sm text-[#4B5563]">
+            <p className="text-xs sm:text-sm text-[#66746C]">
               {authView === "signup"
                 ? lang === "hi"
                   ? "ऑर्डर हिस्ट्री और 1-क्लिक रीऑर्डर का लाभ उठाएं"
@@ -1001,10 +1003,10 @@ export function AccountPage() {
           </div>
 
           {/* Clean Auth Card */}
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] space-y-4 sm:space-y-5">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] space-y-4 sm:space-y-5">
             {/* Segmented Switcher */}
             {authView !== "forgot" && (
-              <div className="flex rounded-xl bg-[#F3F4F6] border border-[#E5E7EB] p-1 text-xs font-bold">
+              <div className="flex rounded-xl bg-[#F3F4F6] border border-[rgba(20,90,69,0.12)] p-1 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => {
@@ -1014,7 +1016,7 @@ export function AccountPage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
                     authView === "signin"
                       ? "bg-[#145A45] text-white shadow-xs"
-                      : "text-[#4B5563] hover:text-[#111827]"
+                      : "text-[#66746C] hover:text-[#1F2A24]"
                   }`}
                 >
                   <LogIn className="size-3.5" />
@@ -1029,7 +1031,7 @@ export function AccountPage() {
                   className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 transition-all cursor-pointer ${
                     authView === "signup"
                       ? "bg-[#145A45] text-white shadow-xs"
-                      : "text-[#4B5563] hover:text-[#111827]"
+                      : "text-[#66746C] hover:text-[#1F2A24]"
                   }`}
                 >
                   <UserPlus className="size-3.5" />
@@ -1045,7 +1047,7 @@ export function AccountPage() {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isGoogleSigningIn || isSigningIn || isSigningUp}
-                  className="w-full flex items-center justify-center gap-2.5 h-10.5 px-4 rounded-xl border border-[#E5E7EB] bg-white text-[#111827] font-bold text-xs sm:text-sm hover:bg-[#F9FAFB] hover:border-[#D1D5DB] active:scale-[0.99] transition-all shadow-2xs cursor-pointer disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-2.5 h-10.5 px-4 rounded-xl border border-[rgba(20,90,69,0.12)] bg-white text-[#1F2A24] font-bold text-xs sm:text-sm hover:bg-[#F9FAFB] hover:border-[#D1D5DB] active:scale-[0.99] transition-all shadow-2xs cursor-pointer disabled:opacity-60"
                 >
                   {isGoogleSigningIn ? (
                     <div className="size-4 animate-spin rounded-full border-2 border-[#145A45] border-t-transparent" />
@@ -1082,7 +1084,7 @@ export function AccountPage() {
 
                 {/* Subtle Divider */}
                 <div className="relative flex items-center justify-center">
-                  <div className="w-full border-t border-[#E5E7EB]" />
+                  <div className="w-full border-t border-[rgba(20,90,69,0.12)]" />
                   <span className="absolute bg-white px-2.5 text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">
                     {lang === "hi" ? "या मोबाइल द्वारा" : "OR WITH MOBILE"}
                   </span>
@@ -1102,11 +1104,11 @@ export function AccountPage() {
             {authView === "signin" && (
               <form onSubmit={handleSignIn} className="space-y-3.5">
                 <div className="space-y-1">
-                  <Label htmlFor="signin-phone" className="text-xs font-bold text-[#111827]">
+                  <Label htmlFor="signin-phone" className="text-xs font-bold text-[#1F2A24]">
                     {lang === "hi" ? "मोबाइल नंबर" : "Mobile Number"}
                   </Label>
-                  <div className="flex rounded-xl border border-[#E5E7EB] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
-                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#065F46] border-r border-[#E5E7EB]">
+                  <div className="flex rounded-xl border border-[rgba(20,90,69,0.12)] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
+                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#0E3F31] border-r border-[rgba(20,90,69,0.12)]">
                       +91
                     </span>
                     <Input
@@ -1118,14 +1120,14 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
                       value={signInPhone}
                       onChange={(e) => setSignInPhone(e.target.value.replace(/\D/g, ""))}
-                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#111827] h-10 placeholder:text-[#9CA3AF] placeholder:font-normal placeholder:text-xs shadow-none"
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#1F2A24] h-10 placeholder:text-[#9CA3AF] placeholder:font-normal placeholder:text-xs shadow-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="signin-password" className="text-xs font-bold text-[#111827]">
+                    <Label htmlFor="signin-password" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "पासवर्ड" : "Password"}
                     </Label>
                     <button
@@ -1135,7 +1137,7 @@ export function AccountPage() {
                         setForgotPhone(signInPhone);
                         setAuthErrorMessage(null);
                       }}
-                      className="text-[11px] font-bold text-[#065F46] hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#0E3F31] hover:underline cursor-pointer"
                     >
                       {lang === "hi" ? "पासवर्ड भूल गए?" : "Forgot?"}
                     </button>
@@ -1148,12 +1150,12 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "पासवर्ड दर्ज करें" : "Enter password"}
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
-                      className="h-10 rounded-xl border-[#E5E7EB] pr-10 text-sm focus-visible:border-[#065F46] placeholder:text-[#9CA3AF] placeholder:text-xs shadow-2xs"
+                      className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] pr-10 text-sm focus-visible:border-[#065F46] placeholder:text-[#9CA3AF] placeholder:text-xs shadow-2xs"
                     />
                     <button
                       type="button"
                       onClick={() => setShowSignInPassword(!showSignInPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24]"
                     >
                       {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -1163,7 +1165,7 @@ export function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSigningIn || signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword}
-                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0F4A38] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm"
+                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0E3F31] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm"
                 >
                   {isSigningIn
                     ? lang === "hi"
@@ -1180,7 +1182,7 @@ export function AccountPage() {
             {authView === "signup" && (
               <form onSubmit={handleSignUp} className="space-y-3">
                 <div className="space-y-1">
-                  <Label htmlFor="signup-name" className="text-xs font-bold text-[#111827]">
+                  <Label htmlFor="signup-name" className="text-xs font-bold text-[#1F2A24]">
                     {lang === "hi" ? "पूरा नाम" : "Full Name"}
                   </Label>
                   <Input
@@ -1189,16 +1191,16 @@ export function AccountPage() {
                     placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                     value={signUpName}
                     onChange={(e) => setSignUpName(e.target.value)}
-                    className="h-10 rounded-xl border-[#E5E7EB] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
+                    className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="signup-phone" className="text-xs font-bold text-[#111827]">
+                  <Label htmlFor="signup-phone" className="text-xs font-bold text-[#1F2A24]">
                     {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "Mobile Number"}
                   </Label>
-                  <div className="flex rounded-xl border border-[#E5E7EB] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
-                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#065F46] border-r border-[#E5E7EB]">
+                  <div className="flex rounded-xl border border-[rgba(20,90,69,0.12)] focus-within:ring-2 focus-within:ring-[#065F46]/15 focus-within:border-[#065F46] bg-white overflow-hidden transition-all shadow-2xs">
+                    <span className="flex items-center bg-[#F9FAFB] px-3.5 text-xs font-bold text-[#0E3F31] border-r border-[rgba(20,90,69,0.12)]">
                       +91
                     </span>
                     <Input
@@ -1210,14 +1212,14 @@ export function AccountPage() {
                       placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
                       value={signUpPhone}
                       onChange={(e) => setSignUpPhone(e.target.value.replace(/\D/g, ""))}
-                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#111827] h-10 placeholder:text-[#9CA3AF] placeholder:text-xs"
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#1F2A24] h-10 placeholder:text-[#9CA3AF] placeholder:text-xs"
                     />
                   </div>
                 </div>
 
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="signup-password" className="text-xs font-bold text-[#111827]">
+                    <Label htmlFor="signup-password" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "पासवर्ड (min 6)" : "Password (min 6)"}
                     </Label>
                     <div className="relative">
@@ -1228,12 +1230,12 @@ export function AccountPage() {
                         placeholder="••••••"
                         value={signUpPassword}
                         onChange={(e) => setSignUpPassword(e.target.value)}
-                        className="h-10 rounded-xl border-[#E5E7EB] pr-8 text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
+                        className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] pr-8 text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827]"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24]"
                       >
                         {showSignUpPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                       </button>
@@ -1241,7 +1243,7 @@ export function AccountPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#111827]">
+                    <Label htmlFor="signup-confirm-password" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "कन्फर्म पासवर्ड" : "Confirm"}
                     </Label>
                     <Input
@@ -1251,7 +1253,7 @@ export function AccountPage() {
                       placeholder="••••••"
                       value={signUpConfirmPassword}
                       onChange={(e) => setSignUpConfirmPassword(e.target.value)}
-                      className="h-10 rounded-xl border-[#E5E7EB] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
+                      className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                     />
                   </div>
                 </div>
@@ -1259,7 +1261,7 @@ export function AccountPage() {
                 <Button
                   type="submit"
                   disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
-                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0F4A38] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
+                  className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0E3F31] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
                 >
                   {isSigningUp
                     ? lang === "hi"
@@ -1277,7 +1279,7 @@ export function AccountPage() {
               <form onSubmit={handleResetPassword} className="space-y-3.5">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="forgot-phone" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "पंजीकृत मोबाइल नंबर" : "Mobile Number"}
                     </Label>
                     <button
@@ -1295,8 +1297,8 @@ export function AccountPage() {
                           : "Send OTP"}
                     </button>
                   </div>
-                  <div className="flex rounded-2xl border border-[#E4DFD5] bg-white overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                    <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E4DFD5]">
+                  <div className="flex rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+                    <span className="flex items-center bg-[#FBF7EF] px-3.5 text-xs font-bold text-[#0E3F31] border-r border-[rgba(20,90,69,0.12)]">
                       +91
                     </span>
                     <Input
@@ -1307,13 +1309,13 @@ export function AccountPage() {
                       placeholder="10-digit number"
                       value={forgotPhone}
                       onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
-                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#16201A] h-10.5 placeholder:text-[#A8B2AC] placeholder:text-xs"
+                      className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#1F2A24] h-10.5 placeholder:text-[#A8B2AC] placeholder:text-xs"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="recovery-code" className="text-xs font-bold text-[#16201A]">
+                  <Label htmlFor="recovery-code" className="text-xs font-bold text-[#1F2A24]">
                     {lang === "hi" ? "रिकवरी कोड (OTP)" : "Recovery OTP"}
                   </Label>
                   <Input
@@ -1322,13 +1324,13 @@ export function AccountPage() {
                     placeholder="6-digit code"
                     value={recoveryCode}
                     onChange={(e) => setRecoveryCode(e.target.value)}
-                    className="h-10.5 rounded-2xl border-[#E4DFD5] font-mono text-xs font-bold shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                    className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] font-mono text-xs font-bold shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                   />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <Label htmlFor="new-password" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="new-password" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "नया पासवर्ड" : "New Password"}
                     </Label>
                     <Input
@@ -1338,11 +1340,11 @@ export function AccountPage() {
                       placeholder="••••••"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="h-10.5 rounded-2xl border-[#E4DFD5] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                      className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="confirm-new-password" className="text-xs font-bold text-[#16201A]">
+                    <Label htmlFor="confirm-new-password" className="text-xs font-bold text-[#1F2A24]">
                       {lang === "hi" ? "कन्फर्म करें" : "Confirm"}
                     </Label>
                     <Input
@@ -1352,7 +1354,7 @@ export function AccountPage() {
                       placeholder="••••••"
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      className="h-10.5 rounded-2xl border-[#E4DFD5] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                      className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                     />
                   </div>
                 </div>
@@ -1391,7 +1393,7 @@ export function AccountPage() {
           <div className="text-center pt-1">
             <Link
               to="/track"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A655F] hover:text-[#145A45] transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#66746C] hover:text-[#145A45] transition-colors"
             >
               <Package className="size-3.5" />
               <span>
@@ -1430,7 +1432,7 @@ export function AccountPage() {
   return (
     <div className="container-page py-4 sm:py-8 pb-24 lg:pb-12 max-w-4xl mx-auto space-y-6">
       {/* Sleek Profile Header Card */}
-      <div className="rounded-3xl border border-[#E4DFD5] bg-white p-4 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+      <div className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-gradient-to-br from-[#145A45] via-[#104E3C] to-[#0A3628] font-sans text-xl sm:text-2xl font-black text-white shadow-[0_2px_6px_rgba(20,90,69,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] shrink-0">
@@ -1438,23 +1440,23 @@ export function AccountPage() {
             </div>
             <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex items-center gap-2">
-                <h1 className="font-sans text-lg sm:text-xl font-black text-[#16201A] truncate">
+                <h1 className="font-sans text-lg sm:text-xl font-black text-[#1F2A24] truncate">
                   {customerName}
                 </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#E6EFE8] border border-[#145A45]/20 px-2 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E8F1EC] border border-[#145A45]/20 px-2 py-0.5 text-[10px] font-bold text-[#145A45] shrink-0">
                   <ShieldCheck className="size-3" />
                   <span>{lang === "hi" ? "सत्यापित" : "Verified"}</span>
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5A655F]">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#66746C]">
                 {customerPhone && (
-                  <span className="flex items-center gap-1 font-semibold text-[#16201A]">
+                  <span className="flex items-center gap-1 font-semibold text-[#1F2A24]">
                     <Phone className="size-3 text-[#145A45]" />
                     <span>+91 {customerPhone}</span>
                   </span>
                 )}
                 {customerEmail && (
-                  <span className="flex items-center gap-1 font-normal text-[#5A655F] truncate max-w-xs">
+                  <span className="flex items-center gap-1 font-normal text-[#66746C] truncate max-w-xs">
                     <Mail className="size-3 text-[#145A45]" />
                     <span className="truncate">{customerEmail}</span>
                   </span>
@@ -1469,7 +1471,7 @@ export function AccountPage() {
                 asChild
                 size="sm"
                 variant="outline"
-                className="rounded-xl border border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/70 hover:bg-[#145A45] hover:text-white font-bold text-xs h-8.5 px-3 shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.8)]"
+                className="rounded-xl border border-[#145A45]/30 text-[#145A45] bg-[#E8F1EC]/70 hover:bg-[#145A45] hover:text-white font-bold text-xs h-8.5 px-3 shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.8)]"
               >
                 <Link to="/admin">
                   <span>{lang === "hi" ? "दुकान एडमिन" : "Admin Panel"}</span>
@@ -1480,7 +1482,7 @@ export function AccountPage() {
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="rounded-xl gap-1.5 text-xs font-bold border border-[#E4DFD5] text-[#5A655F] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors h-8.5 px-3"
+              className="rounded-xl gap-1.5 text-xs font-bold border border-[rgba(20,90,69,0.12)] text-[#66746C] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors h-8.5 px-3"
             >
               <LogOut className="size-3.5" />
               <span>{lang === "hi" ? "लॉगआउट" : "Logout"}</span>
@@ -1491,7 +1493,7 @@ export function AccountPage() {
 
       {/* Main Tabbed Sections */}
       <Tabs defaultValue="orders" className="space-y-5">
-        <TabsList className="grid grid-cols-4 h-11 w-full rounded-2xl bg-[#FAF8F2] border border-[#E4DFD5] p-1 gap-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+        <TabsList className="grid grid-cols-4 h-11 w-full rounded-2xl bg-[#FBF7EF] border border-[rgba(20,90,69,0.12)] p-1 gap-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
           <TabsTrigger
             value="orders"
             className="rounded-xl text-[11px] sm:text-xs font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#145A45] data-[state=active]:to-[#0E4333] data-[state=active]:text-white truncate px-1 sm:px-3 py-1.5 cursor-pointer transition-all data-[state=active]:shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
@@ -1536,20 +1538,20 @@ export function AccountPage() {
             orders.map((order) => (
               <div
                 key={order.id}
-                className="rounded-3xl border border-[#E4DFD5] bg-white p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all space-y-3.5"
+                className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all space-y-3.5"
               >
                 {/* Card Top: Order No, Date & Status Pill */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4DFD5] pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(20,90,69,0.12)] pb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-sm text-[#16201A]">
+                      <span className="font-mono font-black text-sm text-[#1F2A24]">
                         #{order.order_no}
                       </span>
-                      <span className="rounded-full bg-[#E6EFE8] border border-[#145A45]/20 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
+                      <span className="rounded-full bg-[#E8F1EC] border border-[#145A45]/20 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
                         {ORDER_STATUS_LABEL[order.status] ?? order.status}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#5A655F] mt-0.5">
+                    <p className="text-[11px] text-[#66746C] mt-0.5">
                       {formatDate(order.created_at)} •{" "}
                       {order.order_type === "delivery"
                         ? lang === "hi"
@@ -1562,7 +1564,7 @@ export function AccountPage() {
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[11px] text-[#5A655F] block">
+                    <span className="text-[11px] text-[#66746C] block">
                       {lang === "hi" ? "कुल राशि" : "Grand Total"}
                     </span>
                     <span className="font-sans font-black text-base text-[#145A45]">
@@ -1572,7 +1574,7 @@ export function AccountPage() {
                 </div>
 
                 {/* Card Middle: Clean Compact Items List */}
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 bg-[#FAF8F2]/70 rounded-2xl p-2.5 border border-[#E4DFD5]">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 bg-[#FBF7EF]/70 rounded-2xl p-2.5 border border-[rgba(20,90,69,0.12)]">
                   {(order.order_items ?? []).map((item) => (
                     <div key={item.id} className="flex items-center gap-2 min-w-0">
                       <img
@@ -1581,13 +1583,13 @@ export function AccountPage() {
                           image_url: item.image_url,
                         })}
                         alt={getProductName(item)}
-                        className="size-9 rounded-xl object-contain bg-gradient-to-b from-white to-[#F7F5F0] p-1 border border-[#E4DFD5] shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+                        className="size-9 rounded-xl object-contain bg-gradient-to-b from-white to-[#F7F5F0] p-1 border border-[rgba(20,90,69,0.12)] shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-[#16201A]">
+                        <p className="truncate text-xs font-semibold text-[#1F2A24]">
                           {getProductName(item)}
                         </p>
-                        <p className="text-[10px] text-[#5A655F]">
+                        <p className="text-[10px] text-[#66746C]">
                           {getVariantLabel(item)} × {item.qty} ({inr(item.price * item.qty)})
                         </p>
                       </div>
@@ -1597,7 +1599,7 @@ export function AccountPage() {
 
                 {/* Card Bottom: Clean Action Buttons */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                  <span className="text-[11px] font-medium text-[#5A655F] uppercase tracking-wide">
+                  <span className="text-[11px] font-medium text-[#66746C] uppercase tracking-wide">
                     {order.payment_method?.toUpperCase()} • {order.payment_status === "paid" ? "PAID" : "PENDING"}
                   </span>
 
@@ -1607,7 +1609,7 @@ export function AccountPage() {
                       disabled={invoiceLoadingId === order.id}
                       size="sm"
                       variant="outline"
-                      className="h-8.5 rounded-xl text-xs font-bold border border-[#E4DFD5] text-[#16201A] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] cursor-pointer"
+                      className="h-8.5 rounded-xl text-xs font-bold border border-[rgba(20,90,69,0.12)] text-[#1F2A24] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FBF7EF] cursor-pointer"
                     >
                       <Receipt className="size-3.5 mr-1 text-[#145A45]" />
                       <span>{lang === "hi" ? "बिल देखें" : "Invoice"}</span>
@@ -1654,13 +1656,13 @@ export function AccountPage() {
               </div>
             ))
           ) : (
-            <div className="rounded-3xl border border-dashed border-[#E4DFD5] p-10 text-center bg-white space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="rounded-3xl border border-dashed border-[rgba(20,90,69,0.12)] p-10 text-center bg-white space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
               <ShoppingBag className="mx-auto size-12 text-[#A8B2AC]" />
               <div className="space-y-1">
-                <h3 className="font-sans text-base font-bold text-[#16201A]">
+                <h3 className="font-sans text-base font-bold text-[#1F2A24]">
                   {lang === "hi" ? "अभी तक कोई ऑर्डर नहीं" : "No orders found"}
                 </h3>
-                <p className="text-xs text-[#5A655F]">
+                <p className="text-xs text-[#66746C]">
                   {lang === "hi"
                     ? "आपके खाते में अभी कोई पुराना ऑर्डर दर्ज नहीं है।"
                     : "You haven't placed any orders with this account yet."}
@@ -1676,10 +1678,10 @@ export function AccountPage() {
         {/* TAB 2: BUY AGAIN (CLEAN STAPLES GRID) */}
         <TabsContent value="buy-again" className="space-y-4">
           <div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">
+            <h3 className="font-sans text-base font-bold text-[#1F2A24]">
               {lang === "hi" ? "पिछले पसंदीदा राशन" : "Frequently Ordered Staples"}
             </h3>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#66746C]">
               {lang === "hi"
                 ? "1-क्लिक में अपने दैनिक जरूरी सामान दोबारा बास्केट में जोड़ें।"
                 : "Quickly add your daily groceries back to your basket."}
@@ -1691,9 +1693,9 @@ export function AccountPage() {
               {uniquePurchasedItems.map((item, idx) => (
                 <div
                   key={item.variantId || idx}
-                  className="flex flex-col justify-between overflow-hidden bg-white p-3 border border-[#E4DFD5] rounded-3xl shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all"
+                  className="flex flex-col justify-between overflow-hidden bg-white p-3 border border-[rgba(20,90,69,0.12)] rounded-3xl shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all"
                 >
-                  <div className="flex aspect-square w-full items-center justify-center p-2.5 bg-gradient-to-b from-[#FBF9F4] to-[#F5F2EA] border border-[#E4DFD5]/60 rounded-2xl">
+                  <div className="flex aspect-square w-full items-center justify-center p-2.5 bg-gradient-to-b from-[#FBF9F4] to-[#F5F2EA] border border-[rgba(20,90,69,0.12)]/60 rounded-2xl">
                     <img
                       src={getProductImage({
                         name: item.name,
@@ -1705,8 +1707,8 @@ export function AccountPage() {
                   </div>
                   <div className="mt-2 flex flex-1 flex-col justify-between space-y-1.5">
                     <div>
-                      <h4 className="line-clamp-2 text-xs font-bold text-[#16201A]">{item.name}</h4>
-                      <p className="text-[10px] text-[#5A655F]">{item.variantLabel}</p>
+                      <h4 className="line-clamp-2 text-xs font-bold text-[#1F2A24]">{item.name}</h4>
+                      <p className="text-[10px] text-[#66746C]">{item.variantLabel}</p>
                     </div>
                     <div className="pt-1 flex items-center justify-between">
                       <span className="text-xs font-black text-[#145A45]">{inr(item.price)}</span>
@@ -1736,13 +1738,13 @@ export function AccountPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-[#E4DFD5] p-10 text-center bg-white space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="rounded-3xl border border-dashed border-[rgba(20,90,69,0.12)] p-10 text-center bg-white space-y-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
               <RotateCcw className="mx-auto size-12 text-[#A8B2AC]" />
               <div className="space-y-1">
-                <h3 className="font-sans text-base font-bold text-[#16201A]">
+                <h3 className="font-sans text-base font-bold text-[#1F2A24]">
                   {lang === "hi" ? "कोई पिछला ऑर्डर नहीं" : "No purchase history yet"}
                 </h3>
-                <p className="text-xs text-[#5A655F]">
+                <p className="text-xs text-[#66746C]">
                   {lang === "hi"
                     ? "जब आप राशन ऑर्डर करेंगे, तो वे सामान यहाँ तुरंत दिखाई देंगे।"
                     : "Items you order will automatically appear here for fast reordering."}
@@ -1759,10 +1761,10 @@ export function AccountPage() {
         <TabsContent value="addresses" className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-sans text-base font-bold text-[#16201A]">
+              <h3 className="font-sans text-base font-bold text-[#1F2A24]">
                 {lang === "hi" ? "सहेजे गए पते" : "Delivery Addresses"}
               </h3>
-              <p className="text-xs text-[#5A655F]">
+              <p className="text-xs text-[#66746C]">
                 {lang === "hi" ? "महाराजगंज में अपने डिलीवरी पते प्रबंधित करें" : "Manage delivery locations"}
               </p>
             </div>
@@ -1780,9 +1782,9 @@ export function AccountPage() {
           {showAddAddress && (
             <form
               onSubmit={handleAddAddress}
-              className="rounded-3xl border border-[#145A45]/30 bg-[#FAF8F2] p-5 space-y-3.5 animate-in fade-in duration-150 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]"
+              className="rounded-3xl border border-[#145A45]/30 bg-[#FBF7EF] p-5 space-y-3.5 animate-in fade-in duration-150 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]"
             >
-              <h4 className="font-bold text-xs sm:text-sm text-[#0F4A38] flex items-center gap-1.5">
+              <h4 className="font-bold text-xs sm:text-sm text-[#0E3F31] flex items-center gap-1.5">
                 <MapPin className="size-4 text-[#145A45]" />
                 <span>{lang === "hi" ? "नया डिलीवरी पता जोड़ें" : "New Address Details"}</span>
               </h4>
@@ -1792,7 +1794,7 @@ export function AccountPage() {
                   placeholder={lang === "hi" ? "प्राप्तकर्ता का नाम" : "Recipient Full Name"}
                   value={newRecipientName}
                   onChange={(e) => setNewRecipientName(e.target.value)}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
                 <Input
                   required
@@ -1801,33 +1803,33 @@ export function AccountPage() {
                   placeholder={lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "10-digit Phone"}
                   value={newRecipientPhone}
                   onChange={(e) => setNewRecipientPhone(e.target.value.replace(/\D/g, ""))}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
                 <Input
                   required
                   placeholder={lang === "hi" ? "मकान / दुकान नं." : "House/Flat No."}
                   value={newHouse}
                   onChange={(e) => setNewHouse(e.target.value)}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
                 <Input
                   required
                   placeholder={lang === "hi" ? "मोहल्ला / सड़क" : "Area / Road"}
                   value={newArea}
                   onChange={(e) => setNewArea(e.target.value)}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
                 <Input
                   placeholder={lang === "hi" ? "लैंडमार्क (वैकल्पिक)" : "Landmark (Optional)"}
                   value={newLandmark}
                   onChange={(e) => setNewLandmark(e.target.value)}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
                 <Input
                   placeholder="273303"
                   value={newPin}
                   onChange={(e) => setNewPin(e.target.value)}
-                  className="rounded-xl border-[#E4DFD5] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
               </div>
               <div className="flex gap-2 pt-1">
@@ -1844,7 +1846,7 @@ export function AccountPage() {
                   onClick={() => setShowAddAddress(false)}
                   variant="outline"
                   size="sm"
-                  className="rounded-xl border border-[#E4DFD5] bg-white text-[#5A655F] shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-xs h-8.5 px-3 hover:bg-[#FAF8F2] cursor-pointer"
+                  className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white text-[#66746C] shadow-[0_1px_2px_rgba(0,0,0,0.02)] text-xs h-8.5 px-3 hover:bg-[#FBF7EF] cursor-pointer"
                 >
                   {lang === "hi" ? "रद्द करें" : "Cancel"}
                 </Button>
@@ -1863,11 +1865,11 @@ export function AccountPage() {
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className="rounded-3xl border border-[#E4DFD5] bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between space-y-2.5"
+                  className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.04)] transition-all flex flex-col justify-between space-y-2.5"
                 >
                   {editingAddressId === addr.id ? (
                     <form onSubmit={handleUpdateAddress} className="space-y-3">
-                      <div className="flex items-center justify-between border-b border-[#E4DFD5] pb-1.5">
+                      <div className="flex items-center justify-between border-b border-[rgba(20,90,69,0.12)] pb-1.5">
                         <span className="text-xs font-bold text-[#145A45] flex items-center gap-1.5">
                           <Pencil className="size-3.5" />
                           <span>{lang === "hi" ? "पता बदलें" : "Edit Address"}</span>
@@ -1875,7 +1877,7 @@ export function AccountPage() {
                         <button
                           type="button"
                           onClick={cancelEditAddress}
-                          className="text-xs text-[#5A655F] hover:text-[#16201A]"
+                          className="text-xs text-[#66746C] hover:text-[#1F2A24]"
                         >
                           ✕
                         </button>
@@ -1885,7 +1887,7 @@ export function AccountPage() {
                           required
                           value={editRecipientName}
                           onChange={(e) => setEditRecipientName(e.target.value)}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="Recipient Name"
                         />
                         <Input
@@ -1894,33 +1896,33 @@ export function AccountPage() {
                           maxLength={10}
                           value={editRecipientPhone}
                           onChange={(e) => setEditRecipientPhone(e.target.value.replace(/\D/g, ""))}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="Phone"
                         />
                         <Input
                           required
                           value={editHouse}
                           onChange={(e) => setEditHouse(e.target.value)}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="House No."
                         />
                         <Input
                           required
                           value={editArea}
                           onChange={(e) => setEditArea(e.target.value)}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="Area / Road"
                         />
                         <Input
                           value={editLandmark}
                           onChange={(e) => setEditLandmark(e.target.value)}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="Landmark"
                         />
                         <Input
                           value={editPin}
                           onChange={(e) => setEditPin(e.target.value)}
-                          className="rounded-xl border-[#E4DFD5] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                          className="rounded-xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-8.5 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                           placeholder="Pin"
                         />
                       </div>
@@ -1938,7 +1940,7 @@ export function AccountPage() {
                           onClick={cancelEditAddress}
                           variant="outline"
                           size="sm"
-                          className="rounded-xl border border-[#E4DFD5] bg-white text-[#5A655F] text-xs h-8 px-3 hover:bg-[#FAF8F2]"
+                          className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white text-[#66746C] text-xs h-8 px-3 hover:bg-[#FBF7EF]"
                         >
                           रद्द करें
                         </Button>
@@ -1948,16 +1950,16 @@ export function AccountPage() {
                     <>
                       <div>
                         <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-[#16201A]">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-[#1F2A24]">
                             <MapPin className="size-3.5 text-[#145A45]" />
                             <span>{addr.name}</span>
-                            <span className="font-normal text-[#5A655F]">({addr.phone})</span>
+                            <span className="font-normal text-[#66746C]">({addr.phone})</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => startEditAddress(addr)}
-                              className="text-[#5A655F] hover:text-[#145A45] p-1.5 rounded-lg hover:bg-[#E6EFE8] transition-colors cursor-pointer"
+                              className="text-[#66746C] hover:text-[#145A45] p-1.5 rounded-lg hover:bg-[#E8F1EC] transition-colors cursor-pointer"
                               title="Edit"
                             >
                               <Pencil className="size-3.5" />
@@ -1965,14 +1967,14 @@ export function AccountPage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteAddress(addr.id)}
-                              className="text-[#5A655F] hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                              className="text-[#66746C] hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                               title="Delete"
                             >
                               <Trash2 className="size-3.5" />
                             </button>
                           </div>
                         </div>
-                        <p className="mt-1.5 text-xs leading-relaxed text-[#5A655F]">
+                        <p className="mt-1.5 text-xs leading-relaxed text-[#66746C]">
                           {addr.house}, {addr.area}
                           {addr.landmark ? `, ${addr.landmark}` : ""}
                           <br />
@@ -1985,9 +1987,9 @@ export function AccountPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-[#E4DFD5] p-8 text-center bg-white space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+            <div className="rounded-3xl border border-dashed border-[rgba(20,90,69,0.12)] p-8 text-center bg-white space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
               <MapPin className="mx-auto size-10 text-[#A8B2AC]" />
-              <p className="text-xs text-[#5A655F]">
+              <p className="text-xs text-[#66746C]">
                 {lang === "hi"
                   ? "कोई सहेजा गया पता नहीं मिला। ऊपर दिए बटन से नया पता जोड़ें।"
                   : "No saved addresses. Click Add Address to save your location."}
@@ -1998,12 +2000,12 @@ export function AccountPage() {
 
         {/* TAB 4: PROFILE & SETTINGS */}
         <TabsContent value="profile">
-          <div className="max-w-xl rounded-3xl border border-[#E4DFD5] bg-white p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] space-y-4">
+          <div className="max-w-xl rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] space-y-4">
             <div>
-              <h3 className="font-sans text-base font-bold text-[#16201A]">
+              <h3 className="font-sans text-base font-bold text-[#1F2A24]">
                 {lang === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
               </h3>
-              <p className="text-xs text-[#5A655F]">
+              <p className="text-xs text-[#66746C]">
                 {lang === "hi"
                   ? "अपना नाम और संपर्क ईमेल अपडेट करें।"
                   : "Update your customer name and contact email."}
@@ -2012,7 +2014,7 @@ export function AccountPage() {
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="prof-name" className="text-xs font-bold text-[#16201A]">
+                <Label htmlFor="prof-name" className="text-xs font-bold text-[#1F2A24]">
                   {lang === "hi" ? "पूरा नाम" : "Full Name"}
                 </Label>
                 <Input
@@ -2021,12 +2023,12 @@ export function AccountPage() {
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Full Name"
-                  className="rounded-2xl border-[#E4DFD5] bg-white text-xs h-10 font-medium shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-2xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-10 font-medium shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="prof-phone" className="text-xs font-bold text-[#16201A]">
+                <Label htmlFor="prof-phone" className="text-xs font-bold text-[#1F2A24]">
                   {lang === "hi" ? "मोबाइल नंबर (10 अंक)" : "Mobile Number (10 digits)"}
                 </Label>
                 {profile?.phone ? (
@@ -2035,9 +2037,9 @@ export function AccountPage() {
                       id="prof-phone"
                       disabled
                       value={customerPhone}
-                      className="rounded-2xl border-[#E4DFD5] bg-[#FAF8F2] text-xs font-bold text-[#145A45] h-10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                      className="rounded-2xl border-[rgba(20,90,69,0.12)] bg-[#FBF7EF] text-xs font-bold text-[#145A45] h-10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                     />
-                    <p className="text-[10px] text-[#5A655F]">
+                    <p className="text-[10px] text-[#66746C]">
                       {lang === "hi"
                         ? "पंजीकृत मोबाइल नंबर आपके खाते की सुरक्षित पहचान है।"
                         : "Registered mobile number is your secure login identity."}
@@ -2045,8 +2047,8 @@ export function AccountPage() {
                   </>
                 ) : (
                   <>
-                    <div className="flex rounded-2xl border border-[#E4DFD5] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                      <span className="flex items-center bg-[#FAF8F2] px-3.5 text-xs font-bold text-[#0F4A38] border-r border-[#E4DFD5]">
+                    <div className="flex rounded-2xl border border-[rgba(20,90,69,0.12)] focus-within:ring-2 focus-within:ring-[#145A45]/20 focus-within:border-[#145A45] bg-white overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+                      <span className="flex items-center bg-[#FBF7EF] px-3.5 text-xs font-bold text-[#0E3F31] border-r border-[rgba(20,90,69,0.12)]">
                         +91
                       </span>
                       <Input
@@ -2056,7 +2058,7 @@ export function AccountPage() {
                         value={editPhone}
                         onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, ""))}
                         placeholder="Add 10-digit mobile number"
-                        className="border-0 rounded-none focus-visible:ring-0 text-xs font-semibold text-[#16201A] h-10"
+                        className="border-0 rounded-none focus-visible:ring-0 text-xs font-semibold text-[#1F2A24] h-10"
                       />
                     </div>
                     <p className="text-[10px] text-[#145A45] font-medium">
@@ -2069,7 +2071,7 @@ export function AccountPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="prof-email" className="text-xs font-bold text-[#16201A]">
+                <Label htmlFor="prof-email" className="text-xs font-bold text-[#1F2A24]">
                   {lang === "hi" ? "ईमेल आईडी (वैकल्पिक)" : "Email Address (Optional)"}
                 </Label>
                 <Input
@@ -2078,7 +2080,7 @@ export function AccountPage() {
                   placeholder="name@example.com"
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
-                  className="rounded-2xl border-[#E4DFD5] bg-white text-xs h-10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
+                  className="rounded-2xl border-[rgba(20,90,69,0.12)] bg-white text-xs h-10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
                 />
               </div>
 

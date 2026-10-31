@@ -22,6 +22,8 @@ import { useLanguage } from "@/lib/i18n";
 import { getCategoryThumbnail } from "@/lib/product-images";
 import { categoriesQuery, cheapestVariant, productsQuery, totalStock, settingsQuery } from "@/lib/queries";
 import { getCategoryHeadings, type CategoryHeading } from "@/lib/category-headings";
+import { SITE_URL } from "@/lib/site-config";
+import { getBreadcrumbSchema, LOCAL_GEO_META, PUBLIC_ROBOTS_META } from "@/lib/seo";
 
 type ShopSearch = {
   q?: string | undefined;
@@ -55,17 +57,60 @@ export const Route = createFileRoute("/shop")({
     ]);
   },
   head: () => ({
+    links: [
+      { rel: "canonical", href: `${SITE_URL}/shop` },
+    ],
     meta: [
-      { title: "Arun Gopal Traders | Shop" },
+      { title: "किराना कैटलॉग एवं दैनिक राशन | Arun Gopal Traders Maharajganj" },
       {
         name: "description",
         content:
-          "Browse the full kirana catalogue: atta, rice, dal, oil, spices, snacks, dairy and household essentials with live prices and stock in Maharajganj.",
+          "दुकान का पूरा किराना सामान: आटा, चावल, दाल, तेल, मसाले, पूजा सामग्री व घरेलू उत्पाद। लाइव रेट व स्टॉक देखें — रामनगर चौराहा, महराजगंज।",
       },
-      { property: "og:title", content: "Arun Gopal Traders | Shop" },
+      ...PUBLIC_ROBOTS_META,
+      ...LOCAL_GEO_META,
+      { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/shop` },
+      { property: "og:title", content: "किराना कैटलॉग एवं दैनिक राशन | Arun Gopal Traders" },
       {
         property: "og:description",
-        content: "Search, filter and order daily essentials for delivery in Maharajganj.",
+        content: "सर्च करें, फ़िल्टर करें और घर बैठे शुद्ध राशन मंगाएं। रामनगर, महराजगंज।",
+      },
+      {
+        property: "og:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "किराना कैटलॉग एवं दैनिक राशन | Arun Gopal Traders" },
+      {
+        name: "twitter:description",
+        content: "सर्च करें, फ़िल्टर करें और घर बैठे शुद्ध राशन मंगाएं। रामनगर, महराजगंज।",
+      },
+      {
+        name: "twitter:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              "@id": `${SITE_URL}/shop#collection`,
+              name: "Grocery & Provisions Catalogue — Arun Gopal Traders",
+              description: "Browse the full grocery and daily essentials catalogue in Maharajganj.",
+              url: `${SITE_URL}/shop`,
+            },
+            getBreadcrumbSchema([
+              { name: "Home", url: "/" },
+              { name: "Shop", url: "/shop" },
+            ]),
+          ],
+        }),
       },
     ],
   }),

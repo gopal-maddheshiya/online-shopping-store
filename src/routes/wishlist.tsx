@@ -21,10 +21,12 @@ import { useLanguage } from "@/lib/i18n";
 import { getProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 import { cheapestVariant } from "@/lib/queries";
+import { NOINDEX_ROBOTS_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
+      ...NOINDEX_ROBOTS_META,
       { title: "Arun Gopal Traders | Wishlist" },
       {
         name: "description",
@@ -112,17 +114,17 @@ function WishlistPage() {
     return (
       <div className="container-page py-5 sm:py-7 pb-28 lg:pb-16 max-w-3xl mx-auto">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-[#5A655F]">
+        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-[#66746C]">
           <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
             <Home className="size-3.5" />
             <span>{t.home}</span>
           </Link>
           <ChevronRight className="size-3 text-gray-400" />
-          <span className="font-semibold text-[#16201A]">{t.myWishlistTitle || t.myWishlist}</span>
+          <span className="font-semibold text-[#1F2A24]">{t.myWishlistTitle || t.myWishlist}</span>
         </nav>
 
         {/* Empty State Box */}
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 sm:p-9 text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+        <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-6 sm:p-9 text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
           {/* Brand Emerald Green Heart Icon Badge */}
           <div className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-gradient-to-b from-[#EBF3ED] to-[#DCECE0] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_8px_rgba(20,90,69,0.08)]">
             <Heart className="size-8 fill-[#145A45]/20 text-[#145A45] transition-transform hover:scale-105 duration-200" />
@@ -131,11 +133,11 @@ function WishlistPage() {
             </span>
           </div>
 
-          <h1 className="mt-4 font-sans text-xl sm:text-2xl font-bold tracking-tight text-[#16201A]">
+          <h1 className="mt-4 font-sans text-xl sm:text-2xl font-bold tracking-tight text-[#1F2A24]">
             {lang === "hi" ? "आपकी पसंदीदा सूची अभी खाली है" : (t.emptyWishlistTitle || "Your Wishlist is Empty")}
           </h1>
 
-          <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#5A655F]">
+          <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#66746C]">
             {lang === "hi"
               ? "रोजमर्रा के जरूरी सामानों (आटा, दाल, तेल, मसाले आदि) पर दिल (❤️) आइकन दबाएं ताकि अगली बार 1-क्लिक में थैले में जोड़ सकें।"
               : (t.emptyWishlistSubtitle || "Save your daily staples, spices, and groceries by tapping the heart icon on any product.")}
@@ -155,8 +157,8 @@ function WishlistPage() {
           </div>
 
           {/* Quick Category Discovery Pills */}
-          <div className="mt-7 border-t border-[#E5E7EB]/80 pt-5">
-            <p className="text-[11px] font-semibold text-[#16201A] uppercase tracking-wider mb-2.5">
+          <div className="mt-7 border-t border-[rgba(20,90,69,0.12)]/80 pt-5">
+            <p className="text-[11px] font-semibold text-[#1F2A24] uppercase tracking-wider mb-2.5">
               {lang === "hi" ? "किराना श्रेणियां ब्राउज़ करें" : "Explore Popular Grocery Categories"}
             </p>
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
@@ -165,7 +167,7 @@ function WishlistPage() {
                   key={cat.id}
                   to="/shop"
                   search={{ category: cat.slug }}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#E5E7EB] bg-[#FAF8F5] px-2.5 py-1 text-[11px] font-medium text-[#374151] hover:border-[#145A45]/40 hover:bg-[#EBF3ED] hover:text-[#145A45] transition-all shadow-xs"
+                  className="inline-flex items-center gap-1 rounded-full border border-[rgba(20,90,69,0.12)] bg-[#FBF7EF] px-2.5 py-1 text-[11px] font-medium text-[#374151] hover:border-[#145A45]/40 hover:bg-[#E8F1EC] hover:text-[#145A45] transition-all shadow-xs"
                 >
                   <span className="text-xs">{cat.icon}</span>
                   <span>{lang === "hi" ? cat.label_hi : cat.label_en}</span>
@@ -175,44 +177,44 @@ function WishlistPage() {
           </div>
 
           {/* Micro Benefits of Wishlist */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left border-t border-[#E5E7EB]/80 pt-5">
-            <div className="rounded-xl border border-[#E5E7EB]/80 bg-[#FAF8F5] p-2.5 flex items-start gap-2.5">
-              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[#E5E7EB] text-[#145A45] shrink-0 shadow-xs">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left border-t border-[rgba(20,90,69,0.12)]/80 pt-5">
+            <div className="rounded-xl border border-[rgba(20,90,69,0.12)]/80 bg-[#FBF7EF] p-2.5 flex items-start gap-2.5">
+              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[rgba(20,90,69,0.12)] text-[#145A45] shrink-0 shadow-xs">
                 <Zap className="size-3.5" />
               </div>
               <div>
-                <h2 className="text-[11px] font-bold text-[#16201A]">
+                <h2 className="text-[11px] font-bold text-[#1F2A24]">
                   {lang === "hi" ? "1-क्लिक में ऑर्डर" : "1-Click Order"}
                 </h2>
-                <p className="text-[10px] text-[#5A655F] mt-0.5 leading-snug">
+                <p className="text-[10px] text-[#66746C] mt-0.5 leading-snug">
                   {lang === "hi" ? "सीधे एक साथ थैले में जोड़ें।" : "Move all staples to cart."}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#E5E7EB]/80 bg-[#FAF8F5] p-2.5 flex items-start gap-2.5">
-              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[#E5E7EB] text-amber-600 shrink-0 shadow-xs">
+            <div className="rounded-xl border border-[rgba(20,90,69,0.12)]/80 bg-[#FBF7EF] p-2.5 flex items-start gap-2.5">
+              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[rgba(20,90,69,0.12)] text-amber-600 shrink-0 shadow-xs">
                 <Tag className="size-3.5" />
               </div>
               <div>
-                <h2 className="text-[11px] font-bold text-[#16201A]">
+                <h2 className="text-[11px] font-bold text-[#1F2A24]">
                   {lang === "hi" ? "ताज़ा रेट व छूट" : "Best Rates"}
                 </h2>
-                <p className="text-[10px] text-[#5A655F] mt-0.5 leading-snug">
+                <p className="text-[10px] text-[#66746C] mt-0.5 leading-snug">
                   {lang === "hi" ? "डिस्काउंट सामने दिखेंगे।" : "Updated store discounts."}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#E5E7EB]/80 bg-[#FAF8F5] p-2.5 flex items-start gap-2.5">
-              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[#E5E7EB] text-blue-600 shrink-0 shadow-xs">
+            <div className="rounded-xl border border-[rgba(20,90,69,0.12)]/80 bg-[#FBF7EF] p-2.5 flex items-start gap-2.5">
+              <div className="grid size-7 place-items-center rounded-lg bg-white border border-[rgba(20,90,69,0.12)] text-blue-600 shrink-0 shadow-xs">
                 <ClipboardList className="size-3.5" />
               </div>
               <div>
-                <h2 className="text-[11px] font-bold text-[#16201A]">
+                <h2 className="text-[11px] font-bold text-[#1F2A24]">
                   {lang === "hi" ? "डिजिटल राशन पर्चा" : "Grocery List"}
                 </h2>
-                <p className="text-[10px] text-[#5A655F] mt-0.5 leading-snug">
+                <p className="text-[10px] text-[#66746C] mt-0.5 leading-snug">
                   {lang === "hi" ? "मासिक राशन सुरक्षित रहता है।" : "Monthly list in pocket."}
                 </p>
               </div>
@@ -227,13 +229,13 @@ function WishlistPage() {
   return (
     <div className="container-page py-5 sm:py-7 pb-28 lg:pb-12">
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="mb-3.5 flex items-center gap-1.5 text-xs text-[#5A655F]">
+      <nav aria-label="Breadcrumb" className="mb-3.5 flex items-center gap-1.5 text-xs text-[#66746C]">
         <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
           <Home className="size-3.5" />
           <span>{t.home}</span>
         </Link>
         <ChevronRight className="size-3 text-gray-400" />
-        <span className="font-semibold text-[#16201A]">{t.myWishlistTitle || t.myWishlist}</span>
+        <span className="font-semibold text-[#1F2A24]">{t.myWishlistTitle || t.myWishlist}</span>
       </nav>
 
       {/* Safety Confirmation Dialog for Clearing Wishlist */}
@@ -273,22 +275,22 @@ function WishlistPage() {
       )}
 
       {/* Wishlist Header & Actions — compact, proportional sizing */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E7EB] pb-3.5 sm:pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[rgba(20,90,69,0.12)] pb-3.5 sm:pb-4">
         <div className="flex items-center gap-2.5">
           {/* Green Heart Badge matching store brand */}
-          <div className="grid size-8 sm:size-9 place-items-center rounded-lg bg-[#EBF3ED] border border-[#145A45]/20 text-[#145A45] shadow-xs shrink-0">
+          <div className="grid size-8 sm:size-9 place-items-center rounded-lg bg-[#E8F1EC] border border-[#145A45]/20 text-[#145A45] shadow-xs shrink-0">
             <Heart className="size-4.5 fill-[#145A45]/20 text-[#145A45]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-sans text-lg sm:text-xl font-bold text-[#16201A]">
+              <h1 className="font-sans text-lg sm:text-xl font-bold text-[#1F2A24]">
                 {t.myWishlistTitle || t.myWishlist}
               </h1>
-              <span className="inline-flex items-center rounded-full bg-[#EBF3ED] px-2 py-0.5 text-[11px] font-bold text-[#145A45] border border-[#145A45]/20">
+              <span className="inline-flex items-center rounded-full bg-[#E8F1EC] px-2 py-0.5 text-[11px] font-bold text-[#145A45] border border-[#145A45]/20">
                 {items.length} {lang === "hi" ? "सामान" : "items"}
               </span>
             </div>
-            <p className="text-[11px] text-[#5A655F]">
+            <p className="text-[11px] text-[#66746C]">
               {lang === "hi"
                 ? "सहेजे गए किराना सामानों को 1-क्लिक में थैले में जोड़ें।"
                 : "Move saved grocery favorites into the cart in one click."}
@@ -311,7 +313,7 @@ function WishlistPage() {
           <Button
             asChild
             variant="outline"
-            className="h-8 rounded-lg border-[#E5E7EB] bg-white text-[#374151] hover:bg-[#F3F4F6] hover:text-[#16201A] px-2.5 text-[11px] sm:text-xs font-medium cursor-pointer shadow-xs"
+            className="h-8 rounded-lg border-[rgba(20,90,69,0.12)] bg-white text-[#374151] hover:bg-[#F3F4F6] hover:text-[#1F2A24] px-2.5 text-[11px] sm:text-xs font-medium cursor-pointer shadow-xs"
           >
             <Link to="/shop" className="inline-flex items-center gap-1">
               <Store className="size-3.5 text-[#145A45]" />
@@ -324,7 +326,7 @@ function WishlistPage() {
             onClick={() => setShowClearConfirm((prev) => !prev)}
             variant="outline"
             size="icon"
-            className="size-8 rounded-lg border-[#E5E7EB] bg-white text-[#6B7280] hover:text-red-600 hover:bg-red-50 hover:border-red-200 shadow-xs cursor-pointer"
+            className="size-8 rounded-lg border-[rgba(20,90,69,0.12)] bg-white text-[#6B7280] hover:text-red-600 hover:bg-red-50 hover:border-red-200 shadow-xs cursor-pointer"
             aria-label="Clear wishlist"
             title={lang === "hi" ? "पसंदीदा सूची खाली करें" : "Clear wishlist"}
           >

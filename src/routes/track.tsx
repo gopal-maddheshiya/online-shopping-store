@@ -36,6 +36,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { InvoiceView } from "@/components/InvoiceView";
 import { CancelOrderModal } from "@/components/CancelOrderModal";
 import type { Invoice } from "@/lib/billing";
+import { SITE_URL } from "@/lib/site-config";
+import { getBreadcrumbSchema, LOCAL_GEO_META, PUBLIC_ROBOTS_META } from "@/lib/seo";
 
 type TrackSearchParams = {
   orderNo?: string | undefined;
@@ -49,12 +51,53 @@ export const Route = createFileRoute("/track")({
   }),
 
   head: () => ({
+    links: [
+      { rel: "canonical", href: `${SITE_URL}/track` },
+    ],
     meta: [
-      { title: "Track Your Grocery Order | Arun Gopal Traders Maharajganj" },
+      { title: "ऑर्डर लाइव ट्रैक करें | Track Grocery Order | Arun Gopal Traders" },
       {
         name: "description",
         content:
-          "Track your grocery delivery or store pickup in Maharajganj. Live status updates from Arun Gopal Traders.",
+          "अपने किराना आर्डर का लाइव स्टेटस देखें — पैक्ड, डिलीवरी के लिए रवाना या स्टोर पिकअप तैयार। अरुण गोपाल ट्रेडर्स महाराजगंज।",
+      },
+      ...PUBLIC_ROBOTS_META,
+      ...LOCAL_GEO_META,
+      { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/track` },
+      { property: "og:title", content: "ऑर्डर लाइव ट्रैक करें | Arun Gopal Traders" },
+      {
+        property: "og:description",
+        content: "आर्डर नंबर या फ़ोन नंबर डालकर तुरंत लाइव डिलीवरी स्टेटस चेक करें।",
+      },
+      {
+        property: "og:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "ऑर्डर लाइव ट्रैक करें | Arun Gopal Traders" },
+      {
+        name: "twitter:description",
+        content: "आर्डर नंबर या फ़ोन नंबर डालकर तुरंत लाइव डिलीवरी स्टेटस चेक करें।",
+      },
+      {
+        name: "twitter:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            getBreadcrumbSchema([
+              { name: "Home", url: "/" },
+              { name: "Track Order", url: "/track" },
+            ]),
+          ],
+        }),
       },
     ],
   }),
@@ -411,14 +454,14 @@ function TrackPage() {
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Title */}
       <div className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 text-xs font-bold text-[#065F46] shadow-2xs">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 text-xs font-bold text-[#0E3F31] shadow-2xs">
           <Truck className="size-3.5 text-[#059669]" />
           <span>{language === "hi" ? "लाइव ऑर्डर ट्रैकिंग" : "Live Order Status"}</span>
         </span>
-        <h1 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#111827]">
+        <h1 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#1F2A24]">
           {language === "hi" ? "अपने किराना ऑर्डर को ट्रैक करें" : "Track Your Grocery Order"}
         </h1>
-        <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-[#4B5563]">
+        <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-[#66746C]">
           {language === "hi"
             ? "अपना ऑर्डर नंबर और मोबाइल नंबर दर्ज करें और लाइव डिलीवरी व पैकिंग स्थिति देखें।"
             : "Enter your Order Number and Mobile Number below to see live preparation & delivery updates."}
@@ -426,10 +469,10 @@ function TrackPage() {
       </div>
 
       {/* Lookup Form */}
-      <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-2xs">
+      <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-2xs">
         <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2">
           <div className="space-y-1">
-            <Label htmlFor="track-order-no" className="text-xs font-bold text-[#111827]">
+            <Label htmlFor="track-order-no" className="text-xs font-bold text-[#1F2A24]">
               {language === "hi" ? "ऑर्डर आईडी / नंबर" : "Order ID / Number"}
             </Label>
             <Input
@@ -437,13 +480,13 @@ function TrackPage() {
               placeholder="e.g. AGT-1001"
               value={orderNoInput}
               onChange={(e) => setOrderNoInput(e.target.value.toUpperCase())}
-              className="rounded-xl font-mono text-sm border-[#E5E7EB] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
+              className="rounded-xl font-mono text-sm border-[rgba(20,90,69,0.12)] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="track-phone" className="text-xs font-bold text-[#111827]">
+            <Label htmlFor="track-phone" className="text-xs font-bold text-[#1F2A24]">
               {language === "hi" ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
             </Label>
             <Input
@@ -452,7 +495,7 @@ function TrackPage() {
               placeholder="10-digit mobile number"
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              className="rounded-xl text-sm border-[#E5E7EB] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
+              className="rounded-xl text-sm border-[rgba(20,90,69,0.12)] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
               required
             />
           </div>
@@ -460,7 +503,7 @@ function TrackPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="rounded-xl font-bold sm:col-span-2 bg-[#145A45] hover:bg-[#0F4A38] text-white h-10.5 shadow-2xs cursor-pointer active:scale-[0.99] transition-all"
+            className="rounded-xl font-bold sm:col-span-2 bg-[#145A45] hover:bg-[#0E3F31] text-white h-10.5 shadow-2xs cursor-pointer active:scale-[0.99] transition-all"
           >
             <Search className="mr-2 size-4" />{" "}
             {loading
@@ -493,18 +536,18 @@ function TrackPage() {
       {searchedOrder && !loading ? (
         <div className="mx-auto mt-8 max-w-3xl space-y-5">
           {/* Order Header Card */}
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E7EB] pb-4">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(20,90,69,0.12)] pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="font-sans text-2xl font-bold text-[#1F2924]">
+                  <h2 className="font-sans text-2xl font-bold text-[#1F2A24]">
                     {searchedOrder.order_no}
                   </h2>
                   <span className="rounded-full bg-[#145A45]/10 border border-[#145A45]/20 px-3 py-0.5 text-xs font-bold text-[#145A45]">
                     {ORDER_STATUS_LABEL[searchedOrder.status] ?? searchedOrder.status}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-[#6B746F]">
+                <p className="mt-1 text-xs text-[#66746C]">
                   {language === "hi" ? "ऑर्डर दिनांक:" : "Placed on"} {formatDate(searchedOrder.created_at)}
                 </p>
               </div>
@@ -525,7 +568,7 @@ function TrackPage() {
                   size="sm"
                   disabled={invoiceLoading}
                   onClick={() => handleOpenInvoice(searchedOrder)}
-                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/70 hover:bg-[#145A45] hover:text-white h-9 shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all cursor-pointer"
+                  className="rounded-xl gap-1.5 text-xs font-bold border-[#145A45]/30 text-[#145A45] bg-[#E8F1EC]/70 hover:bg-[#145A45] hover:text-white h-9 shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all cursor-pointer"
                 >
                   <Receipt className="size-3.5" />
                   {language === "hi" ? "बिल व रसीद देखें / प्रिंट" : "Official Invoice"}
@@ -570,32 +613,32 @@ function TrackPage() {
           {/* Details 2-Column Grid */}
           <div className="grid gap-5 md:grid-cols-2">
             {/* Fulfillment & Address */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xs">
-              <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
+            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-2xs">
+              <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
                 <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
               </h3>
 
               <div className="mt-4 space-y-2 text-xs">
                 <div>
-                  <span className="text-[#6B746F]">Customer Name:</span>
-                  <p className="font-semibold text-[#1F2924]">{searchedOrder.customer_name}</p>
+                  <span className="text-[#66746C]">Customer Name:</span>
+                  <p className="font-semibold text-[#1F2A24]">{searchedOrder.customer_name}</p>
                 </div>
                 <div>
-                  <span className="text-[#6B746F]">Contact Phone:</span>
-                  <p className="font-semibold text-[#1F2924]">
+                  <span className="text-[#66746C]">Contact Phone:</span>
+                  <p className="font-semibold text-[#1F2A24]">
                     +91 {searchedOrder.customer_phone}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[#6B746F]">Order Type:</span>
-                  <p className="font-semibold capitalize text-[#1F2924]">
+                  <span className="text-[#66746C]">Order Type:</span>
+                  <p className="font-semibold capitalize text-[#1F2A24]">
                     {searchedOrder.order_type === "delivery" ? "Home Delivery (महाराजगंज)" : "Store Pickup"}
                   </p>
                 </div>
                 {searchedOrder.order_type === "delivery" && searchedOrder.address ? (
                   <div>
-                    <span className="text-[#6B746F]">Delivery Address:</span>
-                    <p className="font-medium text-[#1F2924]">
+                    <span className="text-[#66746C]">Delivery Address:</span>
+                    <p className="font-medium text-[#1F2A24]">
                       {[
                         searchedOrder.address.house,
                         searchedOrder.address.area,
@@ -611,16 +654,16 @@ function TrackPage() {
                   </div>
                 ) : (
                   <div>
-                    <span className="text-[#6B746F]">Store Pickup Address:</span>
-                    <p className="font-medium text-[#1F2924]">
+                    <span className="text-[#66746C]">Store Pickup Address:</span>
+                    <p className="font-medium text-[#1F2A24]">
                       {t.storeName}, Ramnagar, Adda Bazar Road, Maharajganj, UP
                     </p>
                   </div>
                 )}
                 {searchedOrder.notes ? (
                   <div className="pt-2">
-                    <span className="text-[#6B746F]">Instructions:</span>
-                    <p className="rounded-xl bg-[#F9FAFB] border border-[#E5E7EB] p-2.5 italic text-[#1F2924]">
+                    <span className="text-[#66746C]">Instructions:</span>
+                    <p className="rounded-xl bg-[#F9FAFB] border border-[rgba(20,90,69,0.12)] p-2.5 italic text-[#1F2A24]">
                       {searchedOrder.notes}
                     </p>
                   </div>
@@ -629,9 +672,9 @@ function TrackPage() {
             </div>
 
             {/* Payment & Summary */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-2xs">
+            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-2xs">
               <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2924]">
+                <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
                   <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
                 </h3>
                 {searchedOrder.payment_status === "paid" ? (
@@ -650,25 +693,25 @@ function TrackPage() {
               </div>
 
               <dl className="mt-4 space-y-2 text-xs">
-                <div className="flex justify-between text-[#6B746F]">
+                <div className="flex justify-between text-[#66746C]">
                   <dt>Payment Mode:</dt>
-                  <dd className="font-semibold text-[#1F2924]">
+                  <dd className="font-semibold text-[#1F2A24]">
                     {PAYMENT_LABEL[searchedOrder.payment_method] ?? searchedOrder.payment_method.toUpperCase()}
                   </dd>
                 </div>
 
                 {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id ? (
-                  <div className="flex justify-between text-[#6B746F]">
+                  <div className="flex justify-between text-[#66746C]">
                     <dt>Transaction Ref:</dt>
-                    <dd className="font-mono text-[11px] font-bold text-[#0F4A38]">
+                    <dd className="font-mono text-[11px] font-bold text-[#0E3F31]">
                       {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id}
                     </dd>
                   </div>
                 ) : null}
 
-                <div className="flex justify-between text-[#6B746F]">
+                <div className="flex justify-between text-[#66746C]">
                   <dt>Items Subtotal:</dt>
-                  <dd className="font-medium text-[#1F2924]">{inr(searchedOrder.subtotal)}</dd>
+                  <dd className="font-medium text-[#1F2A24]">{inr(searchedOrder.subtotal)}</dd>
                 </div>
                 {searchedOrder.discount > 0 ? (
                   <div className="flex justify-between text-[#145A45]">
@@ -679,13 +722,13 @@ function TrackPage() {
                     <dd className="font-bold">-{inr(searchedOrder.discount)}</dd>
                   </div>
                 ) : null}
-                <div className="flex justify-between text-[#6B746F]">
+                <div className="flex justify-between text-[#66746C]">
                   <dt>Delivery Fee:</dt>
-                  <dd className="font-medium text-[#1F2924]">
+                  <dd className="font-medium text-[#1F2A24]">
                     {searchedOrder.delivery_fee === 0 ? "FREE" : inr(searchedOrder.delivery_fee)}
                   </dd>
                 </div>
-                <div className="flex justify-between border-t border-[#E4DFD5] pt-2 text-base font-bold text-[#1F2924]">
+                <div className="flex justify-between border-t border-[rgba(20,90,69,0.12)] pt-2 text-base font-bold text-[#1F2A24]">
                   <dt>Total Amount:</dt>
                   <dd className="font-sans font-bold text-[#145A45]">{inr(searchedOrder.total)}</dd>
                 </div>
@@ -706,15 +749,15 @@ function TrackPage() {
                         ?.items ?? [];
 
             return (
-              <div className="rounded-3xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4DFD5] pb-3">
+              <div className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(20,90,69,0.12)] pb-3">
                   <div>
-                    <h3 className="font-sans text-base font-bold text-[#1F2924]">
+                    <h3 className="font-sans text-base font-bold text-[#1F2A24]">
                       {language === "hi"
                         ? `ऑर्डर की गई सामग्री (${itemsList.length})`
                         : `Items Ordered (${itemsList.length})`}
                     </h3>
-                    <p className="text-[11px] text-[#6B746F]">
+                    <p className="text-[11px] text-[#66746C]">
                       {language === "hi"
                         ? "आप पूरा राशन एक साथ या अपनी पसंद का एक-एक सामान बास्केट में जोड़ सकते हैं।"
                         : "Reorder the entire basket or add individual items."}
@@ -748,11 +791,11 @@ function TrackPage() {
                               image_url: item.image_url,
                             })}
                             alt={getProductName(item)}
-                            className="size-12 rounded-xl object-contain bg-[#FAF8F2] p-1 border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]"
+                            className="size-12 rounded-xl object-contain bg-[#FBF7EF] p-1 border border-[rgba(20,90,69,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,1)]"
                           />
                           <div>
-                            <p className="font-semibold text-[#1F2924]">{getProductName(item)}</p>
-                            <p className="text-[#6B746F]">
+                            <p className="font-semibold text-[#1F2A24]">{getProductName(item)}</p>
+                            <p className="text-[#66746C]">
                               {getVariantLabel(item)} × {item.qty}
                             </p>
                           </div>
@@ -760,15 +803,15 @@ function TrackPage() {
 
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <p className="font-bold text-[#1F2924]">{inr(item.price * item.qty)}</p>
-                            <p className="text-[10px] text-[#6B746F]">{inr(item.price)} each</p>
+                            <p className="font-bold text-[#1F2A24]">{inr(item.price * item.qty)}</p>
+                            <p className="text-[10px] text-[#66746C]">{inr(item.price)} each</p>
                           </div>
                           <Button
                             size="sm"
                             variant="outline"
                             disabled={isAddingThis}
                             onClick={() => handleAddSingleItem(item)}
-                            className="h-8 rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E6EFE8]/70 hover:bg-[#145A45] hover:text-white px-3 text-xs font-bold cursor-pointer shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all shrink-0"
+                            className="h-8 rounded-xl border-[#145A45]/30 text-[#145A45] bg-[#E8F1EC]/70 hover:bg-[#145A45] hover:text-white px-3 text-xs font-bold cursor-pointer shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all shrink-0"
                           >
                             <Plus className="mr-1 size-3" />
                             {language === "hi" ? "जोड़ें" : "Add"}
@@ -783,11 +826,11 @@ function TrackPage() {
           })()}
 
           {/* Assistance Card */}
-          <div className="rounded-3xl border border-[#145A45]/20 bg-[#FAF8F2] p-6 text-center shadow-[0_2px_8px_rgba(20,90,69,0.03),inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <h4 className="font-sans text-lg font-bold text-[#1F2924]">
+          <div className="rounded-3xl border border-[#145A45]/20 bg-[#FBF7EF] p-6 text-center shadow-[0_2px_8px_rgba(20,90,69,0.03),inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <h4 className="font-sans text-lg font-bold text-[#1F2A24]">
               {language === "hi" ? "कोई प्रश्न है या त्वरित सहायता चाहिए?" : "Have Questions or Need Quick Delivery?"}
             </h4>
-            <p className="mx-auto mt-1 max-w-md text-xs text-[#6B746F]">
+            <p className="mx-auto mt-1 max-w-md text-xs text-[#66746C]">
               {language === "hi"
                 ? "महाराजगंज में त्वरित किराना सहायता के लिए अरुण गोपाल ट्रेडर्स से सीधे संपर्क करें।"
                 : "Call Arun Gopal Traders directly or connect on WhatsApp for immediate grocery assistance in Maharajganj."}
@@ -801,7 +844,7 @@ function TrackPage() {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-xl border-[#E8E4DA] text-[#145A45] bg-white hover:bg-[#FAF8F2]"
+                className="rounded-xl border-[#E8E4DA] text-[#145A45] bg-white hover:bg-[#FBF7EF]"
               >
                 <Link to="/shop">
                   Continue Shopping <ArrowRight className="ml-1.5 size-4" />

@@ -20,10 +20,12 @@ import { useLanguage } from "@/lib/i18n";
 import { getProductImage } from "@/lib/product-images";
 import { settingsQuery } from "@/lib/queries";
 import { inr } from "@/lib/format";
+import { NOINDEX_ROBOTS_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
+      ...NOINDEX_ROBOTS_META,
       { title: "अरुण गोपाल ट्रेडर्स | थैला — Arun Gopal Traders" },
       {
         name: "description",

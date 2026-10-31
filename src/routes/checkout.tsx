@@ -43,6 +43,7 @@ import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
+import { NOINDEX_ROBOTS_META } from "@/lib/seo";
 import {
   settingsQuery,
   couponsQuery,
@@ -72,6 +73,7 @@ import {
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
+      ...NOINDEX_ROBOTS_META,
       { title: "Arun Gopal Traders | Checkout" },
       {
         name: "description",

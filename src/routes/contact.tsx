@@ -18,20 +18,66 @@ import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, isOpenNow } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
 import { useLanguage } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site-config";
+import { getBreadcrumbSchema, getStoreSchema, LOCAL_GEO_META, PUBLIC_ROBOTS_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
+    links: [
+      { rel: "canonical", href: `${SITE_URL}/contact` },
+    ],
     meta: [
-      { title: "Arun Gopal Traders | Contact" },
+      { title: "संपर्क करें एवं दुकान का पता | Arun Gopal Traders Maharajganj" },
       {
         name: "description",
         content:
-          "Need help with grocery delivery, product inquiries, or store pickup? Call +91 6388354988 or visit Arun Gopal Traders at Ramnagar, Adda Bazar Road, Maharajganj.",
+          "किराना सामान डिलीवरी, आर्डर या दुकान पिकअप सहायता के लिए +91 6388354988 पर कॉल करें या रामनगर चौराहा, अड्डा बाजार रोड, महराजगंज स्थित दुकान पर आएं।",
       },
-      { property: "og:title", content: "Arun Gopal Traders | Contact" },
+      ...PUBLIC_ROBOTS_META,
+      ...LOCAL_GEO_META,
+      { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स — Arun Gopal Traders" },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/contact` },
+      { property: "og:title", content: "संपर्क करें एवं दुकान का पता | Arun Gopal Traders" },
       {
         property: "og:description",
-        content: "Call +91 6388354988 or message on WhatsApp for instant local kirana assistance.",
+        content: "कॉल करें या WhatsApp पर तुरंत सहायता प्राप्त करें। रामनगर चौराहा, महराजगंज।",
+      },
+      {
+        property: "og:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "संपर्क करें एवं दुकान का पता | Arun Gopal Traders" },
+      {
+        name: "twitter:description",
+        content: "कॉल करें या WhatsApp पर तुरंत सहायता प्राप्त करें। रामनगर चौराहा, महराजगंज।",
+      },
+      {
+        name: "twitter:image",
+        content: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "ContactPage",
+              "@id": `${SITE_URL}/contact#webpage`,
+              url: `${SITE_URL}/contact`,
+              name: "Contact Arun Gopal Traders Maharajganj",
+              description: "Customer service, store phone, WhatsApp ordering, and location in Ramnagar Chauraha, Maharajganj.",
+            },
+            getStoreSchema(null),
+            getBreadcrumbSchema([
+              { name: "Home", url: "/" },
+              { name: "Contact", url: "/contact" },
+            ]),
+          ],
+        }),
       },
     ],
   }),
@@ -101,10 +147,10 @@ function ContactPage() {
     <div className="container-page py-6 sm:py-12 pb-28 lg:pb-12 space-y-10 sm:space-y-12">
       {/* Header */}
       <div className="max-w-2xl mx-auto text-center space-y-3">
-        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#16201A]">
+        <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#1F2A24]">
           {t.weAreHereToHelp}
         </h1>
-        <p className="text-xs sm:text-sm text-[#5A655F]">
+        <p className="text-xs sm:text-sm text-[#66746C]">
           {lang === "hi"
             ? "सामान खोजने या ऑर्डर करने में कोई समस्या? हमारी रामनगर दुकान टीम से सीधे बात करें।"
             : "Having trouble finding a product or placing an order? Talk to our Ramnagar store team directly."}
@@ -114,15 +160,15 @@ function ContactPage() {
       {/* 4 Clean Contact Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Call Us */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[rgba(20,90,69,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <Phone className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">
+            <h3 className="font-sans text-base font-bold text-[#1F2A24]">
               {lang === "hi" ? "कॉल करें" : "Call Us"}
             </h3>
-            <p className="text-xs text-[#5A655F]">{phone}</p>
+            <p className="text-xs text-[#66746C]">{phone}</p>
           </div>
           <Button
             asChild
@@ -133,15 +179,15 @@ function ContactPage() {
         </div>
 
         {/* Card 2: WhatsApp */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[rgba(20,90,69,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <MessageCircle className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">
+            <h3 className="font-sans text-base font-bold text-[#1F2A24]">
               {t.orderOnWhatsapp}
             </h3>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#66746C]">
               {lang === "hi" ? "किराना सामान की लिस्ट भेजें" : "Send your kirana list"}
             </p>
           </div>
@@ -165,20 +211,20 @@ function ContactPage() {
         </div>
 
         {/* Card 3: Email */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[rgba(20,90,69,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <Mail className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">
+            <h3 className="font-sans text-base font-bold text-[#1F2A24]">
               {lang === "hi" ? "ईमेल" : "Email"}
             </h3>
-            <p className="text-xs text-[#5A655F] truncate">{email}</p>
+            <p className="text-xs text-[#66746C] truncate">{email}</p>
           </div>
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-lg border-[#E4DFD5] bg-white text-[#0F4A38] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] cursor-pointer"
+            className="mt-6 rounded-lg border-[rgba(20,90,69,0.12)] bg-white text-[#0E3F31] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FBF7EF] cursor-pointer"
           >
             <a href={`mailto:${email}`}>
               {lang === "hi" ? "ईमेल भेजें" : "Email Us"}
@@ -187,22 +233,22 @@ function ContactPage() {
         </div>
 
         {/* Card 4: Store Location */}
-        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="card-base flex flex-col justify-between p-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div className="space-y-2">
-            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[#E4DFD5] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="grid size-10 place-items-center rounded-xl bg-gradient-to-b from-[#FAF8F2] to-[#F1EFEA] text-[#145A45] border border-[rgba(20,90,69,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
               <MapPin className="size-5" />
             </div>
-            <h3 className="font-sans text-base font-bold text-[#16201A]">
+            <h3 className="font-sans text-base font-bold text-[#1F2A24]">
               {lang === "hi" ? "दुकान पर आएं" : "Visit Store"}
             </h3>
-            <p className="text-xs text-[#5A655F] line-clamp-2">
+            <p className="text-xs text-[#66746C] line-clamp-2">
               {t.storeAddressShort}
             </p>
           </div>
           <Button
             asChild
             variant="outline"
-            className="mt-6 rounded-lg border-[#E4DFD5] bg-white text-[#0F4A38] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FAF8F2] cursor-pointer"
+            className="mt-6 rounded-lg border-[rgba(20,90,69,0.12)] bg-white text-[#0E3F31] text-xs font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] hover:bg-[#FBF7EF] cursor-pointer"
           >
             <a
               href={
@@ -221,24 +267,24 @@ function ContactPage() {
       {/* Main Support Grid: Help Ticket + Business Hours */}
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
         {/* Help Form */}
-        <div className="card-base p-6 sm:p-8 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
-          <h2 className="font-sans text-xl font-bold text-[#16201A]">Send us a message</h2>
-          <p className="mt-1 text-xs text-[#5A655F]">
+        <div className="card-base p-6 sm:p-8 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+          <h2 className="font-sans text-xl font-bold text-[#1F2A24]">Send us a message</h2>
+          <p className="mt-1 text-xs text-[#66746C]">
             Need a product not listed on the website? Submit your request and we will arrange it.
           </p>
 
           {isSuccess ? (
-            <div className="mt-6 rounded-xl bg-[#E6EFE8] p-6 text-center border border-[#145A45]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+            <div className="mt-6 rounded-xl bg-[#E8F1EC] p-6 text-center border border-[#145A45]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
               <CheckCircle2 className="mx-auto size-8 text-[#145A45]" />
-              <h3 className="mt-2 font-bold text-[#0F4A38]">Message Received!</h3>
-              <p className="mt-1 text-xs text-[#5A655F]">
+              <h3 className="mt-2 font-bold text-[#0E3F31]">Message Received!</h3>
+              <p className="mt-1 text-xs text-[#66746C]">
                 We'll call you at your provided phone number shortly.
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsSuccess(false)}
-                className="mt-4 rounded-lg text-xs border-[#145A45] text-[#0F4A38] bg-white cursor-pointer"
+                className="mt-4 rounded-lg text-xs border-[#145A45] text-[#0E3F31] bg-white cursor-pointer"
               >
                 Send another message
               </Button>
@@ -247,33 +293,33 @@ function ContactPage() {
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#16201A]">Your Full Name</Label>
+                  <Label className="text-xs font-semibold text-[#1F2A24]">Your Full Name</Label>
                   <Input
                     required
                     placeholder="e.g. Ramesh Kumar"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                    className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#16201A]">10-Digit Mobile Number</Label>
+                  <Label className="text-xs font-semibold text-[#1F2A24]">10-Digit Mobile Number</Label>
                   <Input
                     required
                     type="tel"
                     placeholder="9876543210"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                    className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#16201A]">Topic / Inquiry Type</Label>
+                <Label className="text-xs font-semibold text-[#1F2A24]">Topic / Inquiry Type</Label>
                 <Select value={topic} onValueChange={setTopic}>
-                  <SelectTrigger className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+                  <SelectTrigger className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -287,14 +333,14 @@ function ContactPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#16201A]">Your Message / Item List</Label>
+                <Label className="text-xs font-semibold text-[#1F2A24]">Your Message / Item List</Label>
                 <Textarea
                   required
                   rows={4}
                   placeholder="Describe your requirement or list items you need..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                  className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
               </div>
 
@@ -310,17 +356,17 @@ function ContactPage() {
         </div>
 
         {/* Store Timings & Address */}
-        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0F4A38]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0E3F31]">
               Store Schedule
             </span>
-            <h2 className="font-sans text-xl font-bold text-[#16201A] mt-0.5">
+            <h2 className="font-sans text-xl font-bold text-[#1F2A24] mt-0.5">
               Weekly Business Hours
             </h2>
-            <p className="mt-1 text-xs text-[#5A655F]">
+            <p className="mt-1 text-xs text-[#66746C]">
               Current status:{" "}
-              <strong className="text-[#0F4A38]">{status.text || "Open Daily"}</strong>
+              <strong className="text-[#0E3F31]">{status.text || "Open Daily"}</strong>
             </p>
           </div>
 
@@ -333,8 +379,8 @@ function ContactPage() {
               };
               return (
                 <div key={key} className="flex items-center justify-between py-2.5">
-                  <span className="font-medium text-[#16201A]">{label}</span>
-                  <span className="text-[#5A655F]">
+                  <span className="font-medium text-[#1F2A24]">{label}</span>
+                  <span className="text-[#66746C]">
                     {h.closed ? (
                       <span className="text-red-600 font-semibold">Closed</span>
                     ) : (
@@ -346,9 +392,9 @@ function ContactPage() {
             })}
           </div>
 
-          <div className="border-t border-[#E4DFD5] pt-4 text-xs text-[#5A655F] space-y-3">
+          <div className="border-t border-[rgba(20,90,69,0.12)] pt-4 text-xs text-[#66746C] space-y-3">
             <div>
-              <p className="font-bold text-[#16201A]">📍 {t.storeName}</p>
+              <p className="font-bold text-[#1F2A24]">📍 {t.storeName}</p>
               <p className="mt-0.5">{address}</p>
             </div>
             <a

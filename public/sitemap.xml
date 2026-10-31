@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core Customer Pages -->
+  <!-- Core Store Pages -->
   <url>
     <loc>https://arun-gopal-traders.vercel.app/</loc>
     <changefreq>daily</changefreq>
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://arun-gopal-traders.vercel.app/track</loc>
-    <changefreq>always</changefreq>
+    <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
@@ -21,18 +21,8 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://arun-gopal-traders.vercel.app/cart</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://arun-gopal-traders.vercel.app/wishlist</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
 
-  <!-- Popular Essential Categories -->
+  <!-- Essential Product Categories -->
   <url>
     <loc>https://arun-gopal-traders.vercel.app/shop?category=atta-flour-grains</loc>
     <changefreq>daily</changefreq>
@@ -70,6 +60,26 @@
   </url>
   <url>
     <loc>https://arun-gopal-traders.vercel.app/shop?category=snacks-namkeen</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=biscuits</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=dhoop-batti</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=household-cleaning</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=personal-care</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

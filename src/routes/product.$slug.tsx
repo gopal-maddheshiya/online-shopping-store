@@ -36,6 +36,7 @@ import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/
 import { productReviewsQuery, computeReviewStats } from "@/lib/reviews";
 import { discountPercent, inr } from "@/lib/format";
 import { SITE_URL } from "@/lib/site-config";
+import { getProductSchema, getBreadcrumbSchema, LOCAL_GEO_META, PUBLIC_ROBOTS_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params, context }) => {
@@ -65,6 +66,8 @@ export const Route = createFileRoute("/product/$slug")({
         { rel: "canonical", href: pageUrl },
       ],
       meta: [
+        ...PUBLIC_ROBOTS_META,
+        ...LOCAL_GEO_META,
         { title },
         { name: "description", content: desc },
         { property: "og:site_name", content: "अरुण गोपाल ट्रेडर्स महराजगंज" },
@@ -95,25 +98,20 @@ export const Route = createFileRoute("/product/$slug")({
               type: "application/ld+json",
               children: JSON.stringify({
                 "@context": "https://schema.org",
-                "@type": "Product",
-                name: p.name,
-                image: absoluteImg,
-                description: desc,
-                brand: {
-                  "@type": "Brand",
-                  name: p.brand || "Arun Gopal Traders",
-                },
-                offers: {
-                  "@type": "Offer",
-                  url: pageUrl,
-                  priceCurrency: "INR",
-                  price: priceAmount || "0",
-                  itemCondition: "https://schema.org/NewCondition",
-                  availability:
-                    defaultVariant && defaultVariant.stock > 0
-                      ? "https://schema.org/InStock"
-                      : "https://schema.org/OutOfStock",
-                },
+                "@graph": [
+                  getProductSchema({
+                    product: p,
+                    pageUrl,
+                    imageUrl: absoluteImg,
+                    variants: p.product_variants || [],
+                    categoryName: p.category_id || undefined,
+                  }),
+                  getBreadcrumbSchema([
+                    { name: "Home", url: "/" },
+                    { name: "Shop", url: "/shop" },
+                    { name: p.name, url: `/product/${params.slug}` },
+                  ]),
+                ],
               }),
             },
           ]

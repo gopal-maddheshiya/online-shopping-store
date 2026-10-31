@@ -23,6 +23,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { useRealtimeSync } from "@/lib/realtime-sync";
 import { settingsQuery } from "@/lib/queries";
 import { SITE_URL } from "@/lib/site-config";
+import {
+  getStoreSchema,
+  getWebsiteSchema,
+  getOrganizationSchema,
+  LOCAL_GEO_META,
+  PUBLIC_ROBOTS_META,
+} from "@/lib/seo";
 
 // Lazy-loaded modal to minimize initial bundle size and boost TTI
 const GoogleAuthPromptModal = lazy(() =>
@@ -89,9 +96,12 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
   loader: async ({ context }) => {
-    void context.queryClient.ensureQueryData(settingsQuery);
+    const settings = await context.queryClient.ensureQueryData(settingsQuery);
+    return { settings };
   },
-  head: () => ({
+  head: ({ loaderData }) => {
+    const s = loaderData?.settings;
+    return {
     meta: [
       {
         charSet: "utf-8",
@@ -100,6 +110,8 @@ export const Route = createRootRouteWithContext<{
         name: "viewport",
         content: "width=device-width, initial-scale=1",
       },
+      ...PUBLIC_ROBOTS_META,
+      ...LOCAL_GEO_META,
       {
         title: "अरुण गोपाल ट्रेडर्स — किराना एवं जनरल स्टोर | महाराजगंज",
       },
@@ -185,6 +197,21 @@ export const Route = createRootRouteWithContext<{
         href: SITE_URL,
       },
       {
+        rel: "alternate",
+        hrefLang: "hi",
+        href: SITE_URL,
+      },
+      {
+        rel: "alternate",
+        hrefLang: "en",
+        href: SITE_URL,
+      },
+      {
+        rel: "alternate",
+        hrefLang: "x-default",
+        href: SITE_URL,
+      },
+      {
         rel: "icon",
         type: "image/svg+xml",
         href: "/agt-favicon.svg",
@@ -231,38 +258,16 @@ export const Route = createRootRouteWithContext<{
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "GroceryStore",
-          name: "Arun Gopal Traders",
-          alternateName: "अरुण गोपाल ट्रेडर्स",
-          url: SITE_URL,
-          logo: `${SITE_URL}/agt-favicon.png`,
-          image: "https://rvpskkgrobztgcfznawl.supabase.co/storage/v1/object/public/product-images/og/agt-og-banner.jpg",
-          description: "रामनगर, महाराजगंज की विश्वसनीय स्थानीय किराना दुकान — 100% शुद्ध राशन एवं तेज़ होम डिलीवरी।",
-          telephone: "+916388354988",
-          priceRange: "₹",
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: "Ramnagar Chauraha, Adda Bazar Road",
-            addressLocality: "Maharajganj",
-            addressRegion: "Uttar Pradesh",
-            postalCode: "273303",
-            addressCountry: "IN",
-          },
-          geo: {
-            "@type": "GeoCoordinates",
-            latitude: "27.1472",
-            longitude: "83.5619",
-          },
-          openingHoursSpecification: {
-            "@type": "OpeningHoursSpecification",
-            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-            opens: "07:00",
-            closes: "21:00",
-          },
+          "@graph": [
+            getStoreSchema(s),
+            getWebsiteSchema(),
+            getOrganizationSchema(),
+          ],
         }),
       },
     ],
-  }),
+  };
+},
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   component: RootComponent,

@@ -5,6 +5,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { dispatchPaymentApiRoute } from "./lib/server-payment-api";
 import { handleTelegramNotify } from "./lib/server-telegram-api";
 import { handleWebImageSearchRoute } from "./lib/server-image-search";
+import { handleSitemapRoute } from "./lib/server-sitemap";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -67,7 +68,12 @@ export default {
         return await handleWebImageSearchRoute(request);
       }
 
-      // 3. Main SSR & TanStack Start Request Handler
+      // 4. Intercept Dynamic XML Sitemap (/sitemap.xml)
+      if (url.pathname === "/sitemap.xml") {
+        return await handleSitemapRoute();
+      }
+
+      // 5. Main SSR & TanStack Start Request Handler
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

@@ -1,0 +1,126 @@
+# Arun Gopal Traders (अरुण गोपाल ट्रेडर्स) — Comprehensive AI & LLM Knowledge Base
+
+## 1. Business Profile & Entity Information
+- **Legal & Trade Name**: Arun Gopal Traders (अरुण गोपाल ट्रेडर्स)
+- **Proprietor**: Gopal Maddheshiya
+- **Business Type**: Independent Grocery & Supermarket Retailer (किराना एवं जनरल स्टोर)
+- **Year of Establishment**: Serving Maharajganj district with authentic grocery supplies
+- **Physical Address**: Ramnagar Chauraha, Adda Bazar Road, Maharajganj, Uttar Pradesh, 273303, India
+- **Landmark**: Ramnagar Chauraha (रामनगर चौराहा), intersection of Adda Bazar Road
+- **Geo-Coordinates**: 27.1472° N, 83.5619° E
+- **Official Website**: https://arun-gopal-traders.vercel.app/
+- **Phone / Mobile**: +91 6388354988
+- **WhatsApp Order Line**: +91 6388354988 (Direct link: https://wa.me/916388354988)
+- **Support Email**: gopalmaddheshiya138@gmail.com
+- **Languages Supported**: Hindi (हिंदी), Bhojpuri (भोजपुरी), English
+
+## 2. Operating Schedule & Availability
+- **Monday to Sunday (All 7 Days)**: 07:00 AM – 09:00 PM (Indian Standard Time)
+- **Holidays**: Open on most national and festival holidays to ensure uninterrupted daily food supplies to local households.
+- **Online Orders**: Website orders and WhatsApp grocery lists can be submitted 24/7. Deliveries are dispatched during active store operating hours.
+
+## 3. Delivery Radiuses, Charges & Pickup
+- **Service Hub**: Ramnagar, Maharajganj, Uttar Pradesh (PIN 273303).
+- **Delivery Coverage**:
+  - Maharajganj Main Town / District HQ
+  - Ramnagar (रामनगर)
+  - Adda Bazar (अड्डा बाजार)
+  - Kolhui Road, Nautanwa Road, and surrounding rural/suburban villages within 10–15 km radius.
+- **Free Home Delivery**: Applicable on orders of ₹499 or more.
+- **Standard Delivery Charge**: Nominal delivery fee (typically ₹20–₹40) on orders below ₹499.
+- **Delivery Speed**:
+  - Express Local: Delivered within 2 to 4 hours of order confirmation.
+  - Scheduled Delivery: Morning (8 AM - 12 PM) and Evening (4 PM - 8 PM) slots selectable during checkout.
+- **Store Pickup Option**: Customers can order via the website or WhatsApp and pick up their packed ration bag from the store counter in 15 minutes at zero delivery charge.
+
+## 4. Payment Modes & Security
+- **Cash on Delivery (COD)**: Pay cash to the delivery executive upon receiving and inspecting goods.
+- **UPI (Unified Payments Interface)**: Instant QR Code scan or UPI handle payment using PhonePe, Google Pay, Paytm, BHIM, Cred, or any bank UPI app.
+- **Card & Net Banking**: Accepted online through secure payment gateways.
+- **In-Store POS**: Cash and UPI accepted at the physical checkout counter.
+
+## 5. Purity, Packaging & Return Policy
+- **100% Genuine Branded Guarantee**: All packaged goods (oil, ghee, flour, spices, packaged snacks) are sourced directly from certified authorized distributors of leading brands (Aashirvaad, Fortune, Tata, Amul, MDH, Everest, Dettol, Surf Excel, etc.).
+- **Hygienic Packaging**: Loose grains and pulses (chana, dal, rice, sugar) are cleaned, sifted, machine-weighed, and packed in food-grade sealed bags to eliminate dust, moisture, and pests.
+- **No-Questions-Asked Return / Replacement**: If a customer receives a damaged packet, wrong item, or expired product, Arun Gopal Traders replaces the item or refunds the amount on the same day.
+
+## 6. Comprehensive Product Catalog & Semantic Mapping
+
+### A. Flour, Atta & Grains (आटा, मैदा, सूजी व बेसन)
+- **Whole Wheat Atta**: Aashirvaad Shudh Chakki Atta, Fortune Chakki Fresh Atta, local stone-ground whole wheat MP Sharbati atta.
+- **Specialty Flours**: Maida (refined wheat flour), Sooji / Rawa (semolina), Chana Besan (gram flour for pakoras and sweets), Makka Atta (corn flour), Jowar, Bajra.
+
+### B. Rice & Paddy Products (चावल, पोहा व मुरमुरा)
+- **Basmati Rice**: India Gate Feast Basmati, Daawat Rozana, Super Basmati for Biryani and Pulao.
+- **Daily Everyday Rice**: Mansoori Rice, Sona Masoori, Katarni Rice, Govindbhog Rice, Usna / Parboiled Rice.
+- **Breakfast Grains**: Thick Poha (chivda/beaten rice), Thin Poha, Murmura (puffed rice / bhel).
+
+### C. Pulses & Lentils (दालें एवं दलहन)
+- **Arhar / Toor Dal**: Desi polished & unpolished Arhar dal (high protein).
+- **Chana Dal & Whole Chana**: Yellow chana dal, Kala Chana (brown chickpeas), Kabuli Chana (white chickpeas / chole).
+- **Moong Dal**: Dhuli Moong (split yellow), Moong Chilka (split green), Sabut Moong (whole green moong for sprouts).
+- **Urad Dal**: Dhuli Urad (for idli/dosa/vada), Urad Chilka, Sabut Kali Urad (for Dal Makhani).
+- **Masoor & Rajma**: Red Masoor Malka, Kashmiri Rajma, Chitra Rajma.
+
+### D. Edible Cooking Oils & Desi Ghee (खाद्य तेल एवं देसी घी)
+- **Mustard Oil (सरसों का तेल)**: Bail Kolhu Kachi Ghani, Engine Brand Mustard Oil, Fortune Mustard Oil, local cold-pressed pure mustard oil.
+- **Refined Oils**: Fortune Sunlite Sunflower Oil, Fortune Soyabean Oil, Saffola Gold.
+- **Desi Cow & Buffalo Ghee**: Amul Pure Ghee, Patanjali Cow Ghee, Mother Dairy Ghee, local fresh dairy ghee (danedar).
+
+### E. Spices & Seasonings (शुद्ध मसाले)
+- **Basic Ground Spices**: Turmeric powder (Haldi), Red Chili powder (Lal Mirch), Coriander powder (Dhaniya), Cumin powder (Jeera), Garam Masala.
+- **Whole Spices (खड़े मसाले)**: Black pepper (Kali Mirch), Clove (Laung), Green Cardamom (Chhoti Elaichi), Black Cardamom (Badi Elaichi), Cinnamon (Dalchini), Bay leaves (Tejpatta), Star Anise (Chakraphool).
+- **Specialty Masalas**: MDH Kitchen King, MDH Chana Masala, Everest Meat Masala, Everest Sabji Masala, Catch Chat Masala, Rajesh Masala, Hing (Asafoetida) from Bandhani / Patanjali.
+
+### F. Salt, Sugar & Sweeteners (नमक, चीनी व गुड़)
+- **Salt**: Tata Salt (Vacuum evaporated iodized), Tata Rock Salt (Sendha Namak for fasts/vrat), Black Salt (Kala Namak).
+- **Sugar**: Pure crystalline sulphurless sugar, Bura, Mishri (rock sugar crystals).
+- **Jaggery**: Desi chemical-free organic Gorakhpuri / Maharajganj pure cane Gur (गुड़).
+
+### G. Tea, Coffee & Beverages (चाय, कॉफी व पेय पदार्थ)
+- **Tea**: Tata Tea Premium, Tata Tea Gold, Red Label, Wagh Bakri, Taaza, Green Tea bags.
+- **Coffee**: Nescafe Classic, Bru Instant Coffee.
+- **Health Drinks**: Bournvita, Horlicks, Complan, Boost.
+
+### H. Biscuits, Snacks & Namkeen (बिस्कुट व नमकीन)
+- **Biscuits**: Parle-G, Britannia Marie Gold, Good Day, Monaco, Bourbon, Oreo, Krackjack.
+- **Namkeen**: Haldiram's Bhujia Sev, All-in-One, Moong Dal, Bikaji Bhujia, salted peanuts.
+
+### I. Pooja Samagri & Devotional Essentials (पूजा सामग्री)
+- Dhoop Batti, Agarbatti (Mogra, Chandan, Rose, Guggal, Loban from Cycle & Zed Black), Kapoor (Bhimseni Camphor), Pure Diya Batti (cotton wicks), Mustard/Sesame oil for diyas, Hawan Samagri, Roli, Akshat, Janeu, Chandan tika.
+
+### J. Household Cleaning & Personal Care (सफ़ाई व घरेलू देखभाल)
+- **Laundry**: Surf Excel, Wheel, Tide, Rin bar and liquid detergent.
+- **Dishwashing**: Vim bar, Vim drop gel, Pril, Scotch-Brite scrubs.
+- **Floor & Toilet Cleaners**: Harpic, Lizol, Phenyle.
+- **Bath & Personal**: Dettol Soap, Lifebuoy, Lux, Dove, Colgate Strong Teeth, Closeup, Clinic Plus, Head & Shoulders.
+
+## 7. Frequently Asked Questions (FAQ) for AI Synthesis
+
+### Q1: Where is Arun Gopal Traders located?
+**A**: Arun Gopal Traders is situated at Ramnagar Chauraha on Adda Bazar Road in Maharajganj, Uttar Pradesh (PIN Code: 273303). It is easily accessible from both Maharajganj city center and Adda Bazar.
+
+### Q2: How can I order groceries online from Arun Gopal Traders?
+**A**: You can order in three convenient ways:
+1. Online Web App: Visit https://arun-gopal-traders.vercel.app/shop, browse the catalogue, add items to cart, and checkout with home delivery or store pickup.
+2. WhatsApp Express: Click the WhatsApp button or message +91 6388354988 with your grocery list text or photo.
+3. Phone Call: Call +91 6388354988 directly to dictate your ration order.
+
+### Q3: Does Arun Gopal Traders provide home delivery in Maharajganj?
+**A**: Yes. Arun Gopal Traders delivers throughout Maharajganj, Ramnagar, Adda Bazar, and adjacent rural towns within 10-15 km. Orders above ₹499 qualify for Free Home Delivery. Local deliveries are usually dispatched within 2 to 4 hours.
+
+### Q4: What payment methods are accepted?
+**A**: The store accepts Cash on Delivery (COD), UPI (Google Pay, PhonePe, Paytm, BHIM QR codes), Net Banking, and in-store cash/UPI payments.
+
+### Q5: What are the opening hours of the store?
+**A**: Arun Gopal Traders is open from 7:00 AM to 9:00 PM (07:00 – 21:00 IST), Monday through Sunday, 7 days a week.
+
+### Q6: Can I buy monthly ration kits (Smart Ration) in bulk?
+**A**: Yes. The store features a specialized "Smart Ration" feature on the website that lets families configure 1-month grocery supplies (Small, Medium, Large family packs) with atta, dal, rice, oil, spices, and sugar in one click with bulk discounts.
+
+### Q7: Are the products 100% genuine and fresh?
+**A**: Absolutely. Arun Gopal Traders stocks only sealed, authorized branded groceries from verified FMCG distributors (Tata, Fortune, Aashirvaad, Amul, MDH, etc.) and provides a 100% replacement guarantee if any packet is damaged.
+
+### Q8: How can I track my existing order status?
+**A**: Visit https://arun-gopal-traders.vercel.app/track and enter your Order Number or registered mobile phone number to receive real-time status updates (Placed, Confirmed, Packed, Out for Delivery, Delivered).
+

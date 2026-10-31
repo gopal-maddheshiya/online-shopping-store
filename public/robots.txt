@@ -1,6 +1,59 @@
+# Robots.txt for Arun Gopal Traders (अरुण गोपाल ट्रेडर्स)
+# Centralized Crawler & AI Discoverability Directives
+
+# Standard Web Search Crawlers (Googlebot, Bingbot, DuckDuckBot, etc.)
 User-agent: *
+Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /contact
+Allow: /track
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
 Disallow: /admin
 Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+# OpenAI Search & ChatGPT Crawlers
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
+# Perplexity AI Answer Engine Crawler
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+# Anthropic Claude Crawler
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /account
+Disallow: /api/
+
+# Google Gemini / Extended Crawlers
+User-agent: Google-Extended
+Allow: /
+
+# Apple Intelligence Crawler
+User-agent: Applebot-Extended
+Allow: /
+
+# Sitemaps and AI Machine Documentation
 Sitemap: https://arun-gopal-traders.vercel.app/sitemap.xml
