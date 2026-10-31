@@ -188,10 +188,16 @@ export function Header() {
               lang === "hi"
                 ? settings?.announcement_hi || settings?.announcement || ""
                 : settings?.announcement || settings?.announcement_hi || "";
-            const activeText = rawText.trim();
+            let activeText = rawText.trim();
+            if (activeText.includes("आपका अपना किराने की दुकान")) {
+              activeText = activeText.replace("आपका अपना किराने की दुकान", "आपकी अपनी किराना दुकान");
+            } else if (activeText.includes("Aapka Apna Kirane Ki Dukan")) {
+              activeText = activeText.replace("Aapka Apna Kirane Ki Dukan", "Aapki Apni Kirana Dukan");
+            }
 
-            const deliveryBadge = isDeliveryEnabled ? (
-              <div className="flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] bg-emerald-500/18 border border-emerald-400/35 text-white hover:bg-emerald-500/25">
+            // Fulfillment Badge strictly respects the admin delivery toggle
+            const fulfillmentBadge = isDeliveryEnabled ? (
+              <div className="flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] bg-emerald-500/18 border border-emerald-400/35 text-white hover:bg-emerald-500/25 shrink-0">
                 <span className="grid size-4.5 place-items-center rounded-full shrink-0 bg-[#F5D061]/25 text-[#F5D061]">
                   <Truck className="size-2.5 text-[#F5D061]" />
                 </span>
@@ -205,7 +211,7 @@ export function Header() {
                 {settings?.free_delivery_threshold ? (
                   <>
                     <span className="opacity-40 text-white">•</span>
-                    <span className="text-emerald-200 font-medium">
+                    <span className="text-emerald-200 font-medium hidden lg:inline">
                       {lang === "hi"
                         ? `₹${settings.free_delivery_threshold}+ पर मुफ़्त`
                         : `Free over ₹${settings.free_delivery_threshold}`}
@@ -213,7 +219,24 @@ export function Header() {
                   </>
                 ) : null}
               </div>
-            ) : null;
+            ) : (
+              <div className="flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium backdrop-blur-xs transition-all shadow-[0_1px_3px_rgba(0,0,0,0.18)] bg-amber-500/18 border border-amber-400/35 text-white hover:bg-amber-500/25 shrink-0">
+                <span className="grid size-4.5 place-items-center rounded-full shrink-0 bg-[#F5D061]/25 text-[#F5D061]">
+                  <Store className="size-2.5 text-[#F5D061]" />
+                </span>
+                <span className="font-bold text-amber-200 tracking-tight">
+                  {lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}
+                </span>
+                <span className="opacity-40 text-white">•</span>
+                <span className="text-[#F5D061] font-bold">
+                  {lang === "hi" ? "15 मिनट में तैयार" : "Ready in 15m"}
+                </span>
+                <span className="opacity-40 text-white hidden lg:inline">•</span>
+                <span className="text-amber-100/90 font-medium hidden lg:inline">
+                  {lang === "hi" ? "रामनगर चौराहा" : "Ramnagar Chauraha"}
+                </span>
+              </div>
+            );
 
             const languageAndTiming = (
               <div className="flex items-center gap-2 sm:gap-2.5 text-xs font-medium shrink-0 z-20">
@@ -267,11 +290,9 @@ export function Header() {
 
             if (!activeText) return (
               <div className="flex items-center justify-between w-full">
-                {isDeliveryEnabled ? (
-                  <div className="hidden md:flex items-center justify-start shrink-0">
-                    {deliveryBadge}
-                  </div>
-                ) : null}
+                <div className="hidden md:flex items-center justify-start shrink-0">
+                  {fulfillmentBadge}
+                </div>
                 <div className="flex items-center justify-end flex-1">
                   {languageAndTiming}
                 </div>
@@ -322,10 +343,14 @@ export function Header() {
 
             return (
               <>
-                {/* ─── MOBILE VIEW (Auto-Marquee without truncation & snug spacing) ─── */}
+                {/* ─── MOBILE VIEW (Auto-Marquee with fulfillment status & snug spacing) ─── */}
                 <div className="flex md:hidden items-center gap-1.5 min-w-0 flex-1">
                   <span className="grid size-5 place-items-center rounded-lg bg-gradient-to-br from-[#E3B341]/30 via-[#E3B341]/20 to-[#F5D061]/10 border border-[#E3B341]/50 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.25)]">
-                    <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
+                    {isDeliveryEnabled ? (
+                      <Truck className="size-2.5 text-[#F5D061]" />
+                    ) : (
+                      <Store className="size-2.5 text-[#F5D061]" />
+                    )}
                   </span>
                   <div className="relative flex-1 overflow-hidden min-w-0">
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-[#07271D] to-transparent z-10" />
@@ -333,44 +358,33 @@ export function Header() {
                     <div className="animate-marquee-smooth flex items-center gap-2.5 py-0.5 text-[11px] whitespace-nowrap">
                       {mobileSnippet}
                       <span className="text-[#E3B341]/60 font-bold">•</span>
-                      {mobileSnippet}
+                      {isDeliveryEnabled ? (
+                        <span className="text-emerald-200 font-bold">
+                          {lang === "hi" ? "तेज़ होम डिलीवरी (₹499+ पर मुफ़्त)" : "Express Delivery (Free ₹499+)"}
+                        </span>
+                      ) : (
+                        <span className="text-amber-200 font-bold">
+                          {lang === "hi" ? "दुकान से पिकअप उपलब्ध (रामनगर चौराहा)" : "Store Pickup Available"}
+                        </span>
+                      )}
                       <span className="text-[#E3B341]/60 font-bold">•</span>
                       {mobileSnippet}
-                      <span className="text-[#E3B341]/60 font-bold">•</span>
-                      {mobileSnippet}
-                      <span className="text-[#E3B341]/60 font-bold">•</span>
                     </div>
                   </div>
                 </div>
 
-                {/* ─── LAPTOP / DESKTOP VIEW ─── */}
-                {isDeliveryEnabled ? (
-                  <>
-                    {/* When Delivery is ON: 3-column layout */}
-                    <div className="hidden md:flex items-center shrink-0">
-                      {deliveryBadge}
-                    </div>
+                {/* ─── LAPTOP / DESKTOP VIEW (Balanced 3-zone layout) ─── */}
+                <div className="hidden md:flex items-center shrink-0">
+                  {fulfillmentBadge}
+                </div>
 
-                    <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
-                      {announcementPill}
-                    </div>
+                <div className="hidden md:flex items-center justify-center flex-1 min-w-0 px-2 lg:px-4">
+                  {announcementPill}
+                </div>
 
-                    <div className="hidden md:flex items-center justify-end shrink-0">
-                      {languageAndTiming}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* When Delivery is OFF: Announcement anchors Left, Timing on Right (Zero awkward gap!) */}
-                    <div className="hidden md:flex items-center flex-1 min-w-0 pr-4">
-                      {announcementPill}
-                    </div>
-
-                    <div className="hidden md:flex items-center justify-end shrink-0">
-                      {languageAndTiming}
-                    </div>
-                  </>
-                )}
+                <div className="hidden md:flex items-center justify-end shrink-0">
+                  {languageAndTiming}
+                </div>
 
                 {/* Mobile Right Controls */}
                 <div className="flex md:hidden items-center justify-end shrink-0">

@@ -1346,8 +1346,17 @@ function PremiumStoreHome() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Truck className="size-3.5 text-teal-300 shrink-0" />
-                  <span className="truncate">{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                  {isDeliveryEnabled ? (
+                    <>
+                      <Truck className="size-3.5 text-teal-300 shrink-0" />
+                      <span className="truncate">{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Store className="size-3.5 text-amber-300 shrink-0" />
+                      <span className="truncate">{lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}</span>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
                   <ShieldCheck className="size-3.5 text-emerald-300 shrink-0" />

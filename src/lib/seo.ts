@@ -250,8 +250,8 @@ export const CORE_FAQ_ITEMS = [
   {
     q_hi: "क्या महराजगंज और रामनगर में होम डिलीवरी उपलब्ध है?",
     q_en: "Is home delivery available in Maharajganj and nearby areas?",
-    a_hi: "हाँ, हम महराजगंज शहर, रामनगर, अड्डा बाजार और आसपास के 10-15 किलोमीटर क्षेत्र में तेज़ होम डिलीवरी प्रदान करते हैं। ₹499 या उससे अधिक के आर्डर पर डिलीवरी बिल्कुल फ्री है।",
-    a_en: "Yes, we provide fast doorstep delivery across Maharajganj city, Ramnagar, Adda Bazar, and adjacent rural areas within 10-15 km. Orders above ₹499 qualify for Free Home Delivery.",
+    a_hi: "हाँ, हम महराजगंज शहर, रामनगर, अड्डा बाजार और आसपास के 10-15 किलोमीटर क्षेत्र में तेज़ होम डिलीवरी व स्टोर पिकअप दोनों की सुविधा देते हैं। डिलीवरी सेवा चालू होने पर ₹499+ के आर्डर पर होम डिलीवरी मुफ़्त है, अथवा आप दुकान से सीधा पिकअप भी ले सकते हैं।",
+    a_en: "Yes, we provide both fast doorstep delivery and direct store pickup across Maharajganj city, Ramnagar, Adda Bazar, and adjacent areas. When delivery is enabled, orders above ₹499 qualify for Free Home Delivery; store pickup is always available for free.",
   },
   {
     q_hi: "दुकान खुलने और बंद होने का क्या समय है?",
