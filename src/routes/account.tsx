@@ -39,7 +39,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
-import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { customerOrdersQuery, type Order } from "@/lib/queries";
@@ -84,7 +83,6 @@ export function AccountPage() {
   const queryClient = useQueryClient();
   const { user, profile, isAdmin, refreshProfile, loading: authLoading } = useAuth();
   const { add, addMultiple } = useCart();
-  const { items: wishlistItems } = useWishlist();
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
 
   const [reorderLoadingId, setReorderLoadingId] = useState<string | null>(null);
@@ -966,7 +964,7 @@ export function AccountPage() {
   // ==========================================
   if (!user) {
     return (
-      <div className="min-h-[80vh] flex flex-col justify-center items-center py-8 sm:py-14 px-4">
+      <div className="min-h-[85vh] bg-[#FAF8F5] flex flex-col justify-center items-center py-8 sm:py-14 px-4">
         <div className="w-full max-w-md space-y-5">
           {/* Brand Header */}
           <div className="text-center space-y-1">
@@ -974,7 +972,7 @@ export function AccountPage() {
               <UserCheck className="size-3.5 text-[#059669]" />
               <span>{lang === "hi" ? "ग्राहक खाता पोर्टल" : "Customer Portal"}</span>
             </div>
-            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#1F2A24] tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-black text-[#1F2A24] tracking-normal leading-snug py-0.5">
               {authView === "signup"
                 ? lang === "hi"
                   ? "नया खाता बनाएं"
@@ -1003,7 +1001,7 @@ export function AccountPage() {
           </div>
 
           {/* Clean Auth Card */}
-          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-7 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] space-y-4 sm:space-y-5">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,0.95)] space-y-4 sm:space-y-5">
             {/* Segmented Switcher */}
             {authView !== "forgot" && (
               <div className="flex rounded-xl bg-[#F3F4F6] border border-[rgba(20,90,69,0.12)] p-1 text-xs font-bold">
@@ -1430,9 +1428,10 @@ export function AccountPage() {
     "";
 
   return (
-    <div className="container-page py-4 sm:py-8 pb-24 lg:pb-12 max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#FAF8F5]">
+      <div className="container-page py-4 sm:py-8 pb-24 lg:pb-12 max-w-4xl mx-auto space-y-6">
       {/* Sleek Profile Header Card */}
-      <div className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+      <div className="rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-6 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="grid size-12 sm:size-14 place-items-center rounded-2xl bg-gradient-to-br from-[#145A45] via-[#104E3C] to-[#0A3628] font-sans text-xl sm:text-2xl font-black text-white shadow-[0_2px_6px_rgba(20,90,69,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] shrink-0">
@@ -2117,6 +2116,7 @@ export function AccountPage() {
           setCancelModalOrder(null);
         }}
       />
+      </div>
     </div>
   );
 }

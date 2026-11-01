@@ -41,7 +41,7 @@
   --radius-3xl: 24px;
   --radius-full: 9999px;
 
-  --color-background: #ffffff;
+  --color-background: #FAF8F5;
   --color-foreground: #16201a;
   --color-card: #ffffff;
   --color-card-foreground: #16201a;
@@ -52,7 +52,7 @@
   --color-secondary: #e6efe8;
   --color-secondary-foreground: #0f4a38;
   --color-muted: #f3efe6;
-  --color-muted-foreground: #5a655f;
+  --color-muted-foreground: #3D4C44;
   --color-accent: #e6efe8;
   --color-accent-foreground: #0f4a38;
   --color-saffron: #d97706;
@@ -76,7 +76,7 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #f8faf9;
+  --background: #FAF8F5;
   --foreground: #16201a;
   --surface: #ffffff;
   --card: #ffffff;
@@ -88,7 +88,7 @@
   --secondary: #e6efe8;
   --secondary-foreground: #0f4a38;
   --muted: #f1f5f3;
-  --muted-foreground: #5a655f;
+  --muted-foreground: #3D4C44;
   --accent: #e6efe8;
   --accent-foreground: #0f4a38;
   --destructive: #dc2626;
@@ -142,7 +142,7 @@
   }
 
   body {
-    background-color: #f8faf9;
+    background-color: #FAF8F5;
     color: #18221d;
     font-family: var(--font-sans);
     position: relative;
@@ -164,9 +164,9 @@
     z-index: -1;
     pointer-events: none;
     background-image:
-      radial-gradient(at 50% 0%, rgba(20, 90, 69, 0.038) 0px, transparent 55%),
-      radial-gradient(at 100% 15%, rgba(217, 119, 6, 0.015) 0px, transparent 40%),
-      radial-gradient(at 0% 55%, rgba(20, 90, 69, 0.02) 0px, transparent 50%);
+      radial-gradient(at 50% 0%, rgba(20, 90, 69, 0.045) 0px, transparent 60%),
+      radial-gradient(at 95% 15%, rgba(227, 179, 65, 0.03) 0px, transparent 45%),
+      radial-gradient(at 5% 55%, rgba(20, 90, 69, 0.025) 0px, transparent 55%);
     transform: translateZ(0);
   }
 
@@ -191,22 +191,40 @@
     letter-spacing: -0.015em;
   }
 
-  /* Grocery-Grade Devanagari & Hindi Typography Balancing */
+  /* Grocery-Grade Devanagari & Hindi Typography Balancing — Matra Protection */
   :lang(hi),
   [lang="hi"],
-  .font-hindi {
-    letter-spacing: 0.005em;
-    line-height: 1.38;
-    font-family: "Noto Sans Devanagari", "Mukta", var(--font-sans);
+  .font-hindi,
+  .font-brand-hindi {
+    letter-spacing: 0.005em !important;
+    line-height: 1.55;
+    font-family: "Noto Sans Devanagari", "Mukta", system-ui, -apple-system, sans-serif;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Balanced optical weight for Devanagari headings alongside English */
+  /* Balanced optical weight & Matra Clearance for Devanagari headings */
+  :lang(hi) h1,
+  :lang(hi) h2,
+  :lang(hi) h3,
+  :lang(hi) h4,
+  :lang(hi) h5,
+  :lang(hi) h6,
   .font-hindi-title {
-    font-family: "Noto Sans Devanagari", "Mukta", var(--font-sans);
-    font-weight: 600;
-    letter-spacing: 0.005em;
-    line-height: 1.38;
+    font-family: "Noto Sans Devanagari", "Mukta", system-ui, -apple-system, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.005em !important;
+    line-height: 1.45;
+    padding-top: 2px;
+    padding-bottom: 2px;
     color: #18221d;
+  }
+
+  /* Line-Clamp Headroom Safety so top vowel marks never get sliced off */
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3 {
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
 }
 
@@ -284,29 +302,29 @@
 /* Premium Structured Cards with High-DPI Dual Layer Polish */
 .card-base {
   background-color: #ffffff;
-  border: 1px solid #e4dfd5;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px 0 rgba(15, 74, 56, 0.04), 0 4px 14px -2px rgba(15, 74, 56, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(20, 90, 69, 0.11);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 4px 16px -2px rgba(20, 90, 69, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-base:hover {
-  border-color: #cfc9bd;
-  box-shadow: 0 10px 24px -4px rgba(15, 74, 56, 0.1), 0 3px 8px -2px rgba(15, 74, 56, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
+  border-color: rgba(20, 90, 69, 0.25);
+  box-shadow: 0 8px 24px -4px rgba(20, 90, 69, 0.09), 0 2px 6px -1px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 1);
 }
 
 .card-interactive {
   background-color: #ffffff;
-  border: 1px solid #e4dfd5;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px 0 rgba(15, 74, 56, 0.04), 0 4px 14px -2px rgba(15, 74, 56, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(20, 90, 69, 0.11);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 4px 16px -2px rgba(20, 90, 69, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-interactive:hover {
-  border-color: rgba(20, 90, 69, 0.35);
-  box-shadow: 0 12px 28px -4px rgba(15, 74, 56, 0.13), 0 4px 10px -2px rgba(15, 74, 56, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
-  transform: translateY(-2.5px);
+  border-color: rgba(20, 90, 69, 0.4);
+  box-shadow: 0 12px 28px -4px rgba(20, 90, 69, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
 }
 
 /* Header & Navigation Utilities */
@@ -741,4 +759,47 @@ html.lenis body {
 
 .animate-cart-bounce {
   animation: cart-bounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Quick-Commerce Card Variant Dropdown Animation (Zero Horizontal Squish / Pure Vertical Slide) */
+@keyframes dropdownSlideBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownSlideTop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.variant-dropdown-animated {
+  animation: dropdownSlideBottom 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.variant-dropdown-animated[data-side="bottom"] {
+  animation: dropdownSlideBottom 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+}
+
+.variant-dropdown-animated[data-side="top"] {
+  animation: dropdownSlideTop 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: bottom;
+}
+
+.variant-dropdown-animated[data-state="closed"] {
+  opacity: 0;
+  transition: opacity 0.08s ease-out;
 }

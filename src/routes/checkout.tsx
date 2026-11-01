@@ -789,7 +789,7 @@ function CheckoutPage() {
           <ShoppingBag className="size-8" />
         </div>
         <h1 className="mt-4 font-sans text-2xl font-bold text-[#1F2924]">Your basket is empty</h1>
-        <p className="mt-2 text-sm text-[#6B746F]">
+        <p className="mt-2 text-sm text-[#3D4C44]">
           Add items to your cart before proceeding to checkout.
         </p>
         <Button asChild className="mt-6 rounded-full bg-[#145A45] text-white hover:bg-[#0E4333]">
@@ -802,7 +802,7 @@ function CheckoutPage() {
   return (
     <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Top Header */}
-      <div className="mb-6 flex items-center justify-between border-b border-[#E4DFD5] pb-4">
+      <div className="mb-6 flex items-center justify-between border-b border-[rgba(20,90,69,0.12)] pb-4">
         <div>
           <Link
             to="/cart"
@@ -829,7 +829,7 @@ function CheckoutPage() {
           {!user && (
             <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
               <div className="flex items-center gap-3">
-                <div className="size-9 rounded-xl bg-white border border-[#E4DFD5] grid place-items-center shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
+                <div className="size-9 rounded-xl bg-white border border-[rgba(20,90,69,0.12)] grid place-items-center shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)]">
                   <svg className="size-4.5 shrink-0" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -853,7 +853,7 @@ function CheckoutPage() {
                   <p className="text-xs font-bold text-[#16201A]">
                     {lang === "hi" ? "सहेजे गए पते और तेज़ चेकआउट के लिए" : "Have an account with saved addresses?"}
                   </p>
-                  <p className="text-[11px] text-[#5A655F]">
+                  <p className="text-[11px] text-[#3D4C44]">
                     {lang === "hi"
                       ? "Google या मोबाइल से लॉगिन करें (गेस्ट ऑर्डर भी खुला है)"
                       : "Sign in with Google or mobile (or continue as guest)"}
@@ -871,7 +871,7 @@ function CheckoutPage() {
                       },
                     });
                   }}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl border border-[#E4DFD5] bg-white text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer active:scale-98 transition-all"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl border border-[rgba(20,90,69,0.12)] bg-white text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer active:scale-98 transition-all"
                 >
                   <span>{lang === "hi" ? "Google से लॉगिन" : "Sign in with Google"}</span>
                 </button>
@@ -886,14 +886,14 @@ function CheckoutPage() {
           )}
 
           {/* Section 1: Customer Contact Info */}
-          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
             <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
               <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
                 1
               </span>
               {t.customerContactDetails}
             </h2>
-            <p className="mt-1 text-xs text-[#5A655F]">
+            <p className="mt-1 text-xs text-[#3D4C44]">
               {t.customerContactSubtitle}
             </p>
 
@@ -916,8 +916,8 @@ function CheckoutPage() {
                 <Label htmlFor="cust-phone" className="text-xs font-semibold text-[#16201A]">
                   {t.mobileNumber10} <span className="text-red-500">*</span>
                 </Label>
-                <div className="flex rounded-lg border border-[#E4DFD5] focus-within:ring-1 focus-within:ring-[#145A45] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
-                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#5A655F] rounded-l-lg border-r border-[#E4DFD5]">
+                <div className="flex rounded-lg border border-[rgba(20,90,69,0.12)] focus-within:ring-1 focus-within:ring-[#145A45] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
+                  <span className="flex items-center bg-[#FAF8F2] px-3 text-xs font-bold text-[#3D4C44] rounded-l-lg border-r border-[#E4DFD5]">
                     +91
                   </span>
                   <Input
@@ -936,7 +936,7 @@ function CheckoutPage() {
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="cust-email" className="text-xs font-semibold text-[#16201A]">
                   {t.emailAddress}{" "}
-                  <span className="text-[#5A655F] font-normal">
+                  <span className="text-[#3D4C44] font-normal">
                     {t.optionalInvoiceCopy}
                   </span>
                 </Label>
@@ -953,7 +953,7 @@ function CheckoutPage() {
           </div>
 
           {/* Section 2: Fulfillment & Delivery */}
-          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
             <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
               <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
                 2
@@ -976,7 +976,7 @@ function CheckoutPage() {
                         {lang === "hi" ? "डिलीवरी शुल्क: ₹0 (मुफ़्त)" : "Delivery Fee: ₹0 (FREE)"}
                       </span>
                     </div>
-                    <p className="text-xs text-[#5A655F] leading-relaxed">
+                    <p className="text-xs text-[#3D4C44] leading-relaxed">
                       {lang === "hi"
                         ? "वर्तमान में होम डिलीवरी सेवा बंद है। कृपया ऑर्डर ऑनलाइन बुक करके सीधे दुकान पर आकर प्राप्त करें।"
                         : "Home delivery service is currently paused. Please book your order online and collect it directly from the store."}
@@ -1010,7 +1010,7 @@ function CheckoutPage() {
                     >
                       <Truck className="size-4 text-[#145A45]" /> {t.homeDelivery}
                     </Label>
-                    <p className="mt-0.5 text-xs text-[#5A655F]">
+                    <p className="mt-0.5 text-xs text-[#3D4C44]">
                       {t.homeDeliveryDesc}
                     </p>
                     <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#0F4A38]">
@@ -1035,7 +1035,7 @@ function CheckoutPage() {
                     >
                       <Store className="size-4 text-[#145A45]" /> {t.storePickupTitle}
                     </Label>
-                    <p className="mt-0.5 text-xs text-[#5A655F]">
+                    <p className="mt-0.5 text-xs text-[#3D4C44]">
                       {t.storePickupDesc}
                     </p>
                     <span className="mt-1.5 inline-block text-[11px] font-semibold text-[#15803D]">
@@ -1137,12 +1137,12 @@ function CheckoutPage() {
                             <p className="mt-2 text-xs font-medium text-[#2C3E35] leading-relaxed">
                               {[addr.house, addr.area, addr.landmark].filter(Boolean).join(", ")}
                             </p>
-                            <p className="text-[11px] text-[#5A655F]">
+                            <p className="text-[11px] text-[#3D4C44]">
                               {addr.city || "Maharajganj"} - {addr.pincode || "273303"}
                             </p>
 
                             {addr.phone && (
-                              <p className="mt-1 flex items-center gap-1 text-[11px] text-[#5A655F]">
+                              <p className="mt-1 flex items-center gap-1 text-[11px] text-[#3D4C44]">
                                 <PhoneCall className="size-2.5" /> +91 {addr.phone}
                               </p>
                             )}
@@ -1195,7 +1195,7 @@ function CheckoutPage() {
                       >
                         <Plus
                           className={`size-5 ${
-                            isCustomAddress ? "text-[#145A45]" : "text-[#5A655F]"
+                            isCustomAddress ? "text-[#145A45]" : "text-[#3D4C44]"
                           }`}
                         />
                         <span
@@ -1205,7 +1205,7 @@ function CheckoutPage() {
                         >
                           {lang === "hi" ? "+ नया पता जोड़ें" : "+ Add New Address"}
                         </span>
-                        <span className="text-[10px] text-[#5A655F]">
+                        <span className="text-[10px] text-[#3D4C44]">
                           {lang === "hi" ? "अलग स्थान पर मंगाने हेतु" : "For delivery elsewhere"}
                         </span>
                       </div>
@@ -1217,13 +1217,13 @@ function CheckoutPage() {
                 {(!user || savedAddresses.length === 0 || isCustomAddress || showAddressForm) && (
                   <div className="space-y-4 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2]/40 p-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#5A655F]">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#3D4C44]">
                         {isCustomAddress
                           ? (lang === "hi" ? "नया डिलीवरी पता" : "New Delivery Address")
                           : (lang === "hi" ? "डिलीवरी पता विवरण" : "Delivery Address Details")}
                       </h3>
                       {user && savedAddresses.length > 0 && (
-                        <span className="text-[11px] text-[#5A655F]">
+                        <span className="text-[11px] text-[#3D4C44]">
                           {isCustomAddress
                             ? (lang === "hi" ? "अलग पता दर्ज करें" : "Entering new address")
                             : (lang === "hi" ? "चुना गया पता संपादित करें" : "Editing selected address")}
@@ -1263,7 +1263,7 @@ function CheckoutPage() {
                       <div className="space-y-1.5">
                         <Label htmlFor="addr-landmark" className="text-xs font-semibold text-[#16201A]">
                           {lang === "hi" ? "नजदीकी लैंडमार्क / पहचान" : "Nearby Landmark"}{" "}
-                          <span className="text-[#5A655F] font-normal">
+                          <span className="text-[#3D4C44] font-normal">
                             {lang === "hi" ? "(डिलीवरी में आसानी के लिए)" : "(Helpful for delivery boy)"}
                           </span>
                         </Label>
@@ -1324,7 +1324,7 @@ function CheckoutPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="addr-notes" className="text-xs font-semibold text-[#16201A]">
                     {lang === "hi" ? "डिलीवरी के लिए विशेष निर्देश" : "Special Delivery Instructions"}{" "}
-                    <span className="text-[#5A655F] font-normal">(Optional)</span>
+                    <span className="text-[#3D4C44] font-normal">(Optional)</span>
                   </Label>
                   <Textarea
                     id="addr-notes"
@@ -1338,7 +1338,7 @@ function CheckoutPage() {
               </div>
 
             ) : (
-              <div className="mt-4 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-4 text-xs text-[#5A655F]">
+              <div className="mt-4 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-4 text-xs text-[#3D4C44]">
                 📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> {t.storeName}, {t.storeAddressShort}.
                 <br />
                 {lang === "hi"
@@ -1350,7 +1350,7 @@ function CheckoutPage() {
 
 
           {/* Section 3: Payment Method */}
-          <div className="rounded-2xl border border-[#E4DFD5] bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 font-sans text-lg font-bold text-[#16201A]">
                 <span className="grid size-6 place-items-center rounded-lg bg-[#0F4A38] text-xs font-bold text-white shadow-2xs">
@@ -1358,7 +1358,7 @@ function CheckoutPage() {
                 </span>
                 {t.paymentMethodLabel}
               </h2>
-              <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-[#5A655F]">
+              <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-[#3D4C44]">
                 <Lock className="size-3 text-[#15803D]" />
                 {lang === "hi" ? "सुरक्षित चेकआउट" : "Secure Checkout"}
               </span>
@@ -1393,11 +1393,11 @@ function CheckoutPage() {
                       <CheckCircle2 className="size-4 text-[#145A45]" />
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                  <p className="mt-1.5 text-[11px] text-[#3D4C44] leading-relaxed pl-9">
                     {t.upiOptionSub}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1 pl-9">
-                    <span className="rounded text-[10px] font-semibold text-[#5A655F]">
+                    <span className="rounded text-[10px] font-semibold text-[#3D4C44]">
                       {lang === "hi" ? "GPay • PhonePe • Paytm • BHIM" : "GPay • PhonePe • Paytm • BHIM"}
                     </span>
                   </div>
@@ -1428,11 +1428,11 @@ function CheckoutPage() {
                       <CheckCircle2 className="size-4 text-[#145A45]" />
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                  <p className="mt-1.5 text-[11px] text-[#3D4C44] leading-relaxed pl-9">
                     {t.cardOptionSub}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1 pl-9">
-                    <span className="rounded text-[10px] font-semibold text-[#5A655F]">
+                    <span className="rounded text-[10px] font-semibold text-[#3D4C44]">
                       {lang === "hi" ? "Visa • Mastercard • RuPay" : "Visa • Mastercard • RuPay"}
                     </span>
                   </div>
@@ -1463,7 +1463,7 @@ function CheckoutPage() {
                       <CheckCircle2 className="size-4 text-[#145A45]" />
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                  <p className="mt-1.5 text-[11px] text-[#3D4C44] leading-relaxed pl-9">
                     {t.qrOptionSub}
                   </p>
                   <p className="mt-1.5 text-[11px] font-semibold text-[#145A45] pl-9">
@@ -1496,7 +1496,7 @@ function CheckoutPage() {
                       <CheckCircle2 className="size-4 text-[#145A45]" />
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                  <p className="mt-1.5 text-[11px] text-[#3D4C44] leading-relaxed pl-9">
                     {t.cashOnDeliveryDesc}
                   </p>
                 </div>
@@ -1526,7 +1526,7 @@ function CheckoutPage() {
                       <CheckCircle2 className="size-4 text-[#145A45]" />
                     )}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-[#5A655F] leading-relaxed pl-9">
+                  <p className="mt-1.5 text-[11px] text-[#3D4C44] leading-relaxed pl-9">
                     {t.payAtStoreDesc}
                   </p>
                 </div>
@@ -1558,7 +1558,7 @@ function CheckoutPage() {
                 `${t.placeOrderBtn} • ${inr(grandTotal)}`
               )}
             </Button>
-            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#5A655F] mt-2.5 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#3D4C44] mt-2.5 text-center">
               <Lock className="size-3 text-[#15803D] shrink-0" />
               <span>{t.securityBadgeText}</span>
             </div>
@@ -1567,23 +1567,23 @@ function CheckoutPage() {
 
         {/* Right Order Summary Column */}
         <aside className="space-y-6">
-          <div className="rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] lg:sticky lg:top-24 bg-white border border-[#E4DFD5]">
+          <div className="rounded-2xl p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] lg:sticky lg:top-24 bg-white border border-[rgba(20,90,69,0.12)]">
             <h2 className="font-sans text-lg font-bold text-[#16201A]">
               {lang === "hi" ? "ऑर्डर का विवरण" : "Order Summary"}
             </h2>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#3D4C44]">
               {items.length} {lang === "hi" ? "सामान आपके ऑर्डर में" : "items in your order"}
             </p>
 
             {/* Items mini list */}
-            <div className="mt-4 max-h-56 space-y-2.5 overflow-y-auto pr-1 border-b border-[#E4DFD5] pb-4">
+            <div className="mt-4 max-h-56 space-y-2.5 overflow-y-auto pr-1 border-b border-[rgba(20,90,69,0.12)] pb-4">
               {items.map((i) => (
                 <div key={i.variantId} className="flex items-center justify-between gap-2 text-xs">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-[#16201A]">
                       {getProductName(i)}
                     </p>
-                    <p className="text-[11px] text-[#5A655F]">
+                    <p className="text-[11px] text-[#3D4C44]">
                       {getVariantLabel(i)} × {i.qty}
                     </p>
                   </div>
@@ -1593,7 +1593,7 @@ function CheckoutPage() {
             </div>
 
             {/* Coupon Application */}
-            <div className="mt-4 border-b border-[#E4DFD5] pb-4">
+            <div className="mt-4 border-b border-[rgba(20,90,69,0.12)] pb-4">
               <form onSubmit={handleApplyCoupon} className="flex gap-2">
                 <Input
                   placeholder="Coupon code (e.g. WELCOME50)"
@@ -1605,7 +1605,7 @@ function CheckoutPage() {
                   type="submit"
                   size="sm"
                   variant="secondary"
-                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[#E4DFD5] text-[#0F4A38] hover:bg-[#E6EFE8] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer"
+                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[rgba(20,90,69,0.12)] text-[#0F4A38] hover:bg-[#E6EFE8] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer"
                 >
                   Apply
                 </Button>
@@ -1631,7 +1631,7 @@ function CheckoutPage() {
 
             {/* Price Calculations */}
             <dl className="mt-4 space-y-2 text-xs">
-              <div className="flex justify-between text-[#5A655F]">
+              <div className="flex justify-between text-[#3D4C44]">
                 <dt>{t.itemSubtotal}</dt>
                 <dd className="font-medium text-[#16201A]">{inr(subtotal)}</dd>
               </div>
@@ -1643,7 +1643,7 @@ function CheckoutPage() {
                 </div>
               ) : null}
 
-              <div className="flex justify-between text-[#5A655F]">
+              <div className="flex justify-between text-[#3D4C44]">
                 <dt>{t.deliveryFee}</dt>
                 <dd className="font-medium text-[#16201A]">
                   {deliveryFee === 0 ? (
@@ -1655,7 +1655,7 @@ function CheckoutPage() {
               </div>
 
               {subtotal > 0 && subtotal < freeDeliveryThreshold && orderType === "delivery" ? (
-                <div className="rounded-lg bg-[#FAF8F2] border border-[#E4DFD5] p-2 text-[11px] text-[#5A655F] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
+                <div className="rounded-lg bg-[#FAF8F2] border border-[rgba(20,90,69,0.12)] p-2 text-[11px] text-[#3D4C44] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
                   💡 Add <strong>{inr(freeDeliveryThreshold - subtotal)}</strong> more for{" "}
                   <strong>FREE Delivery</strong>!
                 </div>
@@ -1692,13 +1692,13 @@ function CheckoutPage() {
             </Button>
 
             <div className="mt-3 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#5A655F]">
+              <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#3D4C44]">
                 <Lock className="size-3 text-[#15803D] shrink-0" />
                 <span>{t.securityBadgeText}</span>
               </div>
             </div>
 
-            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#6B746F] border-t border-[#E4DFD5] pt-3">
+            <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#3D4C44] border-t border-[#E4DFD5] pt-3">
               <p className="flex items-center justify-center gap-1">
                 <ShieldCheck className="size-3.5 text-[#145A45]" /> 100% शुद्ध राशन • अरुण गोपाल ट्रेडर्स
               </p>
@@ -1740,7 +1740,7 @@ function CheckoutPage() {
             <DialogTitle className="text-lg sm:text-xl font-bold text-[#16201A]">
               {t.qrOptionTitle}
             </DialogTitle>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#3D4C44]">
               {t.dynamicQrNotice}
             </p>
           </DialogHeader>
@@ -1749,11 +1749,11 @@ function CheckoutPage() {
             <div className="mt-4 flex flex-col items-center space-y-4">
               {/* Exact Amount Banner */}
               <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
-                <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
+                <span className="text-xs font-semibold text-[#3D4C44]">{t.totalAmount}</span>
                 <div className="font-sans text-2xl font-bold text-[#0F4A38]">
                   {inr(activeOrderForPayment.amount)}
                 </div>
-                <span className="text-[11px] font-medium text-[#5A655F]">
+                <span className="text-[11px] font-medium text-[#3D4C44]">
                   {lang === "hi" ? `ऑर्डर नं. ${activeOrderForPayment.orderNo}` : `Order ID: ${activeOrderForPayment.orderNo}`}
                 </span>
               </div>
@@ -1787,7 +1787,7 @@ function CheckoutPage() {
                   }}
                   className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] px-3 text-xs font-semibold text-[#16201A] hover:bg-[#E6EFE8] transition-all cursor-pointer"
                 >
-                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#5A655F]" />}
+                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#3D4C44]" />}
                   <span>{upiCopied ? t.upiIdCopied : `${t.copyUpiIdBtn} (${settings?.upi_vpa || "6388354988@okbizaxis"})`}</span>
                 </button>
               </div>
@@ -1840,7 +1840,7 @@ function CheckoutPage() {
             <DialogTitle className="text-lg sm:text-xl font-bold text-[#16201A]">
               {t.upiOptionTitle}
             </DialogTitle>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#3D4C44]">
               {lang === "hi"
                 ? "नीचे दिए गए UPI ऐप बटन पर टैप करके तुरंत सुरक्षित भुगतान करें"
                 : "Tap your preferred UPI app below to complete instant secure payment"}
@@ -1851,11 +1851,11 @@ function CheckoutPage() {
             <div className="mt-4 flex flex-col items-center space-y-4">
               {/* Exact Amount Banner */}
               <div className="w-full rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-3 text-center">
-                <span className="text-xs font-semibold text-[#5A655F]">{t.totalAmount}</span>
+                <span className="text-xs font-semibold text-[#3D4C44]">{t.totalAmount}</span>
                 <div className="font-sans text-2xl font-bold text-[#0F4A38]">
                   {inr(activeOrderForPayment.amount)}
                 </div>
-                <span className="text-[11px] font-medium text-[#5A655F]">
+                <span className="text-[11px] font-medium text-[#3D4C44]">
                   {lang === "hi" ? `ऑर्डर नं. ${activeOrderForPayment.orderNo}` : `Order ID: ${activeOrderForPayment.orderNo}`}
                 </span>
               </div>
@@ -1907,7 +1907,7 @@ function CheckoutPage() {
                   }}
                   className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-[#E5E0D5] bg-[#FAF8F2] px-3 text-xs font-semibold text-[#16201A] hover:bg-[#E6EFE8] transition-all cursor-pointer"
                 >
-                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#5A655F]" />}
+                  {upiCopied ? <Check className="size-3.5 text-[#15803D]" /> : <Copy className="size-3.5 text-[#3D4C44]" />}
                   <span>{upiCopied ? t.upiIdCopied : `${t.copyUpiIdBtn} (${settings?.upi_vpa || "6388354988@okbizaxis"})`}</span>
                 </button>
               </div>

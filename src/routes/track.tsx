@@ -451,14 +451,15 @@ function TrackPage() {
   }
 
   return (
-    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
+    <div className="min-h-screen bg-[#FAF8F5]">
+      <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
       {/* Title */}
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 px-3.5 py-1 text-xs font-bold text-[#0E3F31] shadow-2xs">
           <Truck className="size-3.5 text-[#059669]" />
           <span>{language === "hi" ? "लाइव ऑर्डर ट्रैकिंग" : "Live Order Status"}</span>
         </span>
-        <h1 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#1F2A24]">
+        <h1 className="mt-2.5 font-sans text-2xl sm:text-3xl lg:text-4xl font-black tracking-normal leading-snug py-0.5 text-[#1F2A24]">
           {language === "hi" ? "अपने किराना ऑर्डर को ट्रैक करें" : "Track Your Grocery Order"}
         </h1>
         <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm text-[#66746C]">
@@ -469,7 +470,7 @@ function TrackPage() {
       </div>
 
       {/* Lookup Form */}
-      <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-2xs">
+      <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
         <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="track-order-no" className="text-xs font-bold text-[#1F2A24]">
@@ -536,7 +537,7 @@ function TrackPage() {
       {searchedOrder && !loading ? (
         <div className="mx-auto mt-8 max-w-3xl space-y-5">
           {/* Order Header Card */}
-          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-2xs">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[rgba(20,90,69,0.12)] pb-4">
               <div>
                 <div className="flex items-center gap-2">
@@ -613,7 +614,7 @@ function TrackPage() {
           {/* Details 2-Column Grid */}
           <div className="grid gap-5 md:grid-cols-2">
             {/* Fulfillment & Address */}
-            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-2xs">
+            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
               <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
                 <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
               </h3>
@@ -672,7 +673,7 @@ function TrackPage() {
             </div>
 
             {/* Payment & Summary */}
-            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-2xs">
+            <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
                   <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
@@ -878,6 +879,7 @@ function TrackPage() {
           }
         }}
       />
+      </div>
     </div>
   );
 }

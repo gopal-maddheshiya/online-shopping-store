@@ -14,7 +14,6 @@ import appCss from "../styles.css?url";
 import { LanguageProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
-import { WishlistProvider } from "@/lib/wishlist";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -302,8 +301,7 @@ function RootComponent() {
         <LanguageProvider>
           <AuthProvider>
             <CartProvider>
-              <WishlistProvider>
-                <SmoothScrollProvider>
+              <SmoothScrollProvider>
                   <div
                     className={
                       isAdminRoute
@@ -323,8 +321,7 @@ function RootComponent() {
                     <GoogleAuthPromptModal />
                   </Suspense>
                 </SmoothScrollProvider>
-              </WishlistProvider>
-            </CartProvider>
+              </CartProvider>
           </AuthProvider>
         </LanguageProvider>
       </QueryClientProvider>

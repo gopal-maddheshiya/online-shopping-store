@@ -242,7 +242,7 @@ function AdminPage() {
             <h1 className="mt-4 font-sans text-2xl font-bold text-[#16201A]">
               Store Management Portal
             </h1>
-            <p className="mt-1 text-xs text-[#5A655F]">
+            <p className="mt-1 text-xs text-[#3D4C44]">
               Restricted owner authentication for Arun Gopal Traders.
             </p>
           </div>
@@ -251,7 +251,7 @@ function AdminPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-[#16201A]">Admin Email / Phone</label>
-                <span className="text-[10px] text-[#5A655F] bg-[#FAF8F2] px-2 py-0.5 rounded-full font-medium border border-[#E5E0D5]">Authorized Access</span>
+                <span className="text-[10px] text-[#3D4C44] bg-[#FAF8F2] px-2 py-0.5 rounded-full font-medium border border-[#E5E0D5]">Authorized Access</span>
               </div>
               <Input
                 type="text"
@@ -326,7 +326,7 @@ function AdminPage() {
               <h2 className="font-sans font-bold text-sm sm:text-base leading-tight text-[#16201A]">
                 Arun Gopal Traders Admin
               </h2>
-              <span className="text-[11px] text-[#5A655F] hidden sm:inline">
+              <span className="text-[11px] text-[#3D4C44] hidden sm:inline">
                 Store Control &amp; Inventory Center
               </span>
             </div>
@@ -340,7 +340,7 @@ function AdminPage() {
               className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 sm:px-3 text-xs font-semibold active:scale-95 transition-all shadow-2xs cursor-pointer ${
                 soundEnabled
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-                  : "border-[#E5E0D5] bg-white text-[#6B746F] hover:bg-[#FAF8F2]"
+                  : "border-[#E5E0D5] bg-white text-[#3D4C44] hover:bg-[#FAF8F2]"
               }`}
             >
               {soundEnabled ? (
@@ -396,13 +396,13 @@ function AdminPage() {
                 </span>
                 <div>
                   <h3 className="font-bold text-sm text-[#0F4A38]">Admin Portal</h3>
-                  <p className="text-[10px] text-[#5A655F]">Arun Gopal Traders</p>
+                  <p className="text-[10px] text-[#3D4C44]">Arun Gopal Traders</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
-                className="flex size-9 items-center justify-center rounded-lg border border-[#E5E0D5] text-[#5A655F]"
+                className="flex size-9 items-center justify-center rounded-lg border border-[#E5E0D5] text-[#3D4C44]"
               >
                 ✕
               </button>
@@ -425,7 +425,7 @@ function AdminPage() {
                     className={`flex w-full min-h-[40px] items-center justify-between rounded-lg px-3.5 py-2 text-xs font-semibold transition-all ${
                       isActive
                         ? "bg-[#145A45] text-white shadow-xs font-bold"
-                        : "text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#16201A]"
+                        : "text-[#3D4C44] hover:bg-[#FAF8F2] hover:text-[#16201A]"
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
@@ -487,7 +487,7 @@ function AdminPage() {
                 className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all shadow-2xs ${
                   isActive
                     ? "bg-[#145A45] text-white"
-                    : "border border-[#E5E0D5] bg-white text-[#5A655F] hover:text-[#16201A]"
+                    : "border border-[#E5E0D5] bg-white text-[#3D4C44] hover:text-[#16201A]"
                 }`}
               >
                 <Icon className="size-3.5" />
@@ -520,7 +520,7 @@ function AdminPage() {
                     className={`flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-semibold transition-all ${
                       isActive
                         ? "bg-[#145A45] text-white shadow-xs font-bold"
-                        : "text-[#5A655F] hover:bg-[#FAF8F2] hover:text-[#16201A]"
+                        : "text-[#3D4C44] hover:bg-[#FAF8F2] hover:text-[#16201A]"
                     }`}
                   >
                     <span className="flex items-center gap-2.5">
@@ -544,7 +544,7 @@ function AdminPage() {
               })}
             </nav>
 
-            <div className="mt-6 border-t border-[#E5E0D5] pt-4 px-2 text-[11px] text-[#5A655F]">
+            <div className="mt-6 border-t border-[#E5E0D5] pt-4 px-2 text-[11px] text-[#3D4C44]">
               📍 Maharajganj, Uttar Pradesh
               <br />
               📞 +91 6388354988

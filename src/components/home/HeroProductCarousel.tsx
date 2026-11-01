@@ -402,7 +402,7 @@ export function HeroProductCarousel() {
                       <span className="text-[11.5px] sm:text-xs font-black text-[#145A45]">
                         {product.price}
                       </span>
-                      <span className="text-[9.5px] sm:text-[10px] text-[#5A655F] font-semibold bg-[#FAF8F2] px-1.5 py-0.5 rounded-md border border-[#E4DFD5]/60">
+                      <span className="text-[9.5px] sm:text-[10px] text-[#3D4C44] font-semibold bg-[#FAF8F2] px-1.5 py-0.5 rounded-md border border-[#E4DFD5]/60">
                         {product.weight}
                       </span>
                     </div>

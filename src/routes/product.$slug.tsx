@@ -9,7 +9,6 @@ import {
   Store,
   Check,
   ShoppingBag,
-  Heart,
   Star,
   Phone,
   MessageCircle,
@@ -29,7 +28,6 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { ProductReviewsSection } from "@/components/ProductReviewsSection";
 import { useCart } from "@/lib/cart";
-import { useWishlist } from "@/lib/wishlist";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage, getProductImages, getOpenGraphProductImage } from "@/lib/product-images";
 import { productQuery, productsQuery, settingsQuery, type Variant } from "@/lib/queries";
@@ -121,7 +119,7 @@ export const Route = createFileRoute("/product/$slug")({
   errorComponent: ({ reset }) => (
     <div className="container-page py-20 text-center">
       <h1 className="font-sans text-2xl font-bold text-[#16201A]">Unable to load product</h1>
-      <p className="mt-1 text-xs text-[#5A655F]">Please try again or return to the shop.</p>
+      <p className="mt-1 text-xs text-[#3D4C44]">Please try again or return to the shop.</p>
       <div className="mt-6 flex justify-center gap-3">
         <Button onClick={() => reset()} className="rounded-full bg-[#145A45] text-white">
           Try Again
@@ -135,7 +133,7 @@ export const Route = createFileRoute("/product/$slug")({
   notFoundComponent: () => (
     <div className="container-page py-20 text-center">
       <h1 className="font-sans text-2xl font-bold text-[#16201A]">Product not found</h1>
-      <p className="mt-1 text-xs text-[#5A655F]">
+      <p className="mt-1 text-xs text-[#3D4C44]">
         The requested item is no longer available in the catalogue.
       </p>
       <Button asChild className="mt-6 rounded-full bg-[#145A45] text-white">
@@ -155,7 +153,6 @@ function ProductPage() {
   const reviewStats = computeReviewStats(reviews);
   const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
   const { add, items } = useCart();
-  const { toggle: toggleWishlist, has: inWishlist } = useWishlist();
   const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
   const [variantId, setVariantId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
@@ -200,7 +197,6 @@ function ProductPage() {
       ? Math.round(Number(variant.mrp) - Number(variant.price))
       : 0;
 
-  const isWishlisted = inWishlist(product.id);
   const inCartQty = items.find((i) => i.variantId === variant?.id)?.qty ?? 0;
 
   const handleAddToCart = () => {
@@ -335,7 +331,7 @@ function ProductPage() {
                       {off}%
                     </span>
                     <span className="relative z-10 text-[7px] sm:text-[7.5px] font-bold text-white uppercase tracking-wider mt-0.5">
-                      OFF
+                      {lang === "hi" ? "छूट" : "OFF"}
                     </span>
                   </div>
                 </div>
@@ -354,20 +350,8 @@ function ProductPage() {
                 <span>{product.brand || (lang === "hi" ? "दुकान प्रमाणित" : "Store Certified")}</span>
               </span>
 
-              {/* Sleek, Compact Action Buttons (Wishlist, WhatsApp, Share) */}
+              {/* Sleek Action Buttons (WhatsApp, Share) */}
               <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => toggleWishlist(product)}
-                  className="flex size-8 items-center justify-center rounded-full bg-white border border-[#E5E7EB] text-[#4B5563] hover:text-[#DC2626] hover:border-red-200 hover:bg-red-50/60 shadow-2xs transition-all cursor-pointer active:scale-92"
-                  title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
-                >
-                  <Heart
-                    className={`size-3.5 transition-colors ${
-                      isWishlisted ? "fill-[#DC2626] text-[#DC2626]" : ""
-                    }`}
-                  />
-                </button>
                 <button
                   type="button"
                   onClick={handleWhatsAppShare}
@@ -387,12 +371,12 @@ function ProductPage() {
               </div>
             </div>
 
-            <h1 className="font-sans text-xl sm:text-2xl font-bold text-[#18221D] mt-1.5 leading-[1.35] tracking-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-[#111815] mt-1.5 leading-[1.4] tracking-normal py-0.5">
               {localizedName}
             </h1>
 
             {/* Micro Rating & Dynamic Delivery Status Row */}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#5A655F]">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#3D4C44]">
               <a
                 href="#reviews-section"
                 className="inline-flex items-center gap-1 font-bold text-[11px] bg-[#047857] text-white px-2 py-0.5 rounded shadow-2xs hover:bg-[#065F46] transition-colors cursor-pointer"
@@ -429,7 +413,7 @@ function ProductPage() {
           </div>
 
           {/* Compact Clean Pricing Card */}
-          <div className="rounded-xl bg-[#F8FAFC] border border-[#E5E7EB] p-3 shadow-2xs space-y-1">
+          <div className="rounded-xl bg-white border border-[rgba(20,90,69,0.12)] p-3 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)] space-y-1">
             <div className="flex items-baseline flex-wrap gap-2">
               <span className="text-2xl sm:text-3xl font-black text-[#145A45] tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
@@ -441,7 +425,7 @@ function ProductPage() {
                     {inr(variant.mrp)}
                   </span>
                   <span className="rounded-md bg-blue-50 text-[#256FEF] border border-blue-200/70 px-1.5 py-0.2 text-[11px] font-bold tracking-tight">
-                    {off}% OFF
+                    {off}% {lang === "hi" ? "छूट" : "OFF"}
                   </span>
                 </>
               ) : null}
@@ -483,7 +467,7 @@ function ProductPage() {
                     className={`relative flex flex-col p-2 sm:p-2.5 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                       isSelected
                         ? "border-2 border-[#059669] bg-[#ECFDF5] shadow-2xs ring-1 ring-[#059669]/20"
-                        : "border-[#E5E7EB] bg-white hover:border-[#059669]/40 hover:bg-[#F9FAFB]"
+                        : "border-[rgba(20,90,69,0.12)] bg-white hover:border-[#145A45]/40 hover:bg-[#FAF8F5]"
                     }`}
                   >
                     {isSelected && (
@@ -506,7 +490,7 @@ function ProductPage() {
                     </div>
                     {vOff > 0 && (
                       <span className="mt-1 text-[9.5px] font-bold text-[#256FEF] bg-blue-50 self-start px-1 py-0.2 rounded">
-                        {vOff}% OFF
+                        {vOff}% {lang === "hi" ? "छूट" : "OFF"}
                       </span>
                     )}
                   </button>
@@ -545,7 +529,7 @@ function ProductPage() {
           <div className="space-y-2 pt-0.5">
             <div className="flex items-center gap-2.5">
               {/* Sleek, Compact Stepper */}
-              <div className="flex h-10 items-center justify-between rounded-xl border border-[#D1D5DB] bg-[#F8FAFC] px-1 shrink-0">
+              <div className="flex h-10 items-center justify-between rounded-xl border border-[rgba(20,90,69,0.16)] bg-[#F8FAFC] px-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -623,12 +607,12 @@ function ProductPage() {
           </div>
 
           {/* Compact Trust Strip (1 Clean Row, Delivery Toggle Aware) */}
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB]">
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#F8FAFC] border border-[#E5E7EB]">
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[rgba(20,90,69,0.1)]">
+            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
               <ShieldCheck className="size-3.5 text-[#059669] shrink-0" />
               <span className="text-[11px] font-bold text-[#374151] truncate">100% असली सामान</span>
             </div>
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#F8FAFC] border border-[#E5E7EB]">
+            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
               {isDeliveryEnabled ? (
                 <>
                   <Truck className="size-3.5 text-[#059669] shrink-0" />
@@ -641,14 +625,14 @@ function ProductPage() {
                 </>
               )}
             </div>
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#F8FAFC] border border-[#E5E7EB]">
+            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
               <BadgeCheck className="size-3.5 text-[#059669] shrink-0" />
               <span className="text-[11px] font-bold text-[#374151] truncate">उचित दुकान रेट</span>
             </div>
           </div>
 
           {/* Product Details & Specifications Box (Compact & Clean) */}
-          <div className="rounded-xl border border-[#E5E7EB] bg-white p-3.5 space-y-2.5 shadow-2xs">
+          <div className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3.5 space-y-2.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="flex items-center gap-1.5 pb-2 border-b border-[#F3F4F6]">
               <Sparkles className="size-3.5 text-[#059669]" />
               <h3 className="text-xs font-bold text-[#111827]">
@@ -664,15 +648,15 @@ function ProductPage() {
 
             {/* Compact Structured Specs Strip */}
             <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-              <div className="rounded-lg bg-[#F8FAFC] border border-[#E5E7EB] p-1.5 text-center">
+              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
                 <span className="text-[9.5px] font-bold text-[#6B7280] block">ब्रांड</span>
                 <span className="text-xs font-bold text-[#111827] truncate block">{product.brand || "Arun Gopal"}</span>
               </div>
-              <div className="rounded-lg bg-[#F8FAFC] border border-[#E5E7EB] p-1.5 text-center">
+              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
                 <span className="text-[9.5px] font-bold text-[#6B7280] block">पैकिंग</span>
                 <span className="text-xs font-bold text-[#111827] truncate block">{variant ? getVariantLabel(variant) : "Standard"}</span>
               </div>
-              <div className="rounded-lg bg-[#F8FAFC] border border-[#E5E7EB] p-1.5 text-center">
+              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
                 <span className="text-[9.5px] font-bold text-[#6B7280] block">लोकेशन</span>
                 <span className="text-xs font-bold text-[#111827] truncate block">रामनगर, महराजगंज</span>
               </div>
@@ -686,13 +670,13 @@ function ProductPage() {
 
       {/* 3. SIMILAR / RELATED ESSENTIALS SECTION */}
       {related.length > 0 && (
-        <section className="space-y-5 pt-8 border-t border-[#E4DFD5]">
+        <section className="space-y-5 pt-8 border-t border-[rgba(20,90,69,0.12)]">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#16201A]">
                 {t.similarEssentialsTitle}
               </h2>
-              <p className="text-xs text-[#5A655F] mt-0.5">
+              <p className="text-xs text-[#3D4C44] mt-0.5">
                 {lang === "hi" ? "इस कैटेगरी के अन्य शुद्ध उत्पाद" : "More items from this category"}
               </p>
             </div>
@@ -714,7 +698,7 @@ function ProductPage() {
       )}
 
       {/* 4. STICKY MOBILE BOTTOM BUY BAR */}
-      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[#E5E7EB] bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:hidden">
+      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_-4px_20px_rgba(20,90,69,0.08)] md:hidden">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">

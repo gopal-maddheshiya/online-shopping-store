@@ -33,27 +33,27 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
             <button
               type="button"
               onClick={() => setShowHowItWorks(true)}
-              className="group flex items-center gap-2 rounded-2xl bg-[#EDF8F1] border border-[#DDF3E4] hover:bg-[#E4F7EA] hover:border-[#CEEED8] px-2.5 py-1.5 text-left transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
+              className="group flex items-center gap-2 rounded-2xl bg-[#E6F5EC] border border-[#C5E7D2] hover:bg-[#DBF0E3] hover:border-[#A6DBB9] px-2.5 py-1.5 text-left transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
               title={lang === "hi" ? "AI राशन सहायक कैसे काम करता है? देखें" : "How AI Grocery Assistant Works"}
             >
               {/* Clean White Elevated Tile with Store Icon (No Sparkle) */}
-              <div className="grid size-8 place-items-center rounded-xl bg-white border border-[#DDF3E4] text-[#145A45] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                <Store className="size-4.5" strokeWidth={2.2} />
+              <div className="grid size-8.5 place-items-center rounded-xl bg-white border border-[#C5E7D2] text-[#145A45] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                <Store className="size-5" strokeWidth={2.2} />
               </div>
 
               {/* Text Info */}
-              <div className="flex flex-col leading-tight">
+              <div className="flex flex-col leading-snug py-0.5">
                 <div className="flex items-center gap-1">
-                  <span className="font-sans text-[11px] font-extrabold text-[#145A45] tracking-tight whitespace-nowrap">
+                  <span className="font-sans text-[13.5px] sm:text-[14.5px] font-bold text-[#145A45] tracking-tight whitespace-nowrap">
                     {lang === "hi" ? "AI सहायक" : "AI Assistant"}
                   </span>
-                  <span className="text-[7.5px] font-black text-[#145A45] bg-white/90 border border-[#DDF3E4] px-1 py-0.2 rounded-full leading-none shadow-2xs">
+                  <span className="text-[9.5px] font-bold text-[#145A45] bg-white border border-[#C5E7D2] px-1.5 py-0.5 rounded-full leading-none shadow-2xs">
                     10s
                   </span>
                 </div>
-                <span className="text-[9.5px] font-semibold text-[#2D5A43] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                <span className="text-[11px] font-medium text-[#1E543D] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                   <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works"}</span>
-                  <span className="text-[8.5px] font-bold">ⓘ</span>
+                  <span className="text-[9px] font-medium">ⓘ</span>
                 </span>
               </div>
             </button>
@@ -72,9 +72,9 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
                 title={lang === "hi" ? "पर्ची की फोटो भेजें" : "Upload Slip"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <Camera className="size-5" strokeWidth={2.1} />
+                  <Camera className="size-[20px]" strokeWidth={2} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "पर्ची" : "Slip"}
                 </span>
               </button>
@@ -87,9 +87,9 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
                 title={lang === "hi" ? "बोलकर सामान मंगाएं" : "Speak Items"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <Mic className="size-5" strokeWidth={2.1} />
+                  <Mic className="size-[20px]" strokeWidth={2} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "बोलें" : "Voice"}
                 </span>
               </button>
@@ -102,9 +102,9 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
                 title={lang === "hi" ? "सामान की लिस्ट लिखें या पेस्ट करें" : "Type/Paste List"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <ClipboardList className="size-5" strokeWidth={2.1} />
+                  <ClipboardList className="size-[20px]" strokeWidth={2} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "लिस्ट" : "List"}
                 </span>
               </button>
@@ -115,7 +115,7 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
             <button
               type="button"
               onClick={() => setShowHowItWorks(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#5A655F] hover:text-[#145A45] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] hover:border-[#145A45]/30 bg-[#FAF8F5] hover:bg-white shadow-2xs transition-all cursor-pointer shrink-0 ml-1"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-[#3D4C44] hover:text-[#145A45] px-2.5 py-1.5 rounded-full border border-[#E5E7EB] hover:border-[#145A45]/30 bg-[#FAF8F5] hover:bg-white shadow-2xs transition-all cursor-pointer shrink-0 ml-1"
             >
               <HelpCircle className="size-3.5 text-[#145A45]" />
               <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works?"}</span>
@@ -135,7 +135,7 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
                 {lang === "hi" ? "AI राशन सहायक कैसे काम करता है?" : "How AI Grocery Assistant Works"}
               </DialogTitle>
             </div>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#3D4C44]">
               {lang === "hi"
                 ? "दुकान में सामान खोजने का झंझट खत्म — 3 आसान तरीकों से 100% सही रेट पर ऑर्डर!"
                 : "Skip searching shelf by shelf — fill your cart in 3 quick steps!"}

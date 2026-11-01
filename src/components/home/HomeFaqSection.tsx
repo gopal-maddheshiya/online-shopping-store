@@ -69,7 +69,7 @@ export function HomeFaqSection({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-sans text-xs sm:text-base font-extrabold text-[#16201A] tracking-tight group-hover:text-[#145A45] transition-colors truncate">
+                <h3 className="font-sans text-xs sm:text-base font-extrabold text-[#16201A] tracking-normal leading-normal py-0.5 group-hover:text-[#145A45] transition-colors truncate">
                   {isHindi
                     ? "अक्सर पूछे जाने वाले सवाल (FAQ)"
                     : "Frequently Asked Questions (FAQ)"}
@@ -78,7 +78,7 @@ export function HomeFaqSection({
                   {CORE_FAQ_ITEMS.length} {isHindi ? "सवाल" : "Q&As"}
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-[#5A655F] truncate mt-0.5">
+              <p className="text-[11px] sm:text-xs text-[#3D4C44] truncate mt-0.5">
                 {isHindi
                   ? "डिलीवरी, दुकान समय, शुद्धता व आर्डर से जुड़ी जानकारी"
                   : "Quick answers about delivery, store hours & online orders"}
@@ -144,7 +144,7 @@ export function HomeFaqSection({
                         <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-[#F0F5F1] text-[10px] font-extrabold text-[#145A45] group-data-[state=open]:bg-[#145A45] group-data-[state=open]:text-white transition-colors">
                           {index + 1}
                         </span>
-                        <span className="leading-snug">{question}</span>
+                        <span className="leading-normal py-0.5">{question}</span>
                       </span>
                     </AccordionTrigger>
 
@@ -165,7 +165,7 @@ export function HomeFaqSection({
 
             {/* Quick Contact & Collapse Bar */}
             <div className="mt-4 pt-3.5 border-t border-[#E8ECE9] flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-              <div className="text-[11px] sm:text-xs text-[#5A655F]">
+              <div className="text-[11px] sm:text-xs text-[#3D4C44]">
                 {isHindi
                   ? "कोई अन्य सवाल है? हमसे तुरंत WhatsApp या फ़ोन पर पूछें:"
                   : "Have another question? Ask us directly on WhatsApp or call:"}
@@ -191,7 +191,7 @@ export function HomeFaqSection({
                 <button
                   type="button"
                   onClick={() => setIsExpanded(false)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-transparent hover:border-[#D5E0D5] px-2.5 py-1.5 text-xs font-semibold text-[#5A655F] hover:text-[#16201A] transition-all"
+                  className="inline-flex items-center gap-1 rounded-lg border border-transparent hover:border-[#D5E0D5] px-2.5 py-1.5 text-xs font-semibold text-[#3D4C44] hover:text-[#16201A] transition-all"
                 >
                   <ChevronUp className="size-3.5" />
                   <span>{isHindi ? "छुपाएं" : "Close"}</span>

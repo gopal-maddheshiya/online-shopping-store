@@ -131,7 +131,7 @@ export const Route = createFileRoute("/")({
         <h2 className="font-sans text-xl font-bold text-[#1F2924]">
           Unable to load homepage catalogue
         </h2>
-        <p className="text-xs text-[#6B746F]">
+        <p className="text-xs text-[#3D4C44]">
           Please check your network connection and try again.
         </p>
         <Button onClick={() => reset()} className="rounded-full bg-[#145A45] text-white">
@@ -171,10 +171,10 @@ function SectionHeader({
           {icon}
         </div>
         <div>
-          <h2 className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight">
+          <h2 className="font-sans text-base sm:text-lg font-bold text-[#18221D] tracking-tight">
             {title}
           </h2>
-          <p className="text-[11px] sm:text-xs text-[#5A655F] mt-0.5">{subtitle}</p>
+          <p className="text-[11px] sm:text-xs text-[#3D4C44] mt-0.5">{subtitle}</p>
         </div>
       </div>
       <Link
@@ -503,7 +503,7 @@ function CategoryGridSkeleton() {
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center w-full">
-                <div className="w-full aspect-[1/1.02] rounded-[13px] overflow-hidden bg-[#EDF8F1]/60 border border-[#DDF3E4]/70 p-1.5 flex items-center justify-center shadow-2xs">
+                <div className="w-full aspect-[1/1.02] rounded-[13px] overflow-hidden bg-[#E6F5EC]/60 border border-[#C5E7D2]/70 p-1.5 flex items-center justify-center shadow-2xs">
                   <Skeleton className="size-full rounded-[10px]" />
                 </div>
                 <Skeleton className="h-3 w-14 rounded-md mt-2" />
@@ -948,7 +948,7 @@ function PremiumStoreHome() {
               return (
                 <div key={heading.id} className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-                    <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight leading-tight truncate">
+                    <h3 className="font-sans text-[17.5px] sm:text-[19.5px] lg:text-[21px] font-bold text-[#18221D] tracking-normal leading-snug py-0.5 truncate">
                       {headingTitle}
                     </h3>
 
@@ -972,11 +972,11 @@ function PremiumStoreHome() {
                           className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                         >
                           <div
-                            className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8] group-hover:scale-[1.03]"
+                            className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9] group-hover:scale-[1.03]"
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
-                          <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.35] tracking-normal text-center line-clamp-2 min-h-[2.7em] flex items-start justify-center px-0.5 transition-colors">
+                          <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.38] tracking-normal text-center line-clamp-2 min-h-[2.85em] flex items-start justify-center px-0.5 transition-colors">
                             {getCategoryName(c)}
                           </span>
                         </Link>
@@ -990,7 +990,7 @@ function PremiumStoreHome() {
             {uncategorizedCategories.length > 0 && (
               <div className="gsap-reveal-section space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-                  <h3 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight leading-tight truncate">
+                  <h3 className="font-sans text-[17.5px] sm:text-[19.5px] lg:text-[21px] font-bold text-[#18221D] tracking-normal leading-snug py-0.5 truncate">
                     {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
                   </h3>
 
@@ -1014,11 +1014,11 @@ function PremiumStoreHome() {
                         className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                       >
                         <div
-                          className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8] group-hover:scale-[1.03]"
+                          className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9] group-hover:scale-[1.03]"
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>
-                        <span className="mt-2 sm:mt-2.5 text-[11.5px] sm:text-[12px] lg:text-[12.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.35] tracking-normal text-center line-clamp-2 min-h-[2.7em] flex items-start justify-center px-0.5 transition-colors">
+                        <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.38] tracking-normal text-center line-clamp-2 min-h-[2.85em] flex items-start justify-center px-0.5 transition-colors">
                           {getCategoryName(c)}
                         </span>
                       </Link>
@@ -1063,7 +1063,7 @@ function PremiumStoreHome() {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-[#E4DFD5] shadow-[0_2px_8px_-2px_rgba(15,74,56,0.05),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/30 transition-all"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_10px_-2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#145A45]/40 hover:-translate-y-0.5 transition-all"
             >
               <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] border border-[#145A45]/15 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                 {item.icon}
@@ -1072,7 +1072,7 @@ function PremiumStoreHome() {
                 <p className="text-[11px] sm:text-xs font-bold text-[#16201A] truncate">
                   {item.title}
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-[#5A655F] truncate">{item.sub}</p>
+                <p className="text-[9px] sm:text-[10px] text-[#3D4C44] truncate">{item.sub}</p>
               </div>
             </div>
           ))}
@@ -1140,7 +1140,7 @@ function PremiumStoreHome() {
           ═══════════════════════════════════════════════════════ */}
       {activePromoCoupon && (
         <section className="container-page">
-          <div className="relative overflow-hidden rounded-3xl border border-[#E2E8E4] bg-gradient-to-r from-[#F8FAF9] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,1)]">
+          <div className="relative overflow-hidden rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-r from-[#FAF8F5] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)]">
             <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
             <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="space-y-1.5 text-center sm:text-left">
@@ -1161,7 +1161,7 @@ function PremiumStoreHome() {
                       ? `कोड ${activePromoCoupon.code} के साथ पाएं ₹${activePromoCoupon.value} की सीधी छूट`
                       : `Flat ₹${activePromoCoupon.value} OFF with code ${activePromoCoupon.code}`}
                 </h3>
-                <p className="text-xs text-[#5A655F]">
+                <p className="text-xs text-[#3D4C44]">
                   {activePromoCoupon.min_order > 0
                     ? lang === "hi"
                       ? `₹${activePromoCoupon.min_order} या उससे अधिक के ऑनलाइन किराना ऑर्डर पर मान्य।`
@@ -1302,7 +1302,7 @@ function PremiumStoreHome() {
               </div>
 
               {/* Dynamic Impact Headline */}
-              <h3 className="font-sans text-xl sm:text-2xl md:text-[27px] lg:text-[30px] font-extrabold text-white tracking-tight leading-snug sm:leading-tight">
+              <h3 className="font-sans text-xl sm:text-2xl md:text-[27px] lg:text-[30px] font-extrabold text-white tracking-normal leading-snug py-0.5">
                 {lang === "hi" ? (
                   <>
                     हमारे पास{" "}
@@ -1387,7 +1387,7 @@ function PremiumStoreHome() {
                         className="size-9 sm:size-10 rounded-xl object-cover border border-white/20 shrink-0 bg-white/10 group-hover:scale-105 transition-transform"
                       />
                       <div className="min-w-0 flex-1">
-                        <span className="block text-[11px] sm:text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate leading-tight">
+                        <span className="block text-[11px] sm:text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate leading-snug py-0.5">
                           {getCategoryName(c)}
                         </span>
                         <span className="text-[10px] text-emerald-200/70 font-medium flex items-center gap-0.5 mt-0.5">
@@ -1427,10 +1427,10 @@ function PremiumStoreHome() {
           12. BOTTOM TRUST + WhatsApp CTA
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="rounded-3xl border border-[#E2E8E4] bg-gradient-to-br from-white via-[#F8FAF9] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
+        <div className="rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-br from-white via-[#FAF8F5] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
           {/* Title */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[#E4DFD5] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
+            <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
               <BadgeCheck className="size-4 text-[#145A45]" />
               <span>
                 {lang === "hi"
@@ -1476,14 +1476,14 @@ function PremiumStoreHome() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 p-4 rounded-2xl bg-white/80 border border-[#E8E4DA] shadow-2xs"
+                className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 hover:-translate-y-0.5 transition-all"
               >
                 <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] shrink-0">
                   {item.icon}
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-[#16201A]">{item.title}</h4>
-                  <p className="text-[10px] text-[#5A655F] mt-0.5">{item.desc}</p>
+                  <p className="text-[10px] text-[#3D4C44] mt-0.5">{item.desc}</p>
                 </div>
               </div>
             ))}

@@ -7,7 +7,6 @@ import {
   Phone,
   Search,
   ShoppingBag,
-  Heart,
   User,
   MapPin,
   Clock,
@@ -42,7 +41,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/lib/cart";
-import { useWishlist } from "@/lib/wishlist";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
 import { settingsQuery, categoriesQuery, productsQuery, isOpenNow } from "@/lib/queries";
@@ -54,7 +52,6 @@ import { RotatingSearchInput } from "@/components/layout/RotatingSearchInput";
 export function Header() {
   const { data: settings } = useQuery(settingsQuery);
   const { count: cartCount, subtotal } = useCart();
-  const { count: wishlistCount } = useWishlist();
   const { user, profile } = useAuth();
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
@@ -398,7 +395,7 @@ export function Header() {
 
       {/* 2. Main Sticky Header — clean premium crystal glass */}
       <header
-        className="sticky top-0 z-40 border-b border-[#E0DACF]/80 bg-white/95 backdrop-blur-xl shadow-[0_2px_12px_-2px_rgba(15,74,56,0.05),inset_0_-1px_0_rgba(255,255,255,0.8)]"
+        className="sticky top-0 z-40 border-b border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-xl shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_-1px_0_rgba(255,255,255,0.9)]"
         style={{ fontFeatureSettings: '"ss01", "cv11"' }}
       >
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
@@ -409,7 +406,7 @@ export function Header() {
                 <button
                   type="button"
                   aria-label="Open menu"
-                  className="group relative flex size-9.5 items-center justify-center rounded-xl border border-[#DDF3E4] bg-[#EDF8F1] hover:bg-[#E4F7EA] hover:border-[#CEEED8] text-[#145A45] shadow-2xs active:scale-92 transition-all duration-200 cursor-pointer"
+                  className="group relative flex size-9.5 items-center justify-center rounded-xl border border-[#C5E7D2] bg-[#E6F5EC] hover:bg-[#DBF0E3] hover:border-[#A6DBB9] text-[#145A45] shadow-2xs active:scale-92 transition-all duration-200 cursor-pointer"
                   title={lang === "hi" ? "मेन्यू खोलें" : "Open Menu"}
                 >
                   <Menu className="size-5 text-[#145A45] group-hover:scale-105 transition-transform duration-200" strokeWidth={2.2} />
@@ -426,10 +423,10 @@ export function Header() {
                 <Store className="size-5 text-[#F5D061]" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="font-brand-hindi text-[17.5px] sm:text-[19px] md:text-[22px] font-bold text-[#0B4635] tracking-tight leading-tight group-hover:text-[#145A45] transition-colors drop-shadow-[0_1px_1px_rgba(11,70,53,0.08)]">
+                <span className="font-brand-hindi text-[17.5px] sm:text-[19px] md:text-[22px] font-bold text-[#0B4635] tracking-normal leading-normal py-0.5 group-hover:text-[#145A45] transition-colors drop-shadow-[0_1px_1px_rgba(11,70,53,0.08)]">
                   {t.storeName}
                 </span>
-                <span className="text-[9.5px] sm:text-[10px] md:text-[11px] font-medium text-[#667085] flex items-center justify-center md:justify-start gap-1 leading-tight mt-0.5 tracking-tight truncate">
+                <span className="text-[9.5px] sm:text-[10px] md:text-[11px] font-medium text-[#667085] flex items-center justify-center md:justify-start gap-1 leading-normal tracking-normal truncate mt-0.5">
                   <MapPin className="size-3 text-[#D97706] shrink-0" />
                   <span>{lang === "hi" ? "रामनगर चौराहा, अड्डा बाजार" : "Ramnagar Chauraha, Adda Bazar"}</span>
                 </span>
@@ -493,7 +490,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setOrderModalOpen(true)}
-                className="hidden xl:flex items-center gap-1.5 rounded-full border border-[#E0DACF] bg-[#FAF8F5] px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#EBF3ED] hover:border-[#145A45]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.03)] cursor-pointer"
+                className="hidden xl:flex items-center gap-1.5 rounded-full border border-[rgba(20,90,69,0.14)] bg-[#FAF8F5] px-3.5 py-1.5 text-xs font-bold text-[#0F4A38] hover:bg-[#EBF3ED] hover:border-[#145A45]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.03)] cursor-pointer"
                 title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Call"}
               >
                 <PhoneCall className="size-3.5 text-[#145A45]" />
@@ -522,7 +519,7 @@ export function Header() {
               {/* Account Link */}
               <Link
                 to="/account"
-                className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#2D3748] hover:text-[#145A45] hover:bg-[#EBF3ED] hover:border-[#145A45]/30 border border-[#E0DACF] bg-[#FAF8F5] transition-all shadow-xs"
+                className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-[#2D3748] hover:text-[#145A45] hover:bg-[#EBF3ED] hover:border-[#145A45]/30 border border-[rgba(20,90,69,0.14)] bg-[#FAF8F5] transition-all shadow-xs"
                 title={user ? t.myAccount : t.login}
               >
                 <User className="size-3.5 text-[#145A45]" />
@@ -533,20 +530,6 @@ export function Header() {
                       ? user.phone.slice(-4)
                       : t.login.split(" / ")[0]}
                 </span>
-              </Link>
-
-              {/* Wishlist Link */}
-              <Link
-                to="/wishlist"
-                className="relative hidden sm:flex items-center justify-center size-9 rounded-full text-[#4A5568] hover:text-[#145A45] hover:bg-[#EBF3ED] hover:border-[#145A45]/30 border border-[#E0DACF] bg-[#FAF8F5] transition-all shadow-xs"
-                title={t.wishlist}
-              >
-                <Heart className="size-4" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 grid size-4.5 place-items-center rounded-full bg-[#145A45] text-[9.5px] font-bold text-white shadow-xs">
-                    {wishlistCount}
-                  </span>
-                )}
               </Link>
 
               {/* Desktop Cart Button (Always visible on Laptop/PC) */}
@@ -589,7 +572,7 @@ export function Header() {
                 onClick={() => setOrderModalOpen(true)}
                 title={lang === "hi" ? "फोन पर ऑर्डर करें" : "Order on Phone"}
                 aria-label="Order on Phone"
-                className="flex size-8.5 items-center justify-center rounded-full border border-[#E0DACF] bg-white hover:bg-[#FAF8F2] text-[#145A45] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
+                className="flex size-8.5 items-center justify-center rounded-full border border-[rgba(20,90,69,0.14)] bg-white hover:bg-[#FAF8F2] text-[#145A45] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
               >
                 <PhoneCall className="size-4 text-[#145A45]" />
               </button>
@@ -606,7 +589,7 @@ export function Header() {
                 rel="noopener noreferrer"
                 aria-label="Order on WhatsApp"
                 title={lang === "hi" ? "व्हाट्सएप पर ऑर्डर करें" : "Order on WhatsApp"}
-                className="flex size-8.5 items-center justify-center rounded-full border border-[#E0DACF] bg-white hover:bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
+                className="flex size-8.5 items-center justify-center rounded-full border border-[rgba(20,90,69,0.14)] bg-white hover:bg-[#FAF8F2] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] active:scale-95 transition-all cursor-pointer shrink-0"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -655,10 +638,10 @@ export function Header() {
                             <Store className="size-5 text-[#B45309]" />
                           </div>
                           <div className="min-w-0">
-                            <SheetTitle className="font-brand-hindi text-base font-bold text-[#0B4635] tracking-tight leading-tight truncate">
+                            <SheetTitle className="font-brand-hindi text-base font-bold text-[#0B4635] tracking-normal leading-normal py-0.5 truncate">
                               {t.storeName}
                             </SheetTitle>
-                            <p className="text-[10.5px] font-medium text-[#6B746F] leading-tight mt-0.5 truncate">
+                            <p className="text-[10.5px] font-medium text-[#3D4C44] leading-normal tracking-normal truncate mt-0.5">
                               {lang === "hi" ? "रामनगर चौराहा, अड्डा बाजार" : "Ramnagar Chauraha, Adda Bazar"}
                             </p>
                           </div>
@@ -669,7 +652,7 @@ export function Header() {
                       <div className="flex items-center justify-between rounded-xl bg-white p-2.5 border border-[#E5E0D5] shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="grid size-8 place-items-center rounded-full bg-[#F3EFE6] text-[#16201A] font-bold text-xs shrink-0">
-                            {user ? (profile?.full_name?.[0]?.toUpperCase() || "U") : <User className="size-4 text-[#6B746F]" />}
+                            {user ? (profile?.full_name?.[0]?.toUpperCase() || "U") : <User className="size-4 text-[#3D4C44]" />}
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-[#16201A] truncate">
@@ -677,7 +660,7 @@ export function Header() {
                                 ? (profile?.full_name || (user.phone ? `+91 ${user.phone.slice(-10)}` : t.myAccount))
                                 : (lang === "hi" ? "नमस्ते! स्वागत है 👋" : "Welcome! 👋")}
                             </p>
-                            <p className="text-[10px] text-[#6B746F] truncate">
+                            <p className="text-[10px] text-[#3D4C44] truncate">
                               {user ? (lang === "hi" ? "अकाउंट एक्टिव है" : "Account Active") : (lang === "hi" ? "ऑर्डर हिस्ट्री व सेव एड्रेस" : "Orders & Address")}
                             </p>
                           </div>
@@ -693,7 +676,7 @@ export function Header() {
 
                       {/* Language Selector in Header */}
                       <div className="flex items-center justify-between pt-0.5">
-                        <span className="text-[10.5px] font-semibold text-[#6B746F] flex items-center gap-1">
+                        <span className="text-[10.5px] font-semibold text-[#3D4C44] flex items-center gap-1">
                           <Languages className="size-3 text-[#B45309]" /> {lang === "hi" ? "भाषा चुनें" : "Language"}
                         </span>
                         <div className="flex items-center rounded-lg bg-[#EFEBE3] p-0.5 border border-[#E2DDD2]">
@@ -701,7 +684,7 @@ export function Header() {
                             type="button"
                             onClick={() => setLang("en")}
                             className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                              lang === "en" ? "bg-white text-[#16201A] shadow-xs" : "text-[#6B746F] hover:text-[#16201A]"
+                              lang === "en" ? "bg-white text-[#16201A] shadow-xs" : "text-[#3D4C44] hover:text-[#16201A]"
                             }`}
                           >
                             English
@@ -710,7 +693,7 @@ export function Header() {
                             type="button"
                             onClick={() => setLang("hi")}
                             className={`rounded-md px-2.5 py-0.5 text-[10px] font-bold transition-all ${
-                              lang === "hi" ? "bg-white text-[#16201A] shadow-xs" : "text-[#6B746F] hover:text-[#16201A]"
+                              lang === "hi" ? "bg-white text-[#16201A] shadow-xs" : "text-[#3D4C44] hover:text-[#16201A]"
                             }`}
                           >
                             हिन्दी
@@ -736,7 +719,7 @@ export function Header() {
                             : (lang === "hi" ? "दुकान से पिकअप उपलब्ध" : "Store Pickup Available")}
                         </span>
                       </span>
-                      <span className="flex items-center gap-1 text-[10.5px] text-[#6B746F]">
+                      <span className="flex items-center gap-1 text-[10.5px] text-[#3D4C44]">
                         <ShieldCheck className="size-3 text-[#D97706]" />
                         <span>100% शुद्ध राशन</span>
                       </span>
@@ -783,24 +766,6 @@ export function Header() {
                       </Link>
 
                       <Link
-                        to="/wishlist"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <Heart className="size-4 text-[#E53E3E]" />
-                          <span>{t.wishlist}</span>
-                        </span>
-                        {wishlistCount > 0 ? (
-                          <span className="rounded-full bg-[#D97706] px-2 py-0.5 text-[10px] font-bold text-white shadow-2xs">
-                            {wishlistCount}
-                          </span>
-                        ) : (
-                          <ChevronRight className="size-3.5 text-[#8C827A]" />
-                        )}
-                      </Link>
-
-                      <Link
                         to="/contact"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
@@ -816,7 +781,7 @@ export function Header() {
                     {/* All Categories Grid */}
                     <div className="p-3 bg-[#FAF8F2]">
                       <div className="flex items-center justify-between mb-2 px-1">
-                        <p className="text-[11px] font-bold uppercase tracking-wider text-[#5A655F]">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-[#3D4C44]">
                           {lang === "hi" ? "किराना श्रेणियां" : "Categories"}
                         </p>
                         <Link
@@ -846,7 +811,7 @@ export function Header() {
                               height={28}
                               className="size-7 rounded-lg object-cover border border-[#E5E0D5]/60 shrink-0"
                             />
-                            <span className="text-[11px] font-bold text-[#16201A] line-clamp-1 leading-tight">
+                            <span className="text-[11px] font-bold text-[#16201A] line-clamp-1 leading-snug py-0.5">
                               {getCategoryName(c)}
                             </span>
                           </Link>
@@ -858,7 +823,7 @@ export function Header() {
                   {/* 3. Sticky Drawer Bottom Contact Actions */}
                   <div className="p-3 border-t border-[#E5E0D5] bg-white shrink-0 space-y-2">
                     {/* Store Timings */}
-                    <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#5A655F]">
+                    <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#3D4C44]">
                       <Clock className="size-3.5 text-[#B45309]" />
                       <span>{lang === "hi" ? "दुकान: सुबह 7:00 AM से रात 9:00 PM तक" : "Store: 7:00 AM - 9:00 PM"}</span>
                     </div>
@@ -1065,22 +1030,22 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setShowHowItWorks(true)}
-                className="group flex items-center gap-2 rounded-2xl bg-[#EDF8F1] border border-[#DDF3E4] hover:bg-[#E4F7EA] hover:border-[#CEEED8] px-2.5 py-1 text-left transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
+                className="group flex items-center gap-2 rounded-2xl bg-[#E6F5EC] border border-[#C5E7D2] hover:bg-[#DBF0E3] hover:border-[#A6DBB9] px-2.5 py-1 text-left transition-all active:scale-95 cursor-pointer shadow-2xs shrink-0"
                 title={lang === "hi" ? "AI राशन सहायक कैसे काम करता है? देखें" : "How AI Grocery Assistant Works"}
               >
-                <div className="grid size-7.5 place-items-center rounded-xl bg-white border border-[#DDF3E4] text-[#145A45] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                <div className="grid size-7.5 place-items-center rounded-xl bg-white border border-[#C5E7D2] text-[#145A45] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                   <Store className="size-4" strokeWidth={2.2} />
                 </div>
                 <div className="flex flex-col leading-tight">
                   <div className="flex items-center gap-1">
-                    <span className="font-sans text-[11px] font-extrabold text-[#145A45] tracking-tight whitespace-nowrap">
+                    <span className="font-sans text-[13px] sm:text-[14px] font-black text-[#0B4635] tracking-tight whitespace-nowrap">
                       {lang === "hi" ? "AI सहायक" : "AI Assistant"}
                     </span>
-                    <span className="text-[7.5px] font-black text-[#145A45] bg-white/90 border border-[#DDF3E4] px-1 py-0.2 rounded-full leading-none shadow-2xs">
+                    <span className="text-[9px] font-black text-[#145A45] bg-white border border-[#C5E7D2] px-1.5 py-0.5 rounded-full leading-none shadow-2xs">
                       10s
                     </span>
                   </div>
-                  <span className="text-[9.5px] font-semibold text-[#2D5A43] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
+                  <span className="text-[11px] font-bold text-[#1E543D] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
                     <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works"}</span>
                     <span className="text-[8.5px] font-bold">ⓘ</span>
                   </span>
@@ -1095,9 +1060,9 @@ export function Header() {
                 title={lang === "hi" ? "पर्ची की फोटो भेजें" : "Upload Slip Photo"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <Camera className="size-5" strokeWidth={2.1} />
+                  <Camera className="size-[22px]" strokeWidth={2.25} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-bold text-[#141A17] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "पर्ची" : "Slip"}
                 </span>
               </button>
@@ -1110,9 +1075,9 @@ export function Header() {
                 title={lang === "hi" ? "बोलकर सामान मंगाएं" : "Speak to Order"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <Mic className="size-5" strokeWidth={2.1} />
+                  <Mic className="size-[22px]" strokeWidth={2.25} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-bold text-[#141A17] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "बोलें" : "Voice"}
                 </span>
               </button>
@@ -1125,9 +1090,9 @@ export function Header() {
                 title={lang === "hi" ? "सामान की लिस्ट लिखें या पेस्ट करें" : "Type or Paste List"}
               >
                 <div className="size-8 flex items-center justify-center text-[#16201A] group-hover:text-[#145A45] group-hover:scale-110 transition-transform">
-                  <ClipboardList className="size-5" strokeWidth={2.1} />
+                  <ClipboardList className="size-[22px]" strokeWidth={2.25} />
                 </div>
-                <span className="mt-0.5 font-sans text-xs font-semibold text-[#16201A] group-hover:text-[#145A45] tracking-tight leading-none">
+                <span className="mt-0.5 font-sans text-[13px] sm:text-[13.5px] font-bold text-[#141A17] group-hover:text-[#145A45] tracking-normal leading-normal py-0.5">
                   {lang === "hi" ? "लिस्ट" : "List"}
                 </span>
               </button>
@@ -1136,7 +1101,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setShowHowItWorks(true)}
-                className="hidden lg:inline-flex items-center gap-1.5 text-xs font-bold text-[#5A655F] hover:text-[#145A45] px-3 py-1.5 rounded-full border border-[#E5E7EB] hover:border-[#145A45]/30 bg-[#FAF8F5] hover:bg-white shadow-2xs transition-all cursor-pointer shrink-0 ml-1"
+                className="hidden lg:inline-flex items-center gap-1.5 text-xs font-bold text-[#3D4C44] hover:text-[#145A45] px-3 py-1.5 rounded-full border border-[#E5E7EB] hover:border-[#145A45]/30 bg-[#FAF8F5] hover:bg-white shadow-2xs transition-all cursor-pointer shrink-0 ml-1"
               >
                 <HelpCircle className="size-3.5 text-[#145A45]" />
                 <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works?"}</span>
@@ -1185,7 +1150,7 @@ export function Header() {
                       <button
                         type="button"
                         onClick={() => setShowSuggestions(false)}
-                        className="flex size-6 items-center justify-center rounded-full text-[#5A655F] hover:text-[#16201A] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                        className="flex size-6 items-center justify-center rounded-full text-[#3D4C44] hover:text-[#16201A] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
                         title={lang === "hi" ? "बंद करें" : "Close"}
                       >
                         <X className="size-3.5" />
@@ -1215,7 +1180,7 @@ export function Header() {
                   <>
                     {matchingCategories.length > 0 && (
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] px-1 mb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#3D4C44] px-1 mb-1">
                           {lang === "hi" ? "श्रेणियां" : "Categories"}
                         </p>
                         <div className="flex flex-wrap gap-1">
@@ -1291,7 +1256,7 @@ export function Header() {
 
       {/* ═══ "How It Works" Dialog ═══ */}
       <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-        <DialogContent className="max-w-md sm:max-w-lg p-5 sm:p-6 rounded-3xl bg-white border border-[#E0DACF]">
+        <DialogContent className="max-w-md sm:max-w-lg p-5 sm:p-6 rounded-3xl bg-white border border-[rgba(20,90,69,0.14)]">
           <DialogHeader className="text-left space-y-1 pb-2 border-b border-[#EAE6DC]">
             <div className="flex items-center gap-2">
               <Store className="size-5 sm:size-6 text-[#145A45] shrink-0" strokeWidth={2.3} />
@@ -1299,7 +1264,7 @@ export function Header() {
                 {lang === "hi" ? "AI राशन सहायक कैसे काम करता है?" : "How AI Grocery Assistant Works"}
               </DialogTitle>
             </div>
-            <p className="text-xs text-[#5A655F]">
+            <p className="text-xs text-[#3D4C44]">
               {lang === "hi"
                 ? "दुकान में सामान खोजने का झंझट खत्म — 3 आसान चरणों में 100% सही रेट पर ऑर्डर!"
                 : "Skip searching shelf by shelf — fill your cart in 3 quick steps!"}

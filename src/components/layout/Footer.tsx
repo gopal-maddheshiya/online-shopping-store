@@ -37,11 +37,11 @@ export function Footer() {
   const isDeliveryEnabled = Boolean(s?.delivery_enabled);
 
   return (
-    <footer className="mt-16 border-t border-[#E4DFD5] bg-white text-[#16201A]">
+    <footer className="mt-16 border-t border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] text-[#16201A]">
       {/* Top Value Proposition Bar */}
-      <div className="border-b border-[#E4DFD5] bg-[#FAF8F2] py-6">
+      <div className="border-b border-[rgba(20,90,69,0.10)] bg-[#FAF8F5] py-6">
         <div className="container-page grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
             <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               {isDeliveryEnabled ? <Truck className="size-4" /> : <Store className="size-4" />}
             </div>
@@ -51,7 +51,7 @@ export function Footer() {
                   ? (lang === "hi" ? "तेज़ लोकल डिलीवरी" : "Fast Local Delivery")
                   : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")}
               </p>
-              <p className="text-[11px] text-[#5A655F]">
+              <p className="text-[11px] text-[#3D4C44]">
                 {isDeliveryEnabled
                   ? (lang === "hi" ? `₹${s?.free_delivery_threshold ?? 499}+ पर फ्री` : `Free above ₹${s?.free_delivery_threshold ?? 499}`)
                   : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store")}
@@ -59,27 +59,27 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
             <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <ShieldCheck className="size-4" />
             </div>
             <div>
               <p className="text-xs font-bold sm:text-sm text-[#16201A]">100% Genuine Items</p>
-              <p className="text-[11px] text-[#5A655F]">Original branded staples</p>
+              <p className="text-[11px] text-[#3D4C44]">Original branded staples</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
             <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <Phone className="size-4" />
             </div>
             <div>
               <p className="text-xs font-bold sm:text-sm text-[#16201A]">Phone &amp; WhatsApp</p>
-              <p className="text-[11px] text-[#5A655F]">Easy ordering on call</p>
+              <p className="text-[11px] text-[#3D4C44]">Easy ordering on call</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-2.5 rounded-xl border border-[#E4DFD5]/60 bg-white/70 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
             <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
               <RotateCcw className="size-4" />
             </div>
@@ -89,7 +89,7 @@ export function Footer() {
                   ? t.storePickupTitle
                   : (lang === "hi" ? "आसान रिप्लेसमेंट" : "Easy Exchange")}
               </p>
-              <p className="text-[11px] text-[#5A655F]">
+              <p className="text-[11px] text-[#3D4C44]">
                 {lang === "hi" ? "रामनगर दुकान काउंटर" : "Ramnagar shop counter"}
               </p>
             </div>
@@ -110,13 +110,13 @@ export function Footer() {
             </div>
             <span>{t.storeName}</span>
           </Link>
-          <p className="text-xs leading-relaxed text-[#5A655F]">
+          <p className="text-xs leading-relaxed text-[#3D4C44]">
             {lang === "hi"
               ? "महाराजगंज में आपकी अपनी विश्वसनीय किराना दुकान। शुद्ध सामान, सही दाम और भरोसेमंद होम डिलीवरी।"
               : (s?.tagline ??
                 "Your Trusted Local Grocery Store in Maharajganj. Fresh staples, honest rates, and reliable doorstep delivery.")}
           </p>
-          <div className="space-y-1.5 text-xs text-[#5A655F] pt-2">
+          <div className="space-y-1.5 text-xs text-[#3D4C44] pt-2">
             <a
               href={
                 s?.maps_link ??
@@ -149,7 +149,7 @@ export function Footer() {
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
             Shop Categories
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#5A655F]">
+          <ul className="mt-3 space-y-2 text-xs text-[#3D4C44]">
             <li>
               <Link to="/shop" search={{ category: "atta-flour" }} className="hover:text-[#145A45]">
                 Atta &amp; Flours
@@ -196,7 +196,7 @@ export function Footer() {
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
             Customer Care
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#5A655F]">
+          <ul className="mt-3 space-y-2 text-xs text-[#3D4C44]">
             <li>
               <Link to="/track" className="hover:text-[#145A45]">
                 Track Order Status
@@ -205,11 +205,6 @@ export function Footer() {
             <li>
               <Link to="/account" className="hover:text-[#145A45]">
                 My Account &amp; Orders
-              </Link>
-            </li>
-            <li>
-              <Link to="/wishlist" className="hover:text-[#145A45]">
-                Saved Wishlist
               </Link>
             </li>
             <li>
@@ -233,7 +228,7 @@ export function Footer() {
                 closed: false,
               };
               return (
-                <div key={key} className="flex justify-between text-[#5A655F]">
+                <div key={key} className="flex justify-between text-[#3D4C44]">
                   <span>{label}:</span>
                   <span className="font-medium text-[#16201A]">
                     {h.closed ? "Closed" : `${h.open} - ${h.close}`}
@@ -247,7 +242,7 @@ export function Footer() {
 
       {/* Bottom Copyright Bar */}
       <div className="border-t border-[#E4DFD5] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
-        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#5A655F] sm:flex-row">
+        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#3D4C44] sm:flex-row">
           <p>© {new Date().getFullYear()} {t.storeName}. {t.storeAddressShort}.</p>
           <p className="flex items-center gap-1 font-medium">
             <span>{lang === "hi" ? "आपकी अपनी लोकल किराना दुकान • 100% शुद्धता" : "Your Trusted Local Kirana Store • 100% Purity"}</span>

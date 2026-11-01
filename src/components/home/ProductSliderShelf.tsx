@@ -129,7 +129,7 @@ export function ProductSliderShelf({
     >
       {/* 1. Clean Header (Flipkart Grocery Style) */}
       <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
-        <h2 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#18221D] tracking-tight truncate leading-tight">
+        <h2 className="font-sans text-[17.5px] sm:text-[19.5px] lg:text-[21px] font-bold text-[#18221D] tracking-normal truncate leading-snug py-0.5">
           {title}
         </h2>
 

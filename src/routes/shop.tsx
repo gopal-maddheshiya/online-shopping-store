@@ -118,7 +118,7 @@ export const Route = createFileRoute("/shop")({
     <div className="container-page py-16 text-center">
       <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-[#E8E4DA] bg-white p-8 shadow-xs">
         <h2 className="font-sans text-xl font-bold text-[#1F2924]">Unable to load shop catalogue</h2>
-        <p className="text-xs text-[#6B746F]">
+        <p className="text-xs text-[#3D4C44]">
           Please check your network connection and try again.
         </p>
         <Button onClick={() => reset()} className="rounded-xl bg-[#145A45] text-white">
@@ -370,7 +370,7 @@ function Shop() {
     <div className="space-y-4">
       {/* Price Range */}
       <div>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#5A655F]">
+        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#3D4C44]">
           {t.priceRangeLabel}
         </h3>
         <div className="flex items-center gap-2">
@@ -382,7 +382,7 @@ function Shop() {
             onChange={(e) => update({ min: e.target.value ? Number(e.target.value) : undefined })}
             className="rounded-lg text-xs border-[#E4DFD5] bg-white h-8 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
           />
-          <span className="text-[#5A655F]">–</span>
+          <span className="text-[#3D4C44]">–</span>
           <Input
             type="number"
             inputMode="numeric"
@@ -418,14 +418,14 @@ function Shop() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#FAF8F5]">
       <div className="container-page px-2 sm:px-4 lg:px-6 py-4 sm:py-7 pb-24 sm:pb-32">
       {/* Top Header Row — Locked sticky below main header so it doesn't scroll off or collide */}
-      <div className="sticky top-15 sm:top-16 z-20 bg-white/95 backdrop-blur-md border-b border-[#E4DFD5] py-2.5 sm:py-3 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all">
+      <div className="sticky top-15 sm:top-16 z-20 bg-white/95 backdrop-blur-md border-b border-[rgba(20,90,69,0.12)] py-2.5 sm:py-3 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.04)] transition-all">
         <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] truncate tracking-tight">
+              <h1 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] truncate tracking-normal leading-snug py-0.5">
                 {search.q
                   ? `${lang === "hi" ? "खोज:" : "Search:"} “${search.q}”`
                   : activeCategory
@@ -444,7 +444,7 @@ function Shop() {
                 </button>
               )}
             </div>
-            <p className="text-[11px] sm:text-xs text-[#5A655F]">
+            <p className="text-[11px] sm:text-xs text-[#3D4C44]">
               {lang === "hi"
                 ? `कुल ${results.length} सामान उपलब्ध हैं`
                 : `Showing ${results.length} items`}
@@ -497,7 +497,7 @@ function Shop() {
         {/* Category Left Rail (Unified Blinkit Rail on Mobile & Desktop, Premium White & Homepage Squircle) */}
         <aside
           data-lenis-prevent
-          className="w-[84px] sm:w-[94px] lg:w-[106px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[#E5E7EB] py-2 sm:py-3 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-7.5rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
+          className="w-[84px] sm:w-[94px] lg:w-[106px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[rgba(20,90,69,0.09)] py-2 sm:py-3 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-7.5rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
         >
           {/* All Categories Button */}
           <button
@@ -513,8 +513,8 @@ function Shop() {
             )}
             <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
               !search.category
-                ? "bg-[#EDF8F1] border border-[#A3E3B6] shadow-2xs"
-                : "bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8]"
+                ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
+                : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
             }`}>
               <img
                 src="/agt-icon.png"
@@ -525,8 +525,8 @@ function Shop() {
               />
             </div>
             <span
-              className={`text-[11px] sm:text-[11.5px] lg:text-xs leading-[1.25] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 transition-colors ${
-                !search.category ? "font-bold text-[#111827]" : "font-medium text-[#4B5563] group-hover:text-[#111827]"
+              className={`text-[12px] sm:text-[12.5px] lg:text-[13px] leading-[1.38] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 pt-0.5 pb-0.5 tracking-normal transition-colors ${
+                !search.category ? "font-extrabold text-[#111827]" : "font-bold text-[#35433B] group-hover:text-[#111827]"
               }`}
             >
               {t.allCategoriesLabel}
@@ -555,8 +555,8 @@ function Shop() {
                       )}
                       <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
                         isSelected
-                          ? "bg-[#EDF8F1] border border-[#A3E3B6] shadow-2xs"
-                          : "bg-[#EDF8F1] border border-[#DDF3E4] group-hover:bg-[#E4F7EA] group-hover:border-[#CEEED8]"
+                          ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
+                : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
                       }`}>
                         <img
                           src={getCategoryThumbnail(c)}
@@ -570,8 +570,8 @@ function Shop() {
                         />
                       </div>
                       <span
-                        className={`text-[11px] sm:text-[11.5px] lg:text-xs leading-[1.25] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 transition-colors ${
-                          isSelected ? "font-bold text-[#111827]" : "font-medium text-[#4B5563] group-hover:text-[#111827]"
+                        className={`text-[13px] sm:text-[13.5px] lg:text-[14px] leading-[1.38] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 pt-0.5 pb-0.5 tracking-normal transition-colors ${
+                          isSelected ? "font-bold text-[#111827]" : "font-medium text-[#46544D] group-hover:text-[#111827]"
                         }`}
                         title={getCategoryName(c)}
                       >
@@ -595,10 +595,10 @@ function Shop() {
               <button
                 type="button"
                 onClick={() => update({ subcategory: undefined })}
-                className={`shrink-0 px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all cursor-pointer border ${
+                className={`shrink-0 px-3.5 py-1.5 rounded-[10px] text-xs sm:text-[13px] font-bold transition-all cursor-pointer border ${
                   !search.subcategory
                     ? "bg-[#145A45] border-[#145A45] text-white shadow-xs"
-                    : "bg-[#EDF8F1] border-[#DDF3E4] text-[#222725] hover:bg-[#E4F7EA] hover:border-[#CEEED8]"
+                    : "bg-[#EFF8F3] border-[#C5E7D2] text-[#1C3A2B] hover:bg-[#E2F4EA]"
                 }`}
               >
                 {lang === "hi" ? "सभी प्रकार" : "All Types"}
@@ -610,10 +610,10 @@ function Shop() {
                   onClick={() =>
                     update({ subcategory: search.subcategory === s.slug ? undefined : s.slug })
                   }
-                  className={`shrink-0 px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all cursor-pointer border ${
+                  className={`shrink-0 px-3.5 py-1.5 rounded-[10px] text-xs sm:text-[13px] font-bold transition-all cursor-pointer border ${
                     search.subcategory === s.slug
                       ? "bg-[#145A45] border-[#145A45] text-white shadow-xs"
-                      : "bg-[#EDF8F1] border-[#DDF3E4] text-[#222725] hover:bg-[#E4F7EA] hover:border-[#CEEED8]"
+                      : "bg-[#EFF8F3] border-[#C5E7D2] text-[#1C3A2B] hover:bg-[#E2F4EA]"
                   }`}
                 >
                   {getCategoryName(s)}
@@ -652,11 +652,11 @@ function Shop() {
               ))}
             </div>
           ) : results.length === 0 ? (
-            <div className="card-base p-8 sm:p-12 text-center bg-white border border-[#E4DFD5] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] space-y-3">
+            <div className="card-base p-8 sm:p-12 text-center bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,1)] space-y-3">
               <p className="font-sans text-base font-bold text-[#16201A]">
                 {t.noProductsFoundTitle}
               </p>
-              <p className="text-xs text-[#5A655F]">
+              <p className="text-xs text-[#3D4C44]">
                 {search.q
                   ? `"${search.q}" नाम से कोई सीधा प्रोडक्ट नहीं मिला।`
                   : t.noProductsFoundDesc}

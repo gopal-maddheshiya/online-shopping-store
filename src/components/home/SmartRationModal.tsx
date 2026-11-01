@@ -473,10 +473,10 @@ export function SmartRationModal({
               <Sparkles className="size-5 text-[#B45309]" />
             </div>
             <div>
-              <DialogTitle className="font-sans text-base sm:text-lg font-black text-[#16201A] tracking-tight">
+              <DialogTitle className="font-sans text-base sm:text-lg font-bold text-[#16201A] tracking-tight leading-[1.3]">
                 {lang === "hi" ? "स्मार्ट राशन सहायक" : "Smart Ration Assistant"}
               </DialogTitle>
-              <DialogDescription className="text-[11.5px] sm:text-xs text-[#5A655F] mt-0.5">
+              <DialogDescription className="text-xs sm:text-[13px] font-semibold text-[#3D4C44] mt-0.5 leading-[1.4]">
                 {lang === "hi"
                   ? "पर्चा फोटो लगाएं, बोलकर बताएं या लिस्ट लिखें — 1-क्लिक में थैला तैयार!"
                   : "Upload slip, speak, or type — instant 1-click cart match!"}
@@ -494,39 +494,39 @@ export function SmartRationModal({
                 <button
                   type="button"
                   onClick={() => handleTabChange("photo")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${
                     activeTab === "photo"
                       ? "bg-[#145A45] text-white shadow-xs"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
+                      : "text-[#3D4C44] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
-                  <Camera className="size-3.5" />
+                  <Camera className="size-4" />
                   <span>{lang === "hi" ? "पर्चा फोटो" : "Slip Photo"}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleTabChange("voice")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${
                     activeTab === "voice"
                       ? "bg-[#145A45] text-white shadow-xs"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
+                      : "text-[#3D4C44] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
-                  <Mic className="size-3.5" />
+                  <Mic className="size-4" />
                   <span>{lang === "hi" ? "बोलकर बताएं" : "By Voice"}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleTabChange("text")}
-                  className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs sm:text-[13px] font-bold transition-all cursor-pointer ${
                     activeTab === "text"
                       ? "bg-[#145A45] text-white shadow-xs"
-                      : "text-[#5A655F] hover:text-[#16201A] hover:bg-white/70"
+                      : "text-[#3D4C44] hover:text-[#16201A] hover:bg-white/70"
                   }`}
                 >
-                  <FileText className="size-3.5" />
+                  <FileText className="size-4" />
                   <span>{lang === "hi" ? "लिस्ट लिखें" : "Type List"}</span>
                 </button>
               </div>
@@ -606,10 +606,10 @@ export function SmartRationModal({
                         <UploadCloud className="size-6 text-[#145A45]" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-sm font-bold text-[#16201A]">
+                        <p className="text-sm sm:text-[15px] font-bold text-[#16201A]">
                           {lang === "hi" ? "कागज़ के पर्चे की फोटो लगाएं" : "Add grocery slip photo"}
                         </p>
-                        <p className="text-[11.5px] text-[#5A655F] max-w-xs mx-auto leading-relaxed">
+                        <p className="text-xs sm:text-[12.5px] font-medium text-[#3D4C44] max-w-xs mx-auto leading-relaxed">
                           {lang === "hi"
                             ? "हाथ से लिखी पर्ची का नया फोटो खींचें या फोन की गैलरी से अपलोड करें"
                             : "Snap a fresh photo with camera or upload from your gallery"}
@@ -621,7 +621,7 @@ export function SmartRationModal({
                         <button
                           type="button"
                           onClick={() => cameraInputRef.current?.click()}
-                          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#145A45] hover:bg-[#0E4333] text-white py-2.5 px-3 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#145A45] hover:bg-[#0E4333] text-white py-2.5 px-3.5 text-xs sm:text-[13px] font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                         >
                           <Camera className="size-4" />
                           <span>{lang === "hi" ? "कैमरा से खींचें" : "Use Camera"}</span>
@@ -630,7 +630,7 @@ export function SmartRationModal({
                         <button
                           type="button"
                           onClick={() => galleryInputRef.current?.click()}
-                          className="flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-[#F2EFE8] border border-[#D5CEBF] text-[#16201A] py-2.5 px-3 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-[#F2EFE8] border border-[#D5CEBF] text-[#16201A] py-2.5 px-3.5 text-xs sm:text-[13px] font-bold transition-all shadow-xs cursor-pointer active:scale-95"
                         >
                           <ImageIcon className="size-4 text-[#145A45]" />
                           <span>{lang === "hi" ? "गैलरी से अपलोड" : "From Gallery"}</span>
@@ -645,9 +645,9 @@ export function SmartRationModal({
               {activeTab === "text" && (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-[#16201A] flex items-center justify-between">
+                    <label className="text-xs sm:text-[13px] font-extrabold text-[#16201A] flex items-center justify-between">
                       <span>{lang === "hi" ? "अपनी पूरी राशन लिस्ट यहाँ लिखें / पेस्ट करें:" : "Write or paste grocery list:"}</span>
-                      <span className="text-[10px] text-[#5A655F]">
+                      <span className="text-[11px] font-semibold text-[#3D4C44]">
                         {lang === "hi" ? "उदा. '5kg आटा, 1L सरसों तेल, 2 मैगी'" : "e.g. 5kg atta, 1L oil"}
                       </span>
                     </label>
@@ -666,7 +666,7 @@ export function SmartRationModal({
 
                   {/* Sample Quick-Pick Chips */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-[#5A655F] uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-[#2A3830] tracking-wider block">
                       {lang === "hi" ? "⚡ तुरंत आज़माएं (क्लिक करें):" : "⚡ Quick sample lists:"}
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -675,7 +675,7 @@ export function SmartRationModal({
                           key={sample.label}
                           type="button"
                           onClick={() => setInputText(sample.text)}
-                          className="rounded-lg bg-[#FAF8F2] border border-[#E4DFD5] px-2.5 py-1 text-[11px] font-medium text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
+                          className="rounded-lg bg-[#FAF8F2] border border-[#E4DFD5] px-2.5 py-1 text-xs font-bold text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
                         >
                           + {sample.label}
                         </button>
@@ -806,7 +806,7 @@ export function SmartRationModal({
                           </span>
                         )}
                       </p>
-                      <p className="text-[11px] text-white/70 max-w-sm mx-auto">
+                      <p className="text-xs text-white/85 font-medium max-w-sm mx-auto">
                         {isRecording
                           ? lang === "hi"
                             ? "बोलना बंद करते ही AI अपने आप पहचान कर लेगा (या लाल बटन दबाएं)"
@@ -823,7 +823,7 @@ export function SmartRationModal({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Volume2 className="size-3.5 text-[#145A45]" />
-                        <span className="text-xs font-bold text-[#16201A]">
+                        <span className="text-xs sm:text-[13px] font-extrabold text-[#16201A]">
                           {lang === "hi" ? "पहचाने गए राशन सामान" : "Recognized Grocery Items"}
                         </span>
                         {recognizedVoiceItems.length > 0 && (
@@ -901,7 +901,7 @@ export function SmartRationModal({
                       </div>
                     ) : !interimText ? (
                       <div className="rounded-xl bg-[#FAF8F5] border border-dashed border-[#DCD6CA] p-3 text-center space-y-2">
-                        <p className="text-xs text-[#5A655F]">
+                        <p className="text-xs text-[#3D4C44]">
                           {lang === "hi"
                             ? "अभी कोई सामान नहीं बोला गया है। ऊपर माइक दबाकर बोलें या नीचे से चुनें:"
                             : "No items spoken yet. Tap mic above or click sample list:"}
@@ -965,10 +965,10 @@ export function SmartRationModal({
                     <Check className="size-4" />
                   </span>
                   <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-[#0F4A38]">
+                    <h4 className="text-sm sm:text-base font-bold text-[#0B4635]">
                       {lang === "hi" ? "राशन लिस्ट तैयार है!" : "Ration list matched!"}
                     </h4>
-                    <p className="text-[10px] text-[#5A655F]">
+                    <p className="text-[10px] text-[#3D4C44]">
                       {lang === "hi"
                         ? `${matchedCount} में से ${matchedCount} सामान दुकान में उपलब्ध हैं`
                         : `${matchedCount} items matched in store inventory`}
@@ -977,8 +977,8 @@ export function SmartRationModal({
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] text-[#5A655F] block">{lang === "hi" ? "कुल अनुमान" : "Total Estimate"}</span>
-                  <span className="text-sm sm:text-base font-black text-[#145A45]">{inr(totalPrice)}</span>
+                  <span className="text-[11px] font-bold text-[#3D4C44] block">{lang === "hi" ? "कुल अनुमान" : "Total Estimate"}</span>
+                  <span className="text-sm sm:text-base font-bold text-[#145A45]">{inr(totalPrice)}</span>
                 </div>
               </div>
 
@@ -1008,7 +1008,7 @@ export function SmartRationModal({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className="text-xs font-bold text-[#16201A] truncate">
+                          <p className="text-xs sm:text-[13px] font-bold text-[#16201A] truncate">
                             {getProductName(
                               {
                                 name: item.product_name,
@@ -1022,7 +1022,7 @@ export function SmartRationModal({
                             {getVariantLabel(item.variant_label)}
                           </span>
                         </div>
-                        <p className="text-[10px] text-[#5A655F] truncate mt-0.5">
+                        <p className="text-[10px] text-[#3D4C44] truncate mt-0.5">
                           {lang === "hi" ? "पर्चे से:" : "From note:"} "{item.original_item}"
                         </p>
                       </div>
@@ -1093,7 +1093,7 @@ export function SmartRationModal({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="text-xs font-semibold text-[#5A655F] hover:text-[#16201A] cursor-pointer"
+                className="text-xs font-semibold text-[#3D4C44] hover:text-[#16201A] cursor-pointer"
               >
                 {lang === "hi" ? "बंद करें" : "Close"}
               </button>
@@ -1124,7 +1124,7 @@ export function SmartRationModal({
                 type="button"
                 variant="outline"
                 onClick={() => setIsDone(false)}
-                className="rounded-xl border border-[#E4DFD5] text-xs font-semibold text-[#5A655F] hover:bg-[#FAF8F2] cursor-pointer h-9"
+                className="rounded-xl border border-[#E4DFD5] text-xs font-semibold text-[#3D4C44] hover:bg-[#FAF8F2] cursor-pointer h-9"
               >
                 {lang === "hi" ? "← दोबारा पर्चा बदलें" : "← Edit List"}
               </Button>

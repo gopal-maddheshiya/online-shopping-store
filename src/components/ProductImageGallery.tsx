@@ -152,7 +152,7 @@ export function ProductImageGallery({
       {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE */}
       <div className="relative w-full max-w-[420px] mx-auto">
         <div
-          className="group relative w-full aspect-square rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_3px_16px_-2px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
+          className="group relative w-full aspect-square rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_4px_20px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -268,7 +268,7 @@ export function ProductImageGallery({
                     className={`relative size-12 sm:size-13 rounded-xl overflow-hidden bg-white p-1 flex items-center justify-center transition-all duration-200 ${
                       isSelected
                         ? "border-2 border-[#145A45] ring-2 ring-[#145A45]/20 shadow-xs scale-105"
-                        : "border border-[#E5E7EB] opacity-75 hover:opacity-100 hover:border-[#145A45]/50"
+                        : "border border-[rgba(20,90,69,0.12)] opacity-75 hover:opacity-100 hover:border-[#145A45]/50"
                     }`}
                   >
                     <img

@@ -85,7 +85,7 @@ function CartPage() {
     return (
       <div className="container-page py-5 sm:py-8 pb-28 lg:pb-16 max-w-3xl mx-auto">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-[#5A655F]">
+        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-[#3D4C44]">
           <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
             <Home className="size-3.5" />
             <span>{t.home}</span>
@@ -95,7 +95,7 @@ function CartPage() {
         </nav>
 
         {/* Empty State Box */}
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 sm:p-9 text-center shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+        <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-6 sm:p-9 text-center shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
           {/* Emerald Shopping Bag Badge */}
           <div className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-gradient-to-b from-[#EBF3ED] to-[#DCECE0] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_8px_rgba(20,90,69,0.08)]">
             <ShoppingBag className="size-8 text-[#145A45] transition-transform hover:scale-105 duration-200" />
@@ -107,7 +107,7 @@ function CartPage() {
           <h1 className="mt-4 font-sans text-xl sm:text-2xl font-bold tracking-tight text-[#16201A]">
             {t.emptyCartTitle}
           </h1>
-          <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#5A655F]">
+          <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#3D4C44]">
             {t.emptyCartSub}
           </p>
 
@@ -161,7 +161,7 @@ function CartPage() {
   return (
     <div className="container-page py-4 sm:py-6 pb-28 lg:pb-12">
       {/* Top Breadcrumb & Header Bar */}
-      <nav aria-label="Breadcrumb" className="mb-2.5 flex items-center gap-1.5 text-xs text-[#5A655F]">
+      <nav aria-label="Breadcrumb" className="mb-2.5 flex items-center gap-1.5 text-xs text-[#3D4C44]">
         <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
           <Home className="size-3.5" />
           <span>{t.home}</span>
@@ -170,7 +170,7 @@ function CartPage() {
         <span className="font-semibold text-[#16201A]">{t.cart || (lang === "hi" ? "थैला" : "Cart")}</span>
       </nav>
 
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+      <div className="flex items-center justify-between border-b border-[rgba(20,90,69,0.12)] pb-3">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -217,7 +217,7 @@ function CartPage() {
               </span>
             </div>
           ) : subtotal < freeAt && subtotal > 0 ? (
-            <div className="rounded-xl border border-[#E5E7EB] bg-white p-3 sm:p-3.5 shadow-xs space-y-2">
+            <div className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3 sm:p-3.5 shadow-xs space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1.5 font-semibold text-[#16201A]">
                   <Truck className="size-4 text-[#145A45]" />
@@ -252,7 +252,7 @@ function CartPage() {
               return (
                 <div
                   key={i.variantId}
-                  className="rounded-xl border border-[#E5E7EB] bg-white p-3 sm:p-3.5 shadow-xs flex items-center gap-3 sm:gap-4 transition-all hover:border-gray-300"
+                  className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3 sm:p-3.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] flex items-center gap-3 sm:gap-4 transition-all hover:border-[#145A45]/35 hover:-translate-y-0.5"
                 >
                   <Link
                     to="/product/$slug"
@@ -279,7 +279,7 @@ function CartPage() {
                     >
                       {displayName}
                     </Link>
-                    <p className="text-[11px] text-[#5A655F] mt-0.5">{displayVariant}</p>
+                    <p className="text-[11px] text-[#3D4C44] mt-0.5">{displayVariant}</p>
                     <div className="mt-1 flex items-baseline gap-1.5">
                       <span className="text-xs sm:text-sm font-bold text-[#16201A]">{inr(i.price)}</span>
                       {i.mrp > i.price && (
@@ -335,7 +335,7 @@ function CartPage() {
                     <button
                       type="button"
                       onClick={() => saveForLater(i.variantId)}
-                      className="text-[10px] font-medium text-[#5A655F] hover:text-[#145A45] hover:underline cursor-pointer whitespace-nowrap"
+                      className="text-[10px] font-medium text-[#3D4C44] hover:text-[#145A45] hover:underline cursor-pointer whitespace-nowrap"
                     >
                       {t.saveForLaterBtn}
                     </button>
@@ -357,7 +357,7 @@ function CartPage() {
               {savedItems.map((i) => (
                 <div
                   key={i.variantId}
-                  className="rounded-xl border border-[#E5E7EB] bg-white p-3 flex items-center justify-between shadow-xs"
+                  className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3 flex items-center justify-between shadow-xs"
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -373,7 +373,7 @@ function CartPage() {
                       <p className="text-xs font-semibold text-[#16201A] line-clamp-1">
                         {getProductName(i)}
                       </p>
-                      <p className="text-[11px] text-[#5A655F]">
+                      <p className="text-[11px] text-[#3D4C44]">
                         {getVariantLabel(i)} · {inr(i.price)}
                       </p>
                     </div>
@@ -403,17 +403,17 @@ function CartPage() {
 
         {/* Order Summary Column */}
         <div className="space-y-3.5">
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 sm:p-5 space-y-3.5 shadow-xs">
-            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+          <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-5 space-y-3.5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
+            <div className="flex items-center justify-between border-b border-[rgba(20,90,69,0.1)] pb-3">
               <h2 className="font-sans text-sm sm:text-base font-bold text-[#16201A]">
                 {t.orderSummaryTitle}
               </h2>
-              <span className="text-[11px] font-semibold text-[#5A655F] bg-[#FAF8F5] px-2 py-0.5 rounded-full border border-[#E5E7EB]">
+              <span className="text-[11px] font-semibold text-[#3D4C44] bg-[#FAF8F5] px-2 py-0.5 rounded-full border border-[#E5E7EB]">
                 {items.length} {lang === "hi" ? "सामान" : "items"}
               </span>
             </div>
 
-            <div className="space-y-2 text-xs text-[#5A655F] border-b border-[#E5E7EB] pb-3">
+            <div className="space-y-2 text-xs text-[#3D4C44] border-b border-[rgba(20,90,69,0.1)] pb-3">
               <div className="flex justify-between">
                 <span>{t.itemSubtotal}</span>
                 <span className="font-semibold text-[#16201A]">{inr(subtotal)}</span>
@@ -457,12 +457,12 @@ function CartPage() {
           </div>
 
           {/* Local Trust Card */}
-          <div className="rounded-xl border border-[#E5E7EB] bg-[#FAF8F5] p-3 text-xs text-[#5A655F] space-y-1.5 shadow-xs">
+          <div className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] p-3 text-xs text-[#3D4C44] space-y-1.5 shadow-xs">
             <p className="flex items-center gap-1.5 font-bold text-[#145A45]">
               <ShieldCheck className="size-4 text-[#145A45]" />
               <span>{t.purityTagline} ({t.puritySub})</span>
             </p>
-            <p className="text-[11px] leading-relaxed text-[#5A655F]">
+            <p className="text-[11px] leading-relaxed text-[#3D4C44]">
               {t.cartPaymentNote}
             </p>
           </div>
@@ -471,10 +471,10 @@ function CartPage() {
 
       {/* Mobile Sticky Bottom Checkout Bar */}
       {items.length > 0 && (
-        <div className="fixed bottom-[3.75rem] left-0 right-0 z-40 border-t border-[#E5E7EB] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="fixed bottom-[3.75rem] left-0 right-0 z-40 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 lg:hidden shadow-[0_-4px_16px_rgba(20,90,69,0.08)]">
           <div className="container-page flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] text-[#5A655F] uppercase font-bold tracking-wider">{t.totalAmount}</p>
+              <p className="text-[10px] text-[#3D4C44] uppercase font-bold tracking-wider">{t.totalAmount}</p>
               <div className="flex items-baseline gap-1.5">
                 <p className="text-base font-extrabold text-[#16201A]">{inr(subtotal + fee)}</p>
                 {savings > 0 && (

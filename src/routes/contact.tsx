@@ -144,7 +144,8 @@ function ContactPage() {
   }
 
   return (
-    <div className="container-page py-6 sm:py-12 pb-28 lg:pb-12 space-y-10 sm:space-y-12">
+    <div className="min-h-screen bg-[#FAF8F5]">
+      <div className="container-page py-6 sm:py-12 pb-28 lg:pb-12 space-y-10 sm:space-y-12">
       {/* Header */}
       <div className="max-w-2xl mx-auto text-center space-y-3">
         <h1 className="font-sans text-3xl sm:text-4xl font-bold text-[#1F2A24]">
@@ -408,6 +409,7 @@ function ContactPage() {
             </a>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

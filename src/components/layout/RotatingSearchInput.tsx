@@ -168,7 +168,7 @@ export function RotatingSearchInput({
                   {extendedList.map((text, idx) => (
                     <div
                       key={`${lang}-${idx}`}
-                      className="flex items-center truncate text-[#5A655F]"
+                      className="flex items-center truncate text-[#3D4C44]"
                       style={{ height: `${itemHeight}px` }}
                     >
                       <span className="truncate">{text}</span>
@@ -187,7 +187,7 @@ export function RotatingSearchInput({
                 type="button"
                 onClick={() => setTerm("")}
                 className={cn(
-                  "flex items-center justify-center text-[#5A655F] hover:text-[#16201A] hover:bg-black/5 rounded-full transition-all cursor-pointer",
+                  "flex items-center justify-center text-[#3D4C44] hover:text-[#16201A] hover:bg-black/5 rounded-full transition-all cursor-pointer",
                   isDesktop ? "size-7" : "size-6"
                 )}
                 aria-label="Clear search"

@@ -317,7 +317,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full bg-[#FAF8F2] hover:bg-[#EAE6DC] text-[#5A655F] hover:text-[#16201A] transition-colors cursor-pointer shadow-2xs"
+          className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full bg-[#FAF8F2] hover:bg-[#EAE6DC] text-[#3D4C44] hover:text-[#16201A] transition-colors cursor-pointer shadow-2xs"
           aria-label="Close"
         >
           <X className="size-4" />
@@ -332,7 +332,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
               className={`rounded-full px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
                 activeLang === "hi"
                   ? "bg-[#145A45] text-white shadow-xs"
-                  : "text-[#5A655F] hover:text-[#16201A]"
+                  : "text-[#3D4C44] hover:text-[#16201A]"
               }`}
             >
               हिन्दी (Hindi)
@@ -343,7 +343,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
               className={`rounded-full px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
                 activeLang === "en"
                   ? "bg-[#145A45] text-white shadow-xs"
-                  : "text-[#5A655F] hover:text-[#16201A]"
+                  : "text-[#3D4C44] hover:text-[#16201A]"
               }`}
             >
               English
@@ -414,7 +414,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
             </div>
           ) : transcript ? (
             <div className="space-y-2 animate-in fade-in duration-150 w-full">
-              <p className="text-xs font-bold text-[#5A655F]">
+              <p className="text-xs font-bold text-[#3D4C44]">
                 {isSearching
                   ? activeLang === "hi"
                     ? "खोजा जा रहा है..."
@@ -456,7 +456,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
                   ? "बोलने के लिए माइक पर टैप करें"
                   : "Tap microphone to speak"}
               </p>
-              <p className="text-xs text-[#5A655F]">
+              <p className="text-xs text-[#3D4C44]">
                 {activeLang === "hi"
                   ? "जैसे: 'बैल कोल्हू तेल', 'चायपत्ती', 'गुड़ और चीनी'"
                   : "e.g. 'Bail Kolhu Oil', 'Chaypatti', 'Sugar'"}
@@ -467,7 +467,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
 
         {/* Quick Suggestion Chips from Real Store Inventory */}
         <div className="mt-4 pt-3 border-t border-[#E5E0D5]">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[#5A655F] mb-1.5 flex items-center justify-center gap-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#3D4C44] mb-1.5 flex items-center justify-center gap-1">
             <Sparkles className="size-3 text-[#D97706]" />
             <span>{activeLang === "hi" ? "या इनमें से किसी पर टैप करें:" : "Or tap any item:"}</span>
           </p>

@@ -2,39 +2,131 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home,
   LayoutGrid,
-  ShoppingBag,
-  Package,
-  Heart,
-  MessageCircle,
-  PhoneCall,
   User,
-  X,
+  ShoppingBag,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
-import { useWishlist } from "@/lib/wishlist";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
-import { useState, useEffect } from "react";
-import { PhoneOrderModal } from "@/components/PhoneOrderModal";
-import { waHref } from "@/lib/format";
+import { useState, useEffect, useRef } from "react";
+import { useLenis } from "@/components/providers/SmoothScrollProvider";
+import { gsap } from "@/lib/gsap";
+
+/* ═════════════════════════════════════════════════════════════════
+   TAB ICON COMPONENT (CLEAN OFFICIAL LUCIDE ICONS + GSAP SPRING)
+   ═════════════════════════════════════════════════════════════════ */
+
+type TabName = "home" | "shop" | "account" | "cart";
+
+function TabIcon({
+  name,
+  isActive,
+  badge,
+}: {
+  name: TabName;
+  isActive: boolean;
+  badge?: number | undefined;
+}) {
+  const iconRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (isActive && iconRef.current) {
+      if (name === "home") {
+        gsap.fromTo(
+          iconRef.current,
+          { scale: 0.78, y: 3 },
+          { scale: 1, y: 0, duration: 0.45, ease: "back.out(2.4)" }
+        );
+      } else if (name === "shop") {
+        gsap.fromTo(
+          iconRef.current,
+          { rotate: -15, scale: 0.8 },
+          { rotate: 0, scale: 1, duration: 0.45, ease: "elastic.out(1.2, 0.45)" }
+        );
+      } else if (name === "account") {
+        gsap.fromTo(
+          iconRef.current,
+          { scale: 0.8, y: 3 },
+          { scale: 1, y: 0, duration: 0.45, ease: "back.out(2.2)" }
+        );
+      } else if (name === "cart") {
+        gsap.fromTo(
+          iconRef.current,
+          { rotate: -12, scale: 0.82 },
+          { rotate: 0, scale: 1, duration: 0.45, ease: "elastic.out(1.2, 0.4)" }
+        );
+      }
+    }
+  }, [isActive, name]);
+
+  useEffect(() => {
+    if (badge !== undefined && badge > 0 && badgeRef.current) {
+      gsap.fromTo(
+        badgeRef.current,
+        { scale: 0.4 },
+        { scale: 1, duration: 0.4, ease: "back.out(3)" }
+      );
+    }
+  }, [badge]);
+
+  const iconClass = `size-[24px] sm:size-[25px] transition-all duration-200 ${
+    isActive
+      ? "text-[#145A45] stroke-[2.35]"
+      : "text-[#546059] stroke-[1.85]"
+  }`;
+
+  return (
+    <div ref={iconRef} className="relative flex items-center justify-center">
+      {name === "home" && <Home className={iconClass} />}
+      {name === "shop" && <LayoutGrid className={iconClass} />}
+      {name === "account" && <User className={iconClass} />}
+      {name === "cart" && <ShoppingBag className={iconClass} />}
+
+      {badge && badge > 0 ? (
+        <span
+          ref={badgeRef}
+          className="absolute -top-1.5 -right-2 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[8.5px] font-black text-white border-[1.5px] border-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] pointer-events-none"
+        >
+          {badge > 9 ? "9+" : badge}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════
+   MOBILE BOTTOM NAVIGATION BAR
+   ═════════════════════════════════════════════════════════════════ */
 
 type NavItem = {
+  key: TabName;
   to: string;
   search?: Record<string, unknown>;
   label: string;
-  icon: typeof Home;
   badge?: number | undefined;
 };
 
 export function MobileNav() {
   const { count: cartCount } = useCart();
-  const { items: wishlistItems } = useWishlist();
   const { user } = useAuth();
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
-  const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [hasLocalPhone, setHasLocalPhone] = useState(false);
+  const { scrollTo } = useLenis();
+  const navRef = useRef<HTMLElement>(null);
+
+  // GSAP Smooth Entrance on mount
+  useEffect(() => {
+    if (navRef.current && typeof window !== "undefined") {
+      gsap.fromTo(
+        navRef.current,
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -49,95 +141,82 @@ export function MobileNav() {
 
   const isIdentified = Boolean(user || hasLocalPhone);
   const accountLabel = isIdentified
-    ? (lang === "hi" ? "मेरा खाता" : "My Account")
-    : (lang === "hi" ? "लॉगिन / ट्रैक" : "Login / Track");
-
-  const storeWhatsApp = "916388354988";
+    ? lang === "hi"
+      ? "मेरा खाता"
+      : "My Account"
+    : lang === "hi"
+      ? "लॉगिन / ट्रैक"
+      : "Login / Track";
 
   const links: NavItem[] = [
-    { to: "/", label: t.home, icon: Home },
-    { to: "/shop", label: t.categories, icon: LayoutGrid },
-    { to: "/account", label: accountLabel, icon: User },
-    {
-      to: "/wishlist",
-      label: t.wishlist,
-      icon: Heart,
-      badge: wishlistItems.length > 0 ? wishlistItems.length : undefined,
-    },
-    { to: "/cart", label: t.cart, icon: ShoppingBag, badge: cartCount },
+    { key: "home", to: "/", label: t.home },
+    { key: "shop", to: "/shop", label: t.categories },
+    { key: "account", to: "/account", label: accountLabel },
+    { key: "cart", to: "/cart", label: t.cart, badge: cartCount },
   ];
 
   return (
-    <>
-      {/* Bottom Navigation Bar */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="fixed right-0 bottom-0 left-0 z-50 bg-white/96 backdrop-blur-xl border-t border-[#E0DACF] shadow-[0_-4px_20px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.95)] lg:hidden pb-[env(safe-area-inset-bottom)]"
-      >
-        <div className="grid grid-cols-5 items-end h-[3.75rem]">
-          {links.map((link) => {
-            const Icon = link.icon;
-            const isCart = link.to === "/cart";
-            const isActive =
-              currentPath === link.to ||
-              (link.to === "/account" && (currentPath === "/account" || currentPath === "/track"));
+    <nav
+      ref={navRef}
+      aria-label="Mobile Navigation"
+      className="fixed right-0 bottom-0 left-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-[#E6E1D8] shadow-[0_-4px_24px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,1)] lg:hidden pb-[env(safe-area-inset-bottom)] select-none"
+    >
+      <div className="grid grid-cols-4 items-center h-[3.75rem]">
+        {links.map((link) => {
+          const isCart = link.to === "/cart";
+          const isActive =
+            currentPath === link.to ||
+            (link.to === "/account" &&
+              (currentPath === "/account" || currentPath === "/track"));
 
-            const handleClick = (e: React.MouseEvent) => {
-              if (isCart && currentPath === "/cart") {
-                e.preventDefault();
-                if (typeof window !== "undefined" && window.history.length > 1) {
-                  window.history.back();
-                } else {
-                  void navigate({ to: "/" });
-                }
+          const handleClick = (e: React.MouseEvent) => {
+            // 1. If currently on cart, clicking cart goes back
+            if (isCart && currentPath === "/cart") {
+              e.preventDefault();
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                window.history.back();
+              } else {
+                void navigate({ to: "/" });
               }
-            };
+              return;
+            }
 
-            return (
-              <Link
-                key={link.label}
-                to={link.to}
-                search={link.search as never}
-                onClick={handleClick}
-                className="relative flex flex-col items-center justify-center gap-[3px] py-1.5 cursor-pointer active:opacity-70 transition-opacity"
+            // 2. Lenis Tap-to-Scroll-to-Top: If already on this route, butter-smooth scroll to top!
+            if (currentPath === link.to) {
+              e.preventDefault();
+              scrollTo(0, { duration: 0.85 });
+            }
+          };
+
+          return (
+            <Link
+              key={link.key}
+              to={link.to}
+              search={link.search as never}
+              onClick={handleClick}
+              className="group relative flex flex-col items-center justify-center gap-1 py-1 cursor-pointer transition-transform active:scale-92 bg-transparent select-none"
+            >
+              {/* Pure Floating Icon (Zero Background, Pixel-Perfect Lucide Geometry) */}
+              <TabIcon
+                name={link.key}
+                isActive={isActive}
+                badge={link.badge}
+              />
+
+              {/* Clean Typography — No Bottom Dot */}
+              <span
+                className={`max-w-[84px] sm:max-w-[96px] text-center leading-tight overflow-visible whitespace-nowrap text-[11.5px] sm:text-[12px] tracking-normal transition-colors duration-200 ${
+                  isActive
+                    ? "font-bold text-[#145A45]"
+                    : "font-medium text-[#46544D] group-hover:text-[#16201A]"
+                }`}
               >
-                {/* Icon with active pill */}
-                <div className="relative flex items-center justify-center">
-                  <div
-                    className={`rounded-full px-3 py-[3px] transition-all duration-200 ${
-                      isActive ? "bg-[#E6EFE8] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]" : "bg-transparent"
-                    }`}
-                  >
-                    <Icon
-                      className={`size-[21px] transition-colors duration-200 ${
-                        isActive
-                          ? "text-[#145A45] stroke-[2.2]"
-                          : "text-[#9CA3A0] stroke-[1.8]"
-                      }`}
-                    />
-                  </div>
-                  {link.badge && link.badge > 0 ? (
-                    <span className="absolute -top-1 -right-0.5 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[8.5px] font-black text-white border-[1.5px] border-white shadow-[0_2px_4px_rgba(217,119,6,0.3)]">
-                      {link.badge > 9 ? "9+" : link.badge}
-                    </span>
-                  ) : null}
-                </div>
-
-                {/* Label — matra-safe */}
-                <span
-                  className={`max-w-[70px] text-center leading-snug overflow-visible whitespace-nowrap pb-0.5 text-[10px] transition-colors duration-200 ${
-                    isActive
-                      ? "font-bold text-[#145A45]"
-                      : "font-medium text-[#9CA3A0]"
-                  }`}
-                >
-                  {link.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-    </>
+                {link.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
