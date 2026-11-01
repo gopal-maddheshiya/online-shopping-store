@@ -87,13 +87,14 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
 
   // Reset scroll position on route transitions
   useEffect(() => {
-    if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
-      // Refresh ScrollTrigger calculations after DOM settle
-      setTimeout(() => {
+    if (!lenisRef.current) return;
+    lenisRef.current.scrollTo(0, { immediate: true });
+    const rafId = requestAnimationFrame(() => {
+      if (typeof window !== "undefined" && ScrollTrigger.getAll().length > 0) {
         ScrollTrigger.refresh();
-      }, 60);
-    }
+      }
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [pathname]);
 
   const scrollTo = (target: string | number | HTMLElement, options?: Parameters<Lenis["scrollTo"]>[1]) => {

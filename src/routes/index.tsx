@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 import { getCategoryHeadings, CategoryHeading } from "@/lib/category-headings";
 import {
   ShoppingBag,
@@ -67,13 +68,16 @@ const SmartRationModal = lazy(() =>
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    await Promise.allSettled([
+    const prefetch = Promise.allSettled([
       context.queryClient.ensureQueryData(settingsQuery),
       context.queryClient.ensureQueryData(categoriesQuery),
       context.queryClient.ensureQueryData(featuredProductsQuery(12)),
       context.queryClient.ensureQueryData(productsQuery()),
       context.queryClient.ensureQueryData(couponsQuery),
     ]);
+    if (typeof window === "undefined") {
+      await prefetch;
+    }
   },
   head: () => ({
     meta: [
@@ -461,9 +465,9 @@ function CategoryThumbnail({
   category: Parameters<typeof getCategoryThumbnail>[0];
   name: string;
 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const src = getCategoryThumbnail(category);
+  const [loaded, setLoaded] = useState(() => isImageLoaded(src));
+  const [hasError, setHasError] = useState(false);
 
   return (
     <div className="relative size-full flex items-center justify-center overflow-hidden p-1 sm:p-1.5">
@@ -476,14 +480,23 @@ function CategoryThumbnail({
         </div>
       ) : (
         <img
+          ref={(el) => {
+            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+              markImageLoaded(src);
+              setLoaded(true);
+            }
+          }}
           src={src}
           alt={name}
           loading="lazy"
           decoding="async"
-          onLoad={() => setLoaded(true)}
+          onLoad={() => {
+            markImageLoaded(src);
+            setLoaded(true);
+          }}
           onError={() => setHasError(true)}
           className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-200 group-hover:scale-105 ${
-            loaded ? "opacity-100" : "opacity-0"
+            loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         />
       )}
@@ -708,54 +721,61 @@ function PremiumStoreHome() {
   const parentCategories = categories.filter((c) => !c.parent_id);
   const allAssignedSlugs = new Set(headings.flatMap((h) => h.slugs));
   const uncategorizedCategories = parentCategories.filter((c) => !allAssignedSlugs.has(c.slug));
+  const homeContainerRef = useRef<HTMLDivElement>(null);
 
   // GPU-accelerated GSAP ScrollTrigger reveals for category groups and shelves
-  useGSAP(() => {
-    if (typeof window === "undefined") return;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
+  useGSAP(
+    () => {
+      if (typeof window === "undefined") return;
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) return;
 
-    // Only target sections that haven't been revealed yet (prevents re-trigger flashes when queries resolve)
-    const sections = document.querySelectorAll<HTMLElement>(".gsap-reveal-section:not([data-gsap-revealed='true'])");
-    sections.forEach((sec) => {
-      sec.setAttribute("data-gsap-revealed", "true");
-      const inView = sec.getBoundingClientRect().top < window.innerHeight * 0.95;
+      const container = homeContainerRef.current;
+      if (!container) return;
 
-      if (inView) {
-        // Elements already in the viewport reveal smoothly without opacity flicker
-        gsap.fromTo(
-          sec,
-          { opacity: 0.85, y: 8 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.35,
-            ease: "power2.out",
-            clearProps: "opacity,transform",
-          }
-        );
-      } else {
-        // Offscreen elements reveal on scroll via ScrollTrigger
-        gsap.fromTo(
-          sec,
-          { opacity: 0, y: 22 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.55,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: sec,
-              start: "top 92%",
-              toggleActions: "play none none none",
-              once: true,
+      // Only target sections that haven't been revealed yet (prevents re-trigger flashes when queries resolve)
+      const sections = container.querySelectorAll<HTMLElement>(".gsap-reveal-section:not([data-gsap-revealed='true'])");
+      sections.forEach((sec) => {
+        sec.setAttribute("data-gsap-revealed", "true");
+        const inView = sec.getBoundingClientRect().top < window.innerHeight * 0.95;
+
+        if (inView) {
+          // Elements already in the viewport reveal smoothly without opacity flicker
+          gsap.fromTo(
+            sec,
+            { opacity: 0.85, y: 8 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.35,
+              ease: "power2.out",
+              clearProps: "opacity,transform",
+            }
+          );
+        } else {
+          // Offscreen elements reveal on scroll via ScrollTrigger
+          gsap.fromTo(
+            sec,
+            { opacity: 0, y: 22 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.55,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: sec,
+                start: "top 92%",
+                toggleActions: "play none none none",
+                once: true,
+              },
+              clearProps: "opacity,transform",
             },
-            clearProps: "opacity,transform",
-          },
-        );
-      }
-    });
-  }, [headings, catLoading, prodLoading]);
+          );
+        }
+      });
+    },
+    { scope: homeContainerRef, dependencies: [headings, catLoading, prodLoading] }
+  );
 
   // Use only database products
   const allDisplayProducts = products ?? [];
@@ -902,7 +922,7 @@ function PremiumStoreHome() {
   }, [featuredProducts, allDisplayProducts, getProductCategorySlug]);
 
   return (
-    <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+    <div ref={homeContainerRef} className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
       {/* ═══════════════════════════════════════════════════════
           AI SMART RATION QUICK-BAR (Flipkart-style seamless strip)
           ═══════════════════════════════════════════════════════ */}
@@ -916,7 +936,7 @@ function PremiumStoreHome() {
       {/* ═══════════════════════════════════════════════════════
           1. HERO BANNER IMAGE (Uncropped, Natural Fit, Sleek on Laptop)
           ═══════════════════════════════════════════════════════ */}
-      {settingsLoading ? (
+      {settingsLoading && !settings ? (
         <HeroBanner storeName="अरुण गोपाल ट्रेडर्स" isLoading={true} />
       ) : (
         <HeroBanner
@@ -934,7 +954,7 @@ function PremiumStoreHome() {
           2. GROUPED CATEGORIES — Beautiful Density & Responsive Grid
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page space-y-4 sm:space-y-6 pt-0 sm:pt-1 pb-6 sm:pb-8">
-        {catLoading ? (
+        {catLoading && categories.length === 0 ? (
           <CategoryGridSkeleton />
         ) : (
           <div className="space-y-7 sm:space-y-9">
@@ -1088,7 +1108,7 @@ function PremiumStoreHome() {
         linkTo="/shop"
         autoSlide={true}
         intervalMs={3500}
-        isLoading={featLoading}
+        isLoading={featLoading && popularProducts.length === 0}
       />
 
       {/* ═══════════════════════════════════════════════════════
@@ -1102,7 +1122,7 @@ function PremiumStoreHome() {
           linkSearch={{ category: "atta-flour" }}
           autoSlide={true}
           intervalMs={4200}
-          isLoading={prodLoading}
+          isLoading={prodLoading && products.length === 0}
         />
       )}
 
@@ -1117,7 +1137,7 @@ function PremiumStoreHome() {
           linkSearch={{ category: "pulses-dal" }}
           autoSlide={true}
           intervalMs={4600}
-          isLoading={prodLoading}
+          isLoading={prodLoading && products.length === 0}
         />
       )}
 

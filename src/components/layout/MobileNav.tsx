@@ -32,33 +32,13 @@ function TabIcon({
 
   useEffect(() => {
     if (isActive && iconRef.current) {
-      if (name === "home") {
-        gsap.fromTo(
-          iconRef.current,
-          { scale: 0.78, y: 3 },
-          { scale: 1, y: 0, duration: 0.45, ease: "back.out(2.4)" }
-        );
-      } else if (name === "shop") {
-        gsap.fromTo(
-          iconRef.current,
-          { rotate: -15, scale: 0.8 },
-          { rotate: 0, scale: 1, duration: 0.45, ease: "elastic.out(1.2, 0.45)" }
-        );
-      } else if (name === "account") {
-        gsap.fromTo(
-          iconRef.current,
-          { scale: 0.8, y: 3 },
-          { scale: 1, y: 0, duration: 0.45, ease: "back.out(2.2)" }
-        );
-      } else if (name === "cart") {
-        gsap.fromTo(
-          iconRef.current,
-          { rotate: -12, scale: 0.82 },
-          { rotate: 0, scale: 1, duration: 0.45, ease: "elastic.out(1.2, 0.4)" }
-        );
-      }
+      gsap.fromTo(
+        iconRef.current,
+        { scale: 0.86, y: 1 },
+        { scale: 1, y: 0, duration: 0.22, ease: "power2.out", clearProps: "transform" }
+      );
     }
-  }, [isActive, name]);
+  }, [isActive]);
 
   useEffect(() => {
     if (badge !== undefined && badge > 0 && badgeRef.current) {
@@ -192,6 +172,7 @@ export function MobileNav() {
             <Link
               key={link.key}
               to={link.to}
+              preload="render"
               search={link.search as never}
               onClick={handleClick}
               className="group relative flex flex-col items-center justify-center gap-1 py-1 cursor-pointer transition-transform active:scale-92 bg-transparent select-none"

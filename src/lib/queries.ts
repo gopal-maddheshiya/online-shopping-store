@@ -267,6 +267,8 @@ export async function withTimeout<T>(
 
 const CACHED_SETTINGS_KEY = "agt.cached_settings_v2";
 const CACHED_CATEGORIES_KEY = "agt.cached_categories_v2";
+const CACHED_FEATURED_PRODUCTS_KEY = "agt.cached_featured_products_v2";
+const CACHED_PRODUCTS_KEY = "agt.cached_products_v2";
 
 function getCachedSettingsFallback(): StoreSettings {
   if (typeof window !== "undefined") {
@@ -282,6 +284,32 @@ function getCachedCategoriesFallback(): Category[] {
   if (typeof window !== "undefined") {
     try {
       const raw = localStorage.getItem(CACHED_CATEGORIES_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+  }
+  return [];
+}
+
+function getCachedFeaturedProductsFallback(limit: number = 12): Product[] {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(CACHED_FEATURED_PRODUCTS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, limit);
+      }
+    } catch {}
+  }
+  return [];
+}
+
+function getCachedProductsFallback(): Product[] {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(CACHED_PRODUCTS_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -331,7 +359,11 @@ export const settingsQuery = queryOptions({
       getCachedSettingsFallback(),
     );
   },
-  staleTime: 1000 * 5, // 5 seconds for fast live admin updates
+  initialData: () => {
+    if (typeof window === "undefined") return undefined;
+    return getCachedSettingsFallback();
+  },
+  staleTime: 1000 * 60 * 30, // 30 minutes in-memory freshness (Realtime handles instant updates)
 });
 
 export const categoriesQuery = queryOptions({
@@ -360,7 +392,12 @@ export const categoriesQuery = queryOptions({
       getCachedCategoriesFallback(),
     );
   },
-  staleTime: 1000 * 60 * 2, // 2 minutes
+  initialData: () => {
+    if (typeof window === "undefined") return undefined;
+    const c = getCachedCategoriesFallback();
+    return c.length > 0 ? c : undefined;
+  },
+  staleTime: 1000 * 60 * 30, // 30 minutes in-memory freshness (Realtime handles instant updates)
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {
@@ -377,16 +414,27 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
             if (opts.activeOnly !== false) q = q.eq("is_active", true);
             const { data, error } = await q;
             if (error) throw error;
-            return (data ?? []) as unknown as Product[];
+            const list = (data ?? []) as unknown as Product[];
+            if (list.length > 0 && typeof window !== "undefined" && opts.activeOnly !== false) {
+              try {
+                localStorage.setItem(CACHED_PRODUCTS_KEY, JSON.stringify(list));
+              } catch {}
+            }
+            return list;
           } catch {
-            return [];
+            return getCachedProductsFallback();
           }
         })(),
         10000,
-        [],
+        getCachedProductsFallback(),
       );
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    initialData: () => {
+      if (typeof window === "undefined") return undefined;
+      const p = getCachedProductsFallback();
+      return p.length > 0 ? p : undefined;
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes (Realtime handles instant updates)
   });
 }
 
@@ -407,16 +455,27 @@ export function featuredProductsQuery(limit: number = 12) {
               .limit(limit);
 
             if (error) throw error;
-            return (data ?? []) as unknown as Product[];
+            const list = (data ?? []) as unknown as Product[];
+            if (list.length > 0 && typeof window !== "undefined") {
+              try {
+                localStorage.setItem(CACHED_FEATURED_PRODUCTS_KEY, JSON.stringify(list));
+              } catch {}
+            }
+            return list;
           } catch {
-            return [];
+            return getCachedFeaturedProductsFallback(limit);
           }
         })(),
         10000,
-        [],
+        getCachedFeaturedProductsFallback(limit),
       );
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    initialData: () => {
+      if (typeof window === "undefined") return undefined;
+      const f = getCachedFeaturedProductsFallback(limit);
+      return f.length > 0 ? f : undefined;
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes (Realtime handles instant updates)
   });
 }
 

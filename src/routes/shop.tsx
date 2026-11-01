@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { useLenis } from "@/components/providers/SmoothScrollProvider";
+import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 import { SlidersHorizontal, X, ArrowUpDown, Search, Filter, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -50,11 +52,14 @@ export const Route = createFileRoute("/shop")({
     instock: search["instock"] === true || search["instock"] === "true" ? true : undefined,
   }),
   loader: async ({ context }) => {
-    await Promise.allSettled([
+    const prefetch = Promise.allSettled([
       context.queryClient.ensureQueryData(categoriesQuery),
       context.queryClient.ensureQueryData(productsQuery()),
       context.queryClient.ensureQueryData(settingsQuery),
     ]);
+    if (typeof window === "undefined") {
+      await prefetch;
+    }
   },
   head: () => ({
     links: [
@@ -141,7 +146,44 @@ const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
   "snacks-namkeen": "namkeen-snacks",
 };
 
+function RailCategoryThumbnail({
+  category,
+  name,
+}: {
+  category: { slug?: string; name?: string; image_url?: string | null };
+  name: string;
+}) {
+  const src = getCategoryThumbnail(category);
+  const [loaded, setLoaded] = useState(() => isImageLoaded(src));
+
+  return (
+    <img
+      ref={(el) => {
+        if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+          markImageLoaded(src);
+          setLoaded(true);
+        }
+      }}
+      src={src}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      onLoad={() => {
+        markImageLoaded(src);
+        setLoaded(true);
+      }}
+      onError={(e) => {
+        e.currentTarget.src = "/agt-icon.png";
+      }}
+      className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-opacity duration-200 ${
+        loaded ? "opacity-100" : "opacity-0"
+      }`}
+    />
+  );
+}
+
 function Shop() {
+  const { lenis } = useLenis();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/shop" });
   const { data: settings } = useQuery(settingsQuery);
@@ -152,6 +194,14 @@ function Shop() {
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [semanticProductIds, setSemanticProductIds] = useState<string[] | null>(null);
   const [semanticReason, setSemanticReason] = useState<string | null>(null);
+
+  // Progressive Batching for Ultra-Fast Initial Render (16 items first, auto-expand on scroll)
+  const [displayLimit, setDisplayLimit] = useState(16);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setDisplayLimit(16);
+  }, [search.category, search.subcategory, search.q, search.sort, search.min, search.max, search.instock]);
 
   // Auto-redirect legacy mismatched slugs (e.g. pet-supplies -> dhoop-batti)
   useEffect(() => {
@@ -353,8 +403,34 @@ function Shop() {
     else if (search.sort === "price-desc") sorted.sort((a, b) => price(b) - price(a));
     else if (search.sort === "discount") sorted.sort((a, b) => disc(b) - disc(a));
     else if (search.sort === "popular") sorted.sort((a, b) => b.sold_count - a.sold_count);
-    return sorted;
+        return sorted;
   }, [products, categories, activeCategory, search, getProductName, semanticProductIds]);
+
+  const visibleResults = useMemo(() => {
+    return results.slice(0, displayLimit);
+  }, [results, displayLimit]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setDisplayLimit((prev) => {
+            if (prev < results.length) {
+              return Math.min(prev + 16, results.length);
+            }
+            return prev;
+          });
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [results.length]);
 
   const categoryCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -504,7 +580,7 @@ function Shop() {
             type="button"
             onClick={() => {
               update({ category: undefined, subcategory: undefined });
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              if (lenis) { lenis.scrollTo(0, { immediate: true }); } else { window.scrollTo(0, 0); }
             }}
             className="group relative flex flex-col items-center justify-center py-2 sm:py-2.5 px-0.5 w-full transition-all cursor-pointer select-none bg-transparent hover:bg-black/[0.02]"
           >
@@ -546,7 +622,7 @@ function Shop() {
                       type="button"
                       onClick={() => {
                         update({ category: c.slug, subcategory: undefined });
-                        window.scrollTo({ top: 0, behavior: "smooth" });
+                        if (lenis) { lenis.scrollTo(0, { immediate: true }); } else { window.scrollTo(0, 0); }
                       }}
                       className="group relative flex flex-col items-center justify-center py-2 sm:py-2.5 px-0.5 w-full transition-all cursor-pointer select-none bg-transparent hover:bg-black/[0.02]"
                     >
@@ -558,16 +634,7 @@ function Shop() {
                           ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
                 : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
                       }`}>
-                        <img
-                          src={getCategoryThumbnail(c)}
-                          alt={getCategoryName(c)}
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            e.currentTarget.src = "/agt-icon.png";
-                          }}
-                          className="size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)]"
-                        />
+                        <RailCategoryThumbnail category={c} name={getCategoryName(c)} />
                       </div>
                       <span
                         className={`text-[13px] sm:text-[13.5px] lg:text-[14px] leading-[1.38] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 pt-0.5 pb-0.5 tracking-normal transition-colors ${
@@ -645,7 +712,7 @@ function Shop() {
             </div>
           )}
 
-          {isLoading ? (
+          {isLoading && allProducts.length === 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
               {Array.from({ length: 10 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
@@ -696,11 +763,18 @@ function Shop() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
-              {results.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
+                {visibleResults.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+              {visibleResults.length < results.length && (
+                <div ref={sentinelRef} className="h-10 w-full flex items-center justify-center py-4">
+                  <div className="size-5 border-2 border-[#145A45] border-t-transparent rounded-full animate-spin opacity-50" />
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

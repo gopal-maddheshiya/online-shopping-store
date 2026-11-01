@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage } from "@/lib/product-images";
+import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 import { type Product } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
 import { useState } from "react";
@@ -24,7 +25,8 @@ export function ProductCard({ product }: { product: Product }) {
     .sort((a, b) => a.sort_order - b.sort_order);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(variants[0]?.id ?? "");
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const imgSrc = getProductImage(product);
+  const [imgLoaded, setImgLoaded] = useState(() => isImageLoaded(imgSrc));
 
   const activeVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
   const inCart = items.find((i) => i.variantId === activeVariant?.id);
@@ -62,18 +64,28 @@ export function ProductCard({ product }: { product: Product }) {
             <div className="absolute inset-1.5 rounded-lg img-loading-shimmer pointer-events-none" />
           )}
           <img
-            src={getProductImage(product)}
+            ref={(el) => {
+              if (el && el.complete && el.naturalWidth > 0 && !imgLoaded) {
+                markImageLoaded(imgSrc);
+                setImgLoaded(true);
+              }
+            }}
+            src={imgSrc}
             alt={localizedProductName}
             loading="lazy"
             decoding="async"
             width={200}
             height={200}
-            onLoad={() => setImgLoaded(true)}
+            onLoad={() => {
+              markImageLoaded(imgSrc);
+              setImgLoaded(true);
+            }}
             onError={(e) => {
+              markImageLoaded(imgSrc);
               setImgLoaded(true);
               e.currentTarget.src = "/images/packaged.jpg";
             }}
-            className={`size-full object-contain mx-auto transition-[transform,opacity] duration-300 ease-out group-hover:scale-105 select-none ${
+            className={`size-full object-contain mx-auto transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
               imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
           />

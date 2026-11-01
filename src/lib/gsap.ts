@@ -25,7 +25,7 @@ export function setupLenisGSAP(lenis: Lenis) {
     lenis.raf(time * 1000);
   };
   gsap.ticker.add(tickerHandler);
-  gsap.ticker.lagSmoothing(0);
+  gsap.ticker.lagSmoothing(500, 33);
 
   return () => {
     lenis.off("scroll", updateScrollTrigger);
