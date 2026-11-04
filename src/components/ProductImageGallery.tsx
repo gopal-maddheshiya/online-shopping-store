@@ -149,17 +149,17 @@ export function ProductImageGallery({
 
   return (
     <div className={`flex flex-col gap-3 select-none ${className}`}>
-      {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE */}
-      <div className="relative w-full max-w-[420px] mx-auto">
+      {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE (Balanced Height on Mobile) */}
+      <div className="relative w-full max-w-[340px] sm:max-w-[420px] mx-auto">
         <div
-          className="group relative w-full aspect-square rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_4px_20px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
+          className="group relative w-full aspect-square max-h-[300px] sm:max-h-[400px] rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_4px_20px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Top-Left: Ribbon / Badge flush to top */}
+          {/* Top-Left: Modern floating discount badge */}
           {badge && (
-            <div className="absolute top-0 left-2.5 sm:left-3 z-20 pointer-events-none">
+            <div className="absolute top-2.5 left-2.5 sm:left-3 z-20 pointer-events-none">
               {badge}
             </div>
           )}

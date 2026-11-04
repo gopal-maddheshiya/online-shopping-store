@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import {
   Minus,
   Plus,
@@ -13,14 +14,18 @@ import {
   ChevronRight,
   Home,
   Bookmark,
+  Search,
+  Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
-import { getProductImage } from "@/lib/product-images";
-import { settingsQuery } from "@/lib/queries";
+import { getProductImage, getCategoryThumbnail } from "@/lib/product-images";
+import { settingsQuery, productsQuery, categoriesQuery } from "@/lib/queries";
 import { inr } from "@/lib/format";
 import { NOINDEX_ROBOTS_META } from "@/lib/seo";
+import { ProductCard } from "@/components/ProductCard";
+import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -41,13 +46,260 @@ export const Route = createFileRoute("/cart")({
   component: CartPage,
 });
 
-const POPULAR_SHORTCUTS = [
-  { id: "atta", icon: "🌾", label_hi: "आटा व दालें", label_en: "Atta & Dals", slug: "atta-flour" },
-  { id: "oil", icon: "🛢️", label_hi: "तेल व घी", label_en: "Oils & Ghee", slug: "oil-ghee" },
-  { id: "spices", icon: "🧂", label_hi: "मसाले व नमक", label_en: "Spices & Salt", slug: "spices-masala" },
-  { id: "snacks", icon: "🍪", label_hi: "बिस्कुट व नमकीन", label_en: "Biscuits & Snacks", slug: "biscuits" },
-  { id: "cleaning", icon: "🧼", label_hi: "सफ़ाई व बर्तन", label_en: "Cleaning Essentials", slug: "household-cleaning" },
-];
+function CategoryTileThumbnail({
+  category,
+  name,
+}: {
+  category: { slug?: string; name?: string; image_url?: string | null };
+  name: string;
+}) {
+  const src = getCategoryThumbnail(category);
+  const [loaded, setLoaded] = useState(() => isImageLoaded(src));
+
+  return (
+    <img
+      ref={(el) => {
+        if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+          markImageLoaded(src);
+          setLoaded(true);
+        }
+      }}
+      src={src}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      onLoad={() => {
+        markImageLoaded(src);
+        setLoaded(true);
+      }}
+      onError={(e) => {
+        e.currentTarget.src = "/agt-icon.png";
+      }}
+      className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-opacity duration-200 ${loaded ? "opacity-100" : "opacity-0"
+        }`}
+    />
+  );
+}
+
+function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
+  const { lang, t, getCategoryName } = useLanguage();
+  const { data: allProducts } = useQuery(productsQuery());
+  const { data: categories } = useQuery(categoriesQuery);
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchTerm.trim();
+    if (!q) return;
+    void navigate({ to: "/shop", search: { q } });
+  };
+
+  const essentialProducts = useMemo(() => {
+    if (!allProducts || allProducts.length === 0) return [];
+    const catMap = new Map((categories ?? []).map((c) => [c.id, c.slug]));
+    const nonGrocerySlugs = new Set(["plastic-containers", "steel-bartan", "crockery"]);
+    return allProducts
+      .filter((p) => {
+        const catSlug = (p.category_id && catMap.get(p.category_id)) || "";
+        return (
+          !nonGrocerySlugs.has(catSlug) &&
+          (p.product_variants?.some((v) => v.stock > 0) ?? true)
+        );
+      })
+      .slice(0, 8);
+  }, [allProducts, categories]);
+
+  const displayCategories = useMemo(() => {
+    const list = categories ?? [];
+    const parentCats = list.filter((c) => !c.parent_id);
+    if (parentCats.length > 0) {
+      const preferredSlugs = [
+        "atta-flour",
+        "oil-ghee",
+        "spices-masala",
+        "namkeen-snacks",
+        "household-cleaning",
+        "puja-samagri",
+      ];
+      const prioritized = parentCats.filter((c) => preferredSlugs.includes(c.slug));
+      const remaining = parentCats.filter((c) => !preferredSlugs.includes(c.slug));
+      return [...prioritized, ...remaining].slice(0, 6);
+    }
+    return [];
+  }, [categories]);
+
+  return (
+    <div className="container-page py-4 sm:py-6 pb-28 lg:pb-16 max-w-4xl mx-auto space-y-6">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#3D4C44]">
+        <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
+          <Home className="size-3.5" />
+          <span>{t.home}</span>
+        </Link>
+        <ChevronRight className="size-3 text-gray-400" />
+        <span className="font-semibold text-[#16201A]">{t.cart || (lang === "hi" ? "थैला" : "Cart")}</span>
+      </nav>
+
+      {/* 1. Hero Empty State Card */}
+      <div className="rounded-3xl border border-[rgba(20,90,69,0.14)] bg-white p-6 sm:p-8 text-center shadow-[0_4px_24px_-4px_rgba(20,90,69,0.07),inset_0_1px_0_rgba(255,255,255,1)]">
+        <div className="relative mx-auto grid size-20 sm:size-22 place-items-center rounded-3xl bg-gradient-to-b from-[#EBF5EE] to-[#DCEDE1] border border-[#145A45]/20 text-[#145A45] shadow-[0_4px_16px_rgba(20,90,69,0.1)]">
+          <ShoppingBag className="size-10 sm:size-11 text-[#145A45] transition-transform hover:scale-105 duration-200" />
+          <span className="absolute -top-1.5 -right-1.5 flex size-5.5 items-center justify-center rounded-full bg-[#145A45] text-[10.5px] font-black text-white shadow-xs border-2 border-white">
+            0
+          </span>
+        </div>
+
+        <h1 className="mt-4 font-sans text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-[#16201A]">
+          {t.emptyCartTitle}
+        </h1>
+        <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm leading-relaxed text-[#46544D]">
+          {lang === "hi"
+            ? "घर के राशन का जरूरी सामान अभी जोड़ें — 30 मिनट में ताज़ा डिलीवरी!"
+            : "Add daily essentials to your cart now — Fresh 30-minute delivery!"}
+        </p>
+
+        {/* Quick In-Page Search */}
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mt-4 sm:mt-5 max-w-md mx-auto flex items-center rounded-2xl border border-[#E5EAE6] bg-[#FAF8F5] p-1.5 focus-within:border-[#145A45] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#145A45]/15 transition-all shadow-2xs"
+        >
+          <Search className="size-4 text-[#546059] ml-2.5 shrink-0" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={
+              lang === "hi"
+                ? "आटा, तेल, दाल, चीनी या कोई भी सामान खोजें..."
+                : "Search flour, oil, dal, sugar..."
+            }
+            className="w-full bg-transparent px-2.5 py-1 text-xs text-[#16201A] placeholder:text-[#8C9B92] outline-none"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            className="h-8 rounded-xl bg-[#145A45] hover:bg-[#0F4A38] text-xs font-bold text-white px-3.5 shrink-0 cursor-pointer shadow-xs active:scale-95 transition-all"
+          >
+            {lang === "hi" ? "खोजें" : "Search"}
+          </Button>
+        </form>
+
+        {/* Primary Action Buttons */}
+        <div className="mt-4 flex items-center justify-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            aria-label="Go back"
+            title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
+            className="flex size-9 items-center justify-center rounded-xl border border-[#E5EAE6] bg-white hover:bg-[#EBF5EE] text-[#145A45] transition-all shadow-xs cursor-pointer active:scale-95"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
+          <Button
+            asChild
+            className="h-9 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.22)] active:scale-95 cursor-pointer transition-all"
+          >
+            <Link to="/shop" className="inline-flex items-center gap-1.5">
+              <Store className="size-4" />
+              <span>{lang === "hi" ? "दुकान का पूरा किराना देखें" : "Browse Full Store"}</span>
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* 2. Visual Popular Category Tiles */}
+        {displayCategories.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-[#E5EAE6]/80 text-left">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <h2 className="font-sans text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#16201A] flex items-center gap-1.5">
+                <span className="text-sm">📂</span>
+                <span>{lang === "hi" ? "किराना श्रेणियां ब्राउज़ करें" : "Popular Grocery Categories"}</span>
+              </h2>
+              <Link to="/shop" className="text-xs font-bold text-[#145A45] hover:underline">
+                {lang === "hi" ? "सभी देखें →" : "View All →"}
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-2.5">
+              {displayCategories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to="/shop"
+                  search={{ category: cat.slug }}
+                  className="group flex flex-col items-center justify-center rounded-2xl bg-[#FAF8F5] hover:bg-white border border-[#E5EAE6] hover:border-[#145A45]/40 p-2 sm:p-2.5 transition-all duration-200 hover:shadow-xs active:scale-95 select-none"
+                >
+                  <div className="size-13 sm:size-15 rounded-xl bg-white p-1 flex items-center justify-center transition-transform group-hover:scale-105 shadow-2xs">
+                    <CategoryTileThumbnail category={cat} name={getCategoryName(cat)} />
+                  </div>
+                  <span className="mt-1.5 text-center text-[11px] sm:text-[11.5px] font-bold text-[#16201A] line-clamp-1 group-hover:text-[#145A45] transition-colors">
+                    {getCategoryName(cat)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Daily Essentials Product Shelf (With Instant ADD Button) */}
+      {essentialProducts.length > 0 && (
+        <section className="mt-8 space-y-3.5 text-left">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 px-2.5 py-0.5 text-[11px] font-extrabold text-amber-900 mb-1">
+                <Flame className="size-3 text-amber-600 fill-amber-500" />
+                <span>{lang === "hi" ? "अक्सर खरीदे जाने वाले" : "Frequently Bought"}</span>
+              </div>
+              <h2 className="font-sans text-base sm:text-lg md:text-xl font-extrabold text-[#16201A]">
+                {lang === "hi" ? "रोज़मर्रा का जरूरी सामान" : "Daily Kirana Essentials"}
+              </h2>
+              <p className="text-[11px] sm:text-xs text-[#546059]">
+                {lang === "hi"
+                  ? "दैनिक उपयोग का 100% शुद्ध राशन — सीधे थैले में जोड़ें"
+                  : "Essential groceries for home — Add directly to cart"}
+              </p>
+            </div>
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#145A45] hover:text-[#0F4A38] bg-[#EBF5EE] hover:bg-[#DCEDE1] px-3 py-1.5 rounded-xl transition-all"
+            >
+              <span>{lang === "hi" ? "पूरा कैटलॉग" : "See All"}</span>
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5">
+            {essentialProducts.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. Local Trust Strip */}
+      <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] p-3 sm:p-4 text-center text-xs text-[#3D4C44] shadow-xs">
+        <div className="space-y-0.5">
+          <p className="font-bold text-[#145A45] text-xs sm:text-sm">⚡ 30 मिनट</p>
+          <p className="text-[10.5px] sm:text-[11px] text-[#546059]">
+            {lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Delivery"}
+          </p>
+        </div>
+        <div className="space-y-0.5 border-x border-[#E5EAE6]">
+          <p className="font-bold text-[#145A45] text-xs sm:text-sm">🌿 100% शुद्ध</p>
+          <p className="text-[10.5px] sm:text-[11px] text-[#546059]">
+            {lang === "hi" ? "परखा हुआ किराना" : "Pure Quality"}
+          </p>
+        </div>
+        <div className="space-y-0.5">
+          <p className="font-bold text-[#145A45] text-xs sm:text-sm">💵 COD / UPI</p>
+          <p className="text-[10.5px] sm:text-[11px] text-[#546059]">
+            {lang === "hi" ? "आसान भुगतान" : "Easy Payment"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CartPage() {
   const {
@@ -82,79 +334,7 @@ function CartPage() {
 
   // --- EMPTY STATE ---
   if (hydrated && items.length === 0 && savedItems.length === 0) {
-    return (
-      <div className="container-page py-5 sm:py-8 pb-28 lg:pb-16 max-w-3xl mx-auto">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-[#3D4C44]">
-          <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
-            <Home className="size-3.5" />
-            <span>{t.home}</span>
-          </Link>
-          <ChevronRight className="size-3 text-gray-400" />
-          <span className="font-semibold text-[#16201A]">{t.cart || (lang === "hi" ? "थैला" : "Cart")}</span>
-        </nav>
-
-        {/* Empty State Box */}
-        <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-6 sm:p-9 text-center shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
-          {/* Emerald Shopping Bag Badge */}
-          <div className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-gradient-to-b from-[#EBF3ED] to-[#DCECE0] border border-[#145A45]/25 text-[#145A45] shadow-[0_2px_8px_rgba(20,90,69,0.08)]">
-            <ShoppingBag className="size-8 text-[#145A45] transition-transform hover:scale-105 duration-200" />
-            <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#145A45] text-[9.5px] font-bold text-white shadow-xs">
-              0
-            </span>
-          </div>
-
-          <h1 className="mt-4 font-sans text-xl sm:text-2xl font-bold tracking-tight text-[#16201A]">
-            {t.emptyCartTitle}
-          </h1>
-          <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-[#3D4C44]">
-            {t.emptyCartSub}
-          </p>
-
-          <div className="mt-5 flex items-center justify-center gap-2.5">
-            <button
-              type="button"
-              onClick={handleGoBack}
-              aria-label="Go back"
-              title={lang === "hi" ? "पीछे जाएं" : "Go Back"}
-              className="flex size-8.5 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#EBF3ED] text-[#145A45] transition-all shadow-xs cursor-pointer active:scale-95"
-            >
-              <ArrowLeft className="size-4" />
-            </button>
-            <Button
-              asChild
-              className="h-8.5 rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] px-4 text-xs font-bold text-white shadow-[0_2px_6px_rgba(20,90,69,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
-            >
-              <Link to="/shop" className="inline-flex items-center gap-1.5">
-                <Store className="size-3.5" />
-                <span>{lang === "hi" ? "किराना सामान देखें" : "Browse Groceries"}</span>
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
-          </div>
-
-          {/* Quick Category Discovery Pills */}
-          <div className="mt-7 border-t border-[#E5E7EB]/80 pt-5">
-            <p className="text-[11px] font-semibold text-[#16201A] uppercase tracking-wider mb-2.5">
-              {lang === "hi" ? "किराना श्रेणियां ब्राउज़ करें" : "Explore Popular Grocery Categories"}
-            </p>
-            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-              {POPULAR_SHORTCUTS.map((cat) => (
-                <Link
-                  key={cat.id}
-                  to="/shop"
-                  search={{ category: cat.slug }}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#E5E7EB] bg-[#FAF8F5] px-2.5 py-1 text-[11px] font-medium text-[#374151] hover:border-[#145A45]/40 hover:bg-[#EBF3ED] hover:text-[#145A45] transition-all shadow-xs"
-                >
-                  <span className="text-xs">{cat.icon}</span>
-                  <span>{lang === "hi" ? cat.label_hi : cat.label_en}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <EmptyCartView handleGoBack={handleGoBack} />;
   }
 
   // --- FILLED STATE ---
@@ -401,7 +581,7 @@ function CartPage() {
           )}
         </div>
 
-        {/* Order Summary Column */}
+                {/* Order Summary Column */}
         <div className="space-y-3.5">
           <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-5 space-y-3.5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
             <div className="flex items-center justify-between border-b border-[rgba(20,90,69,0.1)] pb-3">

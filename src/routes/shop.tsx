@@ -495,7 +495,7 @@ function Shop() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
-      <div className="container-page px-2 sm:px-4 lg:px-6 py-4 sm:py-7 pb-24 sm:pb-32">
+      <div className="container-page px-2 sm:px-4 lg:px-6 py-4 sm:py-7 pb-32 sm:pb-36">
       {/* Top Header Row — Locked sticky below main header so it doesn't scroll off or collide */}
       <div className="sticky top-15 sm:top-16 z-20 bg-white/95 backdrop-blur-md border-b border-[rgba(20,90,69,0.12)] py-2.5 sm:py-3 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.04)] transition-all">
         <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
@@ -553,7 +553,7 @@ function Shop() {
               value={search.sort ?? "relevance"}
               onValueChange={(v) => update({ sort: v as ShopSearch["sort"] })}
             >
-              <SelectTrigger className="h-8 w-32 sm:w-40 rounded-lg border-[#E4DFD5] bg-white text-xs text-[#16201A] shadow-2xs">
+              <SelectTrigger className="h-8 w-28 sm:w-36 rounded-lg border-[#E4DFD5] bg-white text-xs text-[#16201A] shadow-2xs">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -573,7 +573,7 @@ function Shop() {
         {/* Category Left Rail (Unified Blinkit Rail on Mobile & Desktop, Premium White & Homepage Squircle) */}
         <aside
           data-lenis-prevent
-          className="w-[84px] sm:w-[94px] lg:w-[106px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[rgba(20,90,69,0.09)] py-2 sm:py-3 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-7.5rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
+          className="w-[72px] sm:w-[86px] lg:w-[102px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[rgba(20,90,69,0.09)] py-2 sm:py-3 pb-16 sm:pb-8 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-10.5rem)] sm:max-h-[calc(100dvh-8rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
         >
           {/* All Categories Button */}
           <button
@@ -587,7 +587,7 @@ function Shop() {
             {!search.category && (
               <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
             )}
-            <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-[64px] lg:h-[64px] rounded-[11px] sm:rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
               !search.category
                 ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
                 : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
@@ -601,7 +601,7 @@ function Shop() {
               />
             </div>
             <span
-              className={`text-[12px] sm:text-[12.5px] lg:text-[13px] leading-[1.38] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 pt-0.5 pb-0.5 tracking-normal transition-colors ${
+              className={`text-[11px] sm:text-[12px] lg:text-[13px] leading-tight text-center line-clamp-2 mt-1 break-words w-full px-0.5 tracking-tight transition-colors ${
                 !search.category ? "font-extrabold text-[#111827]" : "font-bold text-[#35433B] group-hover:text-[#111827]"
               }`}
             >
@@ -629,7 +629,7 @@ function Shop() {
                       {isSelected && (
                         <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
                       )}
-                      <div className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-[68px] lg:h-[68px] rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+                      <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-[64px] lg:h-[64px] rounded-[11px] sm:rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
                         isSelected
                           ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
                 : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
@@ -637,7 +637,7 @@ function Shop() {
                         <RailCategoryThumbnail category={c} name={getCategoryName(c)} />
                       </div>
                       <span
-                        className={`text-[13px] sm:text-[13.5px] lg:text-[14px] leading-[1.38] text-center line-clamp-2 mt-1.5 break-words w-full px-0.5 pt-0.5 pb-0.5 tracking-normal transition-colors ${
+                        className={`text-[11px] sm:text-[12px] lg:text-[13px] leading-tight text-center line-clamp-2 mt-1 break-words w-full px-0.5 tracking-tight transition-colors ${
                           isSelected ? "font-bold text-[#111827]" : "font-medium text-[#46544D] group-hover:text-[#111827]"
                         }`}
                         title={getCategoryName(c)}

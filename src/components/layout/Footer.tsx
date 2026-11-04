@@ -37,21 +37,22 @@ export function Footer() {
   const isDeliveryEnabled = Boolean(s?.delivery_enabled);
 
   return (
-    <footer className="mt-16 border-t border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] text-[#16201A]">
-      {/* Top Value Proposition Bar */}
-      <div className="border-b border-[rgba(20,90,69,0.10)] bg-[#FAF8F5] py-6">
-        <div className="container-page grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
-            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
+    <footer className="mt-16 border-t border-[#164E3D] bg-gradient-to-b from-[#0B3A2C] via-[#082C21] to-[#041B14] text-white relative overflow-hidden select-none">
+      {/* 1. Top Value Proposition Bar */}
+      <div className="border-b border-white/[0.08] bg-black/20 py-6 sm:py-7">
+        <div className="container-page grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          {/* Card 1: Fast Delivery / Store Pickup */}
+          <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xs hover:bg-white/[0.08] hover:border-emerald-400/40 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.15)] group">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#1E6B53] to-[#124B38] border border-emerald-400/30 text-[#F5D061] shadow-[0_2px_8px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform">
               {isDeliveryEnabled ? <Truck className="size-4" /> : <Store className="size-4" />}
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">
+              <p className="text-xs font-bold sm:text-sm text-white tracking-normal">
                 {isDeliveryEnabled
                   ? (lang === "hi" ? "तेज़ लोकल डिलीवरी" : "Fast Local Delivery")
                   : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")}
               </p>
-              <p className="text-[11px] text-[#3D4C44]">
+              <p className="text-[11px] text-emerald-100/75">
                 {isDeliveryEnabled
                   ? (lang === "hi" ? `₹${s?.free_delivery_threshold ?? 499}+ पर फ्री` : `Free above ₹${s?.free_delivery_threshold ?? 499}`)
                   : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store")}
@@ -59,37 +60,48 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
-            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
+          {/* Card 2: 100% Genuine Items */}
+          <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xs hover:bg-white/[0.08] hover:border-emerald-400/40 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.15)] group">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#1E6B53] to-[#124B38] border border-emerald-400/30 text-[#F5D061] shadow-[0_2px_8px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform">
               <ShieldCheck className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">100% Genuine Items</p>
-              <p className="text-[11px] text-[#3D4C44]">Original branded staples</p>
+              <p className="text-xs font-bold sm:text-sm text-white tracking-normal">
+                {lang === "hi" ? "100% शुद्ध व ताजा" : "100% Genuine Items"}
+              </p>
+              <p className="text-[11px] text-emerald-100/75">
+                {lang === "hi" ? "असली ब्रांडेड किराना" : "Original branded staples"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
-            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
+          {/* Card 3: Phone & WhatsApp Support */}
+          <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xs hover:bg-white/[0.08] hover:border-emerald-400/40 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.15)] group">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#1E6B53] to-[#124B38] border border-emerald-400/30 text-[#F5D061] shadow-[0_2px_8px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform">
               <Phone className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">Phone &amp; WhatsApp</p>
-              <p className="text-[11px] text-[#3D4C44]">Easy ordering on call</p>
+              <p className="text-xs font-bold sm:text-sm text-white tracking-normal">
+                {lang === "hi" ? "फ़ोन व व्हाट्सएप ऑर्डर" : "Phone & WhatsApp"}
+              </p>
+              <p className="text-[11px] text-emerald-100/75">
+                {lang === "hi" ? "कॉल करके आसानी से मंगाएं" : "Easy ordering on call"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 transition-all">
-            <div className="grid size-9.5 shrink-0 place-items-center rounded-xl bg-gradient-to-b from-[#E6EFE8] to-[#D9E7DD] border border-[#CADBCF] text-[#0F4A38] shadow-[0_1px_2px_rgba(15,74,56,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
+          {/* Card 4: Store Pickup / Easy Exchange */}
+          <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xs hover:bg-white/[0.08] hover:border-emerald-400/40 transition-all shadow-[0_4px_16px_rgba(0,0,0,0.15)] group">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#1E6B53] to-[#124B38] border border-emerald-400/30 text-[#F5D061] shadow-[0_2px_8px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform">
               <RotateCcw className="size-4" />
             </div>
             <div>
-              <p className="text-xs font-bold sm:text-sm text-[#16201A]">
+              <p className="text-xs font-bold sm:text-sm text-white tracking-normal">
                 {isDeliveryEnabled
                   ? t.storePickupTitle
                   : (lang === "hi" ? "आसान रिप्लेसमेंट" : "Easy Exchange")}
               </p>
-              <p className="text-[11px] text-[#3D4C44]">
+              <p className="text-[11px] text-emerald-100/75">
                 {lang === "hi" ? "रामनगर दुकान काउंटर" : "Ramnagar shop counter"}
               </p>
             </div>
@@ -97,26 +109,26 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Main Footer Links */}
+      {/* 2. Main Footer Links */}
       <div className="container-page grid gap-8 py-10 md:grid-cols-4">
         {/* Brand & Tagline */}
         <div className="space-y-3">
           <Link
             to="/"
-            className="inline-flex items-center gap-2.5 font-brand-hindi text-xl font-bold tracking-tight text-[#0B4635] group"
+            className="inline-flex items-center gap-2.5 font-brand-hindi text-xl font-bold tracking-tight text-white group"
           >
-            <div className="grid size-7.5 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] via-[#0F4A38] to-[#0A3628] shadow-xs text-white">
-              <Store className="size-4 text-[#F5D061]" />
+            <div className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-[#1E6B53] to-[#145A45] border border-emerald-400/30 shadow-xs text-[#F5D061] group-hover:scale-105 transition-transform">
+              <Store className="size-4" />
             </div>
-            <span>{t.storeName}</span>
+            <span className="group-hover:text-emerald-200 transition-colors">{t.storeName}</span>
           </Link>
-          <p className="text-xs leading-relaxed text-[#3D4C44]">
+          <p className="text-xs leading-relaxed text-emerald-100/80">
             {lang === "hi"
               ? "महाराजगंज में आपकी अपनी विश्वसनीय किराना दुकान। शुद्ध सामान, सही दाम और भरोसेमंद होम डिलीवरी।"
               : (s?.tagline ??
                 "Your Trusted Local Grocery Store in Maharajganj. Fresh staples, honest rates, and reliable doorstep delivery.")}
           </p>
-          <div className="space-y-1.5 text-xs text-[#3D4C44] pt-2">
+          <div className="space-y-2 text-xs text-emerald-100/85 pt-2">
             <a
               href={
                 s?.maps_link ??
@@ -124,68 +136,68 @@ export function Footer() {
               }
               target="_blank"
               rel="noreferrer"
-              className="flex items-start gap-2 hover:text-[#145A45] transition-colors"
+              className="flex items-start gap-2 hover:text-white transition-colors"
             >
-              <MapPin className="mt-0.5 size-3.5 shrink-0 text-[#145A45]" />
+              <MapPin className="mt-0.5 size-3.5 shrink-0 text-[#34D399]" />
               <span>{lang === "hi" ? t.storeAddress : (s?.address ?? t.storeAddress)}</span>
             </a>
             <a
               href={telHref(cleanPhone)}
-              className="flex items-center gap-2 font-semibold text-[#16201A] hover:text-[#145A45] transition-colors"
+              className="flex items-center gap-2 font-semibold text-white hover:text-emerald-300 transition-colors"
             >
-              <Phone className="size-3.5 text-[#145A45]" /> {phone}
+              <Phone className="size-3.5 text-[#34D399]" /> {phone}
             </a>
             <a
               href={`mailto:${email}`}
-              className="flex items-center gap-2 hover:text-[#145A45] transition-colors"
+              className="flex items-center gap-2 hover:text-white transition-colors"
             >
-              <Mail className="size-3.5 text-[#145A45]" /> {email}
+              <Mail className="size-3.5 text-[#34D399]" /> {email}
             </a>
           </div>
         </div>
 
-        {/* Quick Links */}
+        {/* Quick Categories */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
-            Shop Categories
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#F5D061]">
+            {lang === "hi" ? "किराना श्रेणियां" : "Shop Categories"}
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#3D4C44]">
+          <ul className="mt-3.5 space-y-2.5 text-xs text-emerald-100/75">
             <li>
-              <Link to="/shop" search={{ category: "atta-flour" }} className="hover:text-[#145A45]">
-                Atta &amp; Flours
+              <Link to="/shop" search={{ category: "atta-flour" }} className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "आटा व दालें (Atta & Dals)" : "Atta & Flours"}
               </Link>
             </li>
             <li>
               <Link
                 to="/shop"
                 search={{ category: "rice" }}
-                className="hover:text-[#145A45]"
+                className="hover:text-white hover:translate-x-0.5 inline-block transition-all"
               >
-                Basmati Rice &amp; Grains
+                {lang === "hi" ? "बासमती चावल व अनाज (Rice & Grains)" : "Basmati Rice & Grains"}
               </Link>
             </li>
             <li>
-              <Link to="/shop" search={{ category: "pulses-dal" }} className="hover:text-[#145A45]">
-                Pulses &amp; Dal
+              <Link to="/shop" search={{ category: "pulses-dal" }} className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "दालें व दलहन (Pulses & Dal)" : "Pulses & Dal"}
               </Link>
             </li>
             <li>
-              <Link to="/shop" search={{ category: "oil-ghee" }} className="hover:text-[#145A45]">
-                Mustard Oil &amp; Ghee
+              <Link to="/shop" search={{ category: "oil-ghee" }} className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "सरसों तेल व शुद्ध घी (Oil & Ghee)" : "Mustard Oil & Ghee"}
               </Link>
             </li>
             <li>
               <Link
                 to="/shop"
                 search={{ category: "spices-masala" }}
-                className="hover:text-[#145A45]"
+                className="hover:text-white hover:translate-x-0.5 inline-block transition-all"
               >
-                Spices &amp; Whole Masalas
+                {lang === "hi" ? "खड़े व पिसे मसाले (Spices)" : "Spices & Whole Masalas"}
               </Link>
             </li>
             <li>
-              <Link to="/shop" className="hover:text-[#145A45] font-semibold">
-                View All Groceries →
+              <Link to="/shop" className="text-[#F5D061] hover:text-white font-bold hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "पूरा किराना कैटलॉग देखें →" : "View All Groceries →"}
               </Link>
             </li>
           </ul>
@@ -193,23 +205,23 @@ export function Footer() {
 
         {/* Customer Care */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
-            Customer Care
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#F5D061]">
+            {lang === "hi" ? "ग्राहक सेवा" : "Customer Care"}
           </h4>
-          <ul className="mt-3 space-y-2 text-xs text-[#3D4C44]">
+          <ul className="mt-3.5 space-y-2.5 text-xs text-emerald-100/75">
             <li>
-              <Link to="/track" className="hover:text-[#145A45]">
-                Track Order Status
+              <Link to="/track" className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "ऑर्डर ट्रैक करें (Track Status)" : "Track Order Status"}
               </Link>
             </li>
             <li>
-              <Link to="/account" className="hover:text-[#145A45]">
-                My Account &amp; Orders
+              <Link to="/account" className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "मेरा खाता व पिछले ऑर्डर" : "My Account & Orders"}
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-[#145A45]">
-                Help &amp; Support
+              <Link to="/contact" className="hover:text-white hover:translate-x-0.5 inline-block transition-all">
+                {lang === "hi" ? "सहायता व संपर्क (Help & Support)" : "Help & Support"}
               </Link>
             </li>
           </ul>
@@ -217,10 +229,10 @@ export function Footer() {
 
         {/* Store Timings */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#16201A]">
-            Store Timings
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#F5D061]">
+            {lang === "hi" ? "दुकान का समय" : "Store Timings"}
           </h4>
-          <div className="mt-3 space-y-1 text-xs">
+          <div className="mt-3.5 space-y-1.5 text-xs">
             {DAYS.map(([key, label]) => {
               const h = s?.business_hours?.[key] ?? {
                 open: "07:00",
@@ -228,10 +240,10 @@ export function Footer() {
                 closed: false,
               };
               return (
-                <div key={key} className="flex justify-between text-[#3D4C44]">
+                <div key={key} className="flex justify-between text-emerald-100/70 py-0.5 border-b border-white/[0.04]">
                   <span>{label}:</span>
-                  <span className="font-medium text-[#16201A]">
-                    {h.closed ? "Closed" : `${h.open} - ${h.close}`}
+                  <span className="font-semibold text-white">
+                    {h.closed ? (lang === "hi" ? "बंद (Closed)" : "Closed") : `${h.open} - ${h.close}`}
                   </span>
                 </div>
               );
@@ -240,11 +252,11 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Copyright Bar */}
-      <div className="border-t border-[#E4DFD5] py-4 pb-24 lg:pb-4 bg-[#FAF8F2]">
-        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-[#3D4C44] sm:flex-row">
-          <p>© {new Date().getFullYear()} {t.storeName}. {t.storeAddressShort}.</p>
-          <p className="flex items-center gap-1 font-medium">
+      {/* 3. Bottom Copyright Bar */}
+      <div className="border-t border-white/[0.08] py-4 pb-24 lg:pb-4 bg-[#03140F]">
+        <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-emerald-200/60 sm:flex-row">
+          <p>© {new Date().getFullYear()} <span className="text-emerald-100 font-semibold">{t.storeName}</span>. {t.storeAddressShort}.</p>
+          <p className="flex items-center gap-1.5 font-medium text-emerald-300">
             <span>{lang === "hi" ? "आपकी अपनी लोकल किराना दुकान • 100% शुद्धता" : "Your Trusted Local Kirana Store • 100% Purity"}</span>
           </p>
         </div>
@@ -256,10 +268,10 @@ export function Footer() {
           href={waHref(whatsapp, "Namaste! I want to order grocery items from Arun Gopal Traders.")}
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] px-4.5 py-2.5 text-xs font-bold text-white shadow-[0_6px_20px_rgba(20,90,69,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 border border-[#2D735D] transition-all"
+          className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#1EBD5A] hover:to-[#0F7569] px-4.5 py-2.5 text-xs font-bold text-white shadow-[0_6px_20px_rgba(37,211,102,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 border border-[#3FE07C] transition-all"
           aria-label="Order on WhatsApp"
         >
-          <MessageCircle className="size-4.5 fill-white text-[#145A45]" />
+          <MessageCircle className="size-4.5 fill-white text-[#128C7E]" />
           <span>WhatsApp Quick Order</span>
         </a>
       </div>

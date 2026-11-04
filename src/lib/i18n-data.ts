@@ -754,7 +754,7 @@ export const translations: Record<Language, Translations> = {
     clearAllFiltersBtn: "सभी फिल्टर हटाएं",
     filterBtn: "फिल्टर",
     filterCatalogueTitle: "किराना फिल्टर",
-    sortRelevance: "लोकप्रियता (Relevance)",
+    sortRelevance: "लोकप्रिय",
     sortPriceLowToHigh: "कीमत: कम से ज्यादा",
     sortPriceHighToLow: "कीमत: ज्यादा से कम",
     sortHighestDiscount: "ज्यादा छूट पहले",

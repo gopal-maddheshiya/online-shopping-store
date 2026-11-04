@@ -38,13 +38,13 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-2 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-1.5 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* 1. Top Badges: Premium Quick-Commerce Discount Tag (Left) */}
       {off > 0 && (
         <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none select-none">
-          <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-2 py-0.5 text-[10px] sm:text-[10.5px] font-black tracking-tight shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/25 leading-none">
+          <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-black tracking-tight shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/25 leading-none">
             <span className="font-sans font-black">{off}%</span>
             <span className="text-[9px] sm:text-[9.5px] font-bold tracking-normal opacity-95">
               {lang === "hi" ? "छूट" : "OFF"}
@@ -107,20 +107,20 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 text-[13.5px] sm:text-[14.5px] font-semibold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-[1.3] break-words"
+          className="line-clamp-2 text-[12.5px] sm:text-[14px] font-semibold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-[1.3] break-words min-h-[2.4em]"
           title={localizedProductName}
         >
           {localizedProductName}
         </Link>
 
         {/* Variant / Pack Size Selector: sits directly below the title */}
-        <div className="mt-1 w-full">
+        <div className="mt-1 w-full min-h-[24px] flex items-center">
           {variants.length > 1 ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="group/pill w-full flex items-center justify-between rounded-lg bg-[#F3F7F4] hover:bg-[#E8F2EC] border border-[#CFE1D6] text-[#145A45] text-[11.5px] sm:text-[12px] font-semibold px-2 py-1 transition-all cursor-pointer select-none outline-none focus-visible:ring-1 focus-visible:ring-[#145A45] active:scale-98"
+                  className="group/pill w-full flex items-center justify-between rounded-md sm:rounded-lg bg-[#F3F7F4] hover:bg-[#E8F2EC] border border-[#CFE1D6] text-[#145A45] text-[10.5px] sm:text-[11.5px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 transition-all cursor-pointer select-none outline-none focus-visible:ring-1 focus-visible:ring-[#145A45] active:scale-98"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Select pack size"
                 >
@@ -180,21 +180,21 @@ export function ProductCard({ product }: { product: Product }) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="text-[11.5px] sm:text-[12px] text-[#526058] font-medium truncate py-0.5">
+            <div className="text-[11px] sm:text-[11.5px] text-[#526058] font-medium truncate py-0.5">
               {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
             </div>
           )}
         </div>
 
         {/* 4. Bottom Price & ADD Action Row */}
-        <div className="mt-auto pt-2 flex items-end justify-between gap-1.5 w-full">
+        <div className="mt-auto pt-1.5 sm:pt-2 flex items-end justify-between gap-1 w-full min-w-0">
           {/* Price Stack */}
-          <div className="flex flex-col leading-none">
-            <span className="text-[17px] sm:text-[18.5px] font-bold text-[#145A45] tracking-tight font-sans price-flipkart">
+          <div className="flex flex-col leading-none min-w-0 flex-1">
+            <span className="text-[14.5px] sm:text-[17px] font-bold text-[#145A45] tracking-tight font-sans price-flipkart truncate">
               {inr(activeVariant?.price ?? 0)}
             </span>
             {off > 0 && activeVariant?.mrp ? (
-              <span className="text-[12px] sm:text-[13px] text-[#7A8880] line-through font-normal mt-0.5 price-flipkart">
+              <span className="text-[11px] sm:text-[12px] text-[#7A8880] line-through font-normal mt-0.5 price-flipkart truncate">
                 {inr(activeVariant.mrp)}
               </span>
             ) : null}
@@ -203,30 +203,30 @@ export function ProductCard({ product }: { product: Product }) {
           {/* Action Button */}
           <div className="shrink-0">
             {stock <= 0 ? (
-              <div className="h-7.5 sm:h-8 px-2.5 rounded-lg sm:rounded-xl border border-stone-200 bg-stone-50 text-stone-400 text-[11px] sm:text-xs font-medium flex items-center justify-center select-none">
+              <div className="h-7 sm:h-7.5 px-1.5 sm:px-2 rounded-md sm:rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-[10px] sm:text-[11px] font-medium flex items-center justify-center select-none">
                 {t.outOfStock || "Out of Stock"}
               </div>
             ) : inCart ? (
-              <div className="flex h-7.5 sm:h-8 min-w-[70px] sm:min-w-[78px] items-center justify-between rounded-lg sm:rounded-xl bg-[#145A45] text-white px-1 shadow-2xs">
+              <div className="flex h-7 sm:h-7.5 min-w-[58px] sm:min-w-[68px] items-center justify-between rounded-md sm:rounded-lg bg-[#145A45] text-white px-0.5 sm:px-1 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
-                  className="flex size-5.5 sm:size-6 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                  className="flex size-5 sm:size-5.5 items-center justify-center rounded text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="size-3.5 stroke-[2.5]" />
+                  <Minus className="size-3 stroke-[2.5]" />
                 </button>
-                <span className="text-[13px] sm:text-[14px] font-bold text-white px-1 text-center select-none price-flipkart">
+                <span className="text-[11.5px] sm:text-[13px] font-bold text-white px-0.5 text-center select-none price-flipkart">
                   {inCart.qty}
                 </span>
                 <button
                   type="button"
                   disabled={inCart.qty >= stock}
                   onClick={() => setQty(inCart.variantId, inCart.qty + 1)}
-                  className="flex size-5.5 sm:size-6 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
+                  className="flex size-5 sm:size-5.5 items-center justify-center rounded text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="size-3.5 stroke-[2.5]" />
+                  <Plus className="size-3 stroke-[2.5]" />
                 </button>
               </div>
             ) : (
@@ -253,9 +253,9 @@ export function ProductCard({ product }: { product: Product }) {
                     icon: <Check className="size-4 text-[#145A45]" />,
                   });
                 }}
-                className="h-7.5 sm:h-8 min-w-[64px] sm:min-w-[74px] px-2 sm:px-2.5 rounded-lg sm:rounded-xl border border-[#145A45] bg-[#F2F8F4] hover:bg-[#145A45] text-[#145A45] hover:text-white font-bold text-[12.5px] sm:text-[13.5px] tracking-wide uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                className="h-7 sm:h-7.5 min-w-[50px] sm:min-w-[62px] px-1.5 sm:px-2 rounded-md sm:rounded-lg border border-[#145A45] bg-[#F2F8F4] hover:bg-[#145A45] text-[#145A45] hover:text-white font-bold text-[11px] sm:text-[12.5px] tracking-wide uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
               >
-                <Plus className="size-3.5 stroke-[2.5]" />
+                <Plus className="size-3 stroke-[2.5]" />
                 <span>{t.add || "ADD"}</span>
               </button>
             )}

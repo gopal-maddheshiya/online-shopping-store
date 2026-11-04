@@ -287,7 +287,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="container-page py-3 sm:py-5 pb-24 md:pb-10 space-y-5 sm:space-y-6">
+    <div className="container-page py-3 sm:py-5 pb-40 md:pb-12 space-y-4 sm:space-y-6">
       {/* 1. BREADCRUMB NAVIGATION */}
       <nav className="flex items-center gap-1.5 text-xs text-[#6B7280] flex-wrap">
         <Link to="/" className="hover:text-[#065F46] font-medium transition-colors flex items-center gap-1">
@@ -313,27 +313,11 @@ function ProductPage() {
             productName={localizedName}
             badge={
               off > 0 ? (
-                <div className="select-none drop-shadow-[0_2px_4px_rgba(37,111,239,0.25)]">
-                  <div className="relative flex flex-col items-center justify-center px-1.5 pt-1 pb-2 min-w-[30px] sm:min-w-[34px] leading-none">
-                    <svg
-                      className="absolute inset-0 size-full pointer-events-none"
-                      viewBox="0 0 32 34"
-                      preserveAspectRatio="none"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M 0 0 H 32 V 31.5 Q 28 35.5, 24 31.5 Q 20 35.5, 16 31.5 Q 12 35.5, 8 31.5 Q 4 35.5, 0 31.5 Z"
-                        fill="#256FEF"
-                      />
-                    </svg>
-                    <span className="relative z-10 text-[10.5px] sm:text-[11.5px] font-bold text-white tracking-tight">
-                      {off}%
-                    </span>
-                    <span className="relative z-10 text-[7px] sm:text-[7.5px] font-bold text-white uppercase tracking-wider mt-0.5">
-                      {lang === "hi" ? "छूट" : "OFF"}
-                    </span>
-                  </div>
+                <div className="select-none">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-2.5 py-1 text-xs font-black shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/30">
+                    <span className="font-sans font-black">{off}%</span>
+                    <span className="text-[10px] font-bold opacity-90">{lang === "hi" ? "छूट" : "OFF"}</span>
+                  </span>
                 </div>
               ) : null
             }
@@ -413,7 +397,7 @@ function ProductPage() {
           </div>
 
           {/* Compact Clean Pricing Card */}
-          <div className="rounded-xl bg-white border border-[rgba(20,90,69,0.12)] p-3 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)] space-y-1">
+          <div className="rounded-xl bg-white border border-[rgba(20,90,69,0.12)] p-3 sm:p-3.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)] space-y-1">
             <div className="flex items-baseline flex-wrap gap-2">
               <span className="text-2xl sm:text-3xl font-black text-[#145A45] tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
@@ -424,14 +408,14 @@ function ProductPage() {
                   <span className="text-sm sm:text-base text-[#878787] line-through font-semibold price-flipkart">
                     {inr(variant.mrp)}
                   </span>
-                  <span className="rounded-md bg-blue-50 text-[#256FEF] border border-blue-200/70 px-1.5 py-0.2 text-[11px] font-bold tracking-tight">
+                  <span className="rounded-md bg-blue-50 text-[#1D4ED8] border border-blue-200/80 px-2 py-0.5 text-xs font-black tracking-tight">
                     {off}% {lang === "hi" ? "छूट" : "OFF"}
                   </span>
                 </>
               ) : null}
 
               {saveAmount > 0 && (
-                <span className="ml-auto inline-flex items-center gap-1 font-bold text-[11px] text-[#065F46] bg-[#D1FAE5] px-2 py-0.5 rounded-full">
+                <span className="ml-auto inline-flex items-center gap-1 font-bold text-[11px] text-[#065F46] bg-[#D1FAE5] px-2.5 py-0.5 rounded-full border border-emerald-300/50">
                   <span>🎉 {lang === "hi" ? `बचत: ${inr(saveAmount)}` : `Save: ${inr(saveAmount)}`}</span>
                 </span>
               )}
@@ -697,8 +681,8 @@ function ProductPage() {
         </section>
       )}
 
-      {/* 4. STICKY MOBILE BOTTOM BUY BAR */}
-      <div className="fixed bottom-14 inset-x-0 z-30 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_-4px_20px_rgba(20,90,69,0.08)] md:hidden">
+      {/* 4. STICKY MOBILE BOTTOM BUY BAR (Docked cleanly above MobileNav at bottom-[3.75rem]) */}
+      <div className="fixed bottom-[3.75rem] inset-x-0 z-30 border-t border-[rgba(20,90,69,0.14)] bg-white/95 backdrop-blur-md px-3.5 py-2.5 shadow-[0_-4px_20px_rgba(20,90,69,0.1)] md:hidden">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
@@ -706,17 +690,17 @@ function ProductPage() {
                 {variant ? getVariantLabel(variant) : ""}
               </span>
               {inCartQty > 0 && (
-                <span className="text-[10px] font-black text-[#047857] bg-[#ECFDF5] px-1.5 py-0.2 rounded-full">
+                <span className="text-[10px] font-black text-[#145A45] bg-[#EBF5EE] px-1.5 py-0.2 rounded-full border border-[#145A45]/20">
                   ✓ {inCartQty}
                 </span>
               )}
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-black text-[#065F46] tracking-tight">
+              <span className="text-xl font-black text-[#145A45] tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
               </span>
               {off > 0 && variant?.mrp && (
-                <span className="text-xs text-[#9CA3AF] line-through font-semibold">
+                <span className="text-xs text-[#878787] line-through font-semibold price-flipkart">
                   {inr(variant.mrp)}
                 </span>
               )}
@@ -726,7 +710,7 @@ function ProductPage() {
           <Button
             disabled={!variant || variant.stock <= 0}
             onClick={handleAddToCart}
-            className="flex-1 max-w-[210px] h-11 rounded-xl bg-gradient-to-r from-[#065F46] to-[#047857] hover:from-[#047857] hover:to-[#065F46] text-xs font-black text-white shadow-[0_3px_12px_rgba(6,95,70,0.3)] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 max-w-[190px] h-10 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-xs font-bold text-white shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingBag className="mr-1.5 size-4" />
             <span>
@@ -736,7 +720,7 @@ function ProductPage() {
                 ? lang === "hi"
                   ? `और जोड़ें (${inCartQty + qty})`
                   : `Add More (${inCartQty + qty})`
-                : t.add}
+                : lang === "hi" ? "थैले में जोड़ें" : t.add}
             </span>
           </Button>
         </div>

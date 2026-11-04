@@ -137,102 +137,103 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
           </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="h-9 px-3 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0F4A38] hover:from-[#0F4A38] hover:to-[#0A3628] text-white text-xs font-bold shadow-2xs active:scale-95 transition-all gap-1.5 cursor-pointer"
-        >
-          <MessageSquarePlus className="size-3.5" />
-          <span>{lang === "hi" ? "रेटिंग / राय दें" : "Rate & Review"}</span>
-        </Button>
+        {reviews.length > 0 && (
+          <Button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="h-9 px-3 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0F4A38] hover:from-[#0F4A38] hover:to-[#0A3628] text-white text-xs font-bold shadow-2xs active:scale-95 transition-all gap-1.5 cursor-pointer"
+          >
+            <MessageSquarePlus className="size-3.5" />
+            <span>{lang === "hi" ? "रेटिंग / राय दें" : "Rate & Review"}</span>
+          </Button>
+        )}
       </div>
 
-      {/* 2. Rating Breakdown & Score Card (Compact & Clean) */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 rounded-xl border border-[#E5E7EB] bg-white shadow-2xs">
-        {/* Left Score Box */}
-        <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-2 border-b md:border-b-0 md:border-r border-[#E5E7EB]">
-          <div className="text-3xl sm:text-4xl font-black text-[#111827] tracking-tight">
-            {stats.count > 0 ? stats.average.toFixed(1) : "—"}
+      {isLoading ? (
+        <div className="text-center py-6 text-xs text-[#6B7280]">
+          {lang === "hi" ? "ग्राहकों की राय लोड हो रही है..." : "Loading reviews..."}
+        </div>
+      ) : reviews.length === 0 ? (
+        /* Unified, Clean Single Empty State Card */
+        <div className="p-6 sm:p-8 rounded-2xl border border-dashed border-[#D1D5DB] bg-gradient-to-b from-[#F9FAFB] to-white text-center space-y-3">
+          <div className="size-12 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-500 flex items-center justify-center mx-auto shadow-2xs">
+            <Star className="size-6 fill-amber-400 text-amber-400" />
           </div>
-          <div className="mt-1.5 flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                className={`size-4 ${
-                  stats.count > 0 && s <= Math.round(stats.average)
-                    ? "fill-amber-500 text-amber-500"
-                    : "fill-stone-200 text-stone-300"
-                }`}
-              />
-            ))}
+          <div className="space-y-1">
+            <h3 className="font-bold text-sm sm:text-base text-[#111827]">
+              {lang === "hi" ? "इस सामान की पहली राय दें!" : "Be the first to review this product!"}
+            </h3>
+            <p className="text-xs text-[#6B7280] max-w-sm mx-auto leading-relaxed">
+              {lang === "hi"
+                ? "क्या आपने यह सामान खरीदा है? अपनी राय साझा करें और अन्य ग्राहकों को सही सामान चुनने में मदद करें।"
+                : "Have you purchased this item? Share your thoughts to help other shoppers in Maharajganj."}
+            </p>
           </div>
-          <div className="mt-1 text-[11px] font-semibold text-[#6B7280]">
-            {stats.count > 0 ? (
-              <span>
+          <Button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="h-9 px-5 rounded-xl bg-[#145A45] hover:bg-[#0F4A38] text-white text-xs font-bold shadow-2xs active:scale-95 transition-all gap-1.5 cursor-pointer inline-flex items-center"
+          >
+            <MessageSquarePlus className="size-3.5" />
+            <span>{lang === "hi" ? "रेटिंग व अपनी राय दें" : "Write First Review"}</span>
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* 2. Rating Breakdown & Score Card (Only shown when reviews exist) */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 rounded-xl border border-[#E5E7EB] bg-white shadow-2xs">
+            {/* Left Score Box */}
+            <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-2 border-b md:border-b-0 md:border-r border-[#E5E7EB]">
+              <div className="text-3xl sm:text-4xl font-black text-[#111827] tracking-tight">
+                {stats.average.toFixed(1)}
+              </div>
+              <div className="mt-1.5 flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star
+                    key={s}
+                    className={`size-4 ${
+                      s <= Math.round(stats.average)
+                        ? "fill-amber-500 text-amber-500"
+                        : "fill-stone-200 text-stone-300"
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="mt-1 text-[11px] font-semibold text-[#6B7280]">
                 {lang === "hi"
                   ? `${stats.count} ग्राहकों द्वारा सत्यापित रेटिंग`
                   : `Based on ${stats.count} verified ratings`}
-              </span>
-            ) : (
-              <span>{lang === "hi" ? "अभी तक किसी ने राय नहीं दी है" : "No reviews yet"}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Right Distribution Bars */}
-        <div className="md:col-span-8 flex flex-col justify-center space-y-1.5 px-1 sm:px-3">
-          {([5, 4, 3, 2, 1] as const).map((star) => {
-            const count = stats.distribution[star];
-            const pct = stats.count > 0 ? stats.percentages[star] : 0;
-
-            return (
-              <div key={star} className="flex items-center gap-2 text-xs">
-                <span className="w-6 font-bold text-[#111827] flex items-center gap-0.5 justify-end text-[11px]">
-                  {star} <Star className="size-2.5 fill-amber-500 text-amber-500 inline" />
-                </span>
-                <div className="flex-1 h-2 rounded-full bg-[#F3F4F6] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#059669] transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <span className="w-8 text-right text-[10.5px] font-medium text-[#6B7280]">
-                  {pct}%
-                </span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
 
-      {/* 3. Review List */}
-      <div className="space-y-2.5">
-        {isLoading ? (
-          <div className="text-center py-6 text-xs text-[#6B7280]">
-            {lang === "hi" ? "ग्राहकों की राय लोड हो रही है..." : "Loading reviews..."}
+            {/* Right Distribution Bars */}
+            <div className="md:col-span-8 flex flex-col justify-center space-y-1.5 px-1 sm:px-3">
+              {([5, 4, 3, 2, 1] as const).map((star) => {
+                const pct = stats.percentages[star];
+
+                return (
+                  <div key={star} className="flex items-center gap-2 text-xs">
+                    <span className="w-6 font-bold text-[#111827] flex items-center gap-0.5 justify-end text-[11px]">
+                      {star} <Star className="size-2.5 fill-amber-500 text-amber-500 inline" />
+                    </span>
+                    <div className="flex-1 h-2 rounded-full bg-[#F3F4F6] overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#059669] transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-[10.5px] font-medium text-[#6B7280]">
+                      {pct}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        ) : reviews.length === 0 ? (
-          <div className="text-center py-8 px-4 rounded-xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] space-y-2">
-            <Star className="size-6 fill-amber-400 text-amber-400 mx-auto" />
-            <h3 className="font-bold text-xs sm:text-sm text-[#111827]">
-              {lang === "hi" ? "इस सामान की पहली राय दें!" : "Be the first to review this product!"}
-            </h3>
-            <p className="text-xs text-[#6B7280] max-w-sm mx-auto">
-              {lang === "hi"
-                ? "क्या आपने यह सामान खरीदा है? अपनी राय साझा करें और अन्य ग्राहकों की मदद करें।"
-                : "Have you purchased this item? Share your thoughts to help other shoppers."}
-            </p>
-            <Button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              variant="outline"
-              className="h-8 rounded-lg border border-[#065F46] text-[#065F46] hover:bg-emerald-50 text-xs font-bold cursor-pointer mt-1"
-            >
-              {lang === "hi" ? "अपनी राय दें" : "Write Review"}
-            </Button>
-          </div>
-        ) : (
-          reviews.map((rev) => {
+
+          {/* 3. Review List */}
+          <div className="space-y-2.5">
+            {reviews.map((rev) => {
             const isHelpful = helpfulSet.has(rev.id);
             const initial = rev.customer_name ? rev.customer_name.charAt(0).toUpperCase() : "A";
 
@@ -314,9 +315,10 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      </>
+    )}
 
       {/* 4. "Write a Review" Modal Dialog */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
