@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 export type CartItem = {
@@ -35,10 +35,60 @@ type CartContextValue = {
   hydrated: boolean;
 };
 
+export type CartActions = {
+  add: (item: Omit<CartItem, "qty">, qty?: number) => void;
+  addMultiple: (itemsToAdd: Array<{ item: Omit<CartItem, "qty">; qty?: number }>) => void;
+  setQty: (variantId: string, qty: number) => void;
+  remove: (variantId: string) => void;
+  saveForLater: (variantId: string) => void;
+  moveToCart: (variantId: string) => void;
+  removeSaved: (variantId: string) => void;
+  clear: () => void;
+};
+
 const STORAGE_KEY = "agt.cart.v1";
 const SAVED_KEY = "agt.saved.v1";
 
 const CartContext = createContext<CartContextValue | null>(null);
+const CartActionsContext = createContext<CartActions | null>(null);
+
+// -------------------------------------------------------------
+// Fine-grained External Store for 60-120fps Variant Quantity Subscriptions
+// Prevents 100+ ProductCards from re-rendering on a single tap
+// -------------------------------------------------------------
+type QtyListener = () => void;
+const qtyListeners = new Set<QtyListener>();
+let currentQtyMap = new Map<string, number>();
+
+function notifyQtySubscribers(newItems: CartItem[]) {
+  const nextMap = new Map<string, number>();
+  for (const item of newItems) {
+    nextMap.set(item.variantId, item.qty);
+  }
+  currentQtyMap = nextMap;
+  qtyListeners.forEach((l) => l());
+}
+
+function subscribeCartQty(listener: QtyListener) {
+  qtyListeners.add(listener);
+  return () => {
+    qtyListeners.delete(listener);
+  };
+}
+
+const getServerSnapshot = () => 0;
+
+/**
+ * Fine-grained hook subscribing ONLY to a single variant's quantity.
+ * Zero re-renders when other products in the store are added or removed!
+ */
+export function useCartItemQty(variantId: string | undefined): number {
+  return useSyncExternalStore(
+    subscribeCartQty,
+    () => (variantId ? currentQtyMap.get(variantId) ?? 0 : 0),
+    getServerSnapshot
+  );
+}
 
 function read(key: string): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -64,7 +114,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    notifyQtySubscribers(items);
   }, [items, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      notifyQtySubscribers(items);
+    }
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -139,6 +196,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => setItems([]), []);
 
+  const actionsValue = useMemo<CartActions>(() => ({
+    add,
+    addMultiple,
+    setQty,
+    remove,
+    saveForLater,
+    moveToCart,
+    removeSaved,
+    clear,
+  }), [
+    add,
+    addMultiple,
+    setQty,
+    remove,
+    saveForLater,
+    moveToCart,
+    removeSaved,
+    clear,
+  ]);
+
   const value = useMemo<CartContextValue>(() => {
     const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
     const savings = items.reduce((sum, i) => sum + Math.max(i.mrp - i.price, 0) * i.qty, 0);
@@ -172,11 +249,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     hydrated,
   ]);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartActionsContext.Provider value={actionsValue}>
+      <CartContext.Provider value={value}>{children}</CartContext.Provider>
+    </CartActionsContext.Provider>
+  );
 }
 
 export function useCart(): CartContextValue {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used inside CartProvider");
+  return ctx;
+}
+
+/**
+ * Stable cart actions hook (add, setQty, remove, etc.).
+ * Its returned functions never change, causing ZERO re-renders in consumers.
+ */
+export function useCartActions(): CartActions {
+  const ctx = useContext(CartActionsContext);
+  if (!ctx) throw new Error("useCartActions must be used inside CartProvider");
   return ctx;
 }

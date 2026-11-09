@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Plus, Minus, Check, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
-import { useCart } from "@/lib/cart";
+import { useCartActions, useCartItemQty } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage } from "@/lib/product-images";
 import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 import { type Product } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -16,35 +16,76 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-export function ProductCard({ product }: { product: Product }) {
-  const { items, add, setQty } = useCart();
+function ProductCardInner({ product }: { product: Product }) {
+  const { add, setQty } = useCartActions();
   const { t, lang, getProductName, getVariantLabel } = useLanguage();
 
-  const variants = (product.product_variants ?? [])
-    .filter((v) => v.is_active)
-    .sort((a, b) => a.sort_order - b.sort_order);
+  const variants = useMemo(() => {
+    return (product.product_variants ?? [])
+      .filter((v) => v.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order);
+  }, [product.product_variants]);
 
   const [selectedVariantId, setSelectedVariantId] = useState<string>(variants[0]?.id ?? "");
-  const imgSrc = getProductImage(product);
+  const imgSrc = useMemo(() => getProductImage(product), [product]);
   const [imgLoaded, setImgLoaded] = useState(() => isImageLoaded(imgSrc));
 
-  const activeVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
-  const inCart = items.find((i) => i.variantId === activeVariant?.id);
+  const activeVariant = useMemo(() => {
+    return variants.find((v) => v.id === selectedVariantId) ?? variants[0];
+  }, [variants, selectedVariantId]);
+
+  // Fine-grained subscription: only re-renders when THIS variant's quantity changes!
+  const inCartQty = useCartItemQty(activeVariant?.id);
   const stock = activeVariant?.stock ?? 0;
-  const off = activeVariant
-    ? discountPercent(Number(activeVariant.mrp), Number(activeVariant.price))
-    : 0;
+  const off = useMemo(() => {
+    return activeVariant
+      ? discountPercent(Number(activeVariant.mrp), Number(activeVariant.price))
+      : 0;
+  }, [activeVariant]);
+
   const localizedProductName = getProductName(product);
+
+  const handleAddToCart = useCallback(() => {
+    if (!activeVariant || activeVariant.stock <= 0) return;
+    add({
+      variantId: activeVariant.id,
+      productId: product.id,
+      slug: product.slug,
+      name: localizedProductName,
+      name_en: product.name_en || product.name,
+      name_hi: product.name_hi || null,
+      variantLabel: getVariantLabel(activeVariant) || "1 pack",
+      variantLabel_en: activeVariant.label_en || activeVariant.label,
+      variantLabel_hi: activeVariant.label_hi || null,
+      price: Number(activeVariant.price),
+      mrp: Number(activeVariant.mrp),
+      imageUrl: imgSrc,
+      stock: activeVariant.stock,
+    });
+    toast.success(`${localizedProductName} ${t.added.toLowerCase()}`, {
+      icon: <Check className="size-4 text-[#145A45]" />,
+    });
+  }, [activeVariant, add, product, localizedProductName, getVariantLabel, imgSrc, t.added]);
+
+  const handleDecreaseQty = useCallback(() => {
+    if (!activeVariant) return;
+    setQty(activeVariant.id, inCartQty - 1);
+  }, [activeVariant, inCartQty, setQty]);
+
+  const handleIncreaseQty = useCallback(() => {
+    if (!activeVariant || inCartQty >= stock) return;
+    setQty(activeVariant.id, inCartQty + 1);
+  }, [activeVariant, inCartQty, stock, setQty]);
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-1.5 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-2 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
       {/* 1. Top Badges: Premium Quick-Commerce Discount Tag (Left) */}
       {off > 0 && (
         <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none select-none">
-          <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-1.5 sm:px-2 py-0.5 text-[9.5px] sm:text-[10px] font-black tracking-tight shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/25 leading-none">
+          <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-black tracking-tight shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/25 leading-none">
             <span className="font-sans font-black">{off}%</span>
             <span className="text-[9px] sm:text-[9.5px] font-bold tracking-normal opacity-95">
               {lang === "hi" ? "छूट" : "OFF"}
@@ -107,20 +148,20 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 text-[12.5px] sm:text-[14px] font-semibold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-[1.3] break-words min-h-[2.4em]"
+          className="line-clamp-2 text-sm sm:text-[15px] font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-snug break-words min-h-[2.6em]"
           title={localizedProductName}
         >
           {localizedProductName}
         </Link>
 
         {/* Variant / Pack Size Selector: sits directly below the title */}
-        <div className="mt-1 w-full min-h-[24px] flex items-center">
+        <div className="mt-1 w-full min-h-[26px] flex items-center">
           {variants.length > 1 ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="group/pill w-full flex items-center justify-between rounded-md sm:rounded-lg bg-[#F3F7F4] hover:bg-[#E8F2EC] border border-[#CFE1D6] text-[#145A45] text-[10.5px] sm:text-[11.5px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 transition-all cursor-pointer select-none outline-none focus-visible:ring-1 focus-visible:ring-[#145A45] active:scale-98"
+                  className="group/pill w-full flex items-center justify-between rounded-lg bg-[#F3F7F4] hover:bg-[#E8F2EC] border border-[#CFE1D6] text-[#145A45] text-xs sm:text-[13px] font-semibold px-2 py-1 transition-all cursor-pointer select-none outline-none focus-visible:ring-1 focus-visible:ring-[#145A45] active:scale-98"
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Select pack size"
                 >
@@ -180,82 +221,62 @@ export function ProductCard({ product }: { product: Product }) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="text-[11px] sm:text-[11.5px] text-[#526058] font-medium truncate py-0.5">
+            <div className="text-xs sm:text-[13px] text-[#526058] font-medium truncate py-0.5">
               {activeVariant?.label ? getVariantLabel(activeVariant) : t.singlePackLabel}
             </div>
           )}
         </div>
 
-        {/* 4. Bottom Price & ADD Action Row */}
-        <div className="mt-auto pt-1.5 sm:pt-2 flex items-end justify-between gap-1 w-full min-w-0">
-          {/* Price Stack */}
-          <div className="flex flex-col leading-none min-w-0 flex-1">
-            <span className="text-[14.5px] sm:text-[17px] font-bold text-[#145A45] tracking-tight font-sans price-flipkart truncate">
+        {/* 4. Bottom Price & Action Section: Dedicated Price Row + Full-Width Action Button */}
+        <div className="mt-auto pt-2 flex flex-col gap-1.5 w-full">
+          {/* Price Stack: 17px-18.5px Bold */}
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-[17px] sm:text-[18.5px] font-black text-[#145A45] tracking-tight font-sans price-flipkart">
               {inr(activeVariant?.price ?? 0)}
             </span>
             {off > 0 && activeVariant?.mrp ? (
-              <span className="text-[11px] sm:text-[12px] text-[#7A8880] line-through font-normal mt-0.5 price-flipkart truncate">
+              <span className="text-xs sm:text-[13px] text-[#7A8880] line-through font-normal price-flipkart">
                 {inr(activeVariant.mrp)}
               </span>
             ) : null}
           </div>
 
-          {/* Action Button */}
-          <div className="shrink-0">
+          {/* Action Button: Full Width, Generous 34px Touch Target */}
+          <div className="w-full">
             {stock <= 0 ? (
-              <div className="h-7 sm:h-7.5 px-1.5 sm:px-2 rounded-md sm:rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-[10px] sm:text-[11px] font-medium flex items-center justify-center select-none">
+              <div className="h-8.5 w-full rounded-xl border border-stone-200 bg-stone-50 text-stone-400 text-xs font-semibold flex items-center justify-center select-none">
                 {t.outOfStock || "Out of Stock"}
               </div>
-            ) : inCart ? (
-              <div className="flex h-7 sm:h-7.5 min-w-[58px] sm:min-w-[68px] items-center justify-between rounded-md sm:rounded-lg bg-[#145A45] text-white px-0.5 sm:px-1 shadow-2xs">
+            ) : inCartQty > 0 ? (
+              <div className="flex h-8.5 w-full items-center justify-between rounded-xl bg-[#145A45] text-white px-2 shadow-2xs">
                 <button
                   type="button"
-                  onClick={() => setQty(inCart.variantId, inCart.qty - 1)}
-                  className="flex size-5 sm:size-5.5 items-center justify-center rounded text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                  onClick={handleDecreaseQty}
+                  className="flex size-7 items-center justify-center rounded-lg text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="size-3 stroke-[2.5]" />
+                  <Minus className="size-3.5 stroke-[2.5]" />
                 </button>
-                <span className="text-[11.5px] sm:text-[13px] font-bold text-white px-0.5 text-center select-none price-flipkart">
-                  {inCart.qty}
+                <span className="text-sm font-bold text-white px-2 text-center select-none price-flipkart">
+                  {inCartQty}
                 </span>
                 <button
                   type="button"
-                  disabled={inCart.qty >= stock}
-                  onClick={() => setQty(inCart.variantId, inCart.qty + 1)}
-                  className="flex size-5 sm:size-5.5 items-center justify-center rounded text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
+                  disabled={inCartQty >= stock}
+                  onClick={handleIncreaseQty}
+                  className="flex size-7 items-center justify-center rounded-lg text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="size-3 stroke-[2.5]" />
+                  <Plus className="size-3.5 stroke-[2.5]" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
-                onClick={() => {
-                  if (!activeVariant) return;
-                  add({
-                    variantId: activeVariant.id,
-                    productId: product.id,
-                    slug: product.slug,
-                    name: localizedProductName,
-                    name_en: product.name_en || product.name,
-                    name_hi: product.name_hi || null,
-                    variantLabel: getVariantLabel(activeVariant) || "1 pack",
-                    variantLabel_en: activeVariant.label_en || activeVariant.label,
-                    variantLabel_hi: activeVariant.label_hi || null,
-                    price: Number(activeVariant.price),
-                    mrp: Number(activeVariant.mrp),
-                    imageUrl: getProductImage(product),
-                    stock: activeVariant.stock,
-                  });
-                  toast.success(`${localizedProductName} ${t.added.toLowerCase()}`, {
-                    icon: <Check className="size-4 text-[#145A45]" />,
-                  });
-                }}
-                className="h-7 sm:h-7.5 min-w-[50px] sm:min-w-[62px] px-1.5 sm:px-2 rounded-md sm:rounded-lg border border-[#145A45] bg-[#F2F8F4] hover:bg-[#145A45] text-[#145A45] hover:text-white font-bold text-[11px] sm:text-[12.5px] tracking-wide uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-0.5 sm:gap-1"
+                onClick={handleAddToCart}
+                className="h-8.5 w-full rounded-xl border border-[#145A45] bg-[#F2F8F4] hover:bg-[#145A45] text-[#145A45] hover:text-white font-bold text-xs sm:text-sm tracking-wide uppercase transition-all shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <Plus className="size-3 stroke-[2.5]" />
+                <Plus className="size-3.5 stroke-[2.5]" />
                 <span>{t.add || "ADD"}</span>
               </button>
             )}
@@ -265,6 +286,8 @@ export function ProductCard({ product }: { product: Product }) {
     </div>
   );
 }
+
+export const ProductCard = memo(ProductCardInner);
 
 export function ProductCardSkeleton() {
   return (
@@ -289,13 +312,13 @@ export function ProductCardSkeleton() {
           <Skeleton className="w-16 h-4.5 rounded-md mt-1" />
         </div>
 
-        {/* Price & Add Button Footer */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="space-y-0.5">
-            <Skeleton className="w-16 sm:w-18 h-5 rounded-md" />
-            <Skeleton className="w-11 h-3 rounded-xs" />
+        {/* Price & Add Button Footer Skeleton */}
+        <div className="space-y-2 pt-2">
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="w-16 sm:w-20 h-5 rounded-md" />
+            <Skeleton className="w-12 h-3.5 rounded-md" />
           </div>
-          <Skeleton className="w-16 sm:w-18 h-7.5 sm:h-8 rounded-lg sm:rounded-xl" />
+          <Skeleton className="w-full h-8.5 rounded-xl" />
         </div>
       </div>
     </div>

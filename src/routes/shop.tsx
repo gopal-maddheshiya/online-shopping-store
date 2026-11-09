@@ -166,6 +166,8 @@ function RailCategoryThumbnail({
       }}
       src={src}
       alt={name}
+      width={56}
+      height={56}
       loading="lazy"
       decoding="async"
       onLoad={() => {
@@ -498,7 +500,8 @@ function Shop() {
       <div className="container-page px-2 sm:px-4 lg:px-6 py-4 sm:py-7 pb-32 sm:pb-36">
       {/* Top Header Row — Locked sticky below main header so it doesn't scroll off or collide */}
       <div className="sticky top-15 sm:top-16 z-20 bg-white/95 backdrop-blur-md border-b border-[rgba(20,90,69,0.12)] py-2.5 sm:py-3 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.04)] transition-all">
-        <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
+        {/* Tier 1: Title & Desktop Filter/Sort */}
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-sans text-base sm:text-lg lg:text-xl font-bold text-[#16201A] truncate tracking-normal leading-snug py-0.5">
@@ -520,23 +523,23 @@ function Shop() {
                 </button>
               )}
             </div>
-            <p className="text-[11px] sm:text-xs text-[#3D4C44]">
+            <p className="text-xs text-[#526058]">
               {lang === "hi"
                 ? `कुल ${results.length} सामान उपलब्ध हैं`
                 : `Showing ${results.length} items`}
             </p>
           </div>
 
-          {/* Sort and Mobile Filters */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Desktop Only Sort and Filters */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
             <Sheet>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-lg text-xs border-[#E4DFD5] text-[#0F4A38] bg-white shadow-2xs h-8 px-2 sm:px-2.5 inline-flex items-center hover:bg-[#FAF8F2] cursor-pointer"
+                  className="rounded-lg text-xs font-semibold border-[#E4DFD5] text-[#0F4A38] bg-white shadow-2xs h-8.5 px-3 inline-flex items-center hover:bg-[#FAF8F2] cursor-pointer"
                 >
-                  <Filter className="mr-1 size-3 text-[#145A45]" /> {t.filterBtn}
+                  <Filter className="mr-1.5 size-3.5 text-[#145A45]" /> {t.filterBtn}
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-5 bg-[#FAF8F2]">
@@ -553,7 +556,8 @@ function Shop() {
               value={search.sort ?? "relevance"}
               onValueChange={(v) => update({ sort: v as ShopSearch["sort"] })}
             >
-              <SelectTrigger className="h-8 w-28 sm:w-36 rounded-lg border-[#E4DFD5] bg-white text-xs text-[#16201A] shadow-2xs">
+              <SelectTrigger className="h-8.5 min-w-[170px] rounded-lg border-[#E4DFD5] bg-white text-xs font-semibold text-[#16201A] shadow-2xs">
+                <ArrowUpDown className="mr-1.5 size-3.5 text-[#145A45] shrink-0" />
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -566,6 +570,49 @@ function Shop() {
             </Select>
           </div>
         </div>
+
+        {/* Tier 2: Dedicated Mobile Controls Strip (< sm) with 50/50 Grid */}
+        <div className="mt-2.5 flex items-center gap-2 sm:hidden pt-2 border-t border-[rgba(20,90,69,0.08)]">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 h-8.5 rounded-xl border-[#E4DFD5] text-[#0F4A38] bg-white text-xs font-bold shadow-2xs gap-1.5 justify-center cursor-pointer active:scale-98"
+              >
+                <Filter className="size-3.5 text-[#145A45]" />
+                <span>{t.filterBtn}</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-5 bg-[#FAF8F2]">
+              <SheetHeader className="mb-4 pr-10 text-left">
+                <SheetTitle className="text-base font-bold text-[#0F4A38]">
+                  {t.filterCatalogueTitle}
+                </SheetTitle>
+              </SheetHeader>
+              {priceAndStockFilters}
+            </SheetContent>
+          </Sheet>
+
+          <Select
+            value={search.sort ?? "relevance"}
+            onValueChange={(v) => update({ sort: v as ShopSearch["sort"] })}
+          >
+            <SelectTrigger className="flex-1 h-8.5 rounded-xl border-[#E4DFD5] bg-white text-xs font-bold text-[#16201A] shadow-2xs gap-1 justify-between px-3">
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <ArrowUpDown className="size-3.5 text-[#145A45] shrink-0" />
+                <SelectValue placeholder="Sort by" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="relevance">{t.sortRelevance}</SelectItem>
+              <SelectItem value="price-asc">{t.sortPriceLowToHigh}</SelectItem>
+              <SelectItem value="price-desc">{t.sortPriceHighToLow}</SelectItem>
+              <SelectItem value="discount">{t.sortHighestDiscount}</SelectItem>
+              <SelectItem value="popular">{t.sortBestSelling}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Main Layout: Unified Blinkit Category Rail + Products Feed */}
@@ -573,7 +620,7 @@ function Shop() {
         {/* Category Left Rail (Unified Blinkit Rail on Mobile & Desktop, Premium White & Homepage Squircle) */}
         <aside
           data-lenis-prevent
-          className="w-[72px] sm:w-[86px] lg:w-[102px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[rgba(20,90,69,0.09)] py-2 sm:py-3 pb-16 sm:pb-8 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-10.5rem)] sm:max-h-[calc(100dvh-8rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
+          className="w-[80px] sm:w-[92px] lg:w-[104px] shrink-0 bg-white -ml-2 sm:-ml-4 lg:ml-0 border-r border-[rgba(20,90,69,0.09)] py-2 sm:py-3 pb-20 sm:pb-8 px-1 sticky top-[108px] sm:top-[116px] self-start z-15 max-h-[calc(100dvh-10.5rem)] sm:max-h-[calc(100dvh-8rem)] overflow-y-auto category-nav-scrollbar space-y-1.5 sm:space-y-2 select-none"
         >
           {/* All Categories Button */}
           <button
@@ -587,7 +634,7 @@ function Shop() {
             {!search.category && (
               <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
             )}
-            <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-[64px] lg:h-[64px] rounded-[11px] sm:rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+            <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[13px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
               !search.category
                 ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
                 : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
@@ -601,7 +648,7 @@ function Shop() {
               />
             </div>
             <span
-              className={`text-[11px] sm:text-[12px] lg:text-[13px] leading-tight text-center line-clamp-2 mt-1 break-words w-full px-0.5 tracking-tight transition-colors ${
+              className={`text-xs sm:text-[13px] font-semibold text-center line-clamp-2 leading-tight mt-1.5 break-words w-full px-0.5 tracking-tight transition-colors ${
                 !search.category ? "font-extrabold text-[#111827]" : "font-bold text-[#35433B] group-hover:text-[#111827]"
               }`}
             >
@@ -629,7 +676,7 @@ function Shop() {
                       {isSelected && (
                         <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
                       )}
-                      <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-[64px] lg:h-[64px] rounded-[11px] sm:rounded-[13px] p-1 sm:p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+                      <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[13px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
                         isSelected
                           ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
                 : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
@@ -637,7 +684,7 @@ function Shop() {
                         <RailCategoryThumbnail category={c} name={getCategoryName(c)} />
                       </div>
                       <span
-                        className={`text-[11px] sm:text-[12px] lg:text-[13px] leading-tight text-center line-clamp-2 mt-1 break-words w-full px-0.5 tracking-tight transition-colors ${
+                        className={`text-xs sm:text-[13px] font-semibold text-center line-clamp-2 leading-tight mt-1.5 break-words w-full px-0.5 tracking-tight transition-colors ${
                           isSelected ? "font-bold text-[#111827]" : "font-medium text-[#46544D] group-hover:text-[#111827]"
                         }`}
                         title={getCategoryName(c)}
