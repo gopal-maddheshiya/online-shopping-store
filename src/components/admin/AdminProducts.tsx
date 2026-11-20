@@ -48,20 +48,23 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { inr, discountPercent } from "@/lib/format";
-import { getProductImage, getProductImages, getImageTypeLabel } from "@/lib/product-images";
+import {
+  getProductImage,
+  getProductImages,
+  getImageTypeLabel,
+  DEFAULT_PRODUCT_PLACEHOLDER,
+} from "@/lib/product-images";
 import { uploadProductImage } from "@/lib/image-upload";
 import { broadcastProductSync } from "@/lib/realtime-sync";
 import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } from "@/lib/i18n";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
 import { BulkProductImport } from "./BulkProductImport";
 import { AdminAiProductAdder } from "./AdminAiProductAdder";
-import { WebImageFinderModal } from "./WebImageFinderModal";
 import {
   autoCompleteProductWithGemini,
   generateCleanSlug,
   detectGroceryNature,
 } from "@/lib/gemini-admin";
-import { buildProductSearchTitle } from "@/lib/server-image-search";
 import { Loader2 } from "lucide-react";
 import { playMicTone, removeStutteredWords } from "@/lib/voice";
 
@@ -102,10 +105,10 @@ export function AdminProducts({
   type VariantFormItem = {
     id?: string | undefined;
     label: string;
-    price: number;
-    mrp: number;
-    stock: number;
-    low_stock_threshold: number;
+    price: number | "";
+    mrp: number | "";
+    stock: number | "";
+    low_stock_threshold: number | "";
     sku?: string | undefined;
   };
 
@@ -135,7 +138,9 @@ export function AdminProducts({
   const [isUploadingFront, setIsUploadingFront] = useState(false);
   const [isUploadingBack, setIsUploadingBack] = useState(false);
   const [uploadingAdditionalId, setUploadingAdditionalId] = useState<string | null>(null);
-  const [webFinderTarget, setWebFinderTarget] = useState<"front" | "back" | null>(null);
+
+  // Variant Presets Tab: "solid" | "liquid" | "pack"
+  const [presetType, setPresetType] = useState<"solid" | "liquid" | "pack">("solid");
 
   // Variants in Modal
   const [variants, setVariants] = useState<VariantFormItem[]>([
@@ -335,8 +340,13 @@ export function AdminProducts({
         if (res.data.description) setDescription(res.data.description);
         if (res.data.description_hi) setDescriptionHi(res.data.description_hi);
 
-        // 7. Replace variants with smart physical pack sizes (e.g. 1 L for oil, 1 kg for flour)
-        if (res.data.variants && res.data.variants.length > 0) {
+        // 7. Suggest variants only if variants are still untouched default
+        const isUntouchedDefault =
+          variants.length === 1 &&
+          variants[0]?.label === "1 kg" &&
+          (variants[0]?.price === 100 || variants[0]?.price === "");
+
+        if (isUntouchedDefault && res.data.variants && res.data.variants.length > 0) {
           setVariants(
             res.data.variants.map((v) => ({
               label: v.label,
@@ -348,14 +358,16 @@ export function AdminProducts({
           );
         }
 
-        const unitTypeMsg =
-          res.data.nature === "liquid"
-            ? "तरल (लीटर/मिली)"
-            : res.data.nature === "solid"
-            ? "ठोस (किलो/ग्राम)"
-            : "नग/पैकेट";
+        // Auto-switch preset tab to matching nature
+        if (res.data.nature === "liquid") {
+          setPresetType("liquid");
+        } else if (res.data.nature === "countable") {
+          setPresetType("pack");
+        } else {
+          setPresetType("solid");
+        }
 
-        toast.success(`✨ AI ने नाम, हिंदी नाम, URL स्लग और सही माप (${unitTypeMsg}) भर दिए!`);
+        toast.success("उत्पाद विवरण स्वतः भर दिए गए!");
       } else {
         toast.error(res.error || "AI ऑटो-कंप्लीट नहीं कर सका।");
       }
@@ -549,7 +561,7 @@ export function AdminProducts({
       }
     });
 
-    const primaryUrl = frontImageUrl.trim() || backImageUrl.trim() || "/images/packaged.jpg";
+    const primaryUrl = frontImageUrl.trim() || backImageUrl.trim() || DEFAULT_PRODUCT_PLACEHOLDER;
     const stringifiedImages = cleanImages.map((img) => JSON.stringify(img));
 
     setIsSaving(true);
@@ -593,16 +605,21 @@ export function AdminProducts({
           const v = variants[i]!;
           const cleanLabel = (v.label || "Standard").trim();
           const cleanLabelHi = translateVariantLabel(cleanLabel, "hi");
+          const vPrice = Number(v.price) || 0;
+          const vMrp = Number(v.mrp) || vPrice;
+          const vStock = Number(v.stock) || 0;
+          const vLowStock = Number(v.low_stock_threshold) || 5;
+
           if (v.id) {
             await supabase
               .from("product_variants")
               .update({
                 label: cleanLabel,
                 label_hi: cleanLabelHi,
-                price: v.price,
-                mrp: v.mrp,
-                stock: v.stock,
-                low_stock_threshold: v.low_stock_threshold,
+                price: vPrice,
+                mrp: vMrp,
+                stock: vStock,
+                low_stock_threshold: vLowStock,
                 sort_order: i,
               })
               .eq("id", v.id);
@@ -611,10 +628,10 @@ export function AdminProducts({
               product_id: editingProduct.id,
               label: cleanLabel,
               label_hi: cleanLabelHi,
-              price: v.price,
-              mrp: v.mrp,
-              stock: v.stock,
-              low_stock_threshold: v.low_stock_threshold,
+              price: vPrice,
+              mrp: vMrp,
+              stock: vStock,
+              low_stock_threshold: vLowStock,
               sort_order: i,
             });
           }
@@ -650,14 +667,18 @@ export function AdminProducts({
         // 2. Insert variants
         const varPayload = variants.map((v, i) => {
           const cleanLabel = (v.label || "Standard").trim();
+          const vPrice = Number(v.price) || 0;
+          const vMrp = Number(v.mrp) || vPrice;
+          const vStock = Number(v.stock) || 0;
+          const vLowStock = Number(v.low_stock_threshold) || 5;
           return {
             product_id: newProd.id,
             label: cleanLabel,
             label_hi: translateVariantLabel(cleanLabel, "hi"),
-            price: v.price,
-            mrp: v.mrp,
-            stock: v.stock,
-            low_stock_threshold: v.low_stock_threshold,
+            price: vPrice,
+            mrp: vMrp,
+            stock: vStock,
+            low_stock_threshold: vLowStock,
             sort_order: i,
           };
         });
@@ -1161,23 +1182,12 @@ export function AdminProducts({
               {/* TAB 1: BASIC INFORMATION */}
               {modalTab === "basic" && (
                 <div className="space-y-4 animate-in fade-in duration-150">
-                  {/* Smart 1-Click AI Assistant Banner */}
-                  <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50/90 to-[#FAF8F2] p-3 text-xs text-emerald-900 shadow-2xs flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="size-4 text-emerald-700 shrink-0" />
-                      <p className="text-[11px] leading-relaxed">
-                        <strong>1-क्लिक AI ऑटो-फिल:</strong> केवल प्रोडक्ट का नाम लिखें (जैसे <em>"Fortune tel 1 ltr"</em> या <em>"Tata namak"</em>) और AI बटन दबाएं। हिंदी नाम, ब्रांड, सही माप (लीटर/किलो) व रेट अपने आप भर जाएंगे।
-                      </p>
-                    </div>
-                  </div>
-
                   <div className="grid gap-3.5 sm:grid-cols-2">
                     {/* English Name with Voice & AI Auto-fill buttons */}
                     <div className="space-y-1.5 sm:col-span-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
-                          <span>Product Name (English) <span className="text-red-500">*</span></span>
-                          <span className="text-[10px] text-[#5A655F] font-normal">अंग्रेजी नाम</span>
+                        <Label className="text-xs font-bold text-[#1F2924]">
+                          Product Name (English) <span className="text-red-500">*</span>
                         </Label>
                         <div className="flex items-center gap-1.5">
                           <button
@@ -1198,16 +1208,16 @@ export function AdminProducts({
                             type="button"
                             disabled={isAiFilling || !name.trim()}
                             onClick={handleAiAutoComplete}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-[#145A45] hover:bg-[#0E4333] px-3 py-1 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
-                            title="नाम के आधार पर हिंदी अनुवाद, ब्रांड, श्रेणी व सही पैक साइज भरें"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#145A45] hover:bg-[#0E4333] px-3 py-1 rounded-lg transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+                            title="नाम के आधार पर बाकी जानकारी स्वतः भरें"
                           >
                             {isAiFilling ? (
                               <>
-                                <Loader2 className="size-3 animate-spin" /> AI भर रहा है...
+                                <Loader2 className="size-3.5 animate-spin" /> भरने में लगा है...
                               </>
                             ) : (
                               <>
-                                <Sparkles className="size-3 text-amber-300" /> 1-क्लिक AI ऑटो-फिल
+                                <Sparkles className="size-3.5 text-amber-300" /> AI ऑटो-फिल
                               </>
                             )}
                           </button>
@@ -1224,9 +1234,8 @@ export function AdminProducts({
 
                     {/* Hindi Name */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-[#1F2924] flex items-center justify-between">
-                        <span>उत्पाद का नाम (हिंदी / Hindi)</span>
-                        <span className="text-[10px] text-[#145A45] font-semibold">स्थानीय ग्राहकों हेतु</span>
+                      <Label className="text-xs font-bold text-[#1F2924]">
+                        उत्पाद का नाम (हिंदी / Hindi)
                       </Label>
                       <Input
                         placeholder="उदा. फॉर्च्यून कच्ची घानी सरसों का तेल"
@@ -1251,9 +1260,8 @@ export function AdminProducts({
 
                     {/* Category Selector */}
                     <div className="space-y-1.5 sm:col-span-2">
-                      <Label className="text-xs font-bold text-[#1F2924] flex items-center justify-between">
-                        <span>मुख्य कैटेगरी (Category) <span className="text-red-500">*</span></span>
-                        <span className="text-[10px] text-[#5A655F]">किस श्रेणी का सामान है</span>
+                      <Label className="text-xs font-bold text-[#1F2924]">
+                        मुख्य कैटेगरी (Category) <span className="text-red-500">*</span>
                       </Label>
 
                       <Select
@@ -1326,7 +1334,6 @@ export function AdminProducts({
                               onChange={(e) => setSlug(e.target.value)}
                               className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
                             />
-                            <p className="text-[10px] text-[#5A655F]">वेबसाइट एड्रेस के लिए ऑटो-जनरेटेड यूनिक स्लग</p>
                           </div>
 
                           {subcategories.length > 0 && (
@@ -1359,14 +1366,9 @@ export function AdminProducts({
               {modalTab === "pricing" && (
                 <div className="space-y-4 animate-in fade-in duration-150">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E8E4DA] pb-2">
-                    <div>
-                      <h4 className="font-sans font-bold text-xs sm:text-sm text-[#1F2924]">
-                        पैक साइज, एमआरपी, बिक्री मूल्य व स्टॉक
-                      </h4>
-                      <p className="text-[10px] sm:text-[11px] text-[#5A655F]">
-                        हर पैक का लेबल (उदा. 1 L, 500 g), एमआरपी, दुकान का रेट और उपलब्ध मात्रा भरें
-                      </p>
-                    </div>
+                    <h4 className="font-sans font-bold text-xs sm:text-sm text-[#1F2924]">
+                      पैक साइज, एमआरपी, बिक्री मूल्य व स्टॉक
+                    </h4>
 
                     <Button
                       type="button"
@@ -1379,70 +1381,120 @@ export function AdminProducts({
                     </Button>
                   </div>
 
-                  {/* 1-Tap Quick Unit Presets based on Product Nature */}
-                  <div className="rounded-xl bg-[#FAF8F2] p-2.5 border border-[#E8E4DA] space-y-1.5">
-                    <span className="text-[10px] font-bold text-[#5A655F] uppercase tracking-wider block">
-                      ⚡ 1-क्लिक त्वरित पैक चिप्स जोड़ें ({detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? "तरल / Liquid" : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? "ठोस / Solid" : "पैकेट / Pieces"}):
-                    </span>
+                  {/* Quick Unit Presets for Solid, Liquid, Pack */}
+                  <div className="rounded-2xl bg-[#FAF8F2] p-3 border border-[#E8E4DA] space-y-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <span className="text-[11px] font-bold text-[#1F2924]">
+                        त्वरित पैक जोड़ें:
+                      </span>
+                      <div className="flex rounded-lg bg-white border border-[#E8E4DA] p-0.5 gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setPresetType("solid")}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                            presetType === "solid"
+                              ? "bg-[#145A45] text-white shadow-2xs"
+                              : "text-[#5A655F] hover:text-[#1F2924]"
+                          }`}
+                        >
+                          वज़न (Solid)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPresetType("liquid")}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                            presetType === "liquid"
+                              ? "bg-[#145A45] text-white shadow-2xs"
+                              : "text-[#5A655F] hover:text-[#1F2924]"
+                          }`}
+                        >
+                          तरल (Liquid)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPresetType("pack")}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                            presetType === "pack"
+                              ? "bg-[#145A45] text-white shadow-2xs"
+                              : "text-[#5A655F] hover:text-[#1F2924]"
+                          }`}
+                        >
+                          पैकेट / पीस
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex flex-wrap gap-1.5">
-                      {detectGroceryNature(name, brand, selectedCategoryObj?.name) === "liquid" ? (
-                        ["1 L", "500 ml", "200 ml", "2 L", "5 L Jar", "Pouch (1 L)"].map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setVariants((prev) => [
-                                ...prev,
-                                { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
-                              ]);
-                            }}
-                            className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
-                          >
-                            + {preset}
-                          </button>
-                        ))
-                      ) : detectGroceryNature(name, brand, selectedCategoryObj?.name) === "solid" ? (
-                        ["1 kg", "500 g", "250 g", "100 g", "5 kg", "10 kg", "25 kg"].map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setVariants((prev) => [
-                                ...prev,
-                                { label: preset, price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
-                              ]);
-                            }}
-                            className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
-                          >
-                            + {preset}
-                          </button>
-                        ))
-                      ) : (
-                        ["1 Pack", "Pack of 4", "1 Piece", "1 Box", "1 Bar (100g)"].map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setVariants((prev) => [
-                                ...prev,
-                                { label: preset, price: 50, mrp: 60, stock: 50, low_stock_threshold: 5 },
-                              ]);
-                            }}
-                            className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[10px] cursor-pointer"
-                          >
-                            + {preset}
-                          </button>
-                        ))
-                      )}
+                      {presetType === "solid" &&
+                        ["50 g", "100 g", "250 g", "500 g", "1 kg", "2 kg", "5 kg", "10 kg", "25 kg"].map(
+                          (preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                setVariants((prev) => [
+                                  ...prev,
+                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
+                                ]);
+                                toast.success(`पैक जोड़ा गया: ${preset}`);
+                              }}
+                              className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
+                            >
+                              + {preset}
+                            </button>
+                          )
+                        )}
+
+                      {presetType === "liquid" &&
+                        ["100 ml", "200 ml", "250 ml", "500 ml", "1 L", "2 L", "5 L Jar", "15 L Tin"].map(
+                          (preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                setVariants((prev) => [
+                                  ...prev,
+                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
+                                ]);
+                                toast.success(`पैक जोड़ा गया: ${preset}`);
+                              }}
+                              className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
+                            >
+                              + {preset}
+                            </button>
+                          )
+                        )}
+
+                      {presetType === "pack" &&
+                        ["1 Pack", "Pack of 4", "1 Piece", "1 दर्जन (12 pcs)", "1 Box", "1 Pouch", "1 टिकिया / बार"].map(
+                          (preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                setVariants((prev) => [
+                                  ...prev,
+                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
+                                ]);
+                                toast.success(`पैक जोड़ा गया: ${preset}`);
+                              }}
+                              className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
+                            >
+                              + {preset}
+                            </button>
+                          )
+                        )}
                     </div>
                   </div>
 
                   {/* Clean Variant Cards */}
                   <div className="space-y-2.5">
                     {variants.map((v, idx) => {
+                      const mrpNum = Number(v.mrp) || 0;
+                      const priceNum = Number(v.price) || 0;
                       const disc =
-                        v.mrp > 0 && v.price > 0 && v.mrp > v.price
-                          ? Math.round(((v.mrp - v.price) / v.mrp) * 100)
+                        mrpNum > 0 && priceNum > 0 && mrpNum > priceNum
+                          ? Math.round(((mrpNum - priceNum) / mrpNum) * 100)
                           : 0;
                       return (
                         <div
@@ -1479,8 +1531,11 @@ export function AdminProducts({
                                 min="0"
                                 step="1"
                                 placeholder="150"
-                                value={v.mrp}
-                                onChange={(e) => updateVariant(idx, "mrp", Number(e.target.value))}
+                                value={v.mrp === "" ? "" : v.mrp}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  updateVariant(idx, "mrp", val === "" ? "" : Number(val));
+                                }}
                                 className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-bold text-stone-600"
                               />
                             </div>
@@ -1496,8 +1551,11 @@ export function AdminProducts({
                                 min="0"
                                 step="1"
                                 placeholder="135"
-                                value={v.price}
-                                onChange={(e) => updateVariant(idx, "price", Number(e.target.value))}
+                                value={v.price === "" ? "" : v.price}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  updateVariant(idx, "price", val === "" ? "" : Number(val));
+                                }}
                                 className="h-9.5 text-xs rounded-xl border-[#145A45]/40 font-extrabold text-[#145A45] bg-emerald-50/30"
                               />
                             </div>
@@ -1513,8 +1571,11 @@ export function AdminProducts({
                                 min="0"
                                 step="1"
                                 placeholder="50"
-                                value={v.stock}
-                                onChange={(e) => updateVariant(idx, "stock", Number(e.target.value))}
+                                value={v.stock === "" ? "" : v.stock}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  updateVariant(idx, "stock", val === "" ? "" : Number(val));
+                                }}
                                 className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
                               />
                             </div>
@@ -1530,10 +1591,11 @@ export function AdminProducts({
                                 min="0"
                                 step="1"
                                 placeholder="5"
-                                value={v.low_stock_threshold}
-                                onChange={(e) =>
-                                  updateVariant(idx, "low_stock_threshold", Number(e.target.value))
-                                }
+                                value={v.low_stock_threshold === "" ? "" : v.low_stock_threshold}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  updateVariant(idx, "low_stock_threshold", val === "" ? "" : Number(val));
+                                }}
                                 className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
                               />
                             </div>
@@ -1543,7 +1605,7 @@ export function AdminProducts({
                           <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-dashed border-[#E8E4DA]">
                             <div className="flex items-center gap-2 text-[11px]">
                               <span className="rounded-md bg-[#E6EFE8] border border-[#145A45]/30 px-2 py-0.5 text-[10px] font-bold text-[#0F4A38]">
-                                बचत / मार्जिन: {v.mrp > 0 && v.price > 0 ? inr(v.mrp - v.price) : "—"}
+                                बचत / मार्जिन: {mrpNum > 0 && priceNum > 0 ? inr(mrpNum - priceNum) : "—"}
                               </span>
                               <span
                                 className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
@@ -1599,42 +1661,33 @@ export function AdminProducts({
                       <div className="flex gap-3 items-center">
                         <div className="relative size-18 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 flex items-center justify-center overflow-hidden shrink-0">
                           <img
-                            src={frontImageUrl || "/images/packaged.jpg"}
+                            src={frontImageUrl || DEFAULT_PRODUCT_PLACEHOLDER}
                             alt="Front View"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                              const target = e.currentTarget;
+                              if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                                target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                              }
                             }}
                             className="size-full object-contain"
                           />
                         </div>
 
                         <div className="flex-1 space-y-1.5 text-xs">
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <label className="flex h-8 items-center justify-center gap-1 rounded-lg border border-[#145A45]/30 bg-[#E6EFE8]/70 text-[#0F4A38] px-2 text-[11px] font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                              <Upload className="size-3" />
-                              <span>{isUploadingFront ? "..." : "फोटो अपलोड"}</span>
-                              <input
-                                type="file"
-                                accept="image/png,image/jpeg,image/jpg,image/webp"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleUploadFront(file);
-                                }}
-                                disabled={isUploadingFront}
-                                className="hidden"
-                              />
-                            </label>
-
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setWebFinderTarget("front")}
-                              className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs cursor-pointer"
-                            >
-                              <Globe className="size-3 text-sky-600" />
-                              <span>वेब से खोजें</span>
-                            </Button>
-                          </div>
+                          <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#145A45]/30 bg-[#E6EFE8]/70 text-[#0F4A38] px-3 text-xs font-bold hover:bg-[#E6EFE8] active:scale-98 cursor-pointer transition-colors shadow-2xs w-full">
+                            <Upload className="size-3.5" />
+                            <span>{isUploadingFront ? "अपलोड हो रहा है..." : "डिवाइस से फोटो अपलोड करें"}</span>
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/jpg,image/webp"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleUploadFront(file);
+                              }}
+                              disabled={isUploadingFront}
+                              className="hidden"
+                            />
+                          </label>
 
                           <Input
                             placeholder="या फोटो का सीधा URL पेस्ट करें"
@@ -1666,42 +1719,33 @@ export function AdminProducts({
                       <div className="flex gap-3 items-center">
                         <div className="relative size-18 rounded-xl bg-[#FAF8F2] border border-[#E8E4DA] p-1 flex items-center justify-center overflow-hidden shrink-0">
                           <img
-                            src={backImageUrl || "/images/packaged.jpg"}
+                            src={backImageUrl || DEFAULT_PRODUCT_PLACEHOLDER}
                             alt="Back View"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                              const target = e.currentTarget;
+                              if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                                target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                              }
                             }}
                             className="size-full object-contain"
                           />
                         </div>
 
                         <div className="flex-1 space-y-1.5 text-xs">
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <label className="flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] px-2 text-[11px] font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs">
-                              <Upload className="size-3 text-[#145A45]" />
-                              <span>{isUploadingBack ? "..." : "अपलोड"}</span>
-                              <input
-                                type="file"
-                                accept="image/png,image/jpeg,image/jpg,image/webp"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) handleUploadBack(file);
-                                }}
-                                disabled={isUploadingBack}
-                                className="hidden"
-                              />
-                            </label>
-
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setWebFinderTarget("back")}
-                              className="h-8 rounded-lg border border-sky-300 bg-sky-50 text-sky-800 hover:bg-sky-100 text-[11px] font-bold gap-1 shadow-2xs cursor-pointer"
-                            >
-                              <Globe className="size-3 text-sky-600" />
-                              <span>वेब से खोजें</span>
-                            </Button>
-                          </div>
+                          <label className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#E8E4DA] bg-[#FAF8F2] text-[#1F2924] px-3 text-xs font-bold hover:bg-white active:scale-98 cursor-pointer transition-colors shadow-2xs w-full">
+                            <Upload className="size-3.5 text-[#145A45]" />
+                            <span>{isUploadingBack ? "अपलोड हो रहा है..." : "डिवाइस से फोटो अपलोड करें"}</span>
+                            <input
+                              type="file"
+                              accept="image/png,image/jpeg,image/jpg,image/webp"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleUploadBack(file);
+                              }}
+                              disabled={isUploadingBack}
+                              className="hidden"
+                            />
+                          </label>
 
                           <Input
                             placeholder="या Back Photo URL पेस्ट करें"
@@ -1711,41 +1755,6 @@ export function AdminProducts({
                           />
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Grocery Image Presets Chips */}
-                  <div className="rounded-xl bg-[#FAF8F2] p-2.5 border border-[#E8E4DA] space-y-1">
-                    <Label className="text-[10px] font-bold text-[#5A655F] uppercase tracking-wider block">
-                      त्वरित फोटो प्रीसेट (1-क्लिक में फ्रंट फोटो सेट करें):
-                    </Label>
-                    <div className="flex flex-wrap gap-1">
-                      {[
-                        { label: "🌾 Atta", url: "/images/atta.jpg" },
-                        { label: "🍚 Rice", url: "/images/rice.jpg" },
-                        { label: "🫘 Dal", url: "/images/dal.jpg" },
-                        { label: "🛢️ Mustard Oil", url: "/images/fortune_mustard_oil_1787801798943.jpg" },
-                        { label: "🧈 Amul Ghee", url: "/images/amul_desi_ghee_1787801851052.jpg" },
-                        { label: "🌶️ Spices", url: "/images/spices.jpg" },
-                        { label: "🧂 Tata Salt", url: "/images/tata_salt_pack_1787801868973.jpg" },
-                        { label: "🍪 Parle-G", url: "/images/parle_g_biscuits_1787801925687.jpg" },
-                        { label: "🥨 Bhujia", url: "/images/haldirams_aloo_bhujia_1787801945399.jpg" },
-                        { label: "🍫 Cadbury", url: "/images/cadbury_dairy_milk_1787801969771.jpg" },
-                        { label: "🧼 Surf Excel", url: "/images/surf_excel_detergent_1787801991917.jpg" },
-                        { label: "📦 General", url: "/images/packaged.jpg" },
-                      ].map((preset) => (
-                        <button
-                          key={preset.url}
-                          type="button"
-                          onClick={() => {
-                            setFrontImageUrl(preset.url);
-                            toast.success(`Front Photo सेट हो गई: ${preset.label}`);
-                          }}
-                          className="rounded-md border border-[#E8E4DA] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#16201A] hover:bg-[#E6EFE8] hover:border-[#145A45]/40 transition-colors shadow-2xs cursor-pointer"
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
                     </div>
                   </div>
 
@@ -1846,11 +1855,14 @@ export function AdminProducts({
                         <div className="max-w-[240px] mx-auto rounded-2xl bg-white p-3 border border-[#E8E4DA] shadow-xs space-y-2">
                           <div className="h-24 rounded-xl bg-[#FAF8F2] flex items-center justify-center p-1 overflow-hidden border border-[#E8E4DA]/60">
                             <img
-                              src={frontImageUrl || backImageUrl || "/images/packaged.jpg"}
+                              src={frontImageUrl || backImageUrl || DEFAULT_PRODUCT_PLACEHOLDER}
                               alt="Preview"
                               className="size-full object-contain"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                                const target = e.currentTarget;
+                                if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                                  target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                                }
                               }}
                             />
                           </div>
@@ -1968,23 +1980,6 @@ export function AdminProducts({
         categories={categories}
         existingProducts={products}
         onSuccess={onRefresh}
-      />
-
-      {/* Web Image Finder Modal (Dual-mode Front & Back) */}
-      <WebImageFinderModal
-        isOpen={webFinderTarget !== null}
-        onClose={() => setWebFinderTarget(null)}
-        productName={buildProductSearchTitle(name, brand)}
-        currentImageUrl={webFinderTarget === "front" ? frontImageUrl : backImageUrl}
-        onSelectImage={(url) => {
-          if (webFinderTarget === "front") {
-            setFrontImageUrl(url);
-          } else if (webFinderTarget === "back") {
-            setBackImageUrl(url);
-          }
-          setWebFinderTarget(null);
-          toast.success("फोटो अपडेट कर दी गई है!");
-        }}
       />
     </div>
   );

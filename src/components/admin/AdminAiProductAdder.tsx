@@ -39,8 +39,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { inr } from "@/lib/format";
 import type { Category, Product } from "@/lib/queries";
 import { getProductImage, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
-import { WebImageFinderModal } from "./WebImageFinderModal";
-import { buildProductSearchTitle } from "@/lib/server-image-search";
+import { uploadProductImage } from "@/lib/image-upload";
 import {
   parseSupplierBillWithGemini,
   generateCleanSlug,
@@ -122,9 +121,6 @@ export function AdminAiProductAdder({
   const [saveProgress, setSaveProgress] = useState(0);
   const [currentSavingName, setCurrentSavingName] = useState("");
 
-  // Web Image Finder State
-  const [webFinderProductIdx, setWebFinderProductIdx] = useState<number | null>(null);
-
   const parentCategories = categories.filter((c) => !c.parent_id);
 
   function resetAll() {
@@ -136,7 +132,6 @@ export function AdminAiProductAdder({
     setIsSaving(false);
     setSaveProgress(0);
     setCurrentSavingName("");
-    setWebFinderProductIdx(null);
     setInterimText("");
     setRecognizedVoiceItems([]);
     finalAccumulatorRef.current = "";
@@ -635,8 +630,7 @@ export function AdminAiProductAdder({
   }
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-[96vw] sm:max-w-5xl max-h-[94vh] flex flex-col p-0 rounded-3xl border-[#E8E4DA] bg-white overflow-hidden shadow-2xl">
         {/* Header */}
         <DialogHeader className="p-4 sm:p-5 border-b border-[#E8E4DA] bg-gradient-to-r from-[#FAF8F2] via-white to-[#F0F5F2] shrink-0">
@@ -1119,21 +1113,35 @@ export function AdminAiProductAdder({
                             src={prod.image_url || getProductImage({ name: prod.name })}
                             alt={prod.name}
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_PLACEHOLDER;
+                              const target = e.currentTarget;
+                              if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                                target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                              }
                             }}
                             className="size-full object-contain"
                           />
                         </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setWebFinderProductIdx(pIdx)}
-                          className="h-7 px-2 rounded-lg border-sky-200 bg-sky-50 text-sky-800 text-[10px] font-bold hover:bg-sky-100 flex items-center gap-1 shadow-2xs"
-                        >
-                          <Globe className="size-3 text-sky-600" />
-                          <span>फोटो बदलें</span>
-                        </Button>
+                        <label className="h-7 px-2 rounded-lg border border-[#145A45]/30 bg-[#E6EFE8]/70 text-[#0F4A38] text-[10px] font-bold hover:bg-[#E6EFE8] flex items-center gap-1 shadow-2xs cursor-pointer">
+                          <Upload className="size-3" />
+                          <span>फोटो अपलोड</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/webp"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  const url = await uploadProductImage(file);
+                                  updateProductField(pIdx, "image_url", url);
+                                  toast.success("फोटो अपलोड हो गई!");
+                                } catch {
+                                  toast.error("फोटो अपलोड विफल रही");
+                                }
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     </div>
                     <div className="flex items-start justify-between gap-3">
@@ -1354,24 +1362,5 @@ export function AdminAiProductAdder({
         </div>
       </DialogContent>
     </Dialog>
-
-    {/* Manual & Web Image Finder Modal for AI Ingestion */}
-    {webFinderProductIdx !== null && parsedProducts[webFinderProductIdx] && (
-      <WebImageFinderModal
-        isOpen={webFinderProductIdx !== null}
-        onClose={() => setWebFinderProductIdx(null)}
-        productName={buildProductSearchTitle(
-          parsedProducts[webFinderProductIdx].name,
-          parsedProducts[webFinderProductIdx].brand
-        )}
-        currentImageUrl={parsedProducts[webFinderProductIdx].image_url || getProductImage({ name: parsedProducts[webFinderProductIdx].name })}
-        onSelectImage={(url) => {
-          updateProductField(webFinderProductIdx, "image_url", url);
-          setWebFinderProductIdx(null);
-          toast.success("फोटो सफलतापूर्वक सेट कर दी गई है!");
-        }}
-      />
-    )}
-  </>
   );
 }

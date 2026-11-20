@@ -3,7 +3,7 @@ import { Plus, Minus, Check, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { useCartActions, useCartItemQty } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
-import { getProductImage } from "@/lib/product-images";
+import { getProductImage, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
 import { isImageLoaded, markImageLoaded } from "@/lib/image-cache";
 import { type Product } from "@/lib/queries";
 import { discountPercent, inr } from "@/lib/format";
@@ -124,7 +124,9 @@ function ProductCardInner({ product }: { product: Product }) {
             onError={(e) => {
               markImageLoaded(imgSrc);
               setImgLoaded(true);
-              e.currentTarget.src = "/images/packaged.jpg";
+              if (e.currentTarget.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                e.currentTarget.src = DEFAULT_PRODUCT_PLACEHOLDER;
+              }
             }}
             className={`size-full object-contain mx-auto transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
               imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"

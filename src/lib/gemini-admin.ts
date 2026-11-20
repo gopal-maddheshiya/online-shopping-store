@@ -292,13 +292,11 @@ async function callGeminiApi(requestBody: Record<string, unknown>): Promise<stri
     throw new Error("Gemini API Key सेट नहीं है। कृपया Vercel/Environment में VITE_GEMINI_API_KEY सेट करें।");
   }
 
-  // Fast bench-tested models (gemini-flash-lite-latest responds in 700ms with 100% reliability)
+  // Fast official Gemini production models
   const models = [
-    "gemini-flash-lite-latest",
-    "gemini-3.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
-    "gemini-flash-latest",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
   ];
 
   // Standardize generationConfig format

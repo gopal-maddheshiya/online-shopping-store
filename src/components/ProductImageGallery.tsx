@@ -9,7 +9,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
-import { getImageTypeLabel } from "@/lib/product-images";
+import { getImageTypeLabel, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
 import type { ProductImage } from "@/lib/queries";
 
 type ProductImageGalleryProps = {
@@ -35,7 +35,7 @@ export function ProductImageGallery({
   const safeImages: ProductImage[] =
     images && images.length > 0
       ? images
-      : [{ url: "/images/packaged.jpg", type: "front", label: "Front View", sort_order: 0 }];
+      : [{ url: DEFAULT_PRODUCT_PLACEHOLDER, type: "front", label: "Front View", sort_order: 0 }];
 
   const activeImage = safeImages[activeIndex] || safeImages[0]!;
   const hasMultipleImages = safeImages.length > 1;
@@ -238,7 +238,10 @@ export function ProductImageGallery({
               loading={activeIndex === 0 ? "eager" : "lazy"}
               decoding="async"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                const target = e.currentTarget;
+                if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                  target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                }
               }}
               className={`max-h-full max-w-full w-auto h-auto object-contain object-center transition-all duration-200 ease-out select-none drop-shadow-sm ${
                 isTransitioning ? "opacity-30 scale-98" : "opacity-100 scale-100"
@@ -277,7 +280,10 @@ export function ProductImageGallery({
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                        const target = e.currentTarget;
+                        if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                          target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                        }
                       }}
                       className="max-h-full max-w-full w-auto h-auto object-contain object-center"
                     />
@@ -448,7 +454,10 @@ export function ProductImageGallery({
                       src={img.url}
                       alt=""
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                        const target = e.currentTarget;
+                        if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                          target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                        }
                       }}
                       className="max-h-full max-w-full w-auto h-auto object-contain object-center m-auto"
                     />
