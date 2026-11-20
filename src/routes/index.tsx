@@ -216,7 +216,7 @@ function HeroBannerSkeleton() {
         <div className="flex select-none gap-0 sm:gap-5 md:gap-6 lg:gap-7">
           {/* Card 1: Main slide */}
           <div className="shrink-0 grow-0 basis-full sm:basis-[58%] lg:basis-[45.5%] min-w-0">
-            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#BEE7CE]/90 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] shadow-[0_8px_24px_-4px_rgba(20,90,69,0.13),0_3px_8px_-2px_rgba(0,0,0,0.04),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)]">
               <Skeleton className="size-full rounded-flipkart-hero" />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/85 backdrop-blur-xs border border-[#EAE6DC]/80 shadow-2xs">
@@ -229,14 +229,14 @@ function HeroBannerSkeleton() {
 
           {/* Card 2: Second slide (visible on tablet and laptop) */}
           <div className="hidden sm:block shrink-0 grow-0 sm:basis-[58%] lg:basis-[45.5%] min-w-0">
-            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#BEE7CE]/90 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] shadow-[0_8px_24px_-4px_rgba(20,90,69,0.13),0_3px_8px_-2px_rgba(0,0,0,0.04),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)]">
               <Skeleton className="size-full rounded-flipkart-hero" />
             </div>
           </div>
 
           {/* Card 3: Peek slide (visible on laptop/desktop) */}
           <div className="hidden lg:block shrink-0 grow-0 lg:basis-[45.5%] min-w-0">
-            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#EAE6DC]/60 bg-[#F5F2EB]/50 shadow-xs">
+            <div className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#BEE7CE]/90 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] shadow-[0_8px_24px_-4px_rgba(20,90,69,0.13),0_3px_8px_-2px_rgba(0,0,0,0.04),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)]">
               <Skeleton className="size-full rounded-flipkart-hero" />
             </div>
           </div>
@@ -272,13 +272,13 @@ function HeroBanner({
   if (activeImages.length === 1) {
     return (
       <section className="container-page pt-2 sm:pt-3">
-        <div className="relative overflow-hidden rounded-flipkart-hero shadow-xs border border-[#EAE6DC]/60 w-full aspect-[1536/750] bg-[#F5F2EB]">
+        <div className="relative overflow-hidden rounded-flipkart-hero border border-[#BEE7CE]/90 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] shadow-[0_8px_24px_-4px_rgba(20,90,69,0.13),0_3px_8px_-2px_rgba(0,0,0,0.04),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)] w-full aspect-[1536/750] transition-all duration-300 hover:shadow-[0_12px_28px_-4px_rgba(20,90,69,0.20)]">
           <img
             src={activeImages[0]}
             alt={storeName}
             decoding="async"
             fetchPriority="high"
-            className="size-full object-cover select-none rounded-flipkart-hero"
+            className="size-full object-cover select-none rounded-flipkart-hero transition-transform duration-300 hover:scale-[1.01]"
             style={{ borderRadius: "inherit" }}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
@@ -372,7 +372,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
                 className="shrink-0 grow-0 basis-full sm:basis-[58%] lg:basis-[45.5%] min-w-0 last:mr-0 last:sm:mr-5 last:md:mr-6 last:lg:mr-7"
               >
                 <div
-                  className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden shadow-xs border border-[#EAE6DC]/60 bg-[#F5F2EB] group/slide isolate"
+                  className="relative w-full aspect-[1536/750] rounded-flipkart-hero overflow-hidden border border-[#BEE7CE]/90 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] shadow-[0_8px_24px_-4px_rgba(20,90,69,0.13),0_3px_8px_-2px_rgba(0,0,0,0.04),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)] transition-all duration-300 group/slide isolate group-hover/slide:shadow-[0_12px_28px_-4px_rgba(20,90,69,0.22)]"
                   style={{ borderRadius: "inherit" }}
                 >
                   <img
@@ -381,7 +381,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
                     loading={idx === 0 ? "eager" : "lazy"}
                     decoding="async"
                     fetchPriority={idx === 0 ? "high" : "low"}
-                    className="size-full object-cover select-none rounded-flipkart-hero transition-transform duration-300 group-hover/slide:scale-[1.01]"
+                    className="size-full object-cover select-none rounded-flipkart-hero transition-transform duration-300 group-hover/slide:scale-[1.012]"
                     style={{ borderRadius: "inherit" }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
@@ -393,7 +393,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
           </div>
         </div>
 
-        {/* Desktop Left & Right Arrow Navigation (Flipkart Style) */}
+        {/* Desktop Left & Right Arrow Navigation (Flipkart Style with 3D tactile elevation) */}
         <button
           type="button"
           onClick={() => {
@@ -401,7 +401,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
             handleManualAction();
           }}
           aria-label="Previous banner"
-          className="hidden sm:grid absolute left-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
+          className="hidden sm:grid absolute left-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-[#145A45] text-[#145A45] hover:text-white shadow-[0_4px_12px_rgba(20,90,69,0.15),inset_0_1px_0_rgba(255,255,255,0.95)] border border-[#CDE5D6] hover:border-[#145A45] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 hover:shadow-[0_6px_18px_rgba(20,90,69,0.25)] active:scale-95"
         >
           <ChevronLeft className="size-5" />
         </button>
@@ -412,7 +412,7 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
             handleManualAction();
           }}
           aria-label="Next banner"
-          className="hidden sm:grid absolute right-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-white text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 active:scale-95"
+          className="hidden sm:grid absolute right-3 top-1/2 -translate-y-1/2 size-9 place-items-center rounded-full bg-white/95 hover:bg-[#145A45] text-[#145A45] hover:text-white shadow-[0_4px_12px_rgba(20,90,69,0.15),inset_0_1px_0_rgba(255,255,255,0.95)] border border-[#CDE5D6] hover:border-[#145A45] opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer backdrop-blur-xs hover:scale-105 hover:shadow-[0_6px_18px_rgba(20,90,69,0.25)] active:scale-95"
         >
           <ChevronRight className="size-5" />
         </button>
@@ -436,15 +436,15 @@ function HeroSlider({ images, storeName }: { images: string[]; storeName: string
               }}
               className={`relative overflow-hidden rounded-full transition-all duration-300 cursor-pointer ${
                 isActive
-                  ? "w-7 sm:w-8 h-1.5 bg-[#D1CBC1] shadow-2xs"
-                  : "w-1.5 h-1.5 bg-[#D1CBC1] hover:bg-[#A8A196]"
+                  ? "w-7 sm:w-8 h-1.5 bg-[#DBEFE3] shadow-2xs"
+                  : "w-1.5 h-1.5 bg-[#D2E4DA] hover:bg-[#A8CEB7]"
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             >
               {isActive && images.length > 1 && (
                 <span
                   key={`progress-${selectedIndex}`}
-                  className="absolute inset-y-0 left-0 bg-[#2B3831] rounded-full animate-carousel-progress"
+                  className="absolute inset-y-0 left-0 bg-[#145A45] rounded-full animate-carousel-progress"
                   style={{
                     animationPlayState: isPaused ? "paused" : "running",
                   }}
@@ -495,7 +495,7 @@ function CategoryThumbnail({
             setLoaded(true);
           }}
           onError={() => setHasError(true)}
-          className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-transform duration-200 group-hover:scale-105 ${
+          className={`size-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.10)] transition-transform duration-200 group-hover:scale-105 ${
             loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         />
@@ -509,7 +509,7 @@ function CategoryGridSkeleton() {
     <div className="space-y-7 sm:space-y-9">
       {[1, 2].map((g) => (
         <div key={g} className="space-y-2.5 sm:space-y-3">
-          <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+          <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#D5E4D9]/80">
             <Skeleton className="h-5 sm:h-6 w-36 sm:w-52 rounded-md" />
             <Skeleton className="size-7 sm:size-8 rounded-full" />
           </div>
@@ -967,7 +967,7 @@ function PremiumStoreHome() {
 
               return (
                 <div key={heading.id} className="gsap-reveal-section space-y-2.5 sm:space-y-3">
-                  <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+                  <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#D5E4D9]/80">
                     <h3 className="font-sans text-[17.5px] sm:text-[19.5px] lg:text-[21px] font-bold text-[#18221D] tracking-normal leading-snug py-0.5 truncate">
                       {headingTitle}
                     </h3>
@@ -992,7 +992,7 @@ function PremiumStoreHome() {
                           className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                         >
                           <div
-                            className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9] group-hover:scale-[1.03]"
+                            className="relative w-full aspect-[1/1.02] rounded-[14px] overflow-hidden transition-all duration-200 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_4px_10px_-2px_rgba(20,90,69,0.13),0_2px_4px_-1px_rgba(0,0,0,0.05),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-2px_0_rgba(20,90,69,0.09)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_18px_-3px_rgba(20,90,69,0.22),0_4px_6px_-2px_rgba(0,0,0,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(20,90,69,0.12)] group-hover:border-[#98D8AF] group-active:translate-y-0 group-active:scale-[0.97]"
                           >
                             <CategoryThumbnail category={c} name={c.name} />
                           </div>
@@ -1009,7 +1009,7 @@ function PremiumStoreHome() {
 
             {uncategorizedCategories.length > 0 && (
               <div className="gsap-reveal-section space-y-2.5 sm:space-y-3">
-                <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#EAE6DC]/60">
+                <div className="flex items-center justify-between gap-3 pb-1 border-b border-[#D5E4D9]/80">
                   <h3 className="font-sans text-[17.5px] sm:text-[19.5px] lg:text-[21px] font-bold text-[#18221D] tracking-normal leading-snug py-0.5 truncate">
                     {lang === "hi" ? "अन्य श्रेणियाँ" : "Other Categories"}
                   </h3>
@@ -1034,7 +1034,7 @@ function PremiumStoreHome() {
                         className="group flex flex-col items-center text-center w-full active:scale-[0.96] transition-transform duration-150"
                       >
                         <div
-                          className="relative w-full aspect-[1/1.02] rounded-[13px] overflow-hidden transition-all duration-200 bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9] group-hover:scale-[1.03]"
+                          className="relative w-full aspect-[1/1.02] rounded-[14px] overflow-hidden transition-all duration-200 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_4px_10px_-2px_rgba(20,90,69,0.13),0_2px_4px_-1px_rgba(0,0,0,0.05),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-2px_0_rgba(20,90,69,0.09)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_18px_-3px_rgba(20,90,69,0.22),0_4px_6px_-2px_rgba(0,0,0,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(20,90,69,0.12)] group-hover:border-[#98D8AF] group-active:translate-y-0 group-active:scale-[0.97]"
                         >
                           <CategoryThumbnail category={c} name={c.name} />
                         </div>

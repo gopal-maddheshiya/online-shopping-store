@@ -177,7 +177,7 @@ function RailCategoryThumbnail({
       onError={(e) => {
         e.currentTarget.src = "/agt-icon.png";
       }}
-      className={`size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)] transition-opacity duration-200 ${
+      className={`size-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.10)] transition-opacity duration-200 ${
         loaded ? "opacity-100" : "opacity-0"
       }`}
     />
@@ -634,17 +634,17 @@ function Shop() {
             {!search.category && (
               <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
             )}
-            <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[13px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+            <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[14px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
               !search.category
-                ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
-                : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
+                ? "bg-gradient-to-b from-[#E7F8EE] via-[#D5F0E0] to-[#BEE6CD] border-2 border-[#1E7D50] shadow-[0_4px_12px_-2px_rgba(20,90,69,0.22),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(16,78,60,0.18)] -translate-y-[1px]"
+                : "bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_3px_8px_-2px_rgba(20,90,69,0.12),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)] group-hover:border-[#98D8AF] group-hover:shadow-[0_5px_12px_-2px_rgba(20,90,69,0.18)]"
             }`}>
               <img
                 src="/agt-icon.png"
                 alt="All"
                 loading="lazy"
                 decoding="async"
-                className="size-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.06)]"
+                className="size-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.10)]"
               />
             </div>
             <span
@@ -676,10 +676,10 @@ function Shop() {
                       {isSelected && (
                         <span className="absolute right-0 top-2 bottom-2 w-[3px] bg-[#0C831F] rounded-l-full" />
                       )}
-                      <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[13px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
+                      <div className={`w-13 h-13 sm:w-15 sm:h-15 lg:w-[66px] lg:h-[66px] rounded-[14px] p-1.5 flex items-center justify-center transition-all duration-200 shrink-0 group-hover:scale-105 ${
                         isSelected
-                          ? "bg-[#DBF2E4] border-2 border-[#1E7D50] shadow-2xs"
-                : "bg-[#E6F5EC] border border-[#C5E7D2] group-hover:bg-[#DBF0E3] group-hover:border-[#A6DBB9]"
+                          ? "bg-gradient-to-b from-[#E7F8EE] via-[#D5F0E0] to-[#BEE6CD] border-2 border-[#1E7D50] shadow-[0_4px_12px_-2px_rgba(20,90,69,0.22),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(16,78,60,0.18)] -translate-y-[1px]"
+                          : "bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_3px_8px_-2px_rgba(20,90,69,0.12),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-1.5px_0_rgba(20,90,69,0.08)] group-hover:border-[#98D8AF] group-hover:shadow-[0_5px_12px_-2px_rgba(20,90,69,0.18)]"
                       }`}>
                         <RailCategoryThumbnail category={c} name={getCategoryName(c)} />
                       </div>
