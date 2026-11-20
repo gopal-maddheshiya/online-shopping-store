@@ -712,6 +712,8 @@ html.lenis body {
 /* DOM & Layout Performance Isolation for Carousels */
 .shelf-viewport-contain {
   contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 340px;
 }
 
 /* Progressive Image Lazy Loading Shimmer & Reveal */

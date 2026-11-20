@@ -417,6 +417,7 @@ export function Header() {
             {/* Brand Identity with Store Emblem (Desktop Left, Mobile Center) */}
             <Link
               to="/"
+              preload="intent"
               className="flex items-center gap-2.5 text-center md:text-left justify-center md:justify-start group shrink-0 min-w-0 py-0.5 flex-1 md:flex-initial"
             >
               <div className="hidden md:grid size-10 place-items-center rounded-xl bg-gradient-to-br from-[#145A45] via-[#104A38] to-[#0A3628] text-[#F5D061] shadow-[0_2px_8px_rgba(10,54,40,0.22),inset_0_1px_0_rgba(255,255,255,0.2)] border border-[#1E6B53] shrink-0 group-hover:scale-105 transition-transform duration-200">
@@ -437,6 +438,7 @@ export function Header() {
             <nav className="hidden md:flex items-center justify-center gap-1 lg:gap-1.5 flex-1 max-w-xl mx-auto px-2">
               <Link
                 to="/"
+                preload="intent"
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                   currentPath === "/"
                     ? "bg-[#EBF3ED] text-[#145A45] border border-[#145A45]/20 shadow-2xs"
@@ -729,6 +731,7 @@ export function Header() {
                     <div className="p-2 space-y-0.5 bg-white">
                       <Link
                         to="/"
+                        preload="intent"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-[#16201A] hover:bg-[#FAF8F2] transition-colors"
                       >

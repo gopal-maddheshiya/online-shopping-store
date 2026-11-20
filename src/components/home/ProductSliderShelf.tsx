@@ -35,17 +35,23 @@ export function ProductSliderShelf({
   intervalMs = 4500,
   isLoading = false,
 }: ProductSliderShelfProps) {
+  // Cap at 10 items for optimal memory, rendering speed and instant navigation
+  const visibleProducts = useMemo(() => {
+    if (!products || products.length === 0) return [];
+    return products.slice(0, 10);
+  }, [products]);
+
   // Ensure enough items for a truly seamless, unbroken infinite loop
   const loopProducts = useMemo(() => {
-    if (!products || products.length === 0) return [];
-    if (products.length < 5) {
-      return [...products, ...products, ...products];
+    if (visibleProducts.length === 0) return [];
+    if (visibleProducts.length < 5) {
+      return [...visibleProducts, ...visibleProducts, ...visibleProducts];
     }
-    if (products.length < 8) {
-      return [...products, ...products];
+    if (visibleProducts.length < 8) {
+      return [...visibleProducts, ...visibleProducts];
     }
-    return products;
-  }, [products]);
+    return visibleProducts;
+  }, [visibleProducts]);
 
   // Embla setup optimized for silky smooth 60-120 FPS glide (no jerky drag feeling)
   // align offset prevents leftmost product card from getting clipped when paused

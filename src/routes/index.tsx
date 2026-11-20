@@ -67,16 +67,17 @@ const SmartRationModal = lazy(() =>
 );
 
 export const Route = createFileRoute("/")({
+  staleTime: 1000 * 60 * 10,
   loader: async ({ context }) => {
-    const prefetch = Promise.allSettled([
-      context.queryClient.ensureQueryData(settingsQuery),
-      context.queryClient.ensureQueryData(categoriesQuery),
-      context.queryClient.ensureQueryData(featuredProductsQuery(12)),
-      context.queryClient.ensureQueryData(productsQuery()),
-      context.queryClient.ensureQueryData(couponsQuery),
-    ]);
+    // Only prefetch during SSR; on client transitions, queries resolve instantly from memory/cache
     if (typeof window === "undefined") {
-      await prefetch;
+      await Promise.allSettled([
+        context.queryClient.ensureQueryData(settingsQuery),
+        context.queryClient.ensureQueryData(categoriesQuery),
+        context.queryClient.ensureQueryData(featuredProductsQuery(12)),
+        context.queryClient.ensureQueryData(productsQuery()),
+        context.queryClient.ensureQueryData(couponsQuery),
+      ]);
     }
   },
   head: () => ({
@@ -144,7 +145,6 @@ export const Route = createFileRoute("/")({
       </div>
     </div>
   ),
-  pendingComponent: HomepageSkeleton,
   component: PremiumStoreHome,
 });
 
@@ -204,6 +204,69 @@ const BLINKIT_CATEGORY_TINTS = [
   { bg: "bg-[#F2F8F8]", border: "border-[#D5ECEC]", hoverBg: "group-hover:bg-[#E2F3F3]", hoverBorder: "group-hover:border-[#2A9696]/35" }, // Teal breeze
   { bg: "bg-[#F8F5FC]", border: "border-[#EADDF8]", hoverBg: "group-hover:bg-[#EFE4FB]", hoverBorder: "group-hover:border-[#7A3EB8]/35" }, // Lavender
 ];
+
+/* ═══════════════════════════════════════════════════════════════
+   DEFERRED / VIEWPORT SECTION RENDERER (Zero-Lag Route Transitions)
+   ═══════════════════════════════════════════════════════════════ */
+function LazySection({
+  children,
+  minHeight = "330px",
+  rootMargin = "500px",
+}: {
+  children: React.ReactNode;
+  minHeight?: string;
+  rootMargin?: string;
+}) {
+  const [inView, setInView] = useState(() => typeof window === "undefined");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inView) return;
+    if (typeof window === "undefined") return;
+
+    if (!("IntersectionObserver" in window)) {
+      setInView(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    // Safety fallback: if user doesn't scroll within 1.5 seconds, mount during idle
+    const timer = setTimeout(() => {
+      setInView(true);
+    }, 1500);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, [inView, rootMargin]);
+
+  if (inView) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div
+      ref={ref}
+      style={{ minHeight }}
+      className="shelf-viewport-contain pointer-events-none"
+      aria-hidden="true"
+    />
+  );
+}
 
 /* ═══════════════════════════════════════════════════════════════
    SKELETON & IMAGE PLACEHOLDER COMPONENTS (Slow network resilience)
@@ -480,12 +543,6 @@ function CategoryThumbnail({
         </div>
       ) : (
         <img
-          ref={(el) => {
-            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
-              markImageLoaded(src);
-              setLoaded(true);
-            }
-          }}
           src={src}
           alt={name}
           loading="lazy"
@@ -723,7 +780,7 @@ function PremiumStoreHome() {
   const uncategorizedCategories = parentCategories.filter((c) => !allAssignedSlugs.has(c.slug));
   const homeContainerRef = useRef<HTMLDivElement>(null);
 
-  // GPU-accelerated GSAP ScrollTrigger reveals for category groups and shelves
+  // GPU-accelerated GSAP ScrollTrigger reveals for category groups and shelves (deferred to unblock initial paint)
   useGSAP(
     () => {
       if (typeof window === "undefined") return;
@@ -733,48 +790,34 @@ function PremiumStoreHome() {
       const container = homeContainerRef.current;
       if (!container) return;
 
-      // Only target sections that haven't been revealed yet (prevents re-trigger flashes when queries resolve)
-      const sections = container.querySelectorAll<HTMLElement>(".gsap-reveal-section:not([data-gsap-revealed='true'])");
-      sections.forEach((sec) => {
-        sec.setAttribute("data-gsap-revealed", "true");
-        const inView = sec.getBoundingClientRect().top < window.innerHeight * 0.95;
-
-        if (inView) {
-          // Elements already in the viewport reveal smoothly without opacity flicker
+      const timer = setTimeout(() => {
+        // Only target sections that haven't been revealed yet
+        const sections = container.querySelectorAll<HTMLElement>(".gsap-reveal-section:not([data-gsap-revealed='true'])");
+        sections.forEach((sec) => {
+          sec.setAttribute("data-gsap-revealed", "true");
           gsap.fromTo(
             sec,
-            { opacity: 0.85, y: 8 },
+            { opacity: 0.9, y: 12 },
             {
               opacity: 1,
               y: 0,
-              duration: 0.35,
-              ease: "power2.out",
-              clearProps: "opacity,transform",
-            }
-          );
-        } else {
-          // Offscreen elements reveal on scroll via ScrollTrigger
-          gsap.fromTo(
-            sec,
-            { opacity: 0, y: 22 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.55,
+              duration: 0.4,
               ease: "power2.out",
               scrollTrigger: {
                 trigger: sec,
-                start: "top 92%",
+                start: "top 95%",
                 toggleActions: "play none none none",
                 once: true,
               },
               clearProps: "opacity,transform",
-            },
+            }
           );
-        }
-      });
+        });
+      }, 80);
+
+      return () => clearTimeout(timer);
     },
-    { scope: homeContainerRef, dependencies: [headings, catLoading, prodLoading] }
+    { scope: homeContainerRef, dependencies: [headings] }
   );
 
   // Use only database products
@@ -1130,407 +1173,429 @@ function PremiumStoreHome() {
           6. 🫘 PULSES & DAL (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {(prodLoading || dalPulsesProducts.length > 0) && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
-          products={dalPulsesProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "pulses-dal" }}
-          autoSlide={true}
-          intervalMs={4600}
-          isLoading={prodLoading && products.length === 0}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "शुद्ध दालें व दलहन" : "Pulses & Dal"}
+            products={dalPulsesProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "pulses-dal" }}
+            autoSlide={true}
+            intervalMs={4600}
+            isLoading={prodLoading && products.length === 0}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           7. 🛢️ OIL & GHEE (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {oilGheeProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
-          products={oilGheeProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "oil-ghee" }}
-          autoSlide={true}
-          intervalMs={4000}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "सरसों तेल व शुद्ध देसी घी" : "Mustard Oil & Desi Ghee"}
+            products={oilGheeProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "oil-ghee" }}
+            autoSlide={true}
+            intervalMs={4000}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           8. PROMO BANNER (Mid-Page Hook - Strictly rendered only when an active coupon is in DB)
           ═══════════════════════════════════════════════════════ */}
       {activePromoCoupon && (
-        <section className="container-page">
-          <div className="relative overflow-hidden rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-r from-[#FAF8F5] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)]">
-            <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
-            <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="space-y-1.5 text-center sm:text-left">
-                <div className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-3 py-1 text-[11px] font-bold text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] glint-effect">
-                  <Gift className="size-3.5" />
-                  <span>
-                    {lang === "hi"
-                      ? `विशेष ऑफर कोड: ${activePromoCoupon.code}`
-                      : `SPECIAL OFFER: ${activePromoCoupon.code}`}
-                  </span>
+        <LazySection minHeight="180px">
+          <section className="container-page">
+            <div className="relative overflow-hidden rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-r from-[#FAF8F5] via-white to-[#E6EFE8]/50 p-5 sm:p-7 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)]">
+              <div className="pointer-events-none absolute -right-8 -top-8 size-40 rounded-full bg-[#145A45]/[0.06] blur-2xl" />
+              <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="space-y-1.5 text-center sm:text-left">
+                  <div className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-3 py-1 text-[11px] font-bold text-white shadow-[0_2px_6px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] glint-effect">
+                    <Gift className="size-3.5" />
+                    <span>
+                      {lang === "hi"
+                        ? `विशेष ऑफर कोड: ${activePromoCoupon.code}`
+                        : `SPECIAL OFFER: ${activePromoCoupon.code}`}
+                    </span>
+                  </div>
+                  <h3 className="font-sans text-base sm:text-xl font-bold text-[#16201A] tracking-tight">
+                    {activePromoCoupon.discount_type === "percent"
+                      ? lang === "hi"
+                        ? `कोड ${activePromoCoupon.code} के साथ पाएं ${activePromoCoupon.value}% की छूट`
+                        : `Get ${activePromoCoupon.value}% OFF with code ${activePromoCoupon.code}`
+                      : lang === "hi"
+                        ? `कोड ${activePromoCoupon.code} के साथ पाएं ₹${activePromoCoupon.value} की सीधी छूट`
+                        : `Flat ₹${activePromoCoupon.value} OFF with code ${activePromoCoupon.code}`}
+                  </h3>
+                  <p className="text-xs text-[#3D4C44]">
+                    {activePromoCoupon.min_order > 0
+                      ? lang === "hi"
+                        ? `₹${activePromoCoupon.min_order} या उससे अधिक के ऑनलाइन किराना ऑर्डर पर मान्य।`
+                        : `Applicable on online grocery orders above ₹${activePromoCoupon.min_order}.`
+                      : activePromoCoupon.description || (lang === "hi"
+                        ? "चेकआउट पर कूपन कोड दर्ज करके तुरंत बचत पाएं।"
+                        : "Apply coupon code at checkout to save instantly.")}
+                  </p>
                 </div>
-                <h3 className="font-sans text-base sm:text-xl font-bold text-[#16201A] tracking-tight">
-                  {activePromoCoupon.discount_type === "percent"
-                    ? lang === "hi"
-                      ? `कोड ${activePromoCoupon.code} के साथ पाएं ${activePromoCoupon.value}% की छूट`
-                      : `Get ${activePromoCoupon.value}% OFF with code ${activePromoCoupon.code}`
-                    : lang === "hi"
-                      ? `कोड ${activePromoCoupon.code} के साथ पाएं ₹${activePromoCoupon.value} की सीधी छूट`
-                      : `Flat ₹${activePromoCoupon.value} OFF with code ${activePromoCoupon.code}`}
-                </h3>
-                <p className="text-xs text-[#3D4C44]">
-                  {activePromoCoupon.min_order > 0
-                    ? lang === "hi"
-                      ? `₹${activePromoCoupon.min_order} या उससे अधिक के ऑनलाइन किराना ऑर्डर पर मान्य।`
-                      : `Applicable on online grocery orders above ₹${activePromoCoupon.min_order}.`
-                    : activePromoCoupon.description || (lang === "hi"
-                      ? "चेकआउट पर कूपन कोड दर्ज करके तुरंत बचत पाएं।"
-                      : "Apply coupon code at checkout to save instantly.")}
-                </p>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    void navigator.clipboard.writeText(activePromoCoupon.code);
-                    toast.success(
-                      lang === "hi"
-                        ? `कूपन कोड ${activePromoCoupon.code} कॉपी हो गया!`
-                        : `Coupon code ${activePromoCoupon.code} copied!`
-                    );
-                  }}
-                  className="rounded-2xl border border-[#145A45]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] hover:bg-[#E6EFE8] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
-                  title={lang === "hi" ? "कूपन कोड कॉपी करें" : "Copy coupon code"}
-                >
-                  <Copy className="size-3.5" />
-                  <span>{activePromoCoupon.code}</span>
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(activePromoCoupon.code);
+                      toast.success(
+                        lang === "hi"
+                          ? `कूपन कोड ${activePromoCoupon.code} कॉपी हो गया!`
+                          : `Coupon code ${activePromoCoupon.code} copied!`
+                      );
+                    }}
+                    className="rounded-2xl border border-[#145A45]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#145A45] shadow-[0_2px_6px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)] hover:bg-[#E6EFE8] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                    title={lang === "hi" ? "कूपन कोड कॉपी करें" : "Copy coupon code"}
+                  >
+                    <Copy className="size-3.5" />
+                    <span>{activePromoCoupon.code}</span>
+                  </button>
 
-                <Button
-                  asChild
-                  className="rounded-2xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-5 sm:px-6 py-2.5 text-xs font-bold text-white shadow-[0_4px_12px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0E4333] hover:to-[#0A3628] transition-all cursor-pointer"
-                >
-                  <Link to="/shop">
-                    {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
-                  </Link>
-                </Button>
+                  <Button
+                    asChild
+                    className="rounded-2xl bg-gradient-to-r from-[#145A45] to-[#0D4433] px-5 sm:px-6 py-2.5 text-xs font-bold text-white shadow-[0_4px_12px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0E4333] hover:to-[#0A3628] transition-all cursor-pointer"
+                  >
+                    <Link to="/shop">
+                      {t.shopNow} <ArrowRight className="ml-1 size-3.5" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           9. 🌶️ SPICES & DRY FRUITS (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {spicesMasalaProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
-          products={spicesMasalaProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "spices-masala" }}
-          autoSlide={true}
-          intervalMs={4400}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "मसाले व सूखे मेवे" : "Spices & Dry Fruits"}
+            products={spicesMasalaProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "spices-masala" }}
+            autoSlide={true}
+            intervalMs={4400}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           10. ☕ SNACKS, TEA & BREAKFAST (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {snacksBreakfastProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
-          products={snacksBreakfastProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "namkeen-snacks" }}
-          autoSlide={true}
-          intervalMs={4100}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "चाय, नाश्ता व नमकीन" : "Tea, Snacks & Biscuits"}
+            products={snacksBreakfastProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "namkeen-snacks" }}
+            autoSlide={true}
+            intervalMs={4100}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           11. 🧽 CLEANING & HOUSEHOLD (Auto-Sliding Shelf)
           ═══════════════════════════════════════════════════════ */}
       {cleaningProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "सफाई, डिटर्जेंट व बर्तन" : "Cleaning & Household"}
-          products={cleaningProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "household-cleaning" }}
-          autoSlide={true}
-          intervalMs={4700}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "सफाई, डिटर्जेंट व बर्तन" : "Cleaning & Household"}
+            products={cleaningProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "household-cleaning" }}
+            autoSlide={true}
+            intervalMs={4700}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           11B. 🪔 POOJA SAMAGRI & AGARBATTI (Dedicated Shelf)
           ═══════════════════════════════════════════════════════ */}
       {poojaProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "पूजा सामग्री, अगरबत्ती व धूप" : "Pooja Samagri & Agarbatti"}
-          products={poojaProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "pooja-items" }}
-          autoSlide={true}
-          intervalMs={4300}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "पूजा सामग्री, अगरबत्ती व धूप" : "Pooja Samagri & Agarbatti"}
+            products={poojaProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "pooja-items" }}
+            autoSlide={true}
+            intervalMs={4300}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           11C. 🧴 PERSONAL CARE & SOAPS (Dedicated Shelf)
           ═══════════════════════════════════════════════════════ */}
       {personalCareProducts.length > 0 && (
-        <ProductSliderShelf
-          title={lang === "hi" ? "पर्सनल केयर, साबुन व हेयर ऑयल" : "Personal Care, Soaps & Hair Oil"}
-          products={personalCareProducts}
-          linkTo="/shop"
-          linkSearch={{ category: "personal-care" }}
-          autoSlide={true}
-          intervalMs={4500}
-        />
+        <LazySection minHeight="330px">
+          <ProductSliderShelf
+            title={lang === "hi" ? "पर्सनल केयर, साबुन व हेयर ऑयल" : "Personal Care, Soaps & Hair Oil"}
+            products={personalCareProducts}
+            linkTo="/shop"
+            linkSearch={{ category: "personal-care" }}
+            autoSlide={true}
+            intervalMs={4500}
+          />
+        </LazySection>
       )}
 
       {/* ═══════════════════════════════════════════════════════
           11B. 🛒 FULL CATALOG DISCOVERY BANNER (Dynamic Store Inventory)
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page">
-        <div className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#041A13] via-[#0A3628] to-[#03140F] border border-emerald-500/25 p-5 sm:p-7 md:p-8 lg:p-9 text-white shadow-[0_16px_48px_-8px_rgba(4,26,19,0.5),inset_0_1px_1px_rgba(255,255,255,0.18)]">
-          {/* Ambient Lighting & Glows */}
-          <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-[#F5D061]/12 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-emerald-400/15 blur-3xl" />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,208,97,0.06),transparent_50%)]" />
+      <LazySection minHeight="260px">
+        <section className="container-page">
+          <div className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#041A13] via-[#0A3628] to-[#03140F] border border-emerald-500/25 p-5 sm:p-7 md:p-8 lg:p-9 text-white shadow-[0_16px_48px_-8px_rgba(4,26,19,0.5),inset_0_1px_1px_rgba(255,255,255,0.18)]">
+            {/* Ambient Lighting & Glows */}
+            <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-[#F5D061]/12 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-emerald-400/15 blur-3xl" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,208,97,0.06),transparent_50%)]" />
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            {/* Left Column (7 cols on laptop): Core Narrative & Live Trust */}
-            <div className="lg:col-span-7 space-y-3.5 sm:space-y-4">
-              {/* Live Inventory Status Beacon */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-emerald-400/25 text-emerald-200 text-[11px] sm:text-xs font-semibold shadow-inner">
-                <span className="relative flex size-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full size-2 bg-emerald-400"></span>
-                </span>
-                <Store className="size-3.5 text-amber-300" />
-                <span>
-                  {lang === "hi"
-                    ? "लाइव स्टोर कैटलॉग • 100% शुद्ध राशन"
-                    : "Live Store Inventory • 100% Authentic"}
-                </span>
-              </div>
-
-              {/* Dynamic Impact Headline */}
-              <h3 className="font-sans text-xl sm:text-2xl md:text-[27px] lg:text-[30px] font-extrabold text-white tracking-normal leading-snug py-0.5">
-                {lang === "hi" ? (
-                  <>
-                    हमारे पास{" "}
-                    <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
-                      {products.length > 0 ? `${products.length}+` : "150+"}
-                    </span>{" "}
-                    से अधिक दैनिक किराना सामान उपलब्ध हैं
-                  </>
-                ) : (
-                  <>
-                    Explore Over{" "}
-                    <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
-                      {products.length > 0 ? `${products.length}+` : "150+"}
-                    </span>{" "}
-                    Quality Grocery Essentials
-                  </>
-                )}
-              </h3>
-
-              {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-emerald-100/85 font-normal leading-relaxed max-w-xl">
-                {lang === "hi"
-                  ? "दाल, चावल, शुद्ध तेल, मसाले, आटा, स्नैक्स और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती असली दुकान रेट पर!"
-                  : "Pure grains, pulses, cooking oils, spices, flour, snacks and household essentials at live fair store rates."}
-              </p>
-
-              {/* Dynamic Mini Metrics (Grid on mobile, flex on desktop) */}
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-1 text-xs text-emerald-100 font-medium">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Package className="size-3.5 text-amber-300 shrink-0" />
-                  <span className="truncate">
-                    <strong className="text-white font-bold">{products.length || 150}+</strong>{" "}
-                    {lang === "hi" ? "कुल सामान" : "Products"}
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+              {/* Left Column (7 cols on laptop): Core Narrative & Live Trust */}
+              <div className="lg:col-span-7 space-y-3.5 sm:space-y-4">
+                {/* Live Inventory Status Beacon */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-emerald-400/25 text-emerald-200 text-[11px] sm:text-xs font-semibold shadow-inner">
+                  <span className="relative flex size-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full size-2 bg-emerald-400"></span>
+                  </span>
+                  <Store className="size-3.5 text-amber-300" />
+                  <span>
+                    {lang === "hi"
+                      ? "लाइव स्टोर कैटलॉग • 100% शुद्ध राशन"
+                      : "Live Store Inventory • 100% Authentic"}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <Store className="size-3.5 text-emerald-300 shrink-0" />
-                  <span className="truncate">
-                    <strong className="text-white font-bold">{categories.length || 20}+</strong>{" "}
-                    {lang === "hi" ? "श्रेणियाँ" : "Categories"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  {isDeliveryEnabled ? (
+
+                {/* Dynamic Impact Headline */}
+                <h3 className="font-sans text-xl sm:text-2xl md:text-[27px] lg:text-[30px] font-extrabold text-white tracking-normal leading-snug py-0.5">
+                  {lang === "hi" ? (
                     <>
-                      <Truck className="size-3.5 text-teal-300 shrink-0" />
-                      <span className="truncate">{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                      हमारे पास{" "}
+                      <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
+                        {products.length > 0 ? `${products.length}+` : "150+"}
+                      </span>{" "}
+                      से अधिक दैनिक किराना सामान उपलब्ध हैं
                     </>
                   ) : (
                     <>
-                      <Store className="size-3.5 text-amber-300 shrink-0" />
-                      <span className="truncate">{lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}</span>
+                      Explore Over{" "}
+                      <span className="bg-gradient-to-r from-[#FDE68A] via-[#F5D061] to-[#E3B341] bg-clip-text text-transparent font-black">
+                        {products.length > 0 ? `${products.length}+` : "150+"}
+                      </span>{" "}
+                      Quality Grocery Essentials
                     </>
                   )}
-                </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
-                  <ShieldCheck className="size-3.5 text-emerald-300 shrink-0" />
-                  <span className="truncate">{lang === "hi" ? "उचित दुकान रेट" : "Store Rates"}</span>
+                </h3>
+
+                {/* Subtitle */}
+                <p className="text-xs sm:text-sm text-emerald-100/85 font-normal leading-relaxed max-w-xl">
+                  {lang === "hi"
+                    ? "दाल, चावल, शुद्ध तेल, मसाले, आटा, स्नैक्स और घरेलू ज़रूरत का हर सामान — सबसे किफ़ायती असली दुकान रेट पर!"
+                    : "Pure grains, pulses, cooking oils, spices, flour, snacks and household essentials at live fair store rates."}
+                </p>
+
+                {/* Dynamic Mini Metrics (Grid on mobile, flex on desktop) */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-1 text-xs text-emerald-100 font-medium">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                    <Package className="size-3.5 text-amber-300 shrink-0" />
+                    <span className="truncate">
+                      <strong className="text-white font-bold">{products.length || 150}+</strong>{" "}
+                      {lang === "hi" ? "कुल सामान" : "Products"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                    <Store className="size-3.5 text-emerald-300 shrink-0" />
+                    <span className="truncate">
+                      <strong className="text-white font-bold">{categories.length || 20}+</strong>{" "}
+                      {lang === "hi" ? "श्रेणियाँ" : "Categories"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                    {isDeliveryEnabled ? (
+                      <>
+                        <Truck className="size-3.5 text-teal-300 shrink-0" />
+                        <span className="truncate">{lang === "hi" ? "फास्ट डिलीवरी" : "Express Delivery"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Store className="size-3.5 text-amber-300 shrink-0" />
+                        <span className="truncate">{lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"}</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.07] border border-white/10 backdrop-blur-xs">
+                    <ShieldCheck className="size-3.5 text-emerald-300 shrink-0" />
+                    <span className="truncate">{lang === "hi" ? "उचित दुकान रेट" : "Store Rates"}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Column (5 cols on laptop): Category Visual Cards + Action Button */}
-            <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-3.5">
-              {/* Category Quick Showcase: 4 Popular Categories */}
-              {parentCategories.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
-                  {parentCategories.slice(0, 4).map((c) => (
-                    <Link
-                      key={c.id}
-                      to="/shop"
-                      search={{ category: c.slug } as never}
-                      className="group flex items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 hover:border-emerald-400/40 p-2 sm:p-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-95 backdrop-blur-xs shadow-xs cursor-pointer"
-                    >
-                      <img
-                        src={getCategoryThumbnail(c)}
-                        alt={getCategoryName(c)}
-                        loading="lazy"
-                        decoding="async"
-                        width={36}
-                        height={36}
-                        className="size-9 sm:size-10 rounded-xl object-cover border border-white/20 shrink-0 bg-white/10 group-hover:scale-105 transition-transform"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[11px] sm:text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate leading-snug py-0.5">
-                          {getCategoryName(c)}
-                        </span>
-                        <span className="text-[10px] text-emerald-200/70 font-medium flex items-center gap-0.5 mt-0.5">
-                          <span>{lang === "hi" ? "देखें" : "View"}</span>
-                          <span className="text-[8.5px] group-hover:translate-x-0.5 transition-transform">→</span>
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {/* Right Column (5 cols on laptop): Category Visual Cards + Action Button */}
+              <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-3.5">
+                {/* Category Quick Showcase: 4 Popular Categories */}
+                {parentCategories.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                    {parentCategories.slice(0, 4).map((c) => (
+                      <Link
+                        key={c.id}
+                        to="/shop"
+                        search={{ category: c.slug } as never}
+                        className="group flex items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/[0.07] hover:bg-white/[0.14] border border-white/12 hover:border-emerald-400/40 p-2 sm:p-2.5 transition-all duration-200 hover:scale-[1.02] active:scale-95 backdrop-blur-xs shadow-xs cursor-pointer"
+                      >
+                        <img
+                          src={getCategoryThumbnail(c)}
+                          alt={getCategoryName(c)}
+                          loading="lazy"
+                          decoding="async"
+                          width={36}
+                          height={36}
+                          className="size-9 sm:size-10 rounded-xl object-cover border border-white/20 shrink-0 bg-white/10 group-hover:scale-105 transition-transform"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <span className="block text-[11px] sm:text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate leading-snug py-0.5">
+                            {getCategoryName(c)}
+                          </span>
+                          <span className="text-[10px] text-emerald-200/70 font-medium flex items-center gap-0.5 mt-0.5">
+                            <span>{lang === "hi" ? "देखें" : "View"}</span>
+                            <span className="text-[8.5px] group-hover:translate-x-0.5 transition-transform">→</span>
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
-              {/* High-Impact Primary CTA Button */}
-              <Link
-                to="/shop"
-                className="group flex items-center justify-between w-full rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#06241B] px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer border border-white/80"
-              >
-                <div className="flex items-center gap-2.5">
-                  <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45] transition-transform group-hover:-rotate-6" />
-                  <span className="font-extrabold text-xs sm:text-sm">
-                    {lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-full bg-[#EAF3ED] px-2.5 py-0.5 text-[11px] sm:text-xs font-extrabold text-[#145A45]">
-                    {products.length > 0 ? `${products.length}+` : "150+"} {lang === "hi" ? "सामान" : "Items"}
-                  </span>
-                  <ArrowRight className="size-3.5 sm:size-4 text-[#145A45] transition-transform group-hover:translate-x-1" />
-                </div>
-              </Link>
+                {/* High-Impact Primary CTA Button */}
+                <Link
+                  to="/shop"
+                  className="group flex items-center justify-between w-full rounded-2xl bg-white hover:bg-[#FAF8F5] text-[#06241B] px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-bold shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer border border-white/80"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <ShoppingBag className="size-4 sm:size-4.5 text-[#145A45] transition-transform group-hover:-rotate-6" />
+                    <span className="font-extrabold text-xs sm:text-sm">
+                      {lang === "hi" ? "पूरी दुकान देखें" : "View Full Catalog"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-full bg-[#EAF3ED] px-2.5 py-0.5 text-[11px] sm:text-xs font-extrabold text-[#145A45]">
+                      {products.length > 0 ? `${products.length}+` : "150+"} {lang === "hi" ? "सामान" : "Items"}
+                    </span>
+                    <ArrowRight className="size-3.5 sm:size-4 text-[#145A45] transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </LazySection>
 
       {/* ═══════════════════════════════════════════════════════
           12. BOTTOM TRUST + WhatsApp CTA
           ═══════════════════════════════════════════════════════ */}
-      <section className="container-page">
-        <div className="rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-br from-white via-[#FAF8F5] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
-          {/* Title */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
-              <BadgeCheck className="size-4 text-[#145A45]" />
-              <span>
-                {lang === "hi"
-                  ? "रामनगर, महाराजगंज की विश्वसनीय दुकान"
-                  : "Trusted Store in Maharajganj"}
-              </span>
-            </div>
-            <h2 className="font-sans text-lg sm:text-xl font-bold text-[#16201A] tracking-tight">
-              {lang === "hi"
-                ? `क्यों खरीदें ${t.storeName} से?`
-                : `Why Choose ${t.storeName}?`}
-            </h2>
-          </div>
-
-          {/* Trust Points */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              {
-                icon: <CheckCircle2 className="size-5 text-[#145A45]" />,
-                title: lang === "hi" ? "100% असली सामान" : "100% Genuine",
-                desc: "Fortune, Aashirvaad, Tata, MDH, Amul",
-              },
-              {
-                icon: isDeliveryEnabled ? (
-                  <Truck className="size-5 text-[#145A45]" />
-                ) : (
-                  <Store className="size-5 text-[#145A45]" />
-                ),
-                title: isDeliveryEnabled
-                  ? (lang === "hi" ? "तेज़ होम डिलीवरी" : "Fast Delivery")
-                  : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"),
-                desc: isDeliveryEnabled
-                  ? (lang === "hi"
-                    ? `₹${settings?.free_delivery_threshold ?? 499}+ पर फ्री`
-                    : `Free on ₹${settings?.free_delivery_threshold ?? 499}+`)
-                  : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store"),
-              },
-              {
-                icon: <PhoneCall className="size-5 text-[#145A45]" />,
-                title: lang === "hi" ? "सीधा संपर्क" : "Direct Support",
-                desc: "+91 6388354988",
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 hover:-translate-y-0.5 transition-all"
-              >
-                <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] shrink-0">
-                  {item.icon}
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#16201A]">{item.title}</h4>
-                  <p className="text-[10px] text-[#3D4C44] mt-0.5">{item.desc}</p>
-                </div>
+      <LazySection minHeight="260px">
+        <section className="container-page">
+          <div className="rounded-3xl border border-[rgba(20,90,69,0.14)] bg-gradient-to-br from-white via-[#FAF8F5] to-[#E6EFE8]/40 p-6 sm:p-8 shadow-[0_6px_24px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] space-y-6">
+            {/* Title */}
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center gap-1.5 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] px-4 py-1.5 text-xs font-bold text-[#0F4A38] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)]">
+                <BadgeCheck className="size-4 text-[#145A45]" />
+                <span>
+                  {lang === "hi"
+                    ? "रामनगर, महाराजगंज की विश्वसनीय दुकान"
+                    : "Trusted Store in Maharajganj"}
+                </span>
               </div>
-            ))}
-          </div>
-
-          {/* WhatsApp CTA */}
-          <div className="text-center pt-1">
-            <a
-              href={waHref(storeWhatsApp, "Namaste! I want to order grocery.")}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#145A45] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all"
-            >
-              <MessageCircle className="size-4 fill-white text-[#145A45]" />
-              <span>
+              <h2 className="font-sans text-lg sm:text-xl font-bold text-[#16201A] tracking-tight">
                 {lang === "hi"
-                  ? "WhatsApp पर ऑर्डर करें"
-                  : "Order on WhatsApp"}
-              </span>
-            </a>
+                  ? `क्यों खरीदें ${t.storeName} से?`
+                  : `Why Choose ${t.storeName}?`}
+              </h2>
+            </div>
+
+            {/* Trust Points */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  icon: <CheckCircle2 className="size-5 text-[#145A45]" />,
+                  title: lang === "hi" ? "100% असली सामान" : "100% Genuine",
+                  desc: "Fortune, Aashirvaad, Tata, MDH, Amul",
+                },
+                {
+                  icon: isDeliveryEnabled ? (
+                    <Truck className="size-5 text-[#145A45]" />
+                  ) : (
+                    <Store className="size-5 text-[#145A45]" />
+                  ),
+                  title: isDeliveryEnabled
+                    ? (lang === "hi" ? "तेज़ होम डिलीवरी" : "Fast Delivery")
+                    : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup"),
+                  desc: isDeliveryEnabled
+                    ? (lang === "hi"
+                      ? `₹${settings?.free_delivery_threshold ?? 499}+ पर फ्री`
+                      : `Free on ₹${settings?.free_delivery_threshold ?? 499}+`)
+                    : (lang === "hi" ? "ऑनलाइन बुक करें, दुकान से लें" : "Order online, collect at store"),
+                },
+                {
+                  icon: <PhoneCall className="size-5 text-[#145A45]" />,
+                  title: lang === "hi" ? "सीधा संपर्क" : "Direct Support",
+                  desc: "+91 6388354988",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] hover:border-[#145A45]/40 hover:-translate-y-0.5 transition-all"
+                >
+                  <div className="grid size-9 place-items-center rounded-xl bg-[#E6EFE8] shrink-0">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#16201A]">{item.title}</h4>
+                    <p className="text-[10px] text-[#3D4C44] mt-0.5">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* WhatsApp CTA */}
+            <div className="text-center pt-1">
+              <a
+                href={waHref(storeWhatsApp, "Namaste! I want to order grocery.")}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#145A45] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all"
+              >
+                <MessageCircle className="size-4 fill-white text-[#145A45]" />
+                <span>
+                  {lang === "hi"
+                    ? "WhatsApp पर ऑर्डर करें"
+                    : "Order on WhatsApp"}
+                </span>
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </LazySection>
 
       
       {/* 13. AEO FREQUENTLY ASKED QUESTIONS (FAQ) */}
-      <HomeFaqSection storePhone={settings?.phone} storeWhatsApp={storeWhatsApp} />
+      <LazySection minHeight="300px">
+        <HomeFaqSection storePhone={settings?.phone} storeWhatsApp={storeWhatsApp} />
+      </LazySection>
 
       <Suspense fallback={null}>
         {orderModalOpen && <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />}

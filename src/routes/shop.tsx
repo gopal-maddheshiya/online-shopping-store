@@ -51,14 +51,14 @@ export const Route = createFileRoute("/shop")({
     max: typeof search["max"] === "number" ? search["max"] : undefined,
     instock: search["instock"] === true || search["instock"] === "true" ? true : undefined,
   }),
+  staleTime: 1000 * 60 * 10,
   loader: async ({ context }) => {
-    const prefetch = Promise.allSettled([
-      context.queryClient.ensureQueryData(categoriesQuery),
-      context.queryClient.ensureQueryData(productsQuery()),
-      context.queryClient.ensureQueryData(settingsQuery),
-    ]);
     if (typeof window === "undefined") {
-      await prefetch;
+      await Promise.allSettled([
+        context.queryClient.ensureQueryData(categoriesQuery),
+        context.queryClient.ensureQueryData(productsQuery()),
+        context.queryClient.ensureQueryData(settingsQuery),
+      ]);
     }
   },
   head: () => ({

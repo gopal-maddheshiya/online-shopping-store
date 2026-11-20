@@ -172,7 +172,7 @@ export function MobileNav() {
             <Link
               key={link.key}
               to={link.to}
-              preload="render"
+              preload="intent"
               search={link.search as never}
               onClick={handleClick}
               className="group relative flex flex-col items-center justify-center gap-1 py-1 cursor-pointer transition-transform active:scale-92 bg-transparent select-none"

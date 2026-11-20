@@ -89,12 +89,12 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!lenisRef.current) return;
     lenisRef.current.scrollTo(0, { immediate: true });
-    const rafId = requestAnimationFrame(() => {
+    const timer = setTimeout(() => {
       if (typeof window !== "undefined" && ScrollTrigger.getAll().length > 0) {
         ScrollTrigger.refresh();
       }
-    });
-    return () => cancelAnimationFrame(rafId);
+    }, 200);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   const scrollTo = (target: string | number | HTMLElement, options?: Parameters<Lenis["scrollTo"]>[1]) => {

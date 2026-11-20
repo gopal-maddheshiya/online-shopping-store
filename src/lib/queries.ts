@@ -269,6 +269,20 @@ const CACHED_SETTINGS_KEY = "agt.cached_settings_v2";
 const CACHED_CATEGORIES_KEY = "agt.cached_categories_v2";
 const CACHED_FEATURED_PRODUCTS_KEY = "agt.cached_featured_products_v2";
 const CACHED_PRODUCTS_KEY = "agt.cached_products_v2";
+const CACHED_COUPONS_KEY = "agt.cached_coupons_v1";
+
+function getCachedCouponsFallback(): Coupon[] {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(CACHED_COUPONS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+  }
+  return [];
+}
 
 function getCachedSettingsFallback(): StoreSettings {
   if (typeof window !== "undefined") {
@@ -520,13 +534,34 @@ export function totalStock(product: Product): number {
 export const couponsQuery = queryOptions({
   queryKey: ["coupons"],
   queryFn: async (): Promise<Coupon[]> => {
-    const { data, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []) as unknown as Coupon[];
+    return withTimeout(
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .from("coupons")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          const list = (data ?? []) as unknown as Coupon[];
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(CACHED_COUPONS_KEY, JSON.stringify(list));
+            } catch {}
+          }
+          return list;
+        } catch {
+          return getCachedCouponsFallback();
+        }
+      })(),
+      4000,
+      getCachedCouponsFallback(),
+    );
   },
+  initialData: () => {
+    if (typeof window === "undefined") return undefined;
+    return getCachedCouponsFallback();
+  },
+  staleTime: 1000 * 60 * 15, // 15 minutes in-memory freshness
 });
 
 export function isOpenNow(settings: StoreSettings | undefined): { open: boolean; text: string } {
