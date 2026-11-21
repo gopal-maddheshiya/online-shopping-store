@@ -142,9 +142,9 @@ export function AdminProducts({
   // Variant Presets Tab: "solid" | "liquid" | "pack"
   const [presetType, setPresetType] = useState<"solid" | "liquid" | "pack">("solid");
 
-  // Variants in Modal
+  // Variants in Modal (Clean empty values by default)
   const [variants, setVariants] = useState<VariantFormItem[]>([
-    { label: "1 kg", price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 },
+    { label: "", price: "", mrp: "", stock: "", low_stock_threshold: "" },
   ]);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -176,7 +176,7 @@ export function AdminProducts({
     setIsPopular(false);
     setIsActive(true);
     setPreviewLang("hi");
-    setVariants([{ label: "1 kg", price: 100, mrp: 120, stock: 50, low_stock_threshold: 5 }]);
+    setVariants([{ label: "", price: "", mrp: "", stock: "", low_stock_threshold: "" }]);
     setIsAddModalOpen(true);
   }
 
@@ -343,16 +343,16 @@ export function AdminProducts({
         // 7. Suggest variants only if variants are still untouched default
         const isUntouchedDefault =
           variants.length === 1 &&
-          variants[0]?.label === "1 kg" &&
-          (variants[0]?.price === 100 || variants[0]?.price === "");
+          (!variants[0]?.label || variants[0]?.label === "1 kg" || variants[0]?.label === "") &&
+          (!variants[0]?.price || variants[0]?.price === 100);
 
         if (isUntouchedDefault && res.data.variants && res.data.variants.length > 0) {
           setVariants(
             res.data.variants.map((v) => ({
               label: v.label,
-              price: v.price,
-              mrp: v.mrp,
-              stock: v.stock,
+              price: v.price || "",
+              mrp: v.mrp || "",
+              stock: 50,
               low_stock_threshold: 5,
             }))
           );
@@ -499,8 +499,23 @@ export function AdminProducts({
   function addVariantRow() {
     setVariants((prev) => [
       ...prev,
-      { label: "New Pack", price: 100, mrp: 120, stock: 25, low_stock_threshold: 5 },
+      { label: "", price: "", mrp: "", stock: "", low_stock_threshold: "" },
     ]);
+  }
+
+  function handlePresetSelect(preset: string) {
+    setVariants((prev) => {
+      // If only 1 variant exists and its label is empty, fill it directly
+      if (prev.length === 1 && prev[0] && !prev[0].label.trim()) {
+        const first = prev[0];
+        return [{ ...first, label: preset }];
+      }
+      return [
+        ...prev,
+        { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
+      ];
+    });
+    toast.success(`पैक चुना गया: ${preset}`);
   }
 
   function updateVariant(idx: number, field: string, value: string | number) {
@@ -518,12 +533,35 @@ export function AdminProducts({
   async function handleSaveProduct(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Please enter a product name");
+      setModalTab("basic");
+      toast.error("कृपया प्रोडक्ट का नाम दर्ज करें");
       return;
     }
     if (!slug.trim()) {
-      toast.error("Please provide a product slug URL");
+      setModalTab("basic");
+      toast.error("कृपया प्रोडक्ट का URL स्लग दर्ज करें");
       return;
+    }
+
+    if (variants.length === 0) {
+      setModalTab("pricing");
+      toast.error("कम से कम 1 पैक साइज / वैरिएंट होना आवश्यक है");
+      return;
+    }
+
+    // Validate that every variant has a label and price
+    for (let i = 0; i < variants.length; i++) {
+      const v = variants[i]!;
+      if (!v.label.trim()) {
+        setModalTab("pricing");
+        toast.error(`पैक #${i + 1} का साइज या वज़न (उदा. 1 kg, 500 g) दर्ज करें`);
+        return;
+      }
+      if (v.price === "" || Number(v.price) <= 0) {
+        setModalTab("pricing");
+        toast.error(`पैक "${v.label}" का बिक्री मूल्य (Price) दर्ज करें`);
+        return;
+      }
     }
 
     // Build structured clean images array
@@ -606,9 +644,9 @@ export function AdminProducts({
           const cleanLabel = (v.label || "Standard").trim();
           const cleanLabelHi = translateVariantLabel(cleanLabel, "hi");
           const vPrice = Number(v.price) || 0;
-          const vMrp = Number(v.mrp) || vPrice;
-          const vStock = Number(v.stock) || 0;
-          const vLowStock = Number(v.low_stock_threshold) || 5;
+          const vMrp = Number(v.mrp) > 0 ? Number(v.mrp) : vPrice;
+          const vStock = v.stock === "" ? 50 : Math.max(0, Number(v.stock));
+          const vLowStock = v.low_stock_threshold === "" ? 5 : Math.max(0, Number(v.low_stock_threshold));
 
           if (v.id) {
             await supabase
@@ -668,9 +706,9 @@ export function AdminProducts({
         const varPayload = variants.map((v, i) => {
           const cleanLabel = (v.label || "Standard").trim();
           const vPrice = Number(v.price) || 0;
-          const vMrp = Number(v.mrp) || vPrice;
-          const vStock = Number(v.stock) || 0;
-          const vLowStock = Number(v.low_stock_threshold) || 5;
+          const vMrp = Number(v.mrp) > 0 ? Number(v.mrp) : vPrice;
+          const vStock = v.stock === "" ? 50 : Math.max(0, Number(v.stock));
+          const vLowStock = v.low_stock_threshold === "" ? 5 : Math.max(0, Number(v.low_stock_threshold));
           return {
             product_id: newProd.id,
             label: cleanLabel,
@@ -1228,7 +1266,7 @@ export function AdminProducts({
                         placeholder="उदा. Fortune Kachi Ghani Mustard Oil, Tata Salt, Maggi Noodles..."
                         value={name}
                         onChange={(e) => handleNameChange(e.target.value)}
-                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white"
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white placeholder:font-normal placeholder:text-stone-400/80"
                       />
                     </div>
 
@@ -1241,7 +1279,7 @@ export function AdminProducts({
                         placeholder="उदा. फॉर्च्यून कच्ची घानी सरसों का तेल"
                         value={nameHi}
                         onChange={(e) => setNameHi(e.target.value)}
-                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white"
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 font-semibold bg-white placeholder:font-normal placeholder:text-stone-400/80"
                       />
                     </div>
 
@@ -1254,7 +1292,7 @@ export function AdminProducts({
                         placeholder="उदा. Fortune, Tata, Aashirvaad, Amul, MDH..."
                         value={brand}
                         onChange={(e) => setBrand(e.target.value)}
-                        className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white"
+                        className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white placeholder:font-normal placeholder:text-stone-400/80"
                       />
                     </div>
 
@@ -1332,7 +1370,7 @@ export function AdminProducts({
                               placeholder="fortune-mustard-oil"
                               value={slug}
                               onChange={(e) => setSlug(e.target.value)}
-                              className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white"
+                              className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9 bg-white placeholder:font-normal placeholder:text-stone-400/80"
                             />
                           </div>
 
@@ -1431,13 +1469,7 @@ export function AdminProducts({
                             <button
                               key={preset}
                               type="button"
-                              onClick={() => {
-                                setVariants((prev) => [
-                                  ...prev,
-                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
-                                ]);
-                                toast.success(`पैक जोड़ा गया: ${preset}`);
-                              }}
+                              onClick={() => handlePresetSelect(preset)}
                               className="rounded-lg bg-white border border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
                             >
                               + {preset}
@@ -1451,13 +1483,7 @@ export function AdminProducts({
                             <button
                               key={preset}
                               type="button"
-                              onClick={() => {
-                                setVariants((prev) => [
-                                  ...prev,
-                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
-                                ]);
-                                toast.success(`पैक जोड़ा गया: ${preset}`);
-                              }}
+                              onClick={() => handlePresetSelect(preset)}
                               className="rounded-lg bg-white border border-sky-300 text-sky-800 hover:bg-sky-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
                             >
                               + {preset}
@@ -1471,13 +1497,7 @@ export function AdminProducts({
                             <button
                               key={preset}
                               type="button"
-                              onClick={() => {
-                                setVariants((prev) => [
-                                  ...prev,
-                                  { label: preset, price: "", mrp: "", stock: 50, low_stock_threshold: 5 },
-                                ]);
-                                toast.success(`पैक जोड़ा गया: ${preset}`);
-                              }}
+                              onClick={() => handlePresetSelect(preset)}
                               className="rounded-lg bg-white border border-amber-300 text-amber-900 hover:bg-amber-50 px-2.5 py-1 font-bold shadow-2xs transition-colors text-[11px] cursor-pointer"
                             >
                               + {preset}
@@ -1516,8 +1536,26 @@ export function AdminProducts({
                                 placeholder="उदा. 1 L, 1 kg, 500 g"
                                 value={v.label}
                                 onChange={(e) => updateVariant(idx, "label", e.target.value)}
-                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold placeholder:font-normal placeholder:text-stone-400/80"
                               />
+                              {/* Quick 1-tap size chips for this variant row */}
+                              <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                                <span className="text-[9.5px] text-stone-600 font-medium">त्वरित:</span>
+                                {["250 g", "500 g", "1 kg", "2 kg", "5 kg", "1 L", "1 pc"].map((chip) => (
+                                  <button
+                                    key={chip}
+                                    type="button"
+                                    onClick={() => updateVariant(idx, "label", chip)}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                                      v.label === chip
+                                        ? "bg-[#145A45] text-white border-[#145A45]"
+                                        : "bg-white text-stone-600 hover:text-[#145A45] hover:bg-[#E6EFE8] border-stone-200"
+                                    }`}
+                                  >
+                                    {chip}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
 
                             {/* MRP */}
@@ -1530,13 +1568,13 @@ export function AdminProducts({
                                 inputMode="decimal"
                                 min="0"
                                 step="1"
-                                placeholder="150"
+                                placeholder="उदा. 150"
                                 value={v.mrp === "" ? "" : v.mrp}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   updateVariant(idx, "mrp", val === "" ? "" : Number(val));
                                 }}
-                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-bold text-stone-600"
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-bold text-stone-600 placeholder:font-normal placeholder:text-stone-400/80"
                               />
                             </div>
 
@@ -1550,13 +1588,13 @@ export function AdminProducts({
                                 inputMode="decimal"
                                 min="0"
                                 step="1"
-                                placeholder="135"
+                                placeholder="उदा. 135"
                                 value={v.price === "" ? "" : v.price}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   updateVariant(idx, "price", val === "" ? "" : Number(val));
                                 }}
-                                className="h-9.5 text-xs rounded-xl border-[#145A45]/40 font-extrabold text-[#145A45] bg-emerald-50/30"
+                                className="h-9.5 text-xs rounded-xl border-[#145A45]/40 font-extrabold text-[#145A45] bg-emerald-50/30 placeholder:font-normal placeholder:text-stone-400/80"
                               />
                             </div>
 
@@ -1570,13 +1608,13 @@ export function AdminProducts({
                                 inputMode="numeric"
                                 min="0"
                                 step="1"
-                                placeholder="50"
+                                placeholder="उदा. 50"
                                 value={v.stock === "" ? "" : v.stock}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   updateVariant(idx, "stock", val === "" ? "" : Number(val));
                                 }}
-                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold placeholder:font-normal placeholder:text-stone-400/80"
                               />
                             </div>
 
@@ -1590,13 +1628,13 @@ export function AdminProducts({
                                 inputMode="numeric"
                                 min="0"
                                 step="1"
-                                placeholder="5"
+                                placeholder="उदा. 5"
                                 value={v.low_stock_threshold === "" ? "" : v.low_stock_threshold}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   updateVariant(idx, "low_stock_threshold", val === "" ? "" : Number(val));
                                 }}
-                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold"
+                                className="h-9.5 text-xs rounded-xl border-[#E8E4DA] font-semibold placeholder:font-normal placeholder:text-stone-400/80"
                               />
                             </div>
                           </div>
@@ -1875,7 +1913,9 @@ export function AdminProducts({
                           </div>
                           <div className="flex items-center justify-between pt-1 border-t border-[#E8E4DA]">
                             <span className="text-xs font-extrabold text-[#145A45]">
-                              {inr(variants[0]?.price ?? 100)}
+                              {variants[0]?.price && Number(variants[0].price) > 0
+                                ? inr(Number(variants[0].price))
+                                : "₹—"}
                             </span>
                             <span className="rounded-md bg-[#145A45] px-2 py-0.5 text-[9px] font-bold text-white">
                               {previewLang === "hi" ? "जोड़ें +" : "Add +"}
