@@ -265,11 +265,22 @@ export async function withTimeout<T>(
   });
 }
 
-const CACHED_SETTINGS_KEY = "agt.cached_settings_v2";
-const CACHED_CATEGORIES_KEY = "agt.cached_categories_v2";
-const CACHED_FEATURED_PRODUCTS_KEY = "agt.cached_featured_products_v2";
-const CACHED_PRODUCTS_KEY = "agt.cached_products_v2";
-const CACHED_COUPONS_KEY = "agt.cached_coupons_v1";
+const CACHED_SETTINGS_KEY = "agt.cached_settings_v3";
+const CACHED_CATEGORIES_KEY = "agt.cached_categories_v3";
+const CACHED_FEATURED_PRODUCTS_KEY = "agt.cached_featured_products_v3";
+const CACHED_PRODUCTS_KEY = "agt.cached_products_v3";
+const CACHED_COUPONS_KEY = "agt.cached_coupons_v2";
+
+// Clean up legacy v2 keys from earlier sessions to prevent stale storage accumulation
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem("agt.cached_products_v2");
+    localStorage.removeItem("agt.cached_featured_products_v2");
+    localStorage.removeItem("agt.cached_categories_v2");
+    localStorage.removeItem("agt.cached_settings_v2");
+    localStorage.removeItem("agt.cached_coupons_v1");
+  } catch {}
+}
 
 function getCachedCouponsFallback(): Coupon[] {
   if (typeof window !== "undefined") {
@@ -373,11 +384,7 @@ export const settingsQuery = queryOptions({
       getCachedSettingsFallback(),
     );
   },
-  initialData: () => {
-    if (typeof window === "undefined") return undefined;
-    return getCachedSettingsFallback();
-  },
-  staleTime: 1000 * 60 * 30, // 30 minutes in-memory freshness (Realtime handles instant updates)
+  staleTime: 1000 * 60 * 5, // 5 minutes in-memory freshness (Realtime handles instant updates)
 });
 
 export const categoriesQuery = queryOptions({
@@ -406,12 +413,7 @@ export const categoriesQuery = queryOptions({
       getCachedCategoriesFallback(),
     );
   },
-  initialData: () => {
-    if (typeof window === "undefined") return undefined;
-    const c = getCachedCategoriesFallback();
-    return c.length > 0 ? c : undefined;
-  },
-  staleTime: 1000 * 60 * 30, // 30 minutes in-memory freshness (Realtime handles instant updates)
+  staleTime: 1000 * 60 * 5, // 5 minutes in-memory freshness (Realtime handles instant updates)
 });
 
 export function productsQuery(opts: { activeOnly?: boolean } = {}) {
@@ -443,12 +445,7 @@ export function productsQuery(opts: { activeOnly?: boolean } = {}) {
         getCachedProductsFallback(),
       );
     },
-    initialData: () => {
-      if (typeof window === "undefined") return undefined;
-      const p = getCachedProductsFallback();
-      return p.length > 0 ? p : undefined;
-    },
-    staleTime: 1000 * 60 * 15, // 15 minutes (Realtime handles instant updates)
+    staleTime: 1000 * 60, // 1 minute freshness (Realtime handles instant updates)
   });
 }
 
@@ -484,12 +481,7 @@ export function featuredProductsQuery(limit: number = 12) {
         getCachedFeaturedProductsFallback(limit),
       );
     },
-    initialData: () => {
-      if (typeof window === "undefined") return undefined;
-      const f = getCachedFeaturedProductsFallback(limit);
-      return f.length > 0 ? f : undefined;
-    },
-    staleTime: 1000 * 60 * 15, // 15 minutes (Realtime handles instant updates)
+    staleTime: 1000 * 60, // 1 minute freshness (Realtime handles instant updates)
   });
 }
 
@@ -557,11 +549,7 @@ export const couponsQuery = queryOptions({
       getCachedCouponsFallback(),
     );
   },
-  initialData: () => {
-    if (typeof window === "undefined") return undefined;
-    return getCachedCouponsFallback();
-  },
-  staleTime: 1000 * 60 * 15, // 15 minutes in-memory freshness
+  staleTime: 1000 * 60 * 5, // 5 minutes in-memory freshness
 });
 
 export function isOpenNow(settings: StoreSettings | undefined): { open: boolean; text: string } {

@@ -67,7 +67,7 @@ const SmartRationModal = lazy(() =>
 );
 
 export const Route = createFileRoute("/")({
-  staleTime: 1000 * 60 * 10,
+  staleTime: 1000 * 60,
   loader: async ({ context }) => {
     // Only prefetch during SSR; on client transitions, queries resolve instantly from memory/cache
     if (typeof window === "undefined") {

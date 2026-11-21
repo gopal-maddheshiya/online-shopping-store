@@ -51,7 +51,7 @@ export const Route = createFileRoute("/shop")({
     max: typeof search["max"] === "number" ? search["max"] : undefined,
     instock: search["instock"] === true || search["instock"] === "true" ? true : undefined,
   }),
-  staleTime: 1000 * 60 * 10,
+  staleTime: 1000 * 60,
   loader: async ({ context }) => {
     if (typeof window === "undefined") {
       await Promise.allSettled([
