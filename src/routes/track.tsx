@@ -307,11 +307,7 @@ function TrackPage() {
         1,
       );
 
-      toast.success(
-        language === "hi"
-          ? `${getProductName(item)} बास्केट में जोड़ा गया!`
-          : `Added ${getProductName(item)} to basket!`,
-      );
+
     } catch (e) {
       console.error("Add single item error:", e);
       toast.error(language === "hi" ? "सामान जोड़ने में विफल" : "Failed to add item");

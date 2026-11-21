@@ -18,6 +18,7 @@ import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvide
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { FloatingCartBar } from "@/components/cart/FloatingCartBar";
 import { Toaster } from "@/components/ui/sonner";
 import { useRealtimeSync } from "@/lib/realtime-sync";
 import { settingsQuery } from "@/lib/queries";
@@ -314,9 +315,10 @@ function RootComponent() {
                       <Outlet />
                     </main>
                     {!isAdminRoute && <Footer />}
+                    {!isAdminRoute && <FloatingCartBar />}
                     {!isAdminRoute && <MobileNav />}
                   </div>
-                  <Toaster position="top-center" richColors />
+                  <Toaster position="top-center" duration={3500} richColors />
                   <Suspense fallback={null}>
                     <GoogleAuthPromptModal />
                   </Suspense>

@@ -3,7 +3,7 @@ import {
   Home,
   LayoutGrid,
   User,
-  ShoppingBag,
+  Package,
 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
@@ -16,7 +16,7 @@ import { gsap } from "@/lib/gsap";
    TAB ICON COMPONENT (CLEAN OFFICIAL LUCIDE ICONS + GSAP SPRING)
    ═════════════════════════════════════════════════════════════════ */
 
-type TabName = "home" | "shop" | "account" | "cart";
+type TabName = "home" | "shop" | "orders" | "account";
 
 function TabIcon({
   name,
@@ -60,8 +60,8 @@ function TabIcon({
     <div ref={iconRef} className="relative flex items-center justify-center">
       {name === "home" && <Home className={iconClass} />}
       {name === "shop" && <LayoutGrid className={iconClass} />}
+      {name === "orders" && <Package className={iconClass} />}
       {name === "account" && <User className={iconClass} />}
-      {name === "cart" && <ShoppingBag className={iconClass} />}
 
       {badge && badge > 0 ? (
         <span
@@ -122,17 +122,18 @@ export function MobileNav() {
   const isIdentified = Boolean(user || hasLocalPhone);
   const accountLabel = isIdentified
     ? lang === "hi"
-      ? "मेरा खाता"
-      : "My Account"
+      ? "खाता"
+      : "Account"
     : lang === "hi"
-      ? "लॉगिन / ट्रैक"
-      : "Login / Track";
+      ? "लॉगिन"
+      : "Login";
+  const ordersLabel = lang === "hi" ? "ऑर्डर" : "Orders";
 
   const links: NavItem[] = [
     { key: "home", to: "/", label: t.home },
     { key: "shop", to: "/shop", label: t.categories },
+    { key: "orders", to: "/track", label: ordersLabel },
     { key: "account", to: "/account", label: accountLabel },
-    { key: "cart", to: "/cart", label: t.cart, badge: cartCount },
   ];
 
   return (
@@ -143,25 +144,13 @@ export function MobileNav() {
     >
       <div className="grid grid-cols-4 items-center h-[3.75rem]">
         {links.map((link) => {
-          const isCart = link.to === "/cart";
           const isActive =
-            currentPath === link.to ||
-            (link.to === "/account" &&
-              (currentPath === "/account" || currentPath === "/track"));
+            link.to === "/"
+              ? currentPath === "/"
+              : currentPath.startsWith(link.to);
 
           const handleClick = (e: React.MouseEvent) => {
-            // 1. If currently on cart, clicking cart goes back
-            if (isCart && currentPath === "/cart") {
-              e.preventDefault();
-              if (typeof window !== "undefined" && window.history.length > 1) {
-                window.history.back();
-              } else {
-                void navigate({ to: "/" });
-              }
-              return;
-            }
-
-            // 2. Lenis Tap-to-Scroll-to-Top: If already on this route, butter-smooth scroll to top!
+            // Lenis Tap-to-Scroll-to-Top: If already on this route, butter-smooth scroll to top!
             if (currentPath === link.to) {
               e.preventDefault();
               scrollTo(0, { duration: 0.85 });

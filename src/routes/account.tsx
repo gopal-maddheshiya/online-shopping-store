@@ -1725,7 +1725,6 @@ export function AccountPage() {
                             imageUrl: item.imageUrl ?? null,
                             stock: 99,
                           });
-                          toast.success(`${item.name} ${t.added.toLowerCase()}`);
                         }}
                         className="h-7.5 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0E4333] hover:from-[#0F4A38] hover:to-[#07271D] px-2.5 text-[11px] font-bold text-white shadow-[0_1px_3px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-[0.97] transition-all cursor-pointer"
                       >

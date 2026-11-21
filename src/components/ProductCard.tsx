@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { Plus, Minus, Check, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
 import { useCartActions, useCartItemQty } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
 import { getProductImage, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
@@ -62,10 +61,7 @@ function ProductCardInner({ product }: { product: Product }) {
       imageUrl: imgSrc,
       stock: activeVariant.stock,
     });
-    toast.success(`${localizedProductName} ${t.added.toLowerCase()}`, {
-      icon: <Check className="size-4 text-[#145A45]" />,
-    });
-  }, [activeVariant, add, product, localizedProductName, getVariantLabel, imgSrc, t.added]);
+  }, [activeVariant, add, product, localizedProductName, getVariantLabel, imgSrc]);
 
   const handleDecreaseQty = useCallback(() => {
     if (!activeVariant) return;

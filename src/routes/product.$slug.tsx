@@ -219,9 +219,6 @@ function ProductPage() {
       },
       qty,
     );
-    toast.success(`${qty}x ${localizedName} ${t.added.toLowerCase()}`, {
-      icon: <Check className="size-4 text-[#145A45]" />,
-    });
   };
 
   const related = (all ?? [])
