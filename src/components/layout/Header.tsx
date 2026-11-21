@@ -40,7 +40,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
 import { settingsQuery, categoriesQuery, productsQuery, isOpenNow } from "@/lib/queries";
@@ -51,37 +50,12 @@ import { RotatingSearchInput } from "@/components/layout/RotatingSearchInput";
 
 export function Header() {
   const { data: settings } = useQuery(settingsQuery);
-  const { count: cartCount, subtotal } = useCart();
   const { user, profile } = useAuth();
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
-  const isOnCart = currentPath === "/cart";
-
-  const handleCartClick = (e: React.MouseEvent) => {
-    if (isOnCart) {
-      e.preventDefault();
-      if (typeof window !== "undefined" && window.history.length > 1) {
-        window.history.back();
-      } else {
-        void navigate({ to: "/" });
-      }
-    }
-  };
 
   const [term, setTerm] = useState("");
-  const [cartBounce, setCartBounce] = useState(false);
-
-  useEffect(() => {
-    if (cartCount > 0) {
-      setCartBounce(true);
-      const timer = setTimeout(() => setCartBounce(false), 500);
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-    return () => {};
-  }, [cartCount]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -534,38 +508,6 @@ export function Header() {
                 </span>
               </Link>
 
-              {/* Desktop Cart Button (Always visible on Laptop/PC) */}
-              <Link
-                to="/cart"
-                onClick={handleCartClick}
-                title={t.cart}
-                className={`hidden md:flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer shrink-0 border ${
-                  isOnCart
-                    ? "bg-[#0A3628] text-white border-[#0A3628] ring-2 ring-[#145A45]/40 shadow-xs"
-                    : "bg-gradient-to-b from-[#145A45] to-[#0D4433] text-white border-[#0D4433] shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_4px_14px_rgba(20,90,69,0.35)] active:scale-98"
-                }`}
-              >
-                <div className="relative flex items-center">
-                  <ShoppingBag className="size-4" />
-                  {cartCount > 0 && (
-                    <span className={`absolute -top-2 -right-2 grid size-4.5 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9.5px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60 ${cartBounce ? "animate-cart-bounce" : ""}`}>
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-                <span className="font-bold text-xs tracking-tight">
-                  {cartCount > 0 ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="hidden sm:inline font-bold">{cartCount} {lang === "hi" ? "सामान" : "items"}</span>
-                      <span className="hidden sm:inline opacity-40">|</span>
-                      <span>{inr(subtotal)}</span>
-                    </span>
-                  ) : (
-                    <span>{t.cart}</span>
-                  )}
-                </span>
-              </Link>
-
             {/* Mobile Actions: Phone & WhatsApp paired together seamlessly */}
             <div className="flex md:hidden items-center gap-1.5 shrink-0">
               {/* Phone Order Direct Button */}
@@ -601,28 +543,6 @@ export function Header() {
                   <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.8 7.37 7.5 3.67 12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15ZM16.56 14.43C16.31 14.31 15.08 13.7 14.85 13.62C14.62 13.53 14.46 13.49 14.29 13.74C14.13 13.99 13.64 14.56 13.49 14.73C13.34 14.89 13.2 14.91 12.95 14.79C12.7 14.67 11.89 14.4 10.93 13.55C10.18 12.89 9.68 12.07 9.53 11.82C9.38 11.57 9.51 11.44 9.64 11.31C9.75 11.2 9.89 11.02 10.01 10.87C10.13 10.72 10.18 10.62 10.26 10.45C10.34 10.28 10.3 10.14 10.24 10.02C10.18 9.9 9.69 8.69 9.48 8.19C9.28 7.7 9.07 7.77 8.92 7.76C8.78 7.75 8.61 7.75 8.45 7.75C8.28 7.75 8.01 7.81 7.79 8.05C7.56 8.3 6.93 8.89 6.93 10.09C6.93 11.29 7.8 12.45 7.92 12.61C8.04 12.77 9.64 15.25 12.1 16.31C12.68 16.56 13.14 16.71 13.49 16.82C14.07 17.01 14.6 16.98 15.02 16.92C15.49 16.85 16.47 16.33 16.67 15.75C16.88 15.18 16.88 14.69 16.81 14.58C16.75 14.47 16.58 14.41 16.33 14.29L16.56 14.43Z" />
                 </svg>
               </a>
-
-              {/* Cart Pill (when items in cart) */}
-              {cartCount > 0 && (
-                <Link
-                  to="/cart"
-                  onClick={handleCartClick}
-                  title={t.cart}
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer border ${
-                    isOnCart
-                      ? "bg-[#0A3628] text-white border-[#0A3628] ring-2 ring-[#145A45]/40 shadow-xs"
-                      : "bg-gradient-to-b from-[#145A45] to-[#0D4433] text-white border-[#0D4433] shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-98"
-                  }`}
-                >
-                  <div className="relative flex items-center">
-                    <ShoppingBag className="size-3.5" />
-                    <span className={`absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-gradient-to-r from-[#D97706] to-[#B45309] text-[9px] font-bold text-white shadow-[0_2px_4px_rgba(217,119,6,0.3)] border border-white/60 ${cartBounce ? "animate-cart-bounce" : ""}`}>
-                      {cartCount}
-                    </span>
-                  </div>
-                  <span className="font-bold text-[11px] tracking-tight">{inr(subtotal)}</span>
-                </Link>
-              )}
             </div>
 
           </div>
