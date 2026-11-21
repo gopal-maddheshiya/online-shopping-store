@@ -78,20 +78,20 @@ function ProductCardInner({ product }: { product: Product }) {
       className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-2 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* 1. Top Badges: Premium Quick-Commerce Discount Tag (Left) */}
-      {off > 0 && (
-        <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none select-none">
-          <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-black tracking-tight shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/25 leading-none">
-            <span className="font-sans font-black">{off}%</span>
-            <span className="text-[9px] sm:text-[9.5px] font-bold tracking-normal opacity-95">
-              {lang === "hi" ? "छूट" : "OFF"}
-            </span>
-          </span>
-        </div>
-      )}
-
-      {/* 2. Product Image Canvas (Restored full 1:1 square canvas so images never look patla/compressed) */}
+      {/* 1. Product Image Canvas (Restored full 1:1 square canvas so images never look patla/compressed) */}
       <div className="relative w-full">
+        {/* Top-Left: Luxury Royal Emerald Discount Tag */}
+        {off > 0 && (
+          <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none select-none">
+            <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-black tracking-tight shadow-[0_2px_6px_rgba(12,56,42,0.32),inset_0_1px_0_rgba(255,255,255,0.2)] border border-emerald-400/35 backdrop-blur-xs leading-none">
+              <span className="font-sans font-black text-white">{off}%</span>
+              <span className="text-[9px] sm:text-[9.5px] font-extrabold text-amber-300 tracking-tight">
+                {lang === "hi" ? "छूट" : "OFF"}
+              </span>
+            </span>
+          </div>
+        )}
+
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}

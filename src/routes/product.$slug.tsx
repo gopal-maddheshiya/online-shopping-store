@@ -311,9 +311,9 @@ function ProductPage() {
             badge={
               off > 0 ? (
                 <div className="select-none">
-                  <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#3B82F6] text-white px-2.5 py-1 text-xs font-black shadow-[0_2px_8px_rgba(29,78,216,0.32)] border border-white/30">
-                    <span className="font-sans font-black">{off}%</span>
-                    <span className="text-[10px] font-bold opacity-90">{lang === "hi" ? "छूट" : "OFF"}</span>
+                  <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white px-2.5 py-1 text-xs font-black shadow-[0_2px_6px_rgba(12,56,42,0.32),inset_0_1px_0_rgba(255,255,255,0.2)] border border-emerald-400/35 backdrop-blur-xs leading-none">
+                    <span className="font-sans font-black text-white">{off}%</span>
+                    <span className="text-[10px] font-extrabold text-amber-300 tracking-tight">{lang === "hi" ? "छूट" : "OFF"}</span>
                   </span>
                 </div>
               ) : null
@@ -405,7 +405,7 @@ function ProductPage() {
                   <span className="text-sm sm:text-base text-[#878787] line-through font-semibold price-flipkart">
                     {inr(variant.mrp)}
                   </span>
-                  <span className="rounded-md bg-blue-50 text-[#1D4ED8] border border-blue-200/80 px-2 py-0.5 text-xs font-black tracking-tight">
+                  <span className="rounded-md bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/30 px-2 py-0.5 text-xs font-black tracking-tight shadow-2xs">
                     {off}% {lang === "hi" ? "छूट" : "OFF"}
                   </span>
                 </>
@@ -470,7 +470,7 @@ function ProductPage() {
                       )}
                     </div>
                     {vOff > 0 && (
-                      <span className="mt-1 text-[9.5px] font-bold text-[#256FEF] bg-blue-50 self-start px-1 py-0.2 rounded">
+                      <span className="mt-1 text-[9.5px] font-bold text-[#0F4A38] bg-[#E6EFE8] border border-[#145A45]/20 self-start px-1.5 py-0.2 rounded-md">
                         {vOff}% {lang === "hi" ? "छूट" : "OFF"}
                       </span>
                     )}
