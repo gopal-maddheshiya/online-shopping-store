@@ -124,7 +124,7 @@ function ProductCardInner({ product }: { product: Product }) {
                 e.currentTarget.src = DEFAULT_PRODUCT_PLACEHOLDER;
               }
             }}
-            className={`size-full object-contain mx-auto transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
+            className={`size-full object-contain mx-auto rounded-lg sm:rounded-xl transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
               imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
           />

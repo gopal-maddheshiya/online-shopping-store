@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Maximize2,
-  ZoomIn,
-  ZoomOut,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  RotateCcw,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
-import { getImageTypeLabel, DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
+import { DEFAULT_PRODUCT_PLACEHOLDER } from "@/lib/product-images";
 import type { ProductImage } from "@/lib/queries";
 
 type ProductImageGalleryProps = {
@@ -28,7 +20,6 @@ export function ProductImageGallery({
   const { lang } = useLanguage();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [zoomScale, setZoomScale] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Safe fallback if images array is empty
@@ -107,15 +98,10 @@ export function ProductImageGallery({
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setIsLightboxOpen(false);
-        setZoomScale(1);
       } else if (e.key === "ArrowRight") {
         goToNext();
       } else if (e.key === "ArrowLeft") {
         goToPrev();
-      } else if (e.key === "+" || e.key === "=") {
-        setZoomScale((s) => Math.min(s + 0.5, 3));
-      } else if (e.key === "-") {
-        setZoomScale((s) => Math.max(s - 0.5, 1));
       }
     }
 
@@ -128,77 +114,26 @@ export function ProductImageGallery({
     };
   }, [isLightboxOpen, goToNext, goToPrev]);
 
-  useEffect(() => {
-    setZoomScale(1);
-  }, [activeIndex]);
-
-  function getThumbnailLabel(type: ProductImage["type"], idx: number): string {
-    switch (type) {
-      case "front":
-        return lang === "hi" ? "सामने (Front)" : "Front View";
-      case "back":
-        return lang === "hi" ? "पीछे (Back)" : "Back View";
-      case "detail":
-        return lang === "hi" ? "न्यूट्रिशन (Detail)" : "Nutritional Info";
-      case "additional":
-        return lang === "hi" ? `फोटो ${idx + 1}` : `Photo ${idx + 1}`;
-      default:
-        return `#${idx + 1}`;
-    }
-  }
-
   return (
     <div className={`flex flex-col gap-3 select-none ${className}`}>
-      {/* 1. MAIN CLEAN 1:1 SQUARE IMAGE STAGE (Balanced Height on Mobile) */}
-      <div className="relative w-full max-w-[340px] sm:max-w-[420px] mx-auto">
+      {/* 1. MAIN EXPANSIVE STAGE (Occupies full column width naturally, unboxed) */}
+      <div className="relative w-full mx-auto">
         <div
-          className="group relative w-full aspect-square max-h-[300px] sm:max-h-[400px] rounded-2xl bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_4px_20px_-4px_rgba(20,90,69,0.08),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden flex items-center justify-center p-3 sm:p-4"
+          onClick={() => setIsLightboxOpen(true)}
+          className="group relative w-full aspect-square rounded-2xl sm:rounded-3xl bg-white border border-gray-100 sm:border-gray-200/80 shadow-2xs overflow-hidden flex items-center justify-center p-3 sm:p-6 cursor-pointer"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          title={lang === "hi" ? "फोटो बड़ी देखने के लिए क्लिक करें" : "Click to view full photo"}
         >
           {/* Top-Left: Modern floating discount badge */}
           {badge && (
-            <div className="absolute top-2.5 left-2.5 sm:left-3 z-20 pointer-events-none">
+            <div className="absolute top-3 left-3 z-20 pointer-events-none">
               {badge}
             </div>
           )}
 
-          {/* Top-Right: Clean Zoom / Fullscreen Button */}
-          <button
-            type="button"
-            onClick={() => setIsLightboxOpen(true)}
-            title={lang === "hi" ? "बड़ा करके देखें (ज़ूम)" : "Click to zoom"}
-            aria-label="View Fullscreen Image"
-            className="absolute top-2.5 right-2.5 z-20 flex size-8 items-center justify-center rounded-full bg-white/90 text-[#374151] shadow-2xs border border-[#E5E7EB] transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 backdrop-blur-xs cursor-pointer"
-          >
-            <Maximize2 className="size-3.5" />
-          </button>
-
-          {/* Image View Indicator Pill (e.g. Front View / Back View) */}
-          {hasMultipleImages && (
-            <div className="absolute bottom-3.5 left-3.5 z-20 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-xs px-3 py-1 text-[11px] font-bold text-[#145A45] border border-[#EAE6DC] shadow-xs">
-              <span
-                className={`size-1.5 rounded-full ${
-                  activeImage.type === "back"
-                    ? "bg-[#D97706]"
-                    : activeImage.type === "detail"
-                    ? "bg-emerald-600"
-                    : "bg-[#145A45]"
-                }`}
-              />
-              <span>{getThumbnailLabel(activeImage.type, activeIndex)}</span>
-            </div>
-          )}
-
-          {/* Image Counter (e.g. 1 / 3) */}
-          {hasMultipleImages && (
-            <div className="absolute bottom-3.5 right-3.5 z-20 rounded-full bg-[#16201A]/80 backdrop-blur-xs px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs pointer-events-none">
-              {activeIndex + 1} / {safeImages.length}
-            </div>
-          )}
-
-          {/* Desktop Hover Arrows */}
+          {/* Desktop Hover Arrows (if multiple images) */}
           {hasMultipleImages && (
             <>
               <button
@@ -208,9 +143,9 @@ export function ProductImageGallery({
                   goToPrev();
                 }}
                 aria-label="Previous Image"
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 z-20 hidden sm:flex size-9 items-center justify-center rounded-full bg-white/95 text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 cursor-pointer"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 hidden sm:flex size-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm border border-gray-200 opacity-0 group-hover:opacity-100 transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 cursor-pointer"
               >
-                <ChevronLeft className="size-5" />
+                <ChevronLeft className="size-4" />
               </button>
               <button
                 type="button"
@@ -219,18 +154,15 @@ export function ProductImageGallery({
                   goToNext();
                 }}
                 aria-label="Next Image"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 hidden sm:flex size-9 items-center justify-center rounded-full bg-white/95 text-[#16201A] shadow-md border border-[#EAE6DC] opacity-0 group-hover:opacity-100 transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 hidden sm:flex size-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm border border-gray-200 opacity-0 group-hover:opacity-100 transition-all hover:bg-[#145A45] hover:text-white hover:border-[#145A45] active:scale-95 cursor-pointer"
               >
-                <ChevronRight className="size-5" />
+                <ChevronRight className="size-4" />
               </button>
             </>
           )}
 
-          {/* Centered Crisp Product Image */}
-          <div
-            onClick={() => setIsLightboxOpen(true)}
-            className="size-full flex items-center justify-center cursor-zoom-in overflow-hidden"
-          >
+          {/* Centered Crisp Product Image (fills nicely with soft rounded corners) */}
+          <div className="size-full flex items-center justify-center overflow-hidden">
             <img
               key={activeImage.url}
               src={activeImage.url}
@@ -243,7 +175,7 @@ export function ProductImageGallery({
                   target.src = DEFAULT_PRODUCT_PLACEHOLDER;
                 }
               }}
-              className={`max-h-full max-w-full w-auto h-auto object-contain object-center transition-all duration-200 ease-out select-none drop-shadow-sm ${
+              className={`max-h-full max-w-full w-auto h-auto object-contain object-center rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 ease-out select-none drop-shadow-xs ${
                 isTransitioning ? "opacity-30 scale-98" : "opacity-100 scale-100"
               }`}
             />
@@ -251,10 +183,10 @@ export function ProductImageGallery({
         </div>
       </div>
 
-      {/* 2. REFINED THUMBNAIL SELECTOR STRIP */}
+      {/* 2. BLINKIT-STYLE CLEAN THUMBNAIL SELECTOR STRIP (Front, Back & Extra) */}
       {hasMultipleImages && (
-        <div className="w-full max-w-[420px] mx-auto">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 px-1 justify-center">
+        <div className="w-full mx-auto pt-1">
+          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1 px-1 justify-center">
             {safeImages.map((img, idx) => {
               const isSelected = idx === activeIndex;
 
@@ -265,13 +197,13 @@ export function ProductImageGallery({
                   onClick={() => goToIndex(idx)}
                   aria-label={`Select image ${idx + 1}: ${img.label || img.type}`}
                   aria-current={isSelected ? "true" : "false"}
-                  className={`group relative flex flex-col items-center gap-1 shrink-0 cursor-pointer focus:outline-none transition-all`}
+                  className={`group relative shrink-0 cursor-pointer focus:outline-none transition-all`}
                 >
                   <div
-                    className={`relative size-12 sm:size-13 rounded-xl overflow-hidden bg-white p-1 flex items-center justify-center transition-all duration-200 ${
+                    className={`relative size-14 sm:size-16 rounded-xl overflow-hidden bg-white p-1 flex items-center justify-center transition-all duration-150 ${
                       isSelected
                         ? "border-2 border-[#145A45] ring-2 ring-[#145A45]/20 shadow-xs scale-105"
-                        : "border border-[rgba(20,90,69,0.12)] opacity-75 hover:opacity-100 hover:border-[#145A45]/50"
+                        : "border border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-400"
                     }`}
                   >
                     <img
@@ -285,186 +217,99 @@ export function ProductImageGallery({
                           target.src = DEFAULT_PRODUCT_PLACEHOLDER;
                         }
                       }}
-                      className="max-h-full max-w-full w-auto h-auto object-contain object-center"
+                      className="max-h-full max-w-full w-auto h-auto object-contain object-center rounded-lg"
                     />
                   </div>
-
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
-                      isSelected
-                        ? "bg-[#145A45] text-white shadow-2xs"
-                        : "text-[#5A655F] bg-[#F3F4F6] border border-[#EAE6DC] group-hover:border-[#145A45] group-hover:text-[#145A45]"
-                    }`}
-                  >
-                    {img.type === "front"
-                      ? (lang === "hi" ? "सामने" : "Front")
-                      : img.type === "back"
-                      ? (lang === "hi" ? "पीछे" : "Back")
-                      : (lang === "hi" ? "न्यूट्रिशन" : "Nutrition")}
-                  </span>
                 </button>
               );
             })}
+
+            {safeImages.length > 4 && (
+              <button
+                type="button"
+                onClick={goToNext}
+                className="size-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors shadow-2xs cursor-pointer ml-0.5"
+                aria-label="Next image"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* 3. FULLSCREEN LIGHTBOX & HIGH-RES VIEWER */}
+      {/* 3. PURE FULLSCREEN VIEWER (Pure image only, no extra details or toolbars) */}
       {isLightboxOpen && (
         <div
-          className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 backdrop-blur-md p-4 sm:p-6 text-white animate-in fade-in duration-200 select-none"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-6 text-white animate-in fade-in duration-200 select-none cursor-pointer"
           role="dialog"
           aria-modal="true"
           aria-label="Product Image Viewer"
+          onClick={() => setIsLightboxOpen(false)}
         >
-          {/* Lightbox Top Header */}
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-base font-bold text-white">
-                {productName}
-              </h3>
-              <p className="text-xs text-white/70 flex items-center gap-2 mt-0.5">
-                <span>{getThumbnailLabel(activeImage.type, activeIndex)}</span>
-                <span>•</span>
-                <span>
-                  {activeIndex + 1} / {safeImages.length}
-                </span>
-                {zoomScale > 1 && (
-                  <span className="rounded bg-[#E3B341] px-1.5 py-0.5 text-[10px] font-bold text-[#1F2924]">
-                    {Math.round(zoomScale * 100)}% Zoomed
-                  </span>
-                )}
-              </p>
-            </div>
+          {/* Simple Clean Close Button in Top-Right */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsLightboxOpen(false);
+            }}
+            title="Close"
+            aria-label="Close Viewer"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 flex size-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+          >
+            <X className="size-5" />
+          </button>
 
-            {/* Zoom Controls */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setZoomScale((s) => Math.max(s - 0.5, 1))}
-                disabled={zoomScale <= 1}
-                title="Zoom Out (-)"
-                className="flex size-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white transition-all hover:bg-white/20 disabled:opacity-30 cursor-pointer"
-              >
-                <ZoomOut className="size-4" />
-              </button>
+          {/* Previous Arrow if Multiple Images */}
+          {hasMultipleImages && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToPrev();
+              }}
+              aria-label="Previous Image"
+              className="absolute left-3 sm:left-6 z-50 flex size-11 items-center justify-center rounded-full bg-white/15 hover:bg-white/30 text-white shadow-lg backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+            >
+              <ChevronLeft className="size-6" />
+            </button>
+          )}
 
-              <button
-                type="button"
-                onClick={() => setZoomScale(1)}
-                title="Reset Zoom (1x)"
-                className="flex h-9 px-2.5 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-xs font-mono font-bold text-white transition-all hover:bg-white/20 cursor-pointer"
-              >
-                <RotateCcw className="size-3.5 mr-1" />
-                {Math.round(zoomScale * 100)}%
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setZoomScale((s) => Math.min(s + 0.5, 3))}
-                disabled={zoomScale >= 3}
-                title="Zoom In (+)"
-                className="flex size-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white transition-all hover:bg-white/20 disabled:opacity-30 cursor-pointer"
-              >
-                <ZoomIn className="size-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLightboxOpen(false);
-                  setZoomScale(1);
-                }}
-                title="Close (Esc)"
-                aria-label="Close Lightbox"
-                className="flex size-9 items-center justify-center rounded-xl bg-red-600/90 text-white transition-all hover:bg-red-600 active:scale-95 ml-1 cursor-pointer"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Lightbox Center Image */}
+          {/* Pure High-Resolution Center Image */}
           <div
-            className="relative flex-1 flex items-center justify-center overflow-hidden my-4"
+            className="relative max-h-[92vh] max-w-[95vw] flex items-center justify-center cursor-default"
+            onClick={(e) => e.stopPropagation()}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {hasMultipleImages && (
-              <button
-                type="button"
-                onClick={goToPrev}
-                aria-label="Previous Image"
-                className="absolute left-2 sm:left-4 z-20 flex size-11 items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/40 active:scale-95 cursor-pointer"
-              >
-                <ChevronLeft className="size-6" />
-              </button>
-            )}
-
-            <div
-              className="relative max-h-[75vh] max-w-[85vw] flex items-center justify-center transition-transform duration-150"
-              style={{
-                transform: `scale(${zoomScale})`,
-                cursor: zoomScale > 1 ? "grab" : "zoom-in",
+            <img
+              src={activeImage.url}
+              alt={`${productName} — ${activeImage.label || activeImage.type}`}
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
+                  target.src = DEFAULT_PRODUCT_PLACEHOLDER;
+                }
               }}
-              onClick={() => {
-                setZoomScale((s) => (s > 1 ? 1 : 2));
-              }}
-            >
-              <img
-                src={activeImage.url}
-                alt={`${productName} — ${activeImage.label || activeImage.type}`}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                }}
-                className="max-h-[72vh] max-w-[82vw] w-auto h-auto object-contain object-center drop-shadow-2xl rounded-xl"
-              />
-            </div>
-
-            {hasMultipleImages && (
-              <button
-                type="button"
-                onClick={goToNext}
-                aria-label="Next Image"
-                className="absolute right-2 sm:right-4 z-20 flex size-11 items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/40 active:scale-95 cursor-pointer"
-              >
-                <ChevronRight className="size-6" />
-              </button>
-            )}
+              className="max-h-[90vh] max-w-[92vw] w-auto h-auto object-contain object-center drop-shadow-2xl rounded-xl sm:rounded-2xl transition-all duration-200"
+            />
           </div>
 
-          {/* Lightbox Bottom Thumbnails */}
+          {/* Next Arrow if Multiple Images */}
           {hasMultipleImages && (
-            <div className="flex items-center justify-center gap-2.5 overflow-x-auto no-scrollbar pt-2 border-t border-white/10">
-              {safeImages.map((img, idx) => {
-                const isSelected = idx === activeIndex;
-                return (
-                  <button
-                    key={`lb-${img.url}-${idx}`}
-                    type="button"
-                    onClick={() => goToIndex(idx)}
-                    className={`size-14 shrink-0 rounded-xl overflow-hidden bg-white/10 p-1 transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-2 border-[#E3B341] ring-2 ring-[#E3B341]/50 scale-105 bg-white/20"
-                        : "border border-white/20 opacity-60 hover:opacity-100"
-                    }`}
-                  >
-                    <img
-                      src={img.url}
-                      alt=""
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
-                          target.src = DEFAULT_PRODUCT_PLACEHOLDER;
-                        }
-                      }}
-                      className="max-h-full max-w-full w-auto h-auto object-contain object-center m-auto"
-                    />
-                  </button>
-                );
-              })}
-            </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                goToNext();
+              }}
+              aria-label="Next Image"
+              className="absolute right-3 sm:right-6 z-50 flex size-11 items-center justify-center rounded-full bg-white/15 hover:bg-white/30 text-white shadow-lg backdrop-blur-md transition-all active:scale-95 cursor-pointer"
+            >
+              <ChevronRight className="size-6" />
+            </button>
           )}
         </div>
       )}

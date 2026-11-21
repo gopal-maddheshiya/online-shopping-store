@@ -79,6 +79,7 @@ export function getProductImage(product?: {
 
 /**
  * Returns a list of all images available for a product.
+ * Properly parses database `images` (string[] or JSON strings) and relational `product_images`.
  */
 export function getProductImages(product?: {
   slug?: string | null;
@@ -86,20 +87,70 @@ export function getProductImages(product?: {
   image_url?: string | null;
   category_id?: string | null;
   updated_at?: string | null;
+  images?: (string | ProductImage)[] | null;
   product_images?: ProductImage[];
 }): ProductImage[] {
   if (!product) return [];
 
   const primaryUrl = getProductImage(product);
+  const result: ProductImage[] = [];
 
-  // 1. Check if product has database images in `product_images`
-  if (product.product_images && product.product_images.length > 0) {
+  // 1. Check if product has database images in `images` array (Supabase text[] or json[])
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    product.images.forEach((item, idx) => {
+      if (!item) return;
+
+      // Case A: item is already a ProductImage object
+      if (typeof item === "object" && "url" in item && item.url) {
+        result.push({
+          url: item.url,
+          type: item.type || (idx === 0 ? "front" : idx === 1 ? "back" : "additional"),
+          label: item.label || (idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`),
+          sort_order: typeof item.sort_order === "number" ? item.sort_order : idx,
+        });
+      }
+      // Case B: item is a JSON string or plain URL string
+      else if (typeof item === "string" && item.trim()) {
+        const trimmed = item.trim();
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+          try {
+            const parsed = JSON.parse(trimmed) as ProductImage;
+            if (parsed && parsed.url) {
+              result.push({
+                url: parsed.url,
+                type: parsed.type || (idx === 0 ? "front" : idx === 1 ? "back" : "additional"),
+                label: parsed.label || (idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`),
+                sort_order: typeof parsed.sort_order === "number" ? parsed.sort_order : idx,
+              });
+              return;
+            }
+          } catch {}
+        }
+
+        // Plain image URL string
+        result.push({
+          url: trimmed,
+          type: idx === 0 ? "front" : idx === 1 ? "back" : "additional",
+          label: idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`,
+          sort_order: idx,
+        });
+      }
+    });
+  }
+
+  // 2. Check if product has database images in relational `product_images`
+  if (result.length === 0 && Array.isArray(product.product_images) && product.product_images.length > 0) {
     return [...product.product_images].sort(
       (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
     );
   }
 
-  // 2. Fallback to primary image
+  // 3. If images were parsed from `product.images`, return them sorted
+  if (result.length > 0) {
+    return result.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  }
+
+  // 4. Fallback to primary image
   return [
     {
       url: primaryUrl,

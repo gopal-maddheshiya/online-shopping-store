@@ -152,10 +152,9 @@ function ProductPage() {
   const { data: reviews = [] } = useQuery(productReviewsQuery(product?.id));
   const reviewStats = computeReviewStats(reviews);
   const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
-  const { add, items } = useCart();
+  const { add, setQty: setCartQty, remove: removeFromCart, items } = useCart();
   const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
   const [variantId, setVariantId] = useState<string | null>(null);
-  const [qty, setQty] = useState(1);
 
   if (isLoading) {
     return (
@@ -217,8 +216,22 @@ function ProductPage() {
         imageUrl: getProductImage(product),
         stock: variant.stock,
       },
-      qty,
+      1,
     );
+  };
+
+  const handleIncreaseQty = () => {
+    if (!variant || inCartQty >= variant.stock) return;
+    setCartQty(variant.id, inCartQty + 1);
+  };
+
+  const handleDecreaseQty = () => {
+    if (!variant) return;
+    if (inCartQty <= 1) {
+      removeFromCart(variant.id);
+    } else {
+      setCartQty(variant.id, inCartQty - 1);
+    }
   };
 
   const related = (all ?? [])
@@ -284,26 +297,25 @@ function ProductPage() {
   };
 
   return (
-    <div className="container-page py-3 sm:py-5 pb-40 md:pb-12 space-y-4 sm:space-y-6">
-      {/* 1. BREADCRUMB NAVIGATION */}
-      <nav className="flex items-center gap-1.5 text-xs text-[#6B7280] flex-wrap">
-        <Link to="/" className="hover:text-[#065F46] font-medium transition-colors flex items-center gap-1">
-          <Home className="size-3 text-[#059669]" />
-          <span>{t.home}</span>
+    <div className="container-page py-3 sm:py-5 pb-40 md:pb-12 space-y-5 sm:space-y-7">
+      {/* 1. BREADCRUMB NAVIGATION (Blinkit Clean Style) */}
+      <nav className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
+        <Link to="/" className="hover:text-emerald-800 transition-colors">
+          {t.home}
         </Link>
-        <ChevronRight className="size-3 text-[#9CA3AF]" />
-        <Link to="/shop" className="hover:text-[#065F46] font-medium transition-colors">
+        <span className="text-gray-300">/</span>
+        <Link to="/shop" className="hover:text-emerald-800 transition-colors">
           {t.allGroceries}
         </Link>
-        <ChevronRight className="size-3 text-[#9CA3AF]" />
-        <span className="font-bold text-[#111827] truncate max-w-[200px] sm:max-w-none">
+        <span className="text-gray-300">/</span>
+        <span className="font-medium text-gray-900 truncate max-w-[240px] sm:max-w-none">
           {localizedName}
         </span>
       </nav>
 
-      {/* 2. MAIN DETAILS SHOWCASE (COMPACT 12-COLUMN BALANCED LAYOUT) */}
-      <div className="grid gap-5 lg:gap-8 md:grid-cols-12 items-start">
-        {/* LEFT: Multi-Image Gallery (Sticky on Laptop/Desktop, Compact max-w-[420px]) */}
+      {/* 2. MAIN DETAILS SHOWCASE (Blinkit 2-Column Spacious Layout) */}
+      <div className="grid gap-6 lg:gap-10 md:grid-cols-12 items-start">
+        {/* LEFT: Product Image Canvas */}
         <div className="w-full md:col-span-5 lg:col-span-5 md:sticky md:top-24 self-start">
           <ProductImageGallery
             images={productImages}
@@ -311,9 +323,9 @@ function ProductPage() {
             badge={
               off > 0 ? (
                 <div className="select-none">
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white px-2.5 py-1 text-xs font-black shadow-[0_2px_6px_rgba(12,56,42,0.32),inset_0_1px_0_rgba(255,255,255,0.2)] border border-emerald-400/35 backdrop-blur-xs leading-none">
-                    <span className="font-sans font-black text-white">{off}%</span>
-                    <span className="text-[10px] font-extrabold text-amber-300 tracking-tight">{lang === "hi" ? "छूट" : "OFF"}</span>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white px-2 py-0.5 text-[11px] font-black shadow-xs border border-emerald-400/35 leading-tight">
+                    <span>{off}%</span>
+                    <span className="text-amber-300">{lang === "hi" ? "छूट" : "OFF"}</span>
                   </span>
                 </div>
               ) : null
@@ -321,46 +333,51 @@ function ProductPage() {
           />
         </div>
 
-        {/* RIGHT: Product Information & Buying Center */}
-        <div className="md:col-span-7 lg:col-span-7 flex flex-col space-y-3.5">
-          {/* Brand, Title & Top Controls */}
+        {/* RIGHT: Product Information & Buying Area */}
+        <div className="md:col-span-7 lg:col-span-7 flex flex-col space-y-4">
+          {/* Brand, Title & Micro Controls */}
           <div>
             <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 text-[11px] font-bold text-[#065F46] uppercase tracking-wider">
-                <ShieldCheck className="size-3 text-[#059669]" />
-                <span>{product.brand || (lang === "hi" ? "दुकान प्रमाणित" : "Store Certified")}</span>
-              </span>
+              <div className="flex items-center gap-2">
+                {/* Standard Vegetarian Green Dot Box */}
+                <span className="size-4.5 rounded-sm border border-emerald-600 flex items-center justify-center p-0.5 shrink-0" title="Vegetarian">
+                  <span className="size-2 rounded-full bg-emerald-600" />
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded px-2 py-0.5">
+                  {product.brand || (lang === "hi" ? "दुकान प्रमाणित" : "Store Certified")}
+                </span>
+              </div>
 
-              {/* Sleek Action Buttons (WhatsApp, Share) */}
+              {/* Action Buttons (WhatsApp Share, Web Share) */}
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleWhatsAppShare}
-                  className="flex size-8 items-center justify-center rounded-full bg-[#E8F8EE] border border-[#25D366]/40 text-[#128C7E] hover:bg-[#25D366] hover:text-white shadow-2xs transition-all cursor-pointer active:scale-92"
+                  className="flex size-8 items-center justify-center rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all cursor-pointer active:scale-95 shadow-2xs"
                   title={lang === "hi" ? "व्हाट्सएप पर शेयर करें" : "Share on WhatsApp"}
                 >
-                  <MessageCircle className="size-3.5" />
+                  <MessageCircle className="size-4" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="flex size-8 items-center justify-center rounded-full bg-white border border-[#E5E7EB] text-[#4B5563] hover:text-[#065F46] hover:border-emerald-300 shadow-2xs transition-all cursor-pointer active:scale-92"
+                  className="flex size-8 items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-emerald-800 hover:border-emerald-300 transition-all cursor-pointer active:scale-95 shadow-2xs"
                   title="Share product"
                 >
-                  <Share2 className="size-3.5" />
+                  <Share2 className="size-4" />
                 </button>
               </div>
             </div>
 
-            <h1 className="font-sans text-2xl sm:text-3xl font-extrabold text-[#111815] mt-1.5 leading-[1.4] tracking-normal py-0.5">
+            <h1 className="font-sans text-xl sm:text-2xl font-bold text-gray-900 mt-2 leading-snug">
               {localizedName}
             </h1>
 
-            {/* Micro Rating & Dynamic Delivery Status Row */}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#3D4C44]">
+            {/* Rating & Delivery Info Line */}
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               <a
                 href="#reviews-section"
-                className="inline-flex items-center gap-1 font-bold text-[11px] bg-[#047857] text-white px-2 py-0.5 rounded shadow-2xs hover:bg-[#065F46] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 font-bold text-[11px] bg-emerald-700 text-white px-2 py-0.5 rounded shadow-2xs hover:bg-emerald-800 transition-colors cursor-pointer"
                 title={lang === "hi" ? "ग्राहकों की राय देखें" : "View Customer Reviews"}
               >
                 <Star className="size-2.5 fill-white text-white" />
@@ -373,11 +390,10 @@ function ProductPage() {
                   <span>{lang === "hi" ? "रेटिंग दें" : "Rate"}</span>
                 )}
               </a>
-              <span className="text-[#D1D5DB]">•</span>
-              {/* Delivery Toggle Check: Exactly follows admin toggle */}
+              <span className="text-gray-300">•</span>
               {isDeliveryEnabled ? (
-                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#065F46] bg-[#ECFDF5] border border-emerald-200/80 rounded-full px-2 py-0.5">
-                  <Truck className="size-3 text-[#059669]" />
+                <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded-full px-2 py-0.5">
+                  <Truck className="size-3 text-emerald-600" />
                   <span>
                     {settings?.free_delivery_threshold
                       ? (lang === "hi" ? `होम डिलीवरी (₹${settings.free_delivery_threshold}+ पर फ्री)` : `Delivery Free over ₹${settings.free_delivery_threshold}`)
@@ -393,48 +409,15 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Compact Clean Pricing Card */}
-          <div className="rounded-xl bg-white border border-[rgba(20,90,69,0.12)] p-3 sm:p-3.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)] space-y-1">
-            <div className="flex items-baseline flex-wrap gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-[#145A45] tracking-tight price-flipkart">
-                {inr(variant?.price ?? 0)}
-              </span>
-
-              {off > 0 && variant?.mrp ? (
-                <>
-                  <span className="text-sm sm:text-base text-[#878787] line-through font-semibold price-flipkart">
-                    {inr(variant.mrp)}
-                  </span>
-                  <span className="rounded-md bg-[#E6EFE8] text-[#0F4A38] border border-[#145A45]/30 px-2 py-0.5 text-xs font-black tracking-tight shadow-2xs">
-                    {off}% {lang === "hi" ? "छूट" : "OFF"}
-                  </span>
-                </>
-              ) : null}
-
-              {saveAmount > 0 && (
-                <span className="ml-auto inline-flex items-center gap-1 font-bold text-[11px] text-[#065F46] bg-[#D1FAE5] px-2.5 py-0.5 rounded-full border border-emerald-300/50">
-                  <span>🎉 {lang === "hi" ? `बचत: ${inr(saveAmount)}` : `Save: ${inr(saveAmount)}`}</span>
-                </span>
-              )}
-            </div>
-
-            <p className="text-[11px] text-[#6B7280]">
-              {lang === "hi" ? "सभी कर शामिल (Inclusive of all taxes)" : "Inclusive of all taxes"}
-            </p>
-          </div>
-
-          {/* Pack Size / Variant Selector */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <label className="font-bold text-[#374151]">
+          {/* "Select Unit" Pack Size Selector Chips (Blinkit Style) */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="font-semibold text-gray-800">
                 {t.selectPackSizeTitle}
-              </label>
-              <span className="font-bold text-[#059669]">
-                {variant ? getVariantLabel(variant) : ""}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="flex flex-wrap gap-2.5 sm:gap-3">
               {variants.map((v) => {
                 const isSelected = v.id === variant?.id;
                 const vOff = discountPercent(Number(v.mrp), Number(v.price));
@@ -445,42 +428,111 @@ function ProductPage() {
                     type="button"
                     onClick={() => setVariantId(v.id)}
                     disabled={v.stock <= 0}
-                    className={`relative flex flex-col p-2 sm:p-2.5 rounded-xl border text-left transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                    className={`relative flex flex-col items-start px-3.5 pt-3 pb-2.5 rounded-xl border text-left transition-all cursor-pointer min-w-[105px] sm:min-w-[120px] ${
                       isSelected
-                        ? "border-2 border-[#059669] bg-[#ECFDF5] shadow-2xs ring-1 ring-[#059669]/20"
-                        : "border-[rgba(20,90,69,0.12)] bg-white hover:border-[#145A45]/40 hover:bg-[#FAF8F5]"
-                    }`}
+                        ? "border-emerald-600 bg-emerald-50/20 shadow-2xs ring-1 ring-emerald-600/30"
+                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60"
+                    } ${v.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
-                    {isSelected && (
-                      <span className="absolute top-2 right-2 size-3.5 rounded-full bg-[#059669] text-white flex items-center justify-center">
-                        <Check className="size-2 stroke-[3]" />
+                    {/* Perched Discount Pill at Top Border */}
+                    {vOff > 0 && (
+                      <span className="absolute -top-2 left-2.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white border border-emerald-400/40 shadow-2xs leading-tight">
+                        <span>{vOff}%</span>
+                        <span className="text-amber-300">{lang === "hi" ? "छूट" : "OFF"}</span>
                       </span>
                     )}
-                    <span className="text-xs font-bold text-[#111827] truncate pr-4">
+
+                    <span className="text-xs font-semibold text-gray-900 truncate max-w-full">
                       {getVariantLabel(v)}
                     </span>
+
                     <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-xs sm:text-sm font-bold text-[#065F46]">
+                      <span className="text-xs sm:text-sm font-bold text-gray-900">
                         {inr(v.price)}
                       </span>
                       {vOff > 0 && v.mrp && (
-                        <span className="text-[10px] text-[#9CA3AF] line-through font-medium">
+                        <span className="text-[10px] sm:text-[11px] text-gray-400 line-through">
                           {inr(v.mrp)}
                         </span>
                       )}
                     </div>
-                    {vOff > 0 && (
-                      <span className="mt-1 text-[9.5px] font-bold text-[#0F4A38] bg-[#E6EFE8] border border-[#145A45]/20 self-start px-1.5 py-0.2 rounded-md">
-                        {vOff}% {lang === "hi" ? "छूट" : "OFF"}
-                      </span>
-                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Stock Availability Indicator */}
+          {/* Pricing & "Add to Cart" Action Row (Blinkit Signature Layout) */}
+          <div className="pt-2">
+            <span className="text-xs text-gray-500 font-semibold block mb-1">
+              {variant ? getVariantLabel(variant) : ""}
+            </span>
+
+            <div className="flex items-center justify-between gap-4 py-3 border-y border-gray-100">
+              <div>
+                <div className="flex items-baseline flex-wrap gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight font-sans price-flipkart">
+                    {inr(variant?.price ?? 0)}
+                  </span>
+                  {off > 0 && variant?.mrp ? (
+                    <>
+                      <span className="text-xs sm:text-sm text-gray-400 font-normal line-through price-flipkart">
+                        MRP {inr(variant.mrp)}
+                      </span>
+                      <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-1.5 py-0.5 text-[11px] font-bold tracking-tight">
+                        {off}% {lang === "hi" ? "छूट" : "OFF"}
+                      </span>
+                    </>
+                  ) : null}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  {lang === "hi" ? "सभी कर शामिल (Inclusive of all taxes)" : "(Inclusive of all taxes)"}
+                </p>
+              </div>
+
+              {/* Action Button: "Add to cart" or Stepper */}
+              <div>
+                {!variant || variant.stock <= 0 ? (
+                  <div className="h-10 px-6 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-xs font-semibold flex items-center justify-center select-none">
+                    {t.outOfStock}
+                  </div>
+                ) : inCartQty > 0 ? (
+                  <div className="flex h-10 min-w-[120px] sm:min-w-[130px] items-center justify-between rounded-lg bg-[#145A45] text-white px-2 shadow-xs">
+                    <button
+                      type="button"
+                      onClick={handleDecreaseQty}
+                      className="flex size-7 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="size-4 stroke-[2.5]" />
+                    </button>
+                    <span className="text-sm sm:text-base font-bold text-white px-2 text-center select-none price-flipkart">
+                      {inCartQty}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={inCartQty >= variant.stock}
+                      onClick={handleIncreaseQty}
+                      className="flex size-7 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="size-4 stroke-[2.5]" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="h-10 px-6 sm:px-8 rounded-lg bg-[#145A45] hover:bg-[#0F4A38] text-white font-bold text-sm tracking-wide transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <span>{lang === "hi" ? "थैले में जोड़ें" : "Add to cart"}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Stock Availability */}
           <div className="text-xs">
             {variant && variant.stock > 0 ? (
               variant.stock <= variant.low_stock_threshold ? (
@@ -493,7 +545,7 @@ function ProductPage() {
                   </span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-1.5 text-[#065F46] text-[11px] font-bold">
+                <div className="inline-flex items-center gap-1.5 text-emerald-700 text-[11px] font-bold">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>{t.inStockMaharajganj}</span>
                 </div>
@@ -506,140 +558,113 @@ function ProductPage() {
             )}
           </div>
 
-          {/* Primary Buying Action: Compact Stepper + Add to Cart Button */}
-          <div className="space-y-2 pt-0.5">
-            <div className="flex items-center gap-2.5">
-              {/* Sleek, Compact Stepper */}
-              <div className="flex h-10 items-center justify-between rounded-xl border border-[rgba(20,90,69,0.16)] bg-[#F8FAFC] px-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
-                  className="flex size-7 items-center justify-center rounded-lg text-[#374151] hover:bg-white active:scale-95 transition-all cursor-pointer"
-                >
-                  <Minus className="size-3.5" />
-                </button>
-                <span className="w-8 text-center text-xs font-bold text-[#111827]">{qty}</span>
-                <button
-                  type="button"
-                  aria-label="Increase quantity"
-                  disabled={qty >= (variant?.stock ?? 1)}
-                  onClick={() => setQty((q) => q + 1)}
-                  className="flex size-7 items-center justify-center rounded-lg text-[#374151] hover:bg-white active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
-                >
-                  <Plus className="size-3.5" />
-                </button>
+          {/* Quick WhatsApp & Phone Call Actions */}
+          <div className="flex items-center gap-2.5 pt-0.5">
+            <a
+              href={`https://wa.me/916388354988?text=${encodeURIComponent(
+                `Namaste Arun Gopal Traders, I want to order ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for ${isDeliveryEnabled ? "home delivery" : "store pickup"} in Maharajganj.`,
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#E8F8EE] hover:bg-[#D4F2DE] text-[#128C7E] border border-[#25D366]/30 text-xs font-bold transition-all active:scale-95"
+            >
+              <MessageCircle className="size-3.5 text-[#25D366]" />
+              <span>{t.whatsappOrderBtn}</span>
+            </a>
+
+            <a
+              href="tel:+916388354988"
+              className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all active:scale-95"
+            >
+              <Phone className="size-3.5 text-emerald-800" />
+              <span>{t.callStoreBtn}</span>
+            </a>
+          </div>
+
+          {/* "Why shop from Arun Gopal Traders?" Trust Section (Blinkit Style) */}
+          <div className="pt-4 border-t border-gray-100 space-y-3.5">
+            <h3 className="text-sm sm:text-[15px] font-bold text-gray-900 tracking-tight">
+              {lang === "hi" ? "अरुण गोपाल ट्रेडर्स से क्यों खरीदें?" : "Why shop from Arun Gopal Traders?"}
+            </h3>
+
+            <div className="space-y-3.5">
+              <div className="flex items-start gap-3">
+                <div className="size-10 rounded-full bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 shrink-0">
+                  <Truck className="size-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-gray-900">
+                    {lang === "hi" ? "तेज़ और भरोसेमंद डिलीवरी" : "Round The Clock & Fast Delivery"}
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-gray-500 leading-normal mt-0.5">
+                    {lang === "hi"
+                      ? "रामनगर चौराहा व महराजगंज में सीधे आपके दरवाज़े तक सुरक्षित डिलीवरी।"
+                      : "Get items delivered safely to your doorstep in Ramnagar & Maharajganj."}
+                  </p>
+                </div>
               </div>
 
-              {/* Standard Proportional Add to Cart CTA */}
-              <Button
-                disabled={!variant || variant.stock <= 0}
-                onClick={handleAddToCart}
-                className="flex-1 h-10 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0F4A38] hover:from-[#0F4A38] hover:to-[#0A3628] text-xs sm:text-sm font-bold text-white shadow-2xs active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
-              >
-                <ShoppingBag className="mr-1.5 size-4" />
-                <span>
-                  {inCartQty > 0
-                    ? (lang === "hi" ? `कार्ट में ${inCartQty} है • और जोड़ें (${qty})` : `In Cart (${inCartQty}) • Add +${qty}`)
-                    : (lang === "hi" ? `थैले में जोड़ें • ${inr((variant?.price ?? 0) * qty)}` : `Add to Cart • ${inr((variant?.price ?? 0) * qty)}`)}
-                </span>
-              </Button>
-            </div>
-
-            {/* In-Cart Notification Pill */}
-            {inCartQty > 0 && (
-              <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200/80 text-xs">
-                <span className="font-bold text-[#065F46] flex items-center gap-1.5 text-[11px]">
-                  <Check className="size-3 text-emerald-600" />
-                  <span>{lang === "hi" ? `थैले में ${inCartQty} पैकेट मौजूद है` : `In your cart (${inCartQty} packs)`}</span>
-                </span>
-                <Link
-                  to="/cart"
-                  className="font-bold text-[#145A45] hover:underline flex items-center gap-0.5 text-[11px]"
-                >
-                  <span>{lang === "hi" ? "थैला देखें" : "View Cart"}</span>
-                  <ChevronRight className="size-3" />
-                </Link>
+              <div className="flex items-start gap-3">
+                <div className="size-10 rounded-full bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-700 shrink-0">
+                  <BadgeCheck className="size-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-gray-900">
+                    {lang === "hi" ? "उचित दुकान रेट और बेहतरीन बचत" : "Best Prices & Honest Offers"}
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-gray-500 leading-normal mt-0.5">
+                    {lang === "hi"
+                      ? "थोक व मंडी के सही भाव पर ताज़ा सामान, हर खरीदारी पर सीधी बचत।"
+                      : "Best price destination with honest wholesale rates and direct customer savings."}
+                  </p>
+                </div>
               </div>
-            )}
 
-            {/* Quick Order: Compact WhatsApp & Call Buttons */}
-            <div className="flex items-center gap-2 pt-0.5">
-              <a
-                href={`https://wa.me/916388354988?text=${encodeURIComponent(
-                  `Namaste Arun Gopal Traders, I want to order ${qty}x ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for ${isDeliveryEnabled ? "home delivery" : "store pickup"} in Maharajganj.`,
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 h-8.5 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#E8F8EE] hover:bg-[#D4F2DE] text-[#128C7E] border border-[#25D366]/30 text-xs font-bold transition-all active:scale-95"
-              >
-                <MessageCircle className="size-3.5 text-[#25D366]" />
-                <span>{t.whatsappOrderBtn}</span>
-              </a>
-
-              <a
-                href="tel:+916388354988"
-                className="flex-1 h-8.5 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#374151] text-xs font-bold transition-all active:scale-95"
-              >
-                <Phone className="size-3.5 text-[#145A45]" />
-                <span>{t.callStoreBtn}</span>
-              </a>
+              <div className="flex items-start gap-3">
+                <div className="size-10 rounded-full bg-teal-50 border border-teal-200/60 flex items-center justify-center text-teal-700 shrink-0">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-[13px] font-bold text-gray-900">
+                    {lang === "hi" ? "100% शुद्ध और असली किराना" : "Wide Assortment & 100% Purity"}
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-gray-500 leading-normal mt-0.5">
+                    {lang === "hi"
+                      ? "100% शुद्ध आटा, चावल, दाल, कच्ची घानी सरसों तेल, मसाले और रोज़मर्रा का सामान।"
+                      : "Choose from unadulterated ration, pure edible oils, spices and kitchen essentials."}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Compact Trust Strip (1 Clean Row, Delivery Toggle Aware) */}
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[rgba(20,90,69,0.1)]">
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
-              <ShieldCheck className="size-3.5 text-[#059669] shrink-0" />
-              <span className="text-[11px] font-bold text-[#374151] truncate">100% असली सामान</span>
-            </div>
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
-              {isDeliveryEnabled ? (
-                <>
-                  <Truck className="size-3.5 text-[#059669] shrink-0" />
-                  <span className="text-[11px] font-bold text-[#374151] truncate">तेज़ होम डिलीवरी</span>
-                </>
-              ) : (
-                <>
-                  <Store className="size-3.5 text-[#059669] shrink-0" />
-                  <span className="text-[11px] font-bold text-[#374151] truncate">दुकान से पिकअप</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-white border border-[rgba(20,90,69,0.1)] shadow-2xs">
-              <BadgeCheck className="size-3.5 text-[#059669] shrink-0" />
-              <span className="text-[11px] font-bold text-[#374151] truncate">उचित दुकान रेट</span>
-            </div>
-          </div>
-
-          {/* Product Details & Specifications Box (Compact & Clean) */}
-          <div className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3.5 space-y-2.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,1)]">
-            <div className="flex items-center gap-1.5 pb-2 border-b border-[#F3F4F6]">
-              <Sparkles className="size-3.5 text-[#059669]" />
-              <h3 className="text-xs font-bold text-[#111827]">
+          {/* Product Details & Specifications Box (Clean Blinkit style card) */}
+          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4 space-y-2.5">
+            <div className="flex items-center gap-1.5 pb-2 border-b border-gray-200/60">
+              <Sparkles className="size-3.5 text-emerald-700" />
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900">
                 {t.productDetailsAndPurity}
               </h3>
             </div>
 
-            <p className="text-xs leading-relaxed text-[#4B5563]">
+            <p className="text-xs leading-relaxed text-gray-600">
               {localizedDescription || (lang === "hi"
                 ? "अरुण गोपाल ट्रेडर्स पर उपलब्ध सभी किराना उत्पाद 100% शुद्ध, असली और ताज़ा पैक्ड हैं। रामनगर चौराहा, अड्डा बाजार।"
                 : "All grocery products at Arun Gopal Traders are 100% pure, authentic, and freshly packed. Ramnagar Chauraha, Adda Bazar.")}
             </p>
 
-            {/* Compact Structured Specs Strip */}
-            <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
-                <span className="text-[9.5px] font-bold text-[#6B7280] block">ब्रांड</span>
-                <span className="text-xs font-bold text-[#111827] truncate block">{product.brand || "Arun Gopal"}</span>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">ब्रांड</span>
+                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">{product.brand || "Arun Gopal"}</span>
               </div>
-              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
-                <span className="text-[9.5px] font-bold text-[#6B7280] block">पैकिंग</span>
-                <span className="text-xs font-bold text-[#111827] truncate block">{variant ? getVariantLabel(variant) : "Standard"}</span>
+              <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">पैकिंग</span>
+                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">{variant ? getVariantLabel(variant) : "Standard"}</span>
               </div>
-              <div className="rounded-lg bg-[#FAF8F5] border border-[rgba(20,90,69,0.08)] p-1.5 text-center">
-                <span className="text-[9.5px] font-bold text-[#6B7280] block">लोकेशन</span>
-                <span className="text-xs font-bold text-[#111827] truncate block">रामनगर, महराजगंज</span>
+              <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">लोकेशन</span>
+                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">रामनगर, महराजगंज</span>
               </div>
             </div>
           </div>
@@ -651,19 +676,19 @@ function ProductPage() {
 
       {/* 3. SIMILAR / RELATED ESSENTIALS SECTION */}
       {related.length > 0 && (
-        <section className="space-y-5 pt-8 border-t border-[rgba(20,90,69,0.12)]">
+        <section className="space-y-5 pt-8 border-t border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-sans text-xl sm:text-2xl font-bold text-[#16201A]">
+              <h2 className="font-sans text-xl sm:text-2xl font-bold text-gray-900">
                 {t.similarEssentialsTitle}
               </h2>
-              <p className="text-xs text-[#3D4C44] mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 {lang === "hi" ? "इस कैटेगरी के अन्य शुद्ध उत्पाद" : "More items from this category"}
               </p>
             </div>
             <Link
               to="/shop"
-              className="text-xs font-bold text-[#145A45] hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1"
             >
               <span>{t.viewAll}</span>
               <ChevronRight className="size-3.5" />
@@ -678,48 +703,63 @@ function ProductPage() {
         </section>
       )}
 
-      {/* 4. STICKY MOBILE BOTTOM BUY BAR (Docked cleanly above MobileNav at bottom-[3.75rem]) */}
-      <div className="fixed bottom-[3.75rem] inset-x-0 z-30 border-t border-[rgba(20,90,69,0.14)] bg-white/95 backdrop-blur-md px-3.5 py-2.5 shadow-[0_-4px_20px_rgba(20,90,69,0.1)] md:hidden">
+      {/* 4. STICKY MOBILE BOTTOM BUY BAR (Blinkit Style) */}
+      <div className="fixed bottom-[3.75rem] inset-x-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:hidden">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#4B5563] truncate">
-                {variant ? getVariantLabel(variant) : ""}
-              </span>
-              {inCartQty > 0 && (
-                <span className="text-[10px] font-black text-[#145A45] bg-[#EBF5EE] px-1.5 py-0.2 rounded-full border border-[#145A45]/20">
-                  ✓ {inCartQty}
-                </span>
-              )}
-            </div>
+            <span className="text-[11px] font-semibold text-gray-500 truncate block">
+              {variant ? getVariantLabel(variant) : ""}
+            </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-black text-[#145A45] tracking-tight price-flipkart">
+              <span className="text-xl font-black text-gray-900 tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
               </span>
               {off > 0 && variant?.mrp && (
-                <span className="text-xs text-[#878787] line-through font-semibold price-flipkart">
+                <span className="text-xs text-gray-400 line-through font-normal price-flipkart">
                   {inr(variant.mrp)}
                 </span>
               )}
             </div>
           </div>
 
-          <Button
-            disabled={!variant || variant.stock <= 0}
-            onClick={handleAddToCart}
-            className="flex-1 max-w-[190px] h-10 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-xs font-bold text-white shadow-md active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ShoppingBag className="mr-1.5 size-4" />
-            <span>
-              {!variant || variant.stock <= 0
-                ? t.outOfStock
-                : inCartQty > 0
-                ? lang === "hi"
-                  ? `और जोड़ें (${inCartQty + qty})`
-                  : `Add More (${inCartQty + qty})`
-                : lang === "hi" ? "थैले में जोड़ें" : t.add}
-            </span>
-          </Button>
+          <div>
+            {!variant || variant.stock <= 0 ? (
+              <div className="h-10 px-4 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-xs font-semibold flex items-center justify-center select-none">
+                {t.outOfStock}
+              </div>
+            ) : inCartQty > 0 ? (
+              <div className="flex h-10 min-w-[120px] items-center justify-between rounded-lg bg-[#145A45] text-white px-2 shadow-xs">
+                <button
+                  type="button"
+                  onClick={handleDecreaseQty}
+                  className="flex size-7 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all cursor-pointer"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="size-4 stroke-[2.5]" />
+                </button>
+                <span className="text-sm font-bold text-white px-2 text-center select-none price-flipkart">
+                  {inCartQty}
+                </span>
+                <button
+                  type="button"
+                  disabled={inCartQty >= variant.stock}
+                  onClick={handleIncreaseQty}
+                  className="flex size-7 items-center justify-center rounded-md text-white hover:bg-white/20 active:scale-90 transition-all disabled:opacity-40 cursor-pointer"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="size-4 stroke-[2.5]" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="h-10 px-6 rounded-lg bg-[#145A45] hover:bg-[#0F4A38] text-white font-bold text-xs sm:text-sm tracking-wide transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+              >
+                <span>{lang === "hi" ? "थैले में जोड़ें" : "Add to cart"}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
