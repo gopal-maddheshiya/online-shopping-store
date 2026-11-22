@@ -42,6 +42,46 @@ export function getCategoryThumbnail(category: {
 }
 
 /**
+ * Smart URL Optimizer: Converts external e-commerce thumbnail URLs into crystal-clear HD packaging photos.
+ * - Blinkit/Grofers: w=120, w=180, etc. -> w=1000,q=90 or raw original
+ * - BigBasket: resize/100x100 -> resize/1000x1000
+ * - Zepto: tr:w-150 -> tr:w-1000
+ * - JioMart: 150x150 -> 1200x1200
+ */
+export function optimizeProductImageUrl(rawUrl?: string | null): string {
+  if (!rawUrl || typeof rawUrl !== "string") return "";
+  const url = rawUrl.trim();
+  if (!url) return "";
+
+  // 1. Blinkit / Grofers CDN (Cloudflare Image Resizing)
+  if (url.includes("cdn.grofers.com")) {
+    if (url.includes("/cdn-cgi/image/")) {
+      return url.replace(
+        /\/cdn-cgi\/image\/[^/]+\//,
+        "/cdn-cgi/image/f=auto,fit=scale-down,q=90,metadata=none,w=1000/"
+      );
+    }
+  }
+
+  // 2. BigBasket CDN
+  if (url.includes("bbassets.com") || url.includes("bigbasket.com")) {
+    return url.replace(/\/resize\/\d+x\d+\//, "/resize/1000x1000/");
+  }
+
+  // 3. Zepto CDN
+  if (url.includes("zeptonow.com")) {
+    return url.replace(/tr:w-\d+/, "tr:w-1000");
+  }
+
+  // 4. JioMart CDN
+  if (url.includes("jiomart.com")) {
+    return url.replace(/\/\d+x\d+\//, "/1200x1200/");
+  }
+
+  return url;
+}
+
+/**
  * Returns the verified product packaging image.
  * Uses explicit custom image_url (Uploaded Base64, Storage URL, External Web URL).
  * Falls back to clean SVG data placeholder if not set.
@@ -62,7 +102,7 @@ export function getProductImage(product?: {
     product.image_url.trim().length > 0 &&
     !product.image_url.includes("/images/packaged.jpg")
   ) {
-    const cleanUrl = product.image_url.trim();
+    const cleanUrl = optimizeProductImageUrl(product.image_url);
     if (
       cleanUrl.startsWith("data:image/") ||
       cleanUrl.startsWith("http://") ||
@@ -103,7 +143,7 @@ export function getProductImages(product?: {
       // Case A: item is already a ProductImage object
       if (typeof item === "object" && "url" in item && item.url) {
         result.push({
-          url: item.url,
+          url: optimizeProductImageUrl(item.url),
           type: item.type || (idx === 0 ? "front" : idx === 1 ? "back" : "additional"),
           label: item.label || (idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`),
           sort_order: typeof item.sort_order === "number" ? item.sort_order : idx,
@@ -117,7 +157,7 @@ export function getProductImages(product?: {
             const parsed = JSON.parse(trimmed) as ProductImage;
             if (parsed && parsed.url) {
               result.push({
-                url: parsed.url,
+                url: optimizeProductImageUrl(parsed.url),
                 type: parsed.type || (idx === 0 ? "front" : idx === 1 ? "back" : "additional"),
                 label: parsed.label || (idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`),
                 sort_order: typeof parsed.sort_order === "number" ? parsed.sort_order : idx,
@@ -129,7 +169,7 @@ export function getProductImages(product?: {
 
         // Plain image URL string
         result.push({
-          url: trimmed,
+          url: optimizeProductImageUrl(trimmed),
           type: idx === 0 ? "front" : idx === 1 ? "back" : "additional",
           label: idx === 0 ? "Front View" : idx === 1 ? "Back / Nutrition" : `Photo ${idx + 1}`,
           sort_order: idx,
@@ -140,9 +180,12 @@ export function getProductImages(product?: {
 
   // 2. Check if product has database images in relational `product_images`
   if (result.length === 0 && Array.isArray(product.product_images) && product.product_images.length > 0) {
-    return [...product.product_images].sort(
-      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
-    );
+    return [...product.product_images]
+      .map((img) => ({
+        ...img,
+        url: optimizeProductImageUrl(img.url),
+      }))
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   }
 
   // 3. If images were parsed from `product.images`, return them sorted

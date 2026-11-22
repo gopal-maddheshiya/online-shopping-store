@@ -75,14 +75,14 @@ function ProductCardInner({ product }: { product: Product }) {
 
   return (
     <div
-      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 p-2 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
+      className="group relative flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] hover:border-[#145A45]/40 shadow-[0_2px_8px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(20,90,69,0.08)] hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* 1. Product Image Canvas (Restored full 1:1 square canvas so images never look patla/compressed) */}
-      <div className="relative w-full">
+      {/* 1. Flush Edge-to-Edge Product Image Canvas (Covers full upper card area with minimal rounded bottom) */}
+      <div className="relative w-full aspect-square bg-[#FAFBF9] rounded-b-md sm:rounded-b-lg overflow-hidden">
         {/* Top-Left: Luxury Royal Emerald Discount Tag */}
         {off > 0 && (
-          <div className="absolute top-1.5 left-1.5 z-10 pointer-events-none select-none">
+          <div className="absolute top-2 left-2 z-10 pointer-events-none select-none">
             <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[#0C382A] via-[#145A45] to-[#0A3326] text-white px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-black tracking-tight shadow-[0_2px_6px_rgba(12,56,42,0.32),inset_0_1px_0_rgba(255,255,255,0.2)] border border-emerald-400/35 backdrop-blur-xs leading-none">
               <span className="font-sans font-black text-white">{off}%</span>
               <span className="text-[9px] sm:text-[9.5px] font-extrabold text-amber-300 tracking-tight">
@@ -95,10 +95,10 @@ function ProductCardInner({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="relative w-full aspect-square flex items-center justify-center overflow-hidden p-2 rounded-lg sm:rounded-xl bg-[#FAFBF9]"
+          className="relative size-full flex items-center justify-center rounded-b-md sm:rounded-b-lg overflow-hidden"
         >
           {!imgLoaded && (
-            <div className="absolute inset-1.5 rounded-lg img-loading-shimmer pointer-events-none" />
+            <div className="absolute inset-0 img-loading-shimmer pointer-events-none" />
           )}
           <img
             ref={(el) => {
@@ -111,6 +111,7 @@ function ProductCardInner({ product }: { product: Product }) {
             alt={localizedProductName}
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             width={200}
             height={200}
             onLoad={() => {
@@ -124,14 +125,14 @@ function ProductCardInner({ product }: { product: Product }) {
                 e.currentTarget.src = DEFAULT_PRODUCT_PLACEHOLDER;
               }
             }}
-            className={`size-full object-contain mx-auto rounded-lg sm:rounded-xl transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
+            className={`size-full object-contain mx-auto transition-[transform,opacity] duration-200 ease-out group-hover:scale-105 select-none ${
               imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
           />
 
           {/* Out of Stock Overlay */}
           {stock <= 0 && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-[1px] rounded-lg sm:rounded-xl z-20">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-[1px] z-20">
               <span className="rounded-md bg-stone-100 border border-stone-200 px-2 py-0.5 text-[10.5px] font-medium text-stone-600 shadow-2xs">
                 {t.outOfStock}
               </span>
@@ -140,8 +141,8 @@ function ProductCardInner({ product }: { product: Product }) {
         </Link>
       </div>
 
-      {/* 3. Product Details Section (Zero unnecessary vertical gap between title & weight) */}
-      <div className="flex flex-1 flex-col min-w-0 w-full pt-1.5">
+      {/* 2. Product Details Section (Clean comfortable padding) */}
+      <div className="flex flex-1 flex-col justify-between min-w-0 w-full p-2.5 sm:p-3 pt-2">
         {/* Product Name Title: natural height with line-clamp-2, no artificial min-h */}
         <Link
           to="/product/$slug"
@@ -290,20 +291,20 @@ export const ProductCard = memo(ProductCardInner);
 export function ProductCardSkeleton() {
   return (
     <div
-      className="flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] p-2 sm:p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] overflow-hidden"
+      className="flex flex-col justify-between w-full h-full bg-white rounded-xl sm:rounded-2xl border border-[#E5EAE6] shadow-[0_2px_8px_rgba(0,0,0,0.03)] overflow-hidden"
       style={{ boxSizing: "border-box", width: "100%", maxWidth: "100%", minWidth: 0 }}
     >
-      {/* Product Image Skeleton */}
-      <div className="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-[#FAFBF9] p-2 flex items-center justify-center">
-        <Skeleton className="size-full rounded-md" />
+      {/* Flush Product Image Skeleton */}
+      <div className="relative w-full aspect-square overflow-hidden bg-[#FAFBF9] rounded-b-md sm:rounded-b-lg flex items-center justify-center">
+        <Skeleton className="size-full rounded-none" />
         {/* Discount Tag skeleton */}
-        <div className="absolute top-1.5 left-1.5 z-10 w-11 h-4 rounded-md overflow-hidden bg-blue-100/50 shadow-2xs">
+        <div className="absolute top-2 left-2 z-10 w-11 h-4 rounded-md overflow-hidden bg-blue-100/50 shadow-2xs">
           <Skeleton className="size-full" />
         </div>
       </div>
 
       {/* Product Information Skeleton */}
-      <div className="flex flex-col flex-1 justify-between pt-1.5 space-y-1">
+      <div className="flex flex-col flex-1 justify-between p-2.5 sm:p-3 pt-2 space-y-1">
         <div className="space-y-1">
           <Skeleton className="w-full h-4 rounded-md" />
           <Skeleton className="w-3/4 h-3.5 rounded-md" />

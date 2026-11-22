@@ -169,13 +169,14 @@ export function ProductImageGallery({
               alt={`${productName} — ${activeImage.label || activeImage.type}`}
               loading={activeIndex === 0 ? "eager" : "lazy"}
               decoding="async"
+              referrerPolicy="no-referrer"
               onError={(e) => {
                 const target = e.currentTarget;
                 if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
                   target.src = DEFAULT_PRODUCT_PLACEHOLDER;
                 }
               }}
-              className={`max-h-full max-w-full w-auto h-auto object-contain object-center rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 ease-out select-none drop-shadow-xs ${
+              className={`w-full h-full max-h-full max-w-full object-contain object-center rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 ease-out select-none drop-shadow-xs ${
                 isTransitioning ? "opacity-30 scale-98" : "opacity-100 scale-100"
               }`}
             />
@@ -211,13 +212,14 @@ export function ProductImageGallery({
                       alt=""
                       loading="lazy"
                       decoding="async"
+                      referrerPolicy="no-referrer"
                       onError={(e) => {
                         const target = e.currentTarget;
                         if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {
                           target.src = DEFAULT_PRODUCT_PLACEHOLDER;
                         }
                       }}
-                      className="max-h-full max-w-full w-auto h-auto object-contain object-center rounded-lg"
+                      className="size-full object-contain object-center rounded-lg"
                     />
                   </div>
                 </button>
@@ -287,6 +289,7 @@ export function ProductImageGallery({
             <img
               src={activeImage.url}
               alt={`${productName} — ${activeImage.label || activeImage.type}`}
+              referrerPolicy="no-referrer"
               onError={(e) => {
                 const target = e.currentTarget;
                 if (target.src !== DEFAULT_PRODUCT_PLACEHOLDER) {

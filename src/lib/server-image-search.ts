@@ -304,6 +304,65 @@ export const searchImagesServerFn = createServerFn({ method: "GET" })
   });
 
 /**
+ * Server Function: Fetches an external image URL (no CORS restrictions),
+ * optimizes it, uploads to Supabase Storage 'product-images', and returns
+ * the public Supabase storage URL.
+ */
+export const uploadExternalImageServerFn = createServerFn({ method: "POST" })
+  .validator((d: string) => String(d || ""))
+  .handler(async ({ data: rawUrl }) => {
+    if (!rawUrl || !rawUrl.startsWith("http")) {
+      throw new Error("Invalid image URL provided");
+    }
+
+    // Dynamic import with relative path for SSR compatibility
+    const { optimizeProductImageUrl } = await import("./product-images");
+    const { supabase } = await import("../integrations/supabase/client");
+
+    const cleanUrl = optimizeProductImageUrl(rawUrl);
+    const res = await fetch(cleanUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to download image from external source (status: ${res.status})`);
+    }
+
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const buffer = await res.arrayBuffer();
+    if (!buffer || buffer.byteLength === 0) {
+      throw new Error("Empty image data received");
+    }
+
+    const fileExt = contentType.includes("png")
+      ? "png"
+      : contentType.includes("webp")
+      ? "webp"
+      : "jpg";
+    const fileName = `ext_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+    const filePath = `products/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, Buffer.from(buffer), {
+        contentType,
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Storage upload error: ${uploadError.message}`);
+    }
+
+    const { data: pubData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    return pubData.publicUrl;
+  });
+
+/**
  * Standard HTTP REST Route Handler for /api/search/images?q=...
  */
 export async function handleWebImageSearchRoute(request: Request): Promise<Response> {

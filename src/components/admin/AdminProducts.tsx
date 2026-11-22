@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Plus,
   Search,
@@ -29,6 +29,7 @@ import {
   ChevronDown,
   ChevronUp,
   SlidersHorizontal,
+  CloudDownload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,9 +53,11 @@ import {
   getProductImage,
   getProductImages,
   getImageTypeLabel,
+  optimizeProductImageUrl,
   DEFAULT_PRODUCT_PLACEHOLDER,
 } from "@/lib/product-images";
 import { uploadProductImage } from "@/lib/image-upload";
+import { uploadExternalImageServerFn } from "@/lib/server-image-search";
 import { broadcastProductSync } from "@/lib/realtime-sync";
 import { PRODUCT_NAMES_HI, PRODUCT_NAMES_BY_NAME_HI, translateVariantLabel } from "@/lib/i18n";
 import type { Product, Category, Variant, ProductImage, ProductImageType } from "@/lib/queries";
@@ -68,8 +71,157 @@ import {
 import { Loader2 } from "lucide-react";
 import { playMicTone, removeStutteredWords } from "@/lib/voice";
 
+const CATEGORY_DEPARTMENTS: { id: string; label: string; icon: string; keywords?: string[] }[] = [
+  { id: "all", label: "सभी (All)", icon: "🛒", keywords: [] },
+  {
+    id: "grocery",
+    label: "किराना व अनाज",
+    icon: "🌾",
+    keywords: [
+      "oil",
+      "dal",
+      "flour",
+      "rice",
+      "masala",
+      "sugar",
+      "atta",
+      "maida",
+      "besan",
+      "chawal",
+      "anaj",
+      "grain",
+      "spices",
+      "cooking",
+      "salt",
+      "namak",
+      "चीनी",
+      "दाल",
+      "तेल",
+      "चावल",
+      "मसाले",
+    ],
+  },
+  {
+    id: "snacks",
+    label: "नाश्ता व स्नैक्स",
+    icon: "🍪",
+    keywords: [
+      "biscuit",
+      "cookies",
+      "snack",
+      "namkeen",
+      "noodle",
+      "pasta",
+      "tea",
+      "coffee",
+      "dry fruits",
+      "बिस्कुट",
+      "नमकीन",
+      "नाश्ता",
+      "चाय",
+      "मेवे",
+    ],
+  },
+  {
+    id: "cleaning",
+    label: "सफाई व धुलाई",
+    icon: "🧹",
+    keywords: [
+      "detergent",
+      "washing",
+      "dishwash",
+      "cleaner",
+      "soap",
+      "surf",
+      "सर्फ",
+      "धोने",
+      "सफ़ाई",
+      "झाड़ू",
+      "पोछा",
+      "बाथरूम",
+      "बर्तन",
+    ],
+  },
+  {
+    id: "personal",
+    label: "पर्सनल केयर",
+    icon: "🧴",
+    keywords: [
+      "shampoo",
+      "hair",
+      "bath",
+      "skin",
+      "cream",
+      "paste",
+      "brush",
+      "साबुन",
+      "तेल",
+      "दन्त",
+      "क्रीम",
+      "लोशन",
+      "बेबी",
+    ],
+  },
+  {
+    id: "pooja",
+    label: "पूजा सामग्री",
+    icon: "🪔",
+    keywords: [
+      "pooja",
+      "agarbatti",
+      "dhoop",
+      "kapoor",
+      "हवन",
+      "अगरबत्ती",
+      "धूप",
+      "कपूर",
+      "पूजा",
+    ],
+  },
+  {
+    id: "animal",
+    label: "पशुआहार व चोकर",
+    icon: "🐄",
+    keywords: [
+      "kapila",
+      "pasuahar",
+      "chokar",
+      "feed",
+      "पशुआहार",
+      "चोकर",
+      "पशु",
+    ],
+  },
+];
 
-
+const GROCERY_ALIASES: Record<string, string[]> = {
+  tel: ["mustard", "cooking oil", "hair oil", "सरसों का तेल", "बालों के लिए तेल", "रिफाइंड"],
+  oil: ["mustard", "cooking oil", "hair oil", "सरसों का तेल", "बालों के लिए तेल"],
+  sarso: ["mustard & cooking oil", "सरसों का तेल"],
+  dal: ["pulses & dal", "दालें और दलहन"],
+  daal: ["pulses & dal", "दालें और दलहन"],
+  atta: ["maida and besan", "आटा, मैदा और बेसन"],
+  aata: ["maida and besan", "आटा, मैदा और बेसन"],
+  chawal: ["basmati rice", "बासमती चावल"],
+  rice: ["basmati rice", "बासमती चावल"],
+  masala: ["spices & masala", "खड़े और पिसे मसाले"],
+  mirch: ["spices & masala", "खड़े और पिसे मसाले"],
+  haldi: ["spices & masala", "खड़े और पिसे मसाले"],
+  dhaniya: ["spices & masala", "खड़े और पिसे मसाले"],
+  chini: ["sugar & jaggery", "नमक, चीनी और गुड़"],
+  sugar: ["sugar & jaggery", "नमक, चीनी और गुड़"],
+  namak: ["sugar & jaggery", "नमक, चीनी और गुड़"],
+  salt: ["sugar & jaggery", "नमक, चीनी और गुड़"],
+  biscuit: ["biscuits & cookies", "बिस्कुट और कुकीज"],
+  namkeen: ["namkeen & snacks", "नमकीन और स्नैक्स"],
+  surf: ["detergents powder", "कपड़ा धोने का सर्फ"],
+  sabun: ["bath soaps", "clothes soaps", "नहाने का साबुन"],
+  soap: ["bath soaps", "clothes soaps", "नहाने का साबुन"],
+  pooja: ["pooja items", "पूजा सामग्री"],
+  chokar: ["kapila pasuahar", "चोकर", "पशुआहार"],
+  kaju: ["dry fruits", "सूखे मेवे"],
+  badam: ["dry fruits", "सूखे मेवे"],
+};
 
 type AdminProductsProps = {
   products: Product[];
@@ -137,6 +289,8 @@ export function AdminProducts({
 
   const [isUploadingFront, setIsUploadingFront] = useState(false);
   const [isUploadingBack, setIsUploadingBack] = useState(false);
+  const [isSavingExternalFront, setIsSavingExternalFront] = useState(false);
+  const [isSavingExternalBack, setIsSavingExternalBack] = useState(false);
   const [uploadingAdditionalId, setUploadingAdditionalId] = useState<string | null>(null);
 
   // Variant Presets Tab: "solid" | "liquid" | "pack"
@@ -148,22 +302,188 @@ export function AdminProducts({
   ]);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [activeCategoryDept, setActiveCategoryDept] = useState("all");
 
   const parentCategories = categories.filter((c) => !c.parent_id);
   const subcategories = categories.filter((c) => c.parent_id === categoryId);
   const selectedCategoryObj = categories.find((c) => c.id === categoryId);
   const selectedSubcategoryObj = categories.find((c) => c.id === subcategoryId);
 
+  // Filtered categories for inline visual palette
+  const filteredParentCategories = useMemo(() => {
+    let list = parentCategories;
+
+    // 1. Department filter
+    if (activeCategoryDept !== "all") {
+      const dept = CATEGORY_DEPARTMENTS.find((d) => d.id === activeCategoryDept);
+      if (dept && dept.keywords && dept.keywords.length > 0) {
+        list = list.filter((c) => {
+          const combined = `${c.name} ${c.name_hi || ""} ${c.name_en || ""}`.toLowerCase();
+          return dept.keywords!.some((kw) => combined.includes(kw));
+        });
+      }
+    }
+
+    // 2. Query filter (Hindi, English, Romanized aliases)
+    const q = categorySearch.trim().toLowerCase();
+    if (!q) return list;
+
+    const matchingAliasKeys = Object.entries(GROCERY_ALIASES)
+      .filter(([aliasKey]) => q.includes(aliasKey) || aliasKey.includes(q))
+      .flatMap(([, mappedTerms]) => mappedTerms.map((t) => t.toLowerCase()));
+
+    return list.filter((c) => {
+      const nameLower = (c.name || "").toLowerCase();
+      const nameHiLower = (c.name_hi || "").toLowerCase();
+      const nameEnLower = (c.name_en || "").toLowerCase();
+      const slugLower = (c.slug || "").toLowerCase();
+
+      const directMatch =
+        nameLower.includes(q) ||
+        nameHiLower.includes(q) ||
+        nameEnLower.includes(q) ||
+        slugLower.includes(q);
+
+      if (directMatch) return true;
+
+      return matchingAliasKeys.some(
+        (term) =>
+          nameLower.includes(term) ||
+          nameHiLower.includes(term) ||
+          nameEnLower.includes(term)
+      );
+    });
+  }, [parentCategories, activeCategoryDept, categorySearch]);
+
+  // 1-Tap Popular Category Chips (Top frequent grocery items)
+  const popularCategories = useMemo(() => {
+    const popularKeys = [
+      "mustard & cooking oil",
+      "pulses & dal",
+      "maida and besan",
+      "basmati rice",
+      "spices & masala",
+      "sugar & jaggery",
+      "biscuits & cookies",
+      "namkeen & snacks",
+      "detergents powder",
+      "pooja items",
+    ];
+
+    return parentCategories.filter((c) => {
+      const n = (c.name || "").toLowerCase();
+      const nEn = (c.name_en || "").toLowerCase();
+      const nHi = (c.name_hi || "").toLowerCase();
+      return popularKeys.some(
+        (p) => n.includes(p) || nEn.includes(p) || nHi.includes(p)
+      );
+    });
+  }, [parentCategories]);
+
+  // Smart Real-time Category Suggestion from Product Name
+  const suggestedCategory = useMemo(() => {
+    const raw = `${name} ${nameHi} ${brand}`.trim().toLowerCase();
+    if (!raw) return undefined;
+
+    const rules: { keywords: string[]; matchers: string[] }[] = [
+      {
+        keywords: ["oil", "tel", "sarso", "mustard", "refine", "kachi ghani", "सरसों", "तेल", "रिफाइंड"],
+        matchers: ["mustard & cooking oil", "सरसों का तेल", "cooking oil"],
+      },
+      {
+        keywords: ["dal", "daal", "pulses", "chana", "arhar", "toor", "rajma", "urad", "moong", "दाल", "चना", "राजमा"],
+        matchers: ["pulses & dal", "दालें और दलहन", "dal"],
+      },
+      {
+        keywords: ["atta", "aata", "maida", "besan", "suji", "sooji", "flour", "आटा", "मैदा", "बेसन", "सूजी"],
+        matchers: ["maida and besan", "आटा, मैदा और बेसन", "atta"],
+      },
+      {
+        keywords: ["rice", "chawal", "basmati", "poha", "चावल", "बासमती", "पोहा"],
+        matchers: ["basmati rice", "बासमती चावल", "rice"],
+      },
+      {
+        keywords: ["masala", "spices", "mirch", "haldi", "dhaniya", "jeera", "hing", "मसाला", "मिर्च", "हल्दी", "धनिया", "जीरा"],
+        matchers: ["spices & masala", "खड़े और पिसे मसाले", "masala"],
+      },
+      {
+        keywords: ["sugar", "salt", "namak", "chini", "jaggery", "gud", "नमक", "चीनी", "गुड़"],
+        matchers: ["sugar & jaggery", "नमक, चीनी और गुड़"],
+      },
+      {
+        keywords: ["biscuit", "cookie", "rusk", "parle", "good day", "marie", "oreo", "bourbon", "बिस्कुट", "कुकीज"],
+        matchers: ["biscuits & cookies", "बिस्कुट और कुकीज", "biscuit"],
+      },
+      {
+        keywords: ["namkeen", "chips", "kurkure", "snack", "bhujia", "sev", "मठरी", "नमकीन"],
+        matchers: ["namkeen & snacks", "नमकीन और स्नैक्स", "namkeen"],
+      },
+      {
+        keywords: ["harpic", "cleaner", "bathroom", "toilet", "बाथरूम", "टॉयलेट"],
+        matchers: ["bathroom cleaning", "बाथरूम सफ़ाई के सामान"],
+      },
+      {
+        keywords: ["vim", "dishwash", "bartan", "बर्तन", "डिशवॉश"],
+        matchers: ["pots cleaners", "बर्तन धोने के सामान"],
+      },
+      {
+        keywords: ["detergent", "surf", "washing", "ghadi", "rin", "ala", "सर्फ", "धोने"],
+        matchers: ["detergents powder", "कपड़ा धोने का सर्फ", "clothes soaps"],
+      },
+      {
+        keywords: ["dettol", "lifebuoy", "lux", "dove", "soap", "साबुन", "नहाने"],
+        matchers: ["bath soaps", "नहाने का साबुन"],
+      },
+      {
+        keywords: ["toothpaste", "brush", "colgate", "closeup", "dant", "दंत"],
+        matchers: ["toothpaste and brush", "दन्तमंजन और ब्रश"],
+      },
+      {
+        keywords: ["kaju", "badam", "kishmish", "dry fruit", "pista", "anjeer", "काजू", "बादाम", "किशमिश", "मेवे"],
+        matchers: ["dry fruits", "सूखे मेवे"],
+      },
+      {
+        keywords: ["pooja", "agarbatti", "dhoop", "kapoor", "हवन", "अगरबत्ती", "धूप", "कपूर", "पूजा"],
+        matchers: ["pooja items", "पूजा सामग्री", "agarbattti", "dhoop batti"],
+      },
+      {
+        keywords: ["noodles", "maggi", "pasta", "yippee", "नूडल्स", "पास्ता"],
+        matchers: ["noodles & pasta", "नूडल्स और पास्ता"],
+      },
+      {
+        keywords: ["chokar", "pasuahar", "kapila", "पशुआहार", "चोकर", "555"],
+        matchers: ["kapila pasuahar", "कपिला पशुआहार", "chokar"],
+      },
+    ];
+
+    for (const rule of rules) {
+      if (rule.keywords.some((kw) => raw.includes(kw))) {
+        const found = parentCategories.find((c) => {
+          const cName = (c.name || "").toLowerCase();
+          const cNameHi = (c.name_hi || "").toLowerCase();
+          const cNameEn = (c.name_en || "").toLowerCase();
+          return rule.matchers.some((m) => cName.includes(m) || cNameHi.includes(m) || cNameEn.includes(m));
+        });
+        if (found) return found;
+      }
+    }
+
+    return undefined;
+  }, [name, nameHi, brand, parentCategories]);
+
   function openAddModal() {
     setModalTab("basic");
     setShowAdvanced(false);
     setShowLivePreview(false);
     setEditingProduct(null);
+    setCategorySearch("");
+    setActiveCategoryDept("all");
     setName("");
     setNameHi("");
     setSlug("");
     setBrand("");
-    setCategoryId(parentCategories[0]?.id ?? "");
+    setCategoryId("");
     setSubcategoryId("");
     setDescription("");
     setDescriptionHi("");
@@ -185,6 +505,8 @@ export function AdminProducts({
     setShowAdvanced(Boolean(prod.subcategory_id));
     setShowLivePreview(false);
     setEditingProduct(prod);
+    setCategorySearch("");
+    setActiveCategoryDept("all");
     setName(prod.name_en || prod.name);
     setNameHi(prod.name_hi || "");
     setSlug(prod.slug);
@@ -243,6 +565,22 @@ export function AdminProducts({
 
   const [isNameListening, setIsNameListening] = useState(false);
   const nameRecognitionRef = useRef<any>(null);
+  const modalScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleCategoryScrollWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const isScrollingDown = e.deltaY > 0;
+    const isScrollingUp = e.deltaY < 0;
+
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 2;
+    const isAtTop = el.scrollTop <= 2;
+
+    if ((isScrollingDown && isAtBottom) || (isScrollingUp && isAtTop)) {
+      if (modalScrollRef.current) {
+        modalScrollRef.current.scrollTop += e.deltaY;
+      }
+    }
+  };
 
   function toggleVoiceName() {
     if (isNameListening) {
@@ -442,6 +780,40 @@ export function AdminProducts({
     }
   }
 
+  async function handleSaveExternalFrontToStorage() {
+    const raw = frontImageUrl.trim();
+    if (!raw || !raw.startsWith("http")) return;
+    setIsSavingExternalFront(true);
+    const toastId = toast.loading("इंटरनेट फोटो को HD में क्लाउड पर सेव किया जा रहा है...");
+    try {
+      const storageUrl = await uploadExternalImageServerFn({ data: raw });
+      setFrontImageUrl(storageUrl);
+      toast.success("फोटो सफलतापूर्वक Supabase क्लाउड में सुरक्षित हो गई!", { id: toastId });
+    } catch (err: any) {
+      console.error("Save external front error:", err);
+      toast.error(err?.message || "फोटो क्लाउड पर सेव नहीं हो सकी", { id: toastId });
+    } finally {
+      setIsSavingExternalFront(false);
+    }
+  }
+
+  async function handleSaveExternalBackToStorage() {
+    const raw = backImageUrl.trim();
+    if (!raw || !raw.startsWith("http")) return;
+    setIsSavingExternalBack(true);
+    const toastId = toast.loading("पीछे की फोटो को HD में क्लाउड पर सेव किया जा रहा है...");
+    try {
+      const storageUrl = await uploadExternalImageServerFn({ data: raw });
+      setBackImageUrl(storageUrl);
+      toast.success("पीछे की फोटो Supabase क्लाउड में सुरक्षित हो गई!", { id: toastId });
+    } catch (err: any) {
+      console.error("Save external back error:", err);
+      toast.error(err?.message || "फोटो क्लाउड पर सेव नहीं हो सकी", { id: toastId });
+    } finally {
+      setIsSavingExternalBack(false);
+    }
+  }
+
   async function handleUploadAdditional(id: string, file: File) {
     const validTypes = [
       "image/png",
@@ -566,11 +938,13 @@ export function AdminProducts({
 
     // Build structured clean images array
     const cleanImages: ProductImage[] = [];
+    const optFront = optimizeProductImageUrl(frontImageUrl.trim());
+    const optBack = optimizeProductImageUrl(backImageUrl.trim());
 
     // 1. Front View (sort_order: 0)
-    if (frontImageUrl.trim()) {
+    if (optFront) {
       cleanImages.push({
-        url: frontImageUrl.trim(),
+        url: optFront,
         type: "front",
         label: frontImageLabel.trim() || "Front View",
         sort_order: 0,
@@ -578,9 +952,9 @@ export function AdminProducts({
     }
 
     // 2. Back / Nutrition View (sort_order: 1)
-    if (backImageUrl.trim()) {
+    if (optBack) {
       cleanImages.push({
-        url: backImageUrl.trim(),
+        url: optBack,
         type: "back",
         label: backImageLabel.trim() || "Back / Nutrition",
         sort_order: 1,
@@ -589,9 +963,10 @@ export function AdminProducts({
 
     // 3. Additional Photos (sort_order: 2+)
     additionalImages.forEach((img, idx) => {
-      if (img.url.trim()) {
+      const opt = optimizeProductImageUrl(img.url.trim());
+      if (opt) {
         cleanImages.push({
-          url: img.url.trim(),
+          url: opt,
           type: "additional",
           label: img.label.trim() || `Photo ${idx + 3}`,
           sort_order: 2 + idx,
@@ -599,7 +974,7 @@ export function AdminProducts({
       }
     });
 
-    const primaryUrl = frontImageUrl.trim() || backImageUrl.trim() || DEFAULT_PRODUCT_PLACEHOLDER;
+    const primaryUrl = optFront || optBack || DEFAULT_PRODUCT_PLACEHOLDER;
     const stringifiedImages = cleanImages.map((img) => JSON.stringify(img));
 
     setIsSaving(true);
@@ -910,10 +1285,10 @@ export function AdminProducts({
                         </span>
                         <span
                           className={`rounded-md px-1.5 py-0.2 text-[10px] font-bold ${totalStock === 0
-                              ? "bg-red-100 text-red-700"
-                              : totalStock <= 10
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-emerald-100 text-emerald-800"
+                            ? "bg-red-100 text-red-700"
+                            : totalStock <= 10
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-emerald-100 text-emerald-800"
                             }`}
                         >
                           {totalStock === 0 ? "Out of Stock" : `${totalStock} in stock`}
@@ -961,8 +1336,8 @@ export function AdminProducts({
                     <button
                       onClick={() => handleToggleActive(p)}
                       className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 min-h-[36px] text-xs font-bold transition-colors ${p.is_active
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-stone-100 text-stone-600"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-stone-100 text-stone-600"
                         }`}
                     >
                       {p.is_active ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
@@ -1084,10 +1459,10 @@ export function AdminProducts({
                         <td className="py-3 px-4">
                           <span
                             className={`rounded-md px-2 py-0.5 font-bold ${totalStock === 0
-                                ? "bg-red-100 text-red-700"
-                                : totalStock <= 10
-                                  ? "bg-amber-100 text-amber-800"
-                                  : "bg-emerald-100 text-emerald-800"
+                              ? "bg-red-100 text-red-700"
+                              : totalStock <= 10
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-emerald-100 text-emerald-800"
                               }`}
                           >
                             {totalStock === 0 ? "Out of Stock" : `${totalStock} units`}
@@ -1098,8 +1473,8 @@ export function AdminProducts({
                           <button
                             onClick={() => handleToggleActive(p)}
                             className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition-colors ${p.is_active
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-stone-100 text-stone-600"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-stone-100 text-stone-600"
                               }`}
                           >
                             {p.is_active ? (
@@ -1214,6 +1589,7 @@ export function AdminProducts({
             className="flex flex-col flex-1 min-h-0 h-full overflow-hidden"
           >
             <div
+              ref={modalScrollRef}
               data-lenis-prevent
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 space-y-4"
             >
@@ -1231,11 +1607,10 @@ export function AdminProducts({
                           <button
                             type="button"
                             onClick={toggleVoiceName}
-                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-2xs ${
-                              isNameListening
-                                ? "bg-red-500 text-white animate-pulse"
-                                : "bg-white hover:bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]"
-                            }`}
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer shadow-2xs ${isNameListening
+                              ? "bg-red-500 text-white animate-pulse"
+                              : "bg-white hover:bg-[#FAF8F2] text-[#145A45] border border-[#E8E4DA]"
+                              }`}
                             title="बोलकर नाम दर्ज करें"
                           >
                             {isNameListening ? <MicOff className="size-3" /> : <Mic className="size-3 text-[#145A45]" />}
@@ -1296,48 +1671,199 @@ export function AdminProducts({
                       />
                     </div>
 
-                    {/* Category Selector */}
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label className="text-xs font-bold text-[#1F2924]">
-                        मुख्य कैटेगरी (Category) <span className="text-red-500">*</span>
-                      </Label>
+                    {/* Inline Freeze-Proof Category Selector */}
+                    <div className="space-y-2.5 sm:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
+                          <span>मुख्य कैटेगरी (Category)</span>
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        {selectedCategoryObj ? (
+                          <span className="text-[11px] text-[#145A45] font-black bg-[#E6EFE8] px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-[#145A45]/20 shadow-2xs">
+                            <span className="text-sm">{selectedCategoryObj.icon ?? "📦"}</span>
+                            <span>चयनित: {selectedCategoryObj.name_hi || selectedCategoryObj.name}</span>
+                            <span className="text-emerald-600 font-bold">✓</span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                            नीचे से कैटेगरी चुनें
+                          </span>
+                        )}
+                      </div>
 
-                      <Select
-                        value={categoryId}
-                        onValueChange={(v) => {
-                          setCategoryId(v);
-                          setSubcategoryId("");
-                        }}
-                      >
-                        <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-10 bg-white font-semibold">
-                          <SelectValue placeholder="कैटेगरी चुनें…" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-72">
-                          {parentCategories.map((c) => {
-                            const subs = categories.filter((sub) => sub.parent_id === c.id);
-                            return (
-                              <SelectItem
-                                key={c.id}
-                                value={c.id}
-                                className="text-xs font-semibold"
-                              >
-                                <span className="flex items-center gap-2">
+                      {/* Smart Category Auto-Detection from Product Name */}
+                      {suggestedCategory && suggestedCategory.id !== categoryId && (
+                        <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-emerald-50 via-[#E6EFE8]/80 to-emerald-50 border border-emerald-300 text-xs animate-in fade-in duration-200 shadow-2xs">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <Sparkles className="size-3.5 text-[#145A45] shrink-0 fill-[#145A45]/20 animate-pulse" />
+                            <span className="text-[#1F2924] text-[11px] font-medium truncate">
+                              सुझाई गई कैटेगरी: <strong>{suggestedCategory.icon} {suggestedCategory.name_hi || suggestedCategory.name}</strong>
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCategoryId(suggestedCategory.id);
+                              setSubcategoryId("");
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-[#145A45] text-white text-[10.5px] font-bold hover:bg-[#0F4A38] active:scale-95 transition-all shrink-0 cursor-pointer shadow-2xs"
+                          >
+                            यह चुनें ✓
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 1-Tap Popular Category Chips */}
+                      {popularCategories.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-[#5A655F]">
+                            🔥 अक्सर इस्तेमाल होने वाली (1-क्लिक में चुनें):
+                          </span>
+                          <div
+                            data-lenis-prevent="true"
+                            className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5"
+                          >
+                            {popularCategories.map((c) => {
+                              const isSelected = c.id === categoryId;
+                              return (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setCategoryId(c.id);
+                                    setSubcategoryId("");
+                                  }}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer ${isSelected
+                                    ? "bg-[#145A45] text-white shadow-xs scale-102 ring-2 ring-[#145A45]/30"
+                                    : "bg-white text-[#1F2924] border border-[#E8E4DA] hover:border-[#145A45] hover:bg-[#FAF8F2]"
+                                    }`}
+                                >
                                   <span>{c.icon ?? "📦"}</span>
-                                  <span>{c.name_en || c.name}</span>
-                                  {c.name_hi ? (
-                                    <span className="text-[10px] text-[#145A45]">({c.name_hi})</span>
-                                  ) : null}
-                                  {subs.length > 0 && (
-                                    <span className="rounded bg-[#FAF8F2] border border-[#E8E4DA] px-1 text-[9px] text-[#5A655F]">
-                                      {subs.length} sub
-                                    </span>
-                                  )}
-                                </span>
-                              </SelectItem>
+                                  <span>{c.name_hi || c.name}</span>
+                                  {isSelected && <span className="text-[10px] ml-0.5">✓</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Visual Category Palette Card (100% Inline & Freeze-Proof) */}
+                      <div className="rounded-2xl border border-[#E8E4DA] bg-[#FAF8F2]/70 p-3 space-y-2.5 shadow-2xs">
+                        {/* Search Input Bar */}
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-stone-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="सर्च करें जैसे: तेल, दाल, चावल, आटा, मसाले, बिस्कुट, सर्फ, tel, dal, oil..."
+                            value={categorySearch}
+                            onChange={(e) => setCategorySearch(e.target.value)}
+                            className="w-full pl-9 pr-8 py-2 rounded-xl border border-[#E8E4DA] bg-white text-xs font-semibold text-[#1F2924] placeholder:font-normal placeholder:text-stone-400 focus:outline-none focus:border-[#145A45] focus:ring-2 focus:ring-[#145A45]/15 transition-all shadow-2xs"
+                          />
+                          {categorySearch && (
+                            <button
+                              type="button"
+                              onClick={() => setCategorySearch("")}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 size-5 rounded-full bg-stone-200 text-stone-600 hover:bg-stone-300 flex items-center justify-center text-xs cursor-pointer"
+                              title="हटाएं"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Department Filter Pills */}
+                        <div
+                          data-lenis-prevent="true"
+                          className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5"
+                        >
+                          {CATEGORY_DEPARTMENTS.map((dept) => {
+                            const isActive = activeCategoryDept === dept.id;
+                            return (
+                              <button
+                                key={dept.id}
+                                type="button"
+                                onClick={() => setActiveCategoryDept(dept.id)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold shrink-0 transition-all cursor-pointer ${isActive
+                                  ? "bg-[#145A45] text-white shadow-2xs"
+                                  : "bg-white text-stone-700 border border-[#E8E4DA] hover:bg-stone-100"
+                                  }`}
+                              >
+                                <span>{dept.icon}</span>
+                                <span>{dept.label}</span>
+                              </button>
                             );
                           })}
-                        </SelectContent>
-                      </Select>
+                        </div>
+
+                        {/* Visual Category Grid Container (Native Scroll + data-lenis-prevent + Seamless Chaining) */}
+                        <div
+                          data-lenis-prevent="true"
+                          onWheel={handleCategoryScrollWheel}
+                          tabIndex={0}
+                          className="max-h-56 overflow-y-auto pr-1 overscroll-auto rounded-xl space-y-1.5 focus:outline-none"
+                          style={{
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#145A45 #E8E4DA",
+                          }}
+                        >
+                          {filteredParentCategories.length === 0 ? (
+                            <div className="py-8 text-center text-stone-400 text-xs">
+                              कोई कैटेगरी नहीं मिली &quot;{categorySearch}&quot;
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {filteredParentCategories.map((c) => {
+                                const isSelected = c.id === categoryId;
+                                return (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setCategoryId(c.id);
+                                      setSubcategoryId("");
+                                    }}
+                                    className={`flex items-center gap-2.5 p-2 rounded-xl text-left transition-all border cursor-pointer relative ${isSelected
+                                      ? "bg-[#E6EFE8] border-[#145A45] ring-2 ring-[#145A45]/30 shadow-xs"
+                                      : "bg-white border-[#E8E4DA] hover:border-[#145A45]/50 hover:bg-[#FAF8F2]"
+                                      }`}
+                                  >
+                                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-stone-50 border border-stone-200 text-lg shadow-2xs">
+                                      {c.icon ?? "📦"}
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[11.5px] font-bold text-[#1F2924] leading-tight truncate">
+                                        {c.name_hi || c.name}
+                                      </p>
+                                      <p className="text-[9.5px] text-[#5A655F] leading-tight truncate font-medium">
+                                        {c.name_en || c.name}
+                                      </p>
+                                    </div>
+                                    {isSelected && (
+                                      <span className="size-4 rounded-full bg-[#145A45] text-white flex items-center justify-center text-[10px] font-black shrink-0">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bottom Status / Summary */}
+                        <div className="flex items-center justify-between pt-1 text-[10.5px] text-stone-500 font-medium">
+                          <span>
+                            कुल {filteredParentCategories.length} कैटेगरी उपलब्ध हैं
+                          </span>
+                          {selectedCategoryObj && (
+                            <span className="text-[#145A45] font-bold flex items-center gap-1">
+                              <span>चयनित:</span>
+                              <span className="underline">{selectedCategoryObj.name_hi || selectedCategoryObj.name}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -1429,33 +1955,30 @@ export function AdminProducts({
                         <button
                           type="button"
                           onClick={() => setPresetType("solid")}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                            presetType === "solid"
-                              ? "bg-[#145A45] text-white shadow-2xs"
-                              : "text-[#5A655F] hover:text-[#1F2924]"
-                          }`}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${presetType === "solid"
+                            ? "bg-[#145A45] text-white shadow-2xs"
+                            : "text-[#5A655F] hover:text-[#1F2924]"
+                            }`}
                         >
                           वज़न (Solid)
                         </button>
                         <button
                           type="button"
                           onClick={() => setPresetType("liquid")}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                            presetType === "liquid"
-                              ? "bg-[#145A45] text-white shadow-2xs"
-                              : "text-[#5A655F] hover:text-[#1F2924]"
-                          }`}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${presetType === "liquid"
+                            ? "bg-[#145A45] text-white shadow-2xs"
+                            : "text-[#5A655F] hover:text-[#1F2924]"
+                            }`}
                         >
                           तरल (Liquid)
                         </button>
                         <button
                           type="button"
                           onClick={() => setPresetType("pack")}
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                            presetType === "pack"
-                              ? "bg-[#145A45] text-white shadow-2xs"
-                              : "text-[#5A655F] hover:text-[#1F2924]"
-                          }`}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${presetType === "pack"
+                            ? "bg-[#145A45] text-white shadow-2xs"
+                            : "text-[#5A655F] hover:text-[#1F2924]"
+                            }`}
                         >
                           पैकेट / पीस
                         </button>
@@ -1546,11 +2069,10 @@ export function AdminProducts({
                                     key={chip}
                                     type="button"
                                     onClick={() => updateVariant(idx, "label", chip)}
-                                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
-                                      v.label === chip
-                                        ? "bg-[#145A45] text-white border-[#145A45]"
-                                        : "bg-white text-stone-600 hover:text-[#145A45] hover:bg-[#E6EFE8] border-stone-200"
-                                    }`}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${v.label === chip
+                                      ? "bg-[#145A45] text-white border-[#145A45]"
+                                      : "bg-white text-stone-600 hover:text-[#145A45] hover:bg-[#E6EFE8] border-stone-200"
+                                      }`}
                                   >
                                     {chip}
                                   </button>
@@ -1646,11 +2168,10 @@ export function AdminProducts({
                                 बचत / मार्जिन: {mrpNum > 0 && priceNum > 0 ? inr(mrpNum - priceNum) : "—"}
                               </span>
                               <span
-                                className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${
-                                  disc > 0
-                                    ? "bg-amber-50 text-amber-800 border-amber-300"
-                                    : "bg-stone-50 text-stone-500 border-stone-200"
-                                }`}
+                                className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${disc > 0
+                                  ? "bg-amber-50 text-amber-800 border-amber-300"
+                                  : "bg-stone-50 text-stone-500 border-stone-200"
+                                  }`}
                               >
                                 {disc > 0 ? `${disc}% छूट` : "कोई छूट नहीं"}
                               </span>
@@ -1727,12 +2248,26 @@ export function AdminProducts({
                             />
                           </label>
 
-                          <Input
-                            placeholder="या फोटो का सीधा URL पेस्ट करें"
-                            value={frontImageUrl}
-                            onChange={(e) => setFrontImageUrl(e.target.value)}
-                            className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA]"
-                          />
+                          <div className="flex gap-1.5 items-center">
+                            <Input
+                              placeholder="या फोटो का सीधा URL पेस्ट करें"
+                              value={frontImageUrl}
+                              onChange={(e) => setFrontImageUrl(optimizeProductImageUrl(e.target.value))}
+                              className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA] flex-1"
+                            />
+                            {frontImageUrl && frontImageUrl.startsWith("http") && !frontImageUrl.includes("supabase.co") && (
+                              <button
+                                type="button"
+                                onClick={handleSaveExternalFrontToStorage}
+                                disabled={isSavingExternalFront}
+                                title="Supabase क्लाउड में सेव और HD करें"
+                                className="h-7.5 px-2 rounded-lg bg-[#E6EFE8] hover:bg-[#145A45] text-[#0F4A38] hover:text-white text-[10px] font-bold border border-[#145A45]/30 transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                              >
+                                <CloudDownload className="size-3" />
+                                <span>{isSavingExternalFront ? "सेव..." : "क्लाउड HD"}</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1785,12 +2320,26 @@ export function AdminProducts({
                             />
                           </label>
 
-                          <Input
-                            placeholder="या Back Photo URL पेस्ट करें"
-                            value={backImageUrl}
-                            onChange={(e) => setBackImageUrl(e.target.value)}
-                            className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA]"
-                          />
+                          <div className="flex gap-1.5 items-center">
+                            <Input
+                              placeholder="या Back Photo URL पेस्ट करें"
+                              value={backImageUrl}
+                              onChange={(e) => setBackImageUrl(optimizeProductImageUrl(e.target.value))}
+                              className="h-7.5 text-[11px] rounded-lg border-[#E8E4DA] flex-1"
+                            />
+                            {backImageUrl && backImageUrl.startsWith("http") && !backImageUrl.includes("supabase.co") && (
+                              <button
+                                type="button"
+                                onClick={handleSaveExternalBackToStorage}
+                                disabled={isSavingExternalBack}
+                                title="Supabase क्लाउड में सेव और HD करें"
+                                className="h-7.5 px-2 rounded-lg bg-[#FAF8F2] hover:bg-[#145A45] text-[#1F2924] hover:text-white text-[10px] font-bold border border-[#E8E4DA] transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                              >
+                                <CloudDownload className="size-3" />
+                                <span>{isSavingExternalBack ? "सेव..." : "क्लाउड HD"}</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1868,22 +2417,20 @@ export function AdminProducts({
                             <button
                               type="button"
                               onClick={() => setPreviewLang("hi")}
-                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
-                                previewLang === "hi"
-                                  ? "bg-[#145A45] text-white"
-                                  : "text-[#5A655F]"
-                              }`}
+                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${previewLang === "hi"
+                                ? "bg-[#145A45] text-white"
+                                : "text-[#5A655F]"
+                                }`}
                             >
                               हिंदी
                             </button>
                             <button
                               type="button"
                               onClick={() => setPreviewLang("en")}
-                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
-                                previewLang === "en"
-                                  ? "bg-[#145A45] text-white"
-                                  : "text-[#5A655F]"
-                              }`}
+                              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${previewLang === "en"
+                                ? "bg-[#145A45] text-white"
+                                : "text-[#5A655F]"
+                                }`}
                             >
                               English
                             </button>

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { searchWebProductImages, type WebImageResult } from "../../lib/web-image-search";
 import { sanitizeGroceryQuery, buildProductSearchTitle } from "../../lib/server-image-search";
+import { optimizeProductImageUrl } from "@/lib/product-images";
 
 export interface WebImageFinderModalProps {
   isOpen: boolean;
@@ -193,7 +194,8 @@ export function WebImageFinderModal({
       toast.error("कृपया कोई मान्य इमेज लिंक (URL) डालें।");
       return;
     }
-    setSelectedUrl(clean);
+    const optimized = optimizeProductImageUrl(clean);
+    setSelectedUrl(optimized);
     toast.success("कस्टम फोटो लिंक चुन लिया गया!");
   }
 
@@ -202,7 +204,8 @@ export function WebImageFinderModal({
       toast.error("कृपया कोई एक फोटो चुनें या लिंक पेस्ट करें।");
       return;
     }
-    onSelectImage(selectedUrl);
+    const optimized = optimizeProductImageUrl(selectedUrl);
+    onSelectImage(optimized);
     toast.success("फोटो सफलतापूर्वक सेट हो गई!");
     onClose();
   }
