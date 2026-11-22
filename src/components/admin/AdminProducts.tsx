@@ -1546,13 +1546,13 @@ export function AdminProducts({
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <DialogContent
           data-lenis-prevent
-          className="w-[95vw] sm:max-w-3xl h-[88vh] max-h-[92dvh] flex flex-col gap-0 p-0 overflow-hidden rounded-3xl border-[#E8E4DA] bg-white shadow-2xl"
+          className="w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:w-full sm:max-w-3xl h-[88vh] max-h-[92dvh] flex flex-col gap-0 p-0 overflow-hidden rounded-2xl sm:rounded-3xl border-[#E8E4DA] bg-white shadow-2xl"
         >
           {/* 1. Modal Fixed Header & Tab Navigation Bar */}
-          <DialogHeader className="px-4 sm:px-6 pt-5 pb-3 border-b border-[#E8E4DA] bg-white shrink-0 space-y-2">
-            <div className="flex items-center justify-between">
+          <DialogHeader className="px-3 sm:px-6 pt-4 sm:pt-5 pb-3 border-b border-[#E8E4DA] bg-white shrink-0 space-y-2">
+            <div className="flex items-center justify-between pr-8 sm:pr-10">
               <div>
-                <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
+                <DialogTitle className="font-sans text-base sm:text-xl font-bold text-[#1F2924]">
                   {editingProduct ? `Edit "${editingProduct.name}"` : "नया किराना प्रोडक्ट जोड़ें (Add Product)"}
                 </DialogTitle>
                 <p className="text-[11px] text-[#5A655F] mt-0.5">
@@ -1561,48 +1561,51 @@ export function AdminProducts({
               </div>
             </div>
 
-            {/* Clean 3-Tab Selector Pill Bar */}
-            <div className="grid grid-cols-3 gap-1 p-1 bg-[#FAF8F2] rounded-2xl border border-[#E8E4DA]">
+            {/* Clean 3-Tab Selector Pill Bar (Fully Responsive) */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-[#FAF8F2] rounded-xl sm:rounded-2xl border border-[#E8E4DA] w-full min-w-0">
               <button
                 type="button"
                 onClick={() => setModalTab("basic")}
                 className={cn(
-                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  "py-2 px-1.5 sm:px-3 rounded-lg sm:rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer min-w-0",
                   modalTab === "basic"
                     ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
                     : "text-[#5A655F] hover:text-[#16201A]"
                 )}
               >
                 <Package className="size-3.5 shrink-0" />
-                <span className="truncate">1. बुनियादी जानकारी</span>
+                <span className="truncate hidden sm:inline">1. बुनियादी जानकारी</span>
+                <span className="truncate sm:hidden">1. बेसिक</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalTab("pricing")}
                 className={cn(
-                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  "py-2 px-1.5 sm:px-3 rounded-lg sm:rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer min-w-0",
                   modalTab === "pricing"
                     ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
                     : "text-[#5A655F] hover:text-[#16201A]"
                 )}
               >
                 <Tag className="size-3.5 shrink-0" />
-                <span className="truncate">2. पैक व रेट ({variants.length})</span>
+                <span className="truncate hidden sm:inline">2. पैक व रेट ({variants.length})</span>
+                <span className="truncate sm:hidden">2. रेट ({variants.length})</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setModalTab("photos")}
                 className={cn(
-                  "py-2 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                  "py-2 px-1.5 sm:px-3 rounded-lg sm:rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer min-w-0",
                   modalTab === "photos"
                     ? "bg-white text-[#145A45] shadow-xs border border-[#145A45]/25"
                     : "text-[#5A655F] hover:text-[#16201A]"
                 )}
               >
                 <ImageIcon className="size-3.5 shrink-0" />
-                <span className="truncate">3. फोटो व विवरण</span>
+                <span className="truncate hidden sm:inline">3. फोटो व विवरण</span>
+                <span className="truncate sm:hidden">3. फोटो</span>
               </button>
             </div>
           </DialogHeader>
@@ -1615,7 +1618,7 @@ export function AdminProducts({
             <div
               ref={modalScrollRef}
               data-lenis-prevent
-              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 space-y-4"
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain overflow-x-hidden px-3 sm:px-6 py-3.5 sm:py-4 space-y-4"
             >
               {/* TAB 1: BASIC INFORMATION */}
               {modalTab === "basic" && (
@@ -1623,11 +1626,11 @@ export function AdminProducts({
                   <div className="grid gap-3.5 sm:grid-cols-2">
                     {/* English Name with Voice & AI Auto-fill buttons */}
                     <div className="space-y-1.5 sm:col-span-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <Label className="text-xs font-bold text-[#1F2924]">
                           Product Name (English) <span className="text-red-500">*</span>
                         </Label>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={toggleVoiceName}
@@ -1671,7 +1674,7 @@ export function AdminProducts({
 
                     {/* Hindi Name */}
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <Label className="text-xs font-bold text-[#1F2924]">
                           उत्पाद का नाम (हिंदी / Hindi)
                         </Label>
@@ -1679,7 +1682,7 @@ export function AdminProducts({
                           type="button"
                           disabled={isTranslatingHindi || !name.trim()}
                           onClick={handleTranslateHindiName}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-2 py-0.5 rounded-md transition-colors disabled:opacity-40 cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-2 py-0.5 rounded-md transition-colors disabled:opacity-40 cursor-pointer shadow-2xs shrink-0"
                           title="अंग्रेजी नाम का तुरंत देवनागरी हिंदी अनुवाद करें"
                         >
                           {isTranslatingHindi ? (
@@ -1713,16 +1716,16 @@ export function AdminProducts({
 
                     {/* Inline Freeze-Proof Category Selector */}
                     <div className="space-y-2.5 sm:col-span-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <Label className="text-xs font-bold text-[#1F2924] flex items-center gap-1.5">
                           <span>मुख्य कैटेगरी (Category)</span>
                           <span className="text-red-500">*</span>
                         </Label>
                         {selectedCategoryObj ? (
-                          <span className="text-[11px] text-[#145A45] font-black bg-[#E6EFE8] px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-[#145A45]/20 shadow-2xs">
+                          <span className="text-[11px] text-[#145A45] font-black bg-[#E6EFE8] px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-[#145A45]/20 shadow-2xs max-w-full sm:max-w-xs truncate">
                             <span className="text-sm">{selectedCategoryObj.icon ?? "📦"}</span>
-                            <span>चयनित: {selectedCategoryObj.name_hi || selectedCategoryObj.name}</span>
-                            <span className="text-emerald-600 font-bold">✓</span>
+                            <span className="truncate">चयनित: {selectedCategoryObj.name_hi || selectedCategoryObj.name}</span>
+                            <span className="text-emerald-600 font-bold shrink-0">✓</span>
                           </span>
                         ) : (
                           <span className="text-[11px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
@@ -2517,7 +2520,7 @@ export function AdminProducts({
             </div>
 
             {/* 3. Modal Fixed Footer with Step Navigation */}
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-t border-[#E8E4DA] bg-[#FAF8F2] shrink-0 gap-2">
+            <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 border-t border-[#E8E4DA] bg-[#FAF8F2] shrink-0 gap-1.5 sm:gap-2 w-full max-w-full min-w-0">
               {/* Left Button */}
               <div>
                 {modalTab === "basic" ? (
@@ -2525,7 +2528,7 @@ export function AdminProducts({
                     type="button"
                     onClick={() => setIsAddModalOpen(false)}
                     variant="ghost"
-                    className="rounded-xl text-xs text-[#5A655F] hover:bg-white h-9.5 px-3 cursor-pointer"
+                    className="rounded-xl text-xs text-[#5A655F] hover:bg-white h-9 px-2.5 sm:px-3 cursor-pointer shrink-0"
                   >
                     रद्द करें (Cancel)
                   </Button>
@@ -2534,21 +2537,21 @@ export function AdminProducts({
                     type="button"
                     onClick={() => setModalTab(modalTab === "photos" ? "pricing" : "basic")}
                     variant="outline"
-                    className="rounded-xl text-xs border-[#E8E4DA] bg-white text-[#1F2924] hover:bg-[#FAF8F2] h-9.5 px-3.5 font-bold cursor-pointer shadow-2xs"
+                    className="rounded-xl text-xs border-[#E8E4DA] bg-white text-[#1F2924] hover:bg-[#FAF8F2] h-9 px-3 font-bold cursor-pointer shadow-2xs shrink-0"
                   >
-                    <ChevronLeft className="size-4 mr-1" /> पिछला
+                    <ChevronLeft className="size-4 mr-0.5 sm:mr-1" /> पिछला
                   </Button>
                 )}
               </div>
 
               {/* Right Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 {modalTab !== "photos" && (
                   <Button
                     type="submit"
                     disabled={isSaving || !name.trim()}
                     variant="outline"
-                    className="rounded-xl text-xs border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] h-9.5 px-3 font-bold hidden sm:inline-flex cursor-pointer"
+                    className="rounded-xl text-xs border-[#145A45]/30 text-[#145A45] hover:bg-[#E6EFE8] h-9 px-3 font-bold hidden sm:inline-flex cursor-pointer"
                   >
                     तुरंत सेव करें
                   </Button>
@@ -2558,9 +2561,10 @@ export function AdminProducts({
                   <Button
                     type="button"
                     onClick={() => setModalTab("pricing")}
-                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-4 cursor-pointer"
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs px-3 sm:px-4 cursor-pointer"
                   >
-                    <span>आगे: पैक और रेट</span>
+                    <span className="hidden sm:inline">आगे: पैक और रेट</span>
+                    <span className="sm:hidden">आगे (पैक)</span>
                     <ChevronRight className="size-4 ml-1" />
                   </Button>
                 )}
@@ -2569,9 +2573,10 @@ export function AdminProducts({
                   <Button
                     type="button"
                     onClick={() => setModalTab("photos")}
-                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-4 cursor-pointer"
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs px-3 sm:px-4 cursor-pointer"
                   >
-                    <span>आगे: फोटो और विवरण</span>
+                    <span className="hidden sm:inline">आगे: फोटो और विवरण</span>
+                    <span className="sm:hidden">आगे (फोटो)</span>
                     <ChevronRight className="size-4 ml-1" />
                   </Button>
                 )}
@@ -2580,9 +2585,14 @@ export function AdminProducts({
                   <Button
                     type="submit"
                     disabled={isSaving}
-                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9.5 text-xs shadow-xs px-5 cursor-pointer"
+                    className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs px-3 sm:px-5 cursor-pointer"
                   >
-                    {isSaving ? "सेव हो रहा है…" : editingProduct ? "अपडेट सुरक्षित करें" : "प्रोडक्ट सेव करें"}
+                    <span className="hidden sm:inline">
+                      {isSaving ? "सेव हो रहा है…" : editingProduct ? "अपडेट सुरक्षित करें" : "प्रोडक्ट सेव करें"}
+                    </span>
+                    <span className="sm:hidden">
+                      {isSaving ? "सेव..." : "सेव करें"}
+                    </span>
                   </Button>
                 )}
               </div>

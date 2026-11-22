@@ -308,8 +308,16 @@ export const ENGLISH_TO_HINDI_GROCERY_DICT: Record<string, string> = {
   // Cleaning & Personal Care
   soap: "साबुन",
   sabun: "साबुन",
+  bath: "नहाने का",
+  bathing: "नहाने का",
   detergent: "डिटर्जेंट",
-  washing: "कपड़ा धोने का",
+  washing: "धुलाई",
+  wash: "वॉश",
+  easy: "ईजी",
+  matic: "मैटिक",
+  hand: "हैंड",
+  handwash: "हैंड वॉश",
+  original: "ओरिजिनल",
   bar: "बार",
   liquid: "लिक्विड",
   gel: "जेल",
@@ -318,7 +326,6 @@ export const ENGLISH_TO_HINDI_GROCERY_DICT: Record<string, string> = {
   toilet: "टॉयलेट",
   floor: "फर्श",
   phenyl: "फिनाइल",
-  handwash: "हैंडवॉश",
   shampoo: "शैम्पू",
   conditioner: "कंडीशनर",
   paste: "पेस्ट",
@@ -329,6 +336,58 @@ export const ENGLISH_TO_HINDI_GROCERY_DICT: Record<string, string> = {
   cream: "क्रीम",
   hair: "बालों का",
   moisturizing: "मॉइस्चराइजिंग",
+  care: "केयर",
+  protection: "प्रोटेक्शन",
+  protect: "सुरक्षा",
+  germ: "जर्म",
+  germs: "कीटाणु",
+  antibacterial: "एंटीबैक्टीरियल",
+  antiseptic: "एंटीसेप्टिक",
+  sanitizer: "सैनिटाइज़र",
+  skin: "स्किन",
+  skincare: "स्किनकेयर",
+  soft: "सॉफ्ट",
+  gentle: "कोमल",
+  glow: "ग्लो",
+  shine: "चमक",
+  bright: "उज्ज्वल",
+  active: "एक्टिव",
+  power: "पावर",
+  plus: "प्लस",
+  super: "सुपर",
+  ultra: "अल्ट्रा",
+  max: "मैक्स",
+  gold: "गोल्ड",
+  classic: "क्लासिक",
+  premium: "प्रीमियम",
+  special: "स्पेशल",
+  lemon: "लेमन",
+  neem: "नीम",
+  tulsi: "तुलसी",
+  aloe: "एलोवेरा",
+  vera: "एलोवेरा",
+  rose: "गुलाब",
+  sandal: "चंदन",
+  pine: "पाइन",
+  fragrance: "खुशबू",
+  refill: "रीफिल",
+  pump: "पंप",
+  bottle: "बोतल",
+  pouch: "पाउच",
+  pack: "पैक",
+  packet: "पैकेट",
+  savlon: "सैवलोन",
+  santoor: "संतूर",
+  godrej: "गोदरेज",
+  cinthol: "सिंथोल",
+  medimix: "मेडीमिक्स",
+  pears: "पियर्स",
+  liril: "लिरिल",
+  himalaya: "हिमालय",
+  garnier: "गार्नियर",
+  ponds: "पॉन्ड्स",
+  fair: "फेयर",
+  lovely: "लवली",
 
   // Pooja & Others
   pooja: "पूजा",
@@ -346,6 +405,84 @@ export const ENGLISH_TO_HINDI_GROCERY_DICT: Record<string, string> = {
   pashu: "पशु",
   aahar: "आहार",
 };
+
+/**
+ * Algorithmic phonetic transliteration fallback for any English/Romanized word.
+ * Guarantees 0% English alphabet pollution in Hindi titles.
+ */
+export function transliterateToHindiPhonetic(text: string): string {
+  if (!text) return "";
+  if (!/[a-zA-Z]/.test(text)) return text;
+
+  let result = text;
+
+  const clusters: [RegExp, string][] = [
+    [/\bshree\b/gi, "श्री"],
+    [/\bshri\b/gi, "श्री"],
+    [/original/gi, "ओरिजिनल"],
+    [/liquid/gi, "लिक्विड"],
+    [/powder/gi, "पाउडर"],
+    [/cleaner/gi, "क्लीनर"],
+    [/clean/gi, "क्लीन"],
+    [/wash/gi, "वॉश"],
+    [/hand/gi, "हैंड"],
+    [/soap/gi, "साबुन"],
+    [/shampoo/gi, "शैम्पू"],
+    [/cream/gi, "क्रीम"],
+    [/lotion/gi, "लोशन"],
+    [/oil/gi, "ऑयल"],
+    [/ghee/gi, "घी"],
+    [/gold/gi, "गोल्ड"],
+    [/silver/gi, "सिल्वर"],
+    [/plus/gi, "प्लस"],
+    [/super/gi, "सुपर"],
+    [/ultra/gi, "अल्ट्रा"],
+    [/max/gi, "मैक्स"],
+    [/mini/gi, "मिनी"],
+    [/active/gi, "एक्टिव"],
+    [/fresh/gi, "फ्रेश"],
+    [/care/gi, "केयर"],
+    [/shine/gi, "शाइन"],
+    [/glow/gi, "ग्लो"],
+    [/pure/gi, "प्योर"],
+    [/natural/gi, "नेचुरल"],
+    [/sweet/gi, "स्वीट"],
+    [/bottle/gi, "बोतल"],
+    [/packet/gi, "पैकेट"],
+    [/pack/gi, "पैक"],
+    [/box/gi, "बॉक्स"],
+    [/pouch/gi, "पाउच"],
+    [/refill/gi, "रीफिल"],
+    [/pump/gi, "पंप"],
+    [/anti/gi, "एंटी"],
+    [/germ/gi, "जर्म"],
+    [/free/gi, "फ्री"],
+    [/kh/gi, "ख"],
+    [/gh/gi, "घ"],
+    [/ch/gi, "च"],
+    [/chh/gi, "छ"],
+    [/jh/gi, "झ"],
+    [/th/gi, "थ"],
+    [/dh/gi, "ध"],
+    [/ph/gi, "फ"],
+    [/bh/gi, "भ"],
+    [/sh/gi, "श"],
+  ];
+
+  for (const [re, rep] of clusters) {
+    result = result.replace(re, rep);
+  }
+
+  const charMap: Record<string, string> = {
+    a: "आ", b: "ब", c: "क", d: "ड", e: "ए", f: "फ", g: "ग", h: "ह",
+    i: "इ", j: "ज", k: "क", l: "ल", m: "म", n: "न", o: "ओ", p: "प",
+    q: "क्यू", r: "र", s: "स", t: "ट", u: "यू", v: "व", w: "व", x: "क्स",
+    y: "य", z: "ज़"
+  };
+
+  result = result.replace(/[a-zA-Z]/g, (c) => charMap[c.toLowerCase()] || c);
+  return result;
+}
 
 /**
  * Generates a clean, readable, SEO-friendly kebab-case URL slug.
@@ -415,16 +552,16 @@ export function detectGroceryNature(
     "coca cola", "coke", "pepsi", "sprite", "thums up", "fanta", "mirinda", "limca", "maaza",
     "frooti", "real fruit", "sharbat", "syrup", "rooh afza", "water", "bisleri", "aquafina",
     "shampoo", "conditioner", "liquid", "floor cleaner", "toilet cleaner", "harpic", "lizol",
-    "phenyl", "phenol", "handwash", "dishwash gel", "vim gel", "pril", "surf excel liquid",
+    "phenyl", "phenol", "handwash", "hand wash", "hand-wash", "body wash", "bodywash", "face wash", "facewash", "dishwash", "dish wash", "dishwash gel", "vim gel", "pril", "surf excel liquid",
     "ariel liquid", "comfort fabric", "sanitizer", "rose water", "gulab jal", "gulabjal",
     "coconut water", "oil-ghee", "beverages", "dairy", "लीटर", "लीटर", "लीटर"
   ];
 
   for (const kw of liquidKeywords) {
     if (text.includes(kw)) {
-      // Exclude solid forms like soap bar or dry powders unless it says liquid/gel
+      // Exclude solid forms like soap bar or dry powders unless it says liquid/gel/wash
       if (text.includes("soap") || text.includes("bar") || text.includes("powder")) {
-        if (!text.includes("liquid") && !text.includes("gel") && !text.includes("oil")) {
+        if (!text.includes("liquid") && !text.includes("gel") && !text.includes("oil") && !text.includes("wash")) {
           continue;
         }
       }
@@ -487,9 +624,13 @@ export function sanitizeVariantUnits(
       label = label.replace(/\b100\s*(?:g|gm|gram|grams|ग्राम)\b/gi, "100 ml");
       label = label.replace(/\b750\s*(?:g|gm|gram|grams|ग्राम)\b/gi, "750 ml");
 
-      // If label has no volume unit at all (e.g. "Standard" or "1"), default to "1 L"
+      // If label has no volume unit at all (e.g. "Standard" or "1"), default appropriately
       if (!/(?:l|ltr|litre|litres|ml|pouch|bottle|jar|can|लीटर|मिली)/i.test(label)) {
-        label = "1 L";
+        if (/(?:handwash|hand\s*wash|sanitizer|shampoo|lotion|conditioner|face\s*wash)/i.test(productName)) {
+          label = "250 ml";
+        } else {
+          label = "1 L";
+        }
       }
     } else if (nature === "solid") {
       // Must use kg or g!
@@ -533,9 +674,7 @@ async function callGeminiApi(requestBody: Record<string, unknown>): Promise<stri
   // Fast official Gemini production models (verified active 200 OK)
   const models = [
     "gemini-3.5-flash",
-    "gemini-3.5-flash-lite",
     "gemini-3-flash-preview",
-    "gemini-3.8-flash",
     "gemini-flash-latest",
   ];
 
@@ -546,27 +685,34 @@ async function callGeminiApi(requestBody: Record<string, unknown>): Promise<stri
   }
 
   for (const model of models) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (!res.ok) {
+          const err = await res.text();
+          console.warn(`[Gemini Admin] ${model} attempt ${attempt + 1} HTTP ${res.status}:`, err.slice(0, 150));
+          if (res.status === 503 && attempt === 0) {
+            await new Promise((r) => setTimeout(r, 400));
+            continue;
+          }
+          break;
         }
-      );
 
-      if (!res.ok) {
-        const err = await res.text();
-        console.warn(`[Gemini Admin] ${model} HTTP ${res.status}:`, err.slice(0, 150));
-        continue;
+        const json = await res.json();
+        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return text;
+      } catch (err) {
+        console.warn(`[Gemini Admin] ${model} fetch failed:`, err);
+        break;
       }
-
-      const json = await res.json();
-      const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) return text;
-    } catch (err) {
-      console.warn(`[Gemini Admin] ${model} fetch failed:`, err);
     }
   }
 
@@ -1123,8 +1269,16 @@ export function generateHeuristicProductData(
     matchedCat = categories.find((c) => c.slug === "dals-pulses" || /dal|दाल/i.test(c.name));
   } else if (/(?:masala|spice|mirch|haldi|jeera|dhaniya|garam|sabji)/i.test(lower)) {
     matchedCat = categories.find((c) => c.slug === "spices-masale" || /spice|masala|मसाले/i.test(c.name));
-  } else if (/(?:soap|surf|detergent|vim|harpic|lizol|clean|wash)/i.test(lower)) {
-    matchedCat = categories.find((c) => c.slug === "cleaning-household" || /clean|सफाई/i.test(c.name));
+  } else if (/(?:handwash|hand\s*wash|sanitizer)/i.test(lower)) {
+    matchedCat = categories.find((c) => /personal|care|साबुन|handwash/i.test(c.name) || c.slug === "personal-care");
+  } else if (/(?:bath\s*soap|bathing\s*soap|lux|dove|pears|santoor|liril|margo|medimix)/i.test(lower)) {
+    matchedCat = categories.find((c) => /soap|साबुन|personal/i.test(c.name));
+  } else if (/(?:dishwash|vim|bartan|pril|exo)/i.test(lower)) {
+    matchedCat = categories.find((c) => /dish|बर्तन|clean/i.test(c.name));
+  } else if (/(?:surf|detergent|tide|ariel|wheel|ghadi|rin|कपड़ा)/i.test(lower)) {
+    matchedCat = categories.find((c) => /detergent|धुलाई|clean/i.test(c.name));
+  } else if (/(?:harpic|toilet|lizol|floor|phenyl)/i.test(lower)) {
+    matchedCat = categories.find((c) => /clean|सफाई/i.test(c.name));
   } else if (/(?:biscuit|cookies|maggi|noodle|chips|snack|bhujia|namkeen)/i.test(lower)) {
     matchedCat = categories.find((c) => c.slug === "snacks-beverages" || /snack|चाय|बिस्कुट/i.test(c.name));
   } else if (/(?:chai|tea|coffee)/i.test(lower)) {
@@ -1132,9 +1286,35 @@ export function generateHeuristicProductData(
   }
   if (!matchedCat) matchedCat = categories[0];
 
-  // 4. Generate Hindi Name via comprehensive dictionary mapping
-  const words = trimmed.split(/\s+/);
+  // 4. Generate Hindi Name via multi-word phrase matching + dictionary + phonetic fallback
+  let processed = trimmed;
+  const commonPhrases: [RegExp, string][] = [
+    [/\bhand\s*wash\b/gi, "हैंड वॉश"],
+    [/\bdish\s*wash\b/gi, "डिशवॉश"],
+    [/\bface\s*wash\b/gi, "फेस वॉश"],
+    [/\bbath\s*soap\b/gi, "नहाने का साबुन"],
+    [/\bbody\s*wash\b/gi, "बॉडी वॉश"],
+    [/\bbody\s*lotion\b/gi, "बॉडी लोशन"],
+    [/\bhair\s*oil\b/gi, "बालों का तेल"],
+    [/\bmustard\s*oil\b/gi, "सरसों का तेल"],
+    [/\brefined\s*oil\b/gi, "रिफाइंड तेल"],
+    [/\bdesi\s*ghee\b/gi, "देसी घी"],
+    [/\bchakki\s*atta\b/gi, "चक्की आटा"],
+    [/\bbasmati\s*rice\b/gi, "बासमती चावल"],
+    [/\btoilet\s*cleaner\b/gi, "टॉयलेट क्लीनर"],
+    [/\bfloor\s*cleaner\b/gi, "फर्श क्लीनर"],
+    [/\bdetergent\s*powder\b/gi, "डिटर्जेंट पाउडर"],
+    [/\bdetergent\s*bar\b/gi, "डिटर्जेंट बार"],
+    [/\btooth\s*paste\b/gi, "टूथपेस्ट"],
+    [/\btooth\s*brush\b/gi, "टूथब्रश"],
+  ];
+  for (const [re, rep] of commonPhrases) {
+    processed = processed.replace(re, rep);
+  }
+
+  const words = processed.split(/\s+/);
   const hiWords = words.map((w) => {
+    if (!/[a-zA-Z]/.test(w)) return w;
     const cleanWord = w.toLowerCase().replace(/[^a-z0-9]/g, "");
     if (ENGLISH_TO_HINDI_GROCERY_DICT[cleanWord]) {
       return ENGLISH_TO_HINDI_GROCERY_DICT[cleanWord];
@@ -1142,7 +1322,7 @@ export function generateHeuristicProductData(
     for (const [hi, en] of Object.entries(HINDI_SLUG_DICTIONARY)) {
       if (en.toLowerCase() === cleanWord) return hi;
     }
-    return w;
+    return transliterateToHindiPhonetic(w);
   });
   const nameHi = hiWords.join(" ");
 
@@ -1152,7 +1332,7 @@ export function generateHeuristicProductData(
 
   // 6. Rich, product-specific descriptions tailored by category
   let descEn = `Premium quality ${standardName} sourced with strict standards of purity and freshness for everyday household cooking and dining.`;
-  let descHi = `उच्च गुणवत्ता और शुद्धता के सख्त मानकों पर खरा उतरा ${nameHi || standardName}। दैनिक घरेलू रसोई और पौष्टिक खान-पान के लिए उत्तम।`;
+  let descHi = `उच्च गुणवत्ता और शुद्धता के सख्त मानकों पर खरा उतरा ${nameHi || standardName}। दैनिक घरेलू उपयोग और पौष्टिक खान-पान के लिए उत्तम।`;
 
   if (/(?:oil|mustard|tel|sarso|refine|ghee|dalda)/i.test(lower)) {
     descEn = `Pure, carefully filtered edible cooking oil with authentic pungent aroma. Ideal for everyday Indian curries, tadka, deep frying, and traditional pickle making.`;
@@ -1169,9 +1349,27 @@ export function generateHeuristicProductData(
   } else if (/(?:masala|spice|mirch|haldi|jeera|dhaniya|garam|sabji)/i.test(lower)) {
     descEn = `Sun-dried and hygienically ground whole spices preserving natural essential oils, vibrant color, and rich aroma for authentic Indian dishes.`;
     descHi = `धूप में सुखाए गए खड़े मसालों से पिसा हुआ शुद्ध मसाला। प्राकृतिक सुगंध और गहरा रंग हर व्यंजन को दे लाजवाब जायका।`;
-  } else if (/(?:soap|surf|detergent|vim|harpic|lizol|clean|wash)/i.test(lower)) {
-    descEn = `Advanced stain-fighting formula that dissolves tough grease, oil, and collar dirt effortlessly while preserving fabric brightness and colors.`;
-    descHi = `कठिन दागों और जिद्दी मैल को चुटकियों में साफ करने वाला असरदार डिटर्जेंट। कपड़ों की चमक बनाए रखे और हाथों पर भी सुरक्षित रहे।`;
+  } else if (/(?:handwash|hand\s*wash|sanitizer)/i.test(lower)) {
+    descEn = `Antibacterial liquid hand wash that washes away 99.9% of illness-causing germs while keeping hands soft, moisturized, and pleasantly fragrant.`;
+    descHi = `कीटाणुओं से 99.9% तक प्रभावी सुरक्षा देने वाला लिक्विड हैंड वॉश। हाथों की त्वचा पर कोमल और हर धुलाई के बाद दे मनभावन ताजगी भरी खुशबू।`;
+  } else if (/(?:dishwash|vim|bartan|pril|exo)/i.test(lower)) {
+    descEn = `Cuts through tough grease, burnt food, and oil with the power of lemons, leaving utensils sparkling clean and odor-free.`;
+    descHi = `बर्तनों की जिद्दी चिकनाई और जले हुए दागों को आसानी से हटाने वाला असरदार डिशवॉश। बर्तनों को दे चमकदार सफाई और नींबू की ताजगी।`;
+  } else if (/(?:surf|detergent|tide|ariel|wheel|ghadi|rin|कपड़ा)/i.test(lower)) {
+    descEn = `Advanced stain-fighting laundry detergent that dissolves tough collar dirt and stains effortlessly while preserving fabric brightness and colors.`;
+    descHi = `कठिन दागों और जिद्दी मैल को चुटकियों में साफ करने वाला असरदार कपड़े धोने का डिटर्जेंट। कपड़ों की चमक बनाए रखे और कपड़ों को नया जैसा रखे।`;
+  } else if (/(?:bath\s*soap|bathing\s*soap|lux|dove|pears|santoor|liril|margo|medimix|lifebuoy\s*soap)/i.test(lower) || (/soap|साबुन/i.test(lower) && !/dish|detergent|clean/i.test(lower))) {
+    descEn = `Gentle, refreshing bathing soap enriched with skin moisturizers to cleanse and nourish skin, keeping you fresh and confident all day.`;
+    descHi = `त्वचा को गहराई से साफ और कोमल बनाए रखने वाला नहाने का साबुन। दैनिक उपयोग से त्वचा खिली-खिली, स्वस्थ और तरोताजा बनी रहती है।`;
+  } else if (/(?:harpic|toilet|lizol|floor|phenyl)/i.test(lower)) {
+    descEn = `Powerful disinfectant household cleaner that eliminates 99.9% of germs, limescale, and tough grime, keeping home surfaces sparkling clean and fresh.`;
+    descHi = `99.9% कीटाणुओं का नाश करने वाला कीटाणुरोधक क्लीनर। सतहों को दे चमकदार सफाई और पूरे घर में मनभावन ताजगी।`;
+  } else if (/(?:shampoo|conditioner|hair\s*oil)/i.test(lower)) {
+    descEn = `Nourishing hair care formula that strengthens roots from within, reduces hair fall, and leaves hair silky, smooth, and naturally lustrous.`;
+    descHi = `बालों को जड़ों से मजबूत और चमकदार बनाने वाला फॉर्मूला। बालों को दे रेशमी मुलायम अहसास और प्राकृतिक चमक।`;
+  } else if (/(?:toothpaste|paste|colgate|closeup|sensodyne|pepsodent|dant)/i.test(lower)) {
+    descEn = `Complete oral care formula that fights cavities, removes dental plaque, and provides long-lasting fresh breath and healthy gums.`;
+    descHi = `दांतों को कैविटी से बचाने और मसूड़ों को मजबूत रखने वाला टूथपेस्ट। लंबे समय तक ताजगी और चमकदार मुस्कान के लिए सर्वोत्तम।`;
   } else if (/(?:biscuit|cookies|maggi|noodle|chips|snack|bhujia|namkeen)/i.test(lower)) {
     descEn = `Crispy, freshly packed tea-time snack made with quality ingredients and sealed for long-lasting crunch and delicious taste.`;
     descHi = `चाय के समय का सबसे स्वादिष्ट और कुरकुरा स्नैक। उच्च गुणवत्ता से तैयार और ताजगी बनाए रखने के लिए सुरक्षित पैक।`;
@@ -1186,10 +1384,18 @@ export function generateHeuristicProductData(
   // 7. Variants based on nature
   let variants: ParsedAiProductVariant[] = [];
   if (nature === "liquid") {
-    variants = [
-      { label: "1 L", price: 155, mrp: 170, stock: 50 },
-      { label: "500 ml", price: 82, mrp: 90, stock: 40 },
-    ];
+    if (/(?:handwash|hand\s*wash|dishwash|shampoo|lotion)/i.test(lower)) {
+      variants = [
+        { label: "250 ml", price: 99, mrp: 120, stock: 50 },
+        { label: "500 ml", price: 175, mrp: 199, stock: 40 },
+        { label: "750 ml Refill", price: 145, mrp: 165, stock: 30 },
+      ];
+    } else {
+      variants = [
+        { label: "1 L", price: 155, mrp: 170, stock: 50 },
+        { label: "500 ml", price: 82, mrp: 90, stock: 40 },
+      ];
+    }
   } else if (nature === "solid") {
     if (/(?:masala|spice|mirch|haldi|dhaniya|jeera)/i.test(lower)) {
       variants = [
