@@ -65,6 +65,7 @@ import { BulkProductImport } from "./BulkProductImport";
 import { AdminAiProductAdder } from "./AdminAiProductAdder";
 import {
   autoCompleteProductWithGemini,
+  translateProductNameToHindi,
   generateCleanSlug,
   detectGroceryNature,
 } from "@/lib/gemini-admin";
@@ -243,6 +244,7 @@ export function AdminProducts({
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isAiProductAdderOpen, setIsAiProductAdderOpen] = useState(false);
   const [isAiFilling, setIsAiFilling] = useState(false);
+  const [isTranslatingHindi, setIsTranslatingHindi] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [modalTab, setModalTab] = useState<"basic" | "pricing" | "photos">("basic");
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -705,7 +707,7 @@ export function AdminProducts({
           setPresetType("solid");
         }
 
-        toast.success("उत्पाद विवरण स्वतः भर दिए गए!");
+        toast.success("✓ हिंदी नाम, विशिष्ट विवरण और पैक रेट स्वतः भर दिए गए!");
       } else {
         toast.error(res.error || "AI ऑटो-कंप्लीट नहीं कर सका।");
       }
@@ -713,6 +715,28 @@ export function AdminProducts({
       toast.error(e instanceof Error ? e.message : "AI ऑटो-कंप्लीट में समस्या आई।");
     } finally {
       setIsAiFilling(false);
+    }
+  }
+
+  async function handleTranslateHindiName() {
+    const query = name.trim() || brand.trim();
+    if (!query) {
+      toast.error("कृपया पहले ऊपर अंग्रेजी में प्रोडक्ट का नाम लिखें");
+      return;
+    }
+    setIsTranslatingHindi(true);
+    try {
+      const res = await translateProductNameToHindi({ productName: query });
+      if (res.success && res.name_hi) {
+        setNameHi(res.name_hi);
+        toast.success(`✓ हिंदी अनुवाद: "${res.name_hi}"`);
+      } else {
+        toast.error("हिंदी अनुवाद नहीं हो सका।");
+      }
+    } catch {
+      toast.error("अनुवाद में समस्या आई।");
+    } finally {
+      setIsTranslatingHindi(false);
     }
   }
 
@@ -1647,9 +1671,25 @@ export function AdminProducts({
 
                     {/* Hindi Name */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-[#1F2924]">
-                        उत्पाद का नाम (हिंदी / Hindi)
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-bold text-[#1F2924]">
+                          उत्पाद का नाम (हिंदी / Hindi)
+                        </Label>
+                        <button
+                          type="button"
+                          disabled={isTranslatingHindi || !name.trim()}
+                          onClick={handleTranslateHindiName}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#145A45] hover:text-[#0E4333] bg-[#E6EFE8]/70 hover:bg-[#E6EFE8] px-2 py-0.5 rounded-md transition-colors disabled:opacity-40 cursor-pointer shadow-2xs"
+                          title="अंग्रेजी नाम का तुरंत देवनागरी हिंदी अनुवाद करें"
+                        >
+                          {isTranslatingHindi ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="size-3 text-[#145A45]" />
+                          )}
+                          <span>AI हिंदी अनुवाद</span>
+                        </button>
+                      </div>
                       <Input
                         placeholder="उदा. फॉर्च्यून कच्ची घानी सरसों का तेल"
                         value={nameHi}

@@ -155,8 +155,14 @@ OUTPUT FORMAT EXAMPLE:
     },
   };
 
-  // Primary model: gemini-3.6-flash, fallback: gemini-flash-latest
-  const modelCandidates = ["gemini-3.6-flash", "gemini-flash-latest"];
+  // Fast official Gemini production models (verified active 200 OK)
+  const modelCandidates = [
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3-flash-preview",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
+  ];
 
   for (const model of modelCandidates) {
     try {

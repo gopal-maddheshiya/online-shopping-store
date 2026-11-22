@@ -110,6 +110,244 @@ export const HINDI_SLUG_DICTIONARY: Record<string, string> = {
 };
 
 /**
+ * Comprehensive English/Hinglish to pure Devanagari Hindi translation dictionary.
+ * Powers the fallback engine and instant word-level mapping.
+ */
+export const ENGLISH_TO_HINDI_GROCERY_DICT: Record<string, string> = {
+  // Brands
+  fortune: "फॉर्च्यून",
+  tata: "टाटा",
+  aashirvaad: "आशीर्वाद",
+  ashirwad: "आशीर्वाद",
+  amul: "अमूल",
+  mdh: "एमडीएच",
+  everest: "एवरेस्ट",
+  catch: "कैच",
+  dabur: "डाबर",
+  patanjali: "पतंजलि",
+  parle: "पार्ले",
+  britannia: "ब्रिटानिया",
+  haldiram: "हल्दीराम",
+  haldirams: "हल्दीराम",
+  bikaji: "बीकाजी",
+  maggi: "मैगी",
+  yippee: "यिप्पी",
+  sunfeast: "सनफीस्ट",
+  vim: "विम",
+  surf: "सर्फ",
+  excel: "एक्सेल",
+  harpic: "हार्पिक",
+  lizol: "लाइज़ोल",
+  dettol: "डेटॉल",
+  lifebuoy: "लाइफबॉय",
+  lux: "लक्स",
+  dove: "डव",
+  colgate: "कोलगेट",
+  closeup: "क्लोजअप",
+  sensodyne: "सेंसोडाइन",
+  ariel: "एरियल",
+  tide: "टाइड",
+  wheel: "व्हील",
+  ghadi: "घड़ी",
+  rin: "रिन",
+  comfort: "कम्फर्ट",
+  kapila: "कपिला",
+  boroplus: "बोरोप्लस",
+  nivea: "निविया",
+  vaseline: "वैसलीन",
+  bail: "बैल",
+  kolhu: "कोल्हू",
+  saffola: "सफोला",
+  gemini: "जेमिनी",
+  kisan: "किसान",
+  kissan: "किसान",
+  rajdhani: "राजधानी",
+
+  // Grocery Essentials
+  mustard: "सरसों",
+  oil: "तेल",
+  kachi: "कच्ची",
+  kachhi: "कच्ची",
+  ghani: "घानी",
+  refined: "रिफाइंड",
+  soyabean: "सोयाबीन",
+  soya: "सोयाबीन",
+  sunflower: "सूरजमुखी",
+  groundnut: "मूंगफली",
+  til: "तिल",
+  sesame: "तिल",
+  ghee: "घी",
+  desi: "देसी",
+  milk: "दूध",
+  doodh: "दूध",
+  chaach: "छाछ",
+  dahi: "दही",
+  curd: "दही",
+  butter: "मक्खन",
+  paneer: "पनीर",
+
+  // Grains & Flours
+  atta: "आटा",
+  aata: "आटा",
+  flour: "आटा",
+  wheat: "गेहूं",
+  chakki: "चक्की",
+  fresh: "ताजा",
+  shudh: "शुद्ध",
+  pure: "शुद्ध",
+  maida: "मैदा",
+  suji: "सूजी",
+  sooji: "सूजी",
+  besan: "बेसन",
+  rice: "चावल",
+  chawal: "चावल",
+  basmati: "बासमती",
+  poha: "पोहा",
+
+  // Pulses / Dal
+  dal: "दाल",
+  daal: "दाल",
+  pulses: "दलहन",
+  arhar: "अरहर",
+  toor: "तुअर",
+  chana: "चना",
+  moong: "मूंग",
+  urad: "उड़द",
+  masoor: "मसूर",
+  rajma: "राजमा",
+  kabuli: "काबुली",
+  chhole: "छोले",
+  moth: "मोठ",
+
+  // Spices & Condiments
+  masala: "मसाला",
+  spices: "मसाले",
+  spice: "मसाला",
+  haldi: "हल्दी",
+  turmeric: "हल्दी",
+  mirch: "मिर्च",
+  chilli: "मिर्च",
+  chili: "मिर्च",
+  powder: "पाउडर",
+  dhaniya: "धनिया",
+  coriander: "धनिया",
+  jeera: "जीरा",
+  cumin: "जीरा",
+  hing: "हींग",
+  asafoetida: "हींग",
+  methi: "मेथी",
+  rai: "राई",
+  ajwain: "अजवाइन",
+  saunf: "सौंफ",
+  fennel: "सौंफ",
+  elaichi: "इलायची",
+  cardamom: "इलायची",
+  laung: "लौंग",
+  clove: "लौंग",
+  dalchini: "दालचीनी",
+  cinnamon: "दालचीनी",
+  tejpatta: "तेजपत्ता",
+  sabji: "सब्जी",
+  garam: "गरम",
+  chicken: "चिकन",
+  meat: "मीट",
+  biryani: "बिरयानी",
+  kasuri: "कसूरी",
+
+  // Sweeteners & Salt
+  sugar: "चीनी",
+  chini: "चीनी",
+  salt: "नमक",
+  namak: "नमक",
+  jaggery: "गुड़",
+  gud: "गुड़",
+  honey: "शहद",
+
+  // Tea & Beverages
+  tea: "चाय पत्ती",
+  chai: "चाय",
+  coffee: "कॉफी",
+  green: "ग्रीन",
+
+  // Dry Fruits
+  kaju: "काजू",
+  cashew: "काजू",
+  badam: "बादाम",
+  almond: "बादाम",
+  kishmish: "किशमिश",
+  raisin: "किशमिश",
+  pista: "पिस्ता",
+  pistachio: "पिस्ता",
+  anjeer: "अंजीर",
+  akhrot: "अखरोट",
+  walnut: "अखरोट",
+  makhana: "मखाना",
+
+  // Snacks & Breakfast
+  biscuit: "बिस्कुट",
+  biscuits: "बिस्कुट",
+  cookie: "कुकीज",
+  cookies: "कुकीज",
+  rusk: "रस्क",
+  toast: "टोस्ट",
+  namkeen: "नमकीन",
+  bhujia: "भुजिया",
+  sev: "सेव",
+  chips: "चिप्स",
+  noodle: "नूडल्स",
+  noodles: "नूडल्स",
+  pasta: "पास्ता",
+  macaroni: "मैकरोनी",
+  papad: "पापड़",
+  sauce: "सॉस",
+  ketchup: "केचप",
+  pickle: "आचार",
+  achar: "आचार",
+  jam: "जैम",
+
+  // Cleaning & Personal Care
+  soap: "साबुन",
+  sabun: "साबुन",
+  detergent: "डिटर्जेंट",
+  washing: "कपड़ा धोने का",
+  bar: "बार",
+  liquid: "लिक्विड",
+  gel: "जेल",
+  cleaner: "क्लीनर",
+  dishwash: "डिशवॉश",
+  toilet: "टॉयलेट",
+  floor: "फर्श",
+  phenyl: "फिनाइल",
+  handwash: "हैंडवॉश",
+  shampoo: "शैम्पू",
+  conditioner: "कंडीशनर",
+  paste: "पेस्ट",
+  toothpaste: "टूथपेस्ट",
+  brush: "ब्रश",
+  toothbrush: "टूथब्रश",
+  lotion: "बॉडी लोशन",
+  cream: "क्रीम",
+  hair: "बालों का",
+  moisturizing: "मॉइस्चराइजिंग",
+
+  // Pooja & Others
+  pooja: "पूजा",
+  puja: "पूजा",
+  agarbatti: "अगरबत्ती",
+  dhoop: "धूप",
+  kapoor: "कपूर",
+  camphor: "कपूर",
+  havan: "हवन",
+  samagri: "सामग्री",
+  matchbox: "माचिस",
+  machis: "माचिस",
+  chokar: "चोकर",
+  pasuahar: "पशुआहार",
+  pashu: "पशु",
+  aahar: "आहार",
+};
+
+/**
  * Generates a clean, readable, SEO-friendly kebab-case URL slug.
  * Supports transliterating Hindi characters so the slug is never empty.
  * Never includes 'generic' prefix or suffixes.
@@ -292,11 +530,13 @@ async function callGeminiApi(requestBody: Record<string, unknown>): Promise<stri
     throw new Error("Gemini API Key सेट नहीं है। कृपया Vercel/Environment में VITE_GEMINI_API_KEY सेट करें।");
   }
 
-  // Fast official Gemini production models
+  // Fast official Gemini production models (verified active 200 OK)
   const models = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3-flash-preview",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
   ];
 
   // Standardize generationConfig format
@@ -538,6 +778,88 @@ OUTPUT JSON SCHEMA:
 }
 
 /**
+ * 3. Fast 1-Tap Pure Devanagari Hindi Translation for Product Titles
+ */
+export async function translateProductNameToHindi({
+  productName,
+}: {
+  productName: string;
+}): Promise<{ success: boolean; name_hi: string }> {
+  const trimmed = productName.trim();
+  if (!trimmed) return { success: false, name_hi: "" };
+
+  const systemInstruction = `You are a master Hindi grocery translator and retail specialist for "Arun Gopal Traders" (अरुण गोपाल ट्रेडर्स, रामनगर चौराहा, महराजगंज, उत्तर प्रदेश).
+Your task is to translate any grocery product name into 100% pure authentic Devanagari Hindi script.
+
+CRITICAL RULES:
+1. STRICTLY NO ENGLISH OR ROMAN ALPHABETS! The output MUST be 100% Devanagari Hindi.
+2. Transliterate brand names properly:
+   - Fortune -> फॉर्च्यून
+   - Tata -> टाटा
+   - Aashirvaad -> आशीर्वाद
+   - Amul -> अमूल
+   - Surf Excel -> सर्फ एक्सेल
+   - Vim -> विम
+   - Harpic -> हार्पिक
+   - Lizol -> लाइज़ोल
+   - MDH -> एमडीएच
+   - Everest -> एवरेस्ट
+   - Catch -> कैच
+   - Dettol -> डेटॉल
+   - Colgate -> कोलगेट
+   - Parle -> पार्ले
+   - Britannia -> ब्रिटानिया
+   - Dabur -> डाबर
+   - Patanjali -> पतंजलि
+   - Haldiram -> हल्दीराम
+   - Bikaji -> बीकाजी
+   - Maggi -> मैगी
+   - Boroplus -> बोरोप्लस
+   - Nivea -> निविया
+   - Vaseline -> वैसलीन
+   - Kapila -> कपिला
+3. Translate grocery item types naturally:
+   - Mustard Oil -> कच्ची घानी सरसों का तेल
+   - Refined Oil -> रिफाइंड सोयाबीन / सूरजमुखी तेल
+   - Desi Ghee -> शुद्ध देसी घी
+   - Atta / Flour -> चक्की ताजा शुद्ध आटा
+   - Basmati Rice -> प्रीमियम बासमती चावल
+   - Arhar Dal -> शुद्ध अरहर (तुअर) दाल
+   - Chana Dal -> चना दाल
+   - Salt -> आयोडीन युक्त नमक
+   - Sugar -> शुद्ध साफ चीनी
+   - Tea -> कड़क चाय पत्ती
+   - Detergent Powder -> डिटर्जेंट पाउडर
+   - Dishwash Bar / Gel -> बर्तन धोने का साबुन / जेल
+   - Bath Soap -> नहाने का साबुन
+   - Body Lotion -> मॉइस्चराइजिंग बॉडी लोशन
+   - Hair Oil -> बालों का तेल
+   - Toothpaste -> दंतमंजन / टूथपेस्ट
+   - Pashu Aahar -> दुधारू पशुआहार
+4. Output ONLY the pure Devanagari Hindi title. Do NOT include quotation marks, markdown backticks, or any English explanation.`;
+
+  try {
+    const rawText = await callGeminiApi({
+      contents: [{ parts: [{ text: `Translate this product title to pure Hindi: "${trimmed}"` }] }],
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      generation_config: { temperature: 0.1 },
+    });
+
+    if (rawText && rawText.trim()) {
+      const clean = rawText.replace(/["'*`]/g, "").trim();
+      // Ensure it doesn't return empty or pure whitespace
+      if (clean) return { success: true, name_hi: clean };
+    }
+  } catch (err) {
+    console.warn("[Gemini Admin] Direct Hindi translate error, falling back:", err);
+  }
+
+  // Fallback to heuristic translation
+  const fallback = generateHeuristicProductData(trimmed, []);
+  return { success: true, name_hi: fallback.name_hi || trimmed };
+}
+
+/**
  * 2. Auto-Complete Single Product Metadata with Physical State Intelligence
  */
 export async function autoCompleteProductWithGemini({
@@ -585,9 +907,10 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
    - If the product is unbranded, loose, commodity grain/spice/dry fruit, or no brand is known, SET "brand": "" (EMPTY STRING).
    - STRICTLY AND ABSOLUTELY NEVER return "Generic", "Local", "Unbranded", "None", or "N/A" as the brand! Leave it completely EMPTY: "".
 
-3. HINDI NAME (Devanagari):
-   - Natural, authentic Devanagari Hindi as spoken in Purvanchal / Maharajganj grocery markets.
-   - Preserve brand in clean Hindi: Fortune -> फॉर्च्यून, Tata -> टाटा, Aashirvaad -> आशीर्वाद, Amul -> अमूल, Catch -> कैच, MDH -> एमडीएच, Everest -> एवरेस्ट, Dabur -> डाबर, Patanjali -> पतंजलि, Surf Excel -> सर्फ एक्सेल, Vim -> विम, Harpic -> हार्पिक, Lizol -> लाइज़ोल, Parle -> पार्ले, Britannia -> ब्रिटानिया.
+3. HINDI NAME (Devanagari - STRICTLY ZERO ENGLISH ALPHABETS):
+   - The output MUST be in pure, authentic Devanagari Hindi script.
+   - NEVER leave English or Romanized words in name_hi!
+   - Preserve brand in clean Hindi: Fortune -> फॉर्च्यून, Tata -> टाटा, Aashirvaad -> आशीर्वाद, Amul -> अमूल, Catch -> कैच, MDH -> एमडीएच, Everest -> एवरेस्ट, Dabur -> डाबर, Patanjali -> पतंजलि, Surf Excel -> सर्फ एक्सेल, Vim -> विम, Harpic -> हार्पिक, Lizol -> लाइज़ोल, Parle -> पार्ले, Britannia -> ब्रिटानिया, Dettol -> डेटॉल, Colgate -> कोलगेट, Haldiram -> हल्दीराम, Boroplus -> बोरोप्लस.
    - Use standard Hindi grocery nouns:
      * Mustard Oil -> कच्ची घानी सरसों का तेल
      * Refined Oil -> रिफाइंड सोयाबीन / सूरजमुखी तेल
@@ -600,9 +923,12 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
      * Sugar -> शुद्ध साफ चीनी
      * Salt -> आयोडीन युक्त नमक
      * Tea -> कड़क चाय पत्ती
+     * Detergent Bar / Powder -> डिटर्जेंट बार / पाउडर
+     * Dishwash Gel -> बर्तन धोने का जेल
+     * Body Lotion -> मॉइस्चराइजिंग बॉडी लोशन
    - E.g. "Fortune Kachi Ghani Mustard Oil" -> "फॉर्च्यून कच्ची घानी सरसों का तेल"
-   - E.g. "Tata Salt Vacuum Evaporated" -> "टाटा शुद्ध आयोडीन नमक"
-   - E.g. "Aashirvaad Chakki Atta" -> "आशीर्वाद शुद्ध चक्की आटा"
+   - E.g. "Tata Salt Vacuum Evaporated" -> "टाटा वैक्यूम इवापोरेटेड आयोडीन युक्त नमक"
+   - E.g. "Aashirvaad Chakki Atta" -> "आशीर्वाद शुद्ध चक्की ताजा आटा"
    - E.g. "Red Chilli Powder" -> "शुद्ध पिसी लाल मिर्च पाउडर"
    - NEVER prepend "जेनेरिक" or "लोकल" to Hindi names!
 
@@ -629,6 +955,18 @@ CRITICAL RULES FOR GROCERY INTELLIGENCE:
 6. VARIANTS, PRICES & MRP:
    - Provide 1 to 3 realistic pack sizes with typical Indian market retail prices (in INR) and MRP (MRP >= price).
    - Default stock: 50.
+
+7. PRODUCT DESCRIPTIONS (HIGH VALUE & RETAIL GRADE - ABSOLUTELY NO GENERIC TEXT):
+   - "description" (English): 2 to 3 detailed, engaging sentences highlighting:
+     * Product origin, quality & purity (e.g. cold-pressed from mustard seeds, 100% whole wheat chakki ground, unpolished dal).
+     * Exact kitchen or household usage (e.g. daily dal tadka, deep frying, rotis, stain removal, skin hydration).
+     * Sensory notes & benefits (e.g. strong pungent aroma, fluffy rotis, vibrant aroma, gentle on hands).
+     * STRICTLY NEVER write generic lines like "100% authentic quality for everyday grocery needs"!
+   - "description_hi" (Hindi): 2 to 3 natural, customer-appealing Hindi sentences in authentic Devanagari:
+     * शुद्धता, स्वाद, उपयोग और लाभों का स्पष्ट उल्लेख करें।
+     * जैसे सरसों तेल के लिए: "पारंपरिक कच्ची घानी विधि द्वारा तैयार 100% शुद्ध सरसों का तेल। इसकी तीखी झांझ और मनभावन खुशबू भोजन और आचार के स्वाद को कई गुना बढ़ा देती है। प्राकृतिक एंटीऑक्सीडेंट्स से भरपूर।"
+     * जैसे आटा के लिए: "100% शुद्ध साबुत सुनहरे गेहूं से चक्की में पिसा हुआ ताजा आटा। इसमें भरपूर चोकर और फाइबर रहता है, जिससे बनी रोटियां नर्म, फूली हुई और लंबे समय तक मुलायम बनी रहती हैं।"
+     * जैसे साबुन / लोशन के लिए: "त्वचा को गहराई से नमी और पोषण देने वाला फॉर्मूला। दैनिक उपयोग से त्वचा कोमल, स्वस्थ और खिली-खिली रहती है।"
 
 Return ONLY raw JSON object. Do not include markdown code fences.
 
@@ -794,12 +1132,15 @@ export function generateHeuristicProductData(
   }
   if (!matchedCat) matchedCat = categories[0];
 
-  // 4. Generate Hindi Name via dictionary mapping
+  // 4. Generate Hindi Name via comprehensive dictionary mapping
   const words = trimmed.split(/\s+/);
   const hiWords = words.map((w) => {
-    const wLower = w.toLowerCase();
+    const cleanWord = w.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (ENGLISH_TO_HINDI_GROCERY_DICT[cleanWord]) {
+      return ENGLISH_TO_HINDI_GROCERY_DICT[cleanWord];
+    }
     for (const [hi, en] of Object.entries(HINDI_SLUG_DICTIONARY)) {
-      if (en.toLowerCase() === wLower) return hi;
+      if (en.toLowerCase() === cleanWord) return hi;
     }
     return w;
   });
@@ -809,7 +1150,40 @@ export function generateHeuristicProductData(
   const standardName = trimmed.replace(/\b([a-z])/g, (_, c) => c.toUpperCase());
   const slug = generateCleanSlug(standardName, detectedBrand);
 
-  // 6. Variants based on nature
+  // 6. Rich, product-specific descriptions tailored by category
+  let descEn = `Premium quality ${standardName} sourced with strict standards of purity and freshness for everyday household cooking and dining.`;
+  let descHi = `उच्च गुणवत्ता और शुद्धता के सख्त मानकों पर खरा उतरा ${nameHi || standardName}। दैनिक घरेलू रसोई और पौष्टिक खान-पान के लिए उत्तम।`;
+
+  if (/(?:oil|mustard|tel|sarso|refine|ghee|dalda)/i.test(lower)) {
+    descEn = `Pure, carefully filtered edible cooking oil with authentic pungent aroma. Ideal for everyday Indian curries, tadka, deep frying, and traditional pickle making.`;
+    descHi = `पारंपरिक विधि द्वारा तैयार 100% शुद्ध तेल, जो दे खाने को असली स्वाद और मनभावन सुगंध। दैनिक खाना पकाने, दाल तड़का और आचार बनाने के लिए सर्वोत्तम।`;
+  } else if (/(?:atta|flour|maida|suji|besan|aata)/i.test(lower)) {
+    descEn = `Stone-ground from premium selected whole wheat grains preserving natural dietary fiber. Kneads easily into soft, fluffy rotis that stay tender for hours.`;
+    descHi = `100% शुद्ध सुनहरे साबुत गेहूं के दानों से चक्की में पिसा हुआ ताजा आटा। प्राकृतिक फाइबर से भरपूर, जिससे रोटियां नर्म, फूली हुई और लंबे समय तक मुलायम बनी रहती हैं।`;
+  } else if (/(?:rice|chawal|basmati)/i.test(lower)) {
+    descEn = `Aromatic, long-grain basmati rice naturally aged for exquisite fragrance and fluffy, non-sticky grains after cooking. Ideal for biryanis, pulao, and daily meals.`;
+    descHi = `प्रीमियम खुशबूदार बासमती चावल, जो पकने के बाद खिले-खिले और लंबे बनते हैं। पुलाव, बिरयानी और दैनिक भोजन में बेहतरीन स्वाद के लिए एकदम सही।`;
+  } else if (/(?:dal|pulses|chana|arhar|toor|moong|urad|rajma|kabuli)/i.test(lower)) {
+    descEn = `Unpolished, high-protein pulses sourced directly from trusted farms. Cooks evenly into rich, flavorful dal with authentic home-style aroma.`;
+    descHi = `बिना पॉलिश की हुई 100% शुद्ध और पौष्टिक दाल। प्रोटीन से भरपूर, जो आसानी से गलती है और घर जैसा असली और गाढ़ा स्वाद देती है।`;
+  } else if (/(?:masala|spice|mirch|haldi|jeera|dhaniya|garam|sabji)/i.test(lower)) {
+    descEn = `Sun-dried and hygienically ground whole spices preserving natural essential oils, vibrant color, and rich aroma for authentic Indian dishes.`;
+    descHi = `धूप में सुखाए गए खड़े मसालों से पिसा हुआ शुद्ध मसाला। प्राकृतिक सुगंध और गहरा रंग हर व्यंजन को दे लाजवाब जायका।`;
+  } else if (/(?:soap|surf|detergent|vim|harpic|lizol|clean|wash)/i.test(lower)) {
+    descEn = `Advanced stain-fighting formula that dissolves tough grease, oil, and collar dirt effortlessly while preserving fabric brightness and colors.`;
+    descHi = `कठिन दागों और जिद्दी मैल को चुटकियों में साफ करने वाला असरदार डिटर्जेंट। कपड़ों की चमक बनाए रखे और हाथों पर भी सुरक्षित रहे।`;
+  } else if (/(?:biscuit|cookies|maggi|noodle|chips|snack|bhujia|namkeen)/i.test(lower)) {
+    descEn = `Crispy, freshly packed tea-time snack made with quality ingredients and sealed for long-lasting crunch and delicious taste.`;
+    descHi = `चाय के समय का सबसे स्वादिष्ट और कुरकुरा स्नैक। उच्च गुणवत्ता से तैयार और ताजगी बनाए रखने के लिए सुरक्षित पैक।`;
+  } else if (/(?:chai|tea|coffee)/i.test(lower)) {
+    descEn = `Premium selected tea leaves blended for rich amber liquor, strong aroma, and refreshing kadak taste to energize your mornings.`;
+    descHi = `कड़क स्वाद और मनमोहक सुगंध वाली दानेदार चाय पत्ती। हर कप में ताजगी और भरपूर स्वाद का अहसास।`;
+  } else if (/(?:sugar|chini|salt|namak|jaggery|gud)/i.test(lower)) {
+    descEn = `Hygienically refined everyday essential enriched with natural sweetness and mineral purity for all home culinary preparations.`;
+    descHi = `हाइजीनिक तरीके से तैयार शुद्ध और स्वच्छ सामग्री। दैनिक रसोई में हर व्यंजन के स्वाद को संतुलित और स्वादिष्ट बनाने के लिए उत्तम।`;
+  }
+
+  // 7. Variants based on nature
   let variants: ParsedAiProductVariant[] = [];
   if (nature === "liquid") {
     variants = [
@@ -838,8 +1212,8 @@ export function generateHeuristicProductData(
     slug,
     brand: detectedBrand,
     category_id: matchedCat?.id,
-    description: `100% authentic quality ${standardName} for everyday grocery needs.`,
-    description_hi: `दैनिक घरेलू उपयोग के लिए 100% शुद्ध और असली ${nameHi || standardName}।`,
+    description: descEn,
+    description_hi: descHi,
     nature,
     variants,
   };
