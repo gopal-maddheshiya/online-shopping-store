@@ -37,7 +37,7 @@ export function HomeFaqSection({
     <section
       id="faq"
       aria-label="Frequently Asked Questions"
-      className="container-page py-3 sm:py-4"
+      className="container-page pt-3 pb-1 sm:pt-4 sm:pb-2"
       itemScope
       itemType="https://schema.org/FAQPage"
     >
@@ -48,17 +48,10 @@ export function HomeFaqSection({
         )}
       >
         {/* Compact Header Bar (Always Visible & Clickable) */}
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setIsExpanded((prev) => !prev);
-            }
-          }}
-          className="flex items-center justify-between gap-3 cursor-pointer select-none group"
+          className="flex w-full items-center justify-between gap-3 text-left cursor-pointer select-none group"
           aria-expanded={isExpanded}
         >
           {/* Left Title & Description */}
@@ -88,13 +81,12 @@ export function HomeFaqSection({
 
           {/* Right Action Trigger Pill */}
           <div className="shrink-0 flex items-center gap-1.5">
-            <button
-              type="button"
+            <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-3 sm:px-3.5 py-1.5 text-xs font-bold transition-all shadow-xs pointer-events-none",
                 isExpanded
                   ? "bg-[#EAF3ED] text-[#145A45] border border-[#CADBCF]"
-                  : "bg-[#145A45] text-white hover:bg-[#0E4333]"
+                  : "bg-[#145A45] text-white group-hover:bg-[#0E4333]"
               )}
             >
               <span>
@@ -107,9 +99,9 @@ export function HomeFaqSection({
               ) : (
                 <ChevronDown className="size-3.5 group-hover:translate-y-0.5 transition-transform" />
               )}
-            </button>
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Collapsible Content Area */}
         {isExpanded && (

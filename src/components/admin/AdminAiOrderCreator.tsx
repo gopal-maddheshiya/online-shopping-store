@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sparkles,
   Camera,
@@ -29,9 +29,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { inr, waHref } from "@/lib/format";
-import type { Product } from "@/lib/queries";
+import { settingsQuery, type Product } from "@/lib/queries";
 import {
   parseGrocerySlipWithGemini,
   type MatchedRationItem,
@@ -52,6 +52,8 @@ export function AdminAiOrderCreator({
   onOrderCreated,
 }: AdminAiOrderCreatorProps) {
   const queryClient = useQueryClient();
+  const { data: settings } = useQuery(settingsQuery);
+  const isDeliveryAllowed = settings?.delivery_enabled !== false;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -65,7 +67,15 @@ export function AdminAiOrderCreator({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("रामनगर चौराहा, महराजगंज");
-  const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">(
+    isDeliveryAllowed ? "delivery" : "pickup",
+  );
+
+  useEffect(() => {
+    if (isOpen && !isDeliveryAllowed) {
+      setDeliveryType("pickup");
+    }
+  }, [isOpen, isDeliveryAllowed]);
   const [paymentStatus, setPaymentStatus] = useState<"pending" | "paid">("pending");
 
   // Parsing & Processing State
@@ -85,7 +95,7 @@ export function AdminAiOrderCreator({
     setCustomerName("");
     setCustomerPhone("");
     setCustomerAddress("रामनगर चौराहा, महराजगंज");
-    setDeliveryType("delivery");
+    setDeliveryType(isDeliveryAllowed ? "delivery" : "pickup");
     setPaymentStatus("pending");
     setIsParsing(false);
     setIsPlacing(false);
@@ -163,8 +173,13 @@ export function AdminAiOrderCreator({
     setItems((prev) => prev.filter((_, i) => i !== index));
   }
 
+  const configuredDeliveryFee = Number(settings?.delivery_fee ?? 30);
+  const freeDeliveryThreshold = Number(settings?.free_delivery_threshold ?? 500);
   const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
-  const deliveryFee = deliveryType === "delivery" && subtotal < 500 ? 30 : 0;
+  const deliveryFee =
+    deliveryType === "delivery" && subtotal < freeDeliveryThreshold
+      ? configuredDeliveryFee
+      : 0;
   const grandTotal = subtotal + deliveryFee;
 
   // Place Order into Database
@@ -192,12 +207,15 @@ export function AdminAiOrderCreator({
         order_no: orderNo,
         customer_name: customerName.trim(),
         customer_phone: cleanPhone,
+        order_type: deliveryType,
         address:
           deliveryType === "delivery"
             ? {
                 name: customerName.trim(),
                 phone: cleanPhone,
-                line1: customerAddress.trim() || "रामनगर चौराहा, महराजगंज",
+                house: customerAddress.trim() || "रामनगर चौराहा",
+                area: customerAddress.trim() ? "" : "अड्डा बाजार रोड",
+                landmark: "",
                 city: "Maharajganj",
                 state: "UP",
                 pincode: "273303",
@@ -230,11 +248,11 @@ export function AdminAiOrderCreator({
         product_id: it.product_id,
         variant_id: it.variant_id,
         name: it.product_name,
-        name_en: it.product_name,
+        name_en: it.product_name_en || it.product_name,
         name_hi: it.product_name_hi || null,
         variant_label: it.variant_label,
-        variant_label_en: it.variant_label,
-        variant_label_hi: null,
+        variant_label_en: it.variant_label_en || it.variant_label,
+        variant_label_hi: it.variant_label_hi || null,
         price: it.unit_price,
         mrp: it.mrp || it.unit_price,
         qty: it.quantity,
@@ -609,8 +627,12 @@ ${itemsText}
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="delivery" className="text-xs">
-                              🚚 होम डिलीवरी (Home Delivery)
+                            <SelectItem
+                              value="delivery"
+                              disabled={!isDeliveryAllowed}
+                              className="text-xs"
+                            >
+                              🚚 होम डिलीवरी (Home Delivery){!isDeliveryAllowed ? " — बंद" : ""}
                             </SelectItem>
                             <SelectItem value="pickup" className="text-xs">
                               🏬 दुकान से उठाएंगे (Store Pickup)

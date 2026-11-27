@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import {
   Minus,
   Plus,
@@ -16,6 +16,8 @@ import {
   Bookmark,
   Search,
   Flame,
+  AlertCircle,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
@@ -81,12 +83,20 @@ function CategoryTileThumbnail({
   );
 }
 
-function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
+function EmptyCartView({
+  handleGoBack,
+  savedSection,
+}: {
+  handleGoBack: () => void;
+  savedSection?: ReactNode;
+}) {
   const { lang, t, getCategoryName } = useLanguage();
+  const { data: settings } = useQuery(settingsQuery);
   const { data: allProducts } = useQuery(productsQuery());
   const { data: categories } = useQuery(categoriesQuery);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +140,7 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
   }, [categories]);
 
   return (
-    <div className="container-page py-4 sm:py-6 pb-28 lg:pb-16 max-w-4xl mx-auto space-y-6">
+    <div className="container-page py-4 sm:py-6 pb-12 lg:pb-12 max-w-4xl mx-auto space-y-6">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#3D4C44]">
         <Link to="/" className="flex items-center gap-1 transition-colors hover:text-[#145A45]">
@@ -154,9 +164,13 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
           {t.emptyCartTitle}
         </h1>
         <p className="mx-auto mt-1.5 max-w-md text-xs sm:text-sm leading-relaxed text-[#46544D]">
-          {lang === "hi"
-            ? "घर के राशन का जरूरी सामान अभी जोड़ें — 30 मिनट में ताज़ा डिलीवरी!"
-            : "Add daily essentials to your cart now — Fresh 30-minute delivery!"}
+          {isDeliveryEnabled
+            ? lang === "hi"
+              ? "घर के राशन का जरूरी सामान अभी जोड़ें — 30 मिनट में ताज़ा डिलीवरी!"
+              : "Add daily essentials to your cart now — Fresh 30-minute delivery!"
+            : lang === "hi"
+              ? "घर के राशन का जरूरी सामान अभी जोड़ें — ऑनलाइन बुक करें, 15 मिनट में दुकान पर तैयार!"
+              : "Add daily essentials to your cart now — Order online, ready for pickup in 15 mins!"}
         </p>
 
         {/* Quick In-Page Search */}
@@ -166,6 +180,8 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
         >
           <Search className="size-4 text-[#546059] ml-2.5 shrink-0" />
           <input
+            id="cart-empty-search"
+            name="q"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -213,7 +229,7 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
           <div className="mt-6 pt-5 border-t border-[#E5EAE6]/80 text-left">
             <div className="flex items-center justify-between mb-3 px-1">
               <h2 className="font-sans text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#16201A] flex items-center gap-1.5">
-                <span className="text-sm">📂</span>
+                <LayoutGrid className="size-3.5 text-[#145A45] shrink-0" />
                 <span>{lang === "hi" ? "किराना श्रेणियां ब्राउज़ करें" : "Popular Grocery Categories"}</span>
               </h2>
               <Link to="/shop" className="text-xs font-bold text-[#145A45] hover:underline">
@@ -240,6 +256,8 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
           </div>
         )}
       </div>
+
+      {savedSection}
 
       {/* 3. Daily Essentials Product Shelf (With Instant ADD Button) */}
       {essentialProducts.length > 0 && (
@@ -279,9 +297,13 @@ function EmptyCartView({ handleGoBack }: { handleGoBack: () => void }) {
       {/* 4. Local Trust Strip */}
       <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-3 rounded-2xl border border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] p-3 sm:p-4 text-center text-xs text-[#3D4C44] shadow-xs">
         <div className="space-y-0.5">
-          <p className="font-bold text-[#145A45] text-xs sm:text-sm">⚡ 30 मिनट</p>
+          <p className="font-bold text-[#145A45] text-xs sm:text-sm">
+            {isDeliveryEnabled ? (lang === "hi" ? "⚡ 30 मिनट" : "⚡ 30 Mins") : (lang === "hi" ? "🏪 15 मिनट" : "🏪 15 Mins")}
+          </p>
           <p className="text-[10.5px] sm:text-[11px] text-[#546059]">
-            {lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Delivery"}
+            {isDeliveryEnabled
+              ? (lang === "hi" ? "तेज़ होम डिलीवरी" : "Express Delivery")
+              : (lang === "hi" ? "दुकान से पिकअप" : "Store Pickup")}
           </p>
         </div>
         <div className="space-y-0.5 border-x border-[#E5EAE6]">
@@ -312,11 +334,19 @@ function CartPage() {
     saveForLater,
     moveToCart,
     removeSaved,
+    syncWithCatalog,
     hydrated,
   } = useCart();
   const { data: s } = useQuery(settingsQuery);
+  const { data: allProducts } = useQuery(productsQuery());
   const { lang, t, getProductName, getVariantLabel } = useLanguage();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (hydrated && allProducts && allProducts.length > 0) {
+      syncWithCatalog(allProducts);
+    }
+  }, [hydrated, allProducts, syncWithCatalog]);
 
   const handleGoBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -327,14 +357,75 @@ function CartPage() {
   };
 
   const isDeliveryEnabled = Boolean(s?.delivery_enabled);
-  const freeAt = Number(s?.free_delivery_threshold ?? 499);
+  const minOrderValue = Number(s?.min_order_value ?? 0);
+  const belowMinDelivery = isDeliveryEnabled && subtotal > 0 && minOrderValue > 0 && subtotal < minOrderValue;
+  const freeAt = Number(s?.free_delivery_threshold ?? 500);
   const fee = !isDeliveryEnabled || subtotal >= freeAt || subtotal === 0 ? 0 : Number(s?.delivery_fee ?? 30);
   const diffToFree = Math.max(0, freeAt - subtotal);
   const progressPercent = freeAt > 0 ? Math.min(100, Math.round((subtotal / freeAt) * 100)) : 100;
+  const hasOutOfStockItem = items.some((i) => i.stock !== undefined && i.stock <= 0);
 
-  // --- EMPTY STATE ---
-  if (hydrated && items.length === 0 && savedItems.length === 0) {
-    return <EmptyCartView handleGoBack={handleGoBack} />;
+  const savedSectionNode =
+    savedItems.length > 0 ? (
+      <div className="space-y-2.5 rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-4 sm:p-5 shadow-xs text-left">
+        <div className="flex items-center gap-2">
+          <Bookmark className="size-4 text-[#145A45]" />
+          <h2 className="font-sans text-sm font-bold text-[#16201A]">
+            {t.savedForLaterTitle} ({savedItems.length})
+          </h2>
+        </div>
+        {savedItems.map((i) => (
+          <div
+            key={i.variantId}
+            className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-[#FAF8F5] p-3 flex items-center justify-between gap-2 shadow-2xs"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <img
+                src={getProductImage({ slug: i.slug, name: i.name, image_url: i.imageUrl })}
+                alt={getProductName(i)}
+                loading="lazy"
+                decoding="async"
+                width={44}
+                height={44}
+                className="size-11 rounded-lg object-contain bg-white p-0.5 border border-[#E5E7EB] shrink-0"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[#16201A] line-clamp-1">
+                  {getProductName(i)}
+                </p>
+                <p className="text-[11px] text-[#3D4C44]">
+                  {getVariantLabel(i)} · {inr(i.price)}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={i.stock <= 0}
+                onClick={() => moveToCart(i.variantId)}
+                className="h-8 px-2.5 rounded-lg text-xs font-bold border-[#E5E7EB] text-[#145A45] bg-white hover:bg-[#EBF3ED] shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                {i.stock <= 0 ? (lang === "hi" ? "स्टॉक नहीं" : "Out of stock") : t.moveToCartBtn}
+              </Button>
+              <button
+                type="button"
+                aria-label={t.removeBtn}
+                onClick={() => removeSaved(i.variantId)}
+                className="size-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                title={t.removeBtn}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : null;
+
+  // --- EMPTY STATE (including when only savedItems remain) ---
+  if (hydrated && items.length === 0) {
+    return <EmptyCartView handleGoBack={handleGoBack} savedSection={savedSectionNode} />;
   }
 
   // --- FILLED STATE ---
@@ -392,8 +483,8 @@ function CartPage() {
               <Store className="size-4 text-amber-700 shrink-0" />
               <span className="text-amber-900 font-semibold text-[11px] sm:text-xs leading-snug">
                 {lang === "hi"
-                  ? "🏪 स्टोर पिकअप सेवा चालू है • ऑनलाइन ऑर्डर बुक करें, दुकान पर तैयार मिलेगा (शुल्क: ₹0)!"
-                  : "🏪 Store Pickup Active • Book online and collect at store (Fee: ₹0)!"}
+                  ? "स्टोर पिकअप सेवा चालू है • ऑनलाइन ऑर्डर बुक करें, दुकान पर तैयार मिलेगा (शुल्क: ₹0)!"
+                  : "Store Pickup Active • Book online and collect at store (Fee: ₹0)!"}
               </span>
             </div>
           ) : subtotal < freeAt && subtotal > 0 ? (
@@ -432,7 +523,7 @@ function CartPage() {
               return (
                 <div
                   key={i.variantId}
-                  className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3 sm:p-3.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] flex items-center gap-3 sm:gap-4 transition-all hover:border-[#145A45]/35 hover:-translate-y-0.5"
+                  className="rounded-xl border border-[rgba(20,90,69,0.12)] bg-white p-3 sm:p-3.5 shadow-[0_2px_8px_-2px_rgba(20,90,69,0.05),inset_0_1px_0_rgba(255,255,255,0.95)] flex items-start sm:items-center gap-3 sm:gap-4 transition-all hover:border-[#145A45]/35 hover:-translate-y-0.5"
                 >
                   <Link
                     to="/product/$slug"
@@ -451,74 +542,80 @@ function CartPage() {
                     />
                   </Link>
 
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      to="/product/$slug"
-                      params={{ slug: i.slug }}
-                      className="font-sans text-xs sm:text-sm font-semibold text-[#16201A] hover:text-[#145A45] line-clamp-1"
-                    >
-                      {displayName}
-                    </Link>
-                    <p className="text-[11px] text-[#3D4C44] mt-0.5">{displayVariant}</p>
-                    <div className="mt-1 flex items-baseline gap-1.5">
-                      <span className="text-xs sm:text-sm font-bold text-[#16201A]">{inr(i.price)}</span>
-                      {i.mrp > i.price && (
-                        <>
-                          <span className="text-[11px] text-[#9CA3AF] line-through">{inr(i.mrp)}</span>
-                          <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
-                            {Math.round(((i.mrp - i.price) / i.mrp) * 100)}% छूट
-                          </span>
-                        </>
+                  <div className="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4">
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/product/$slug"
+                        params={{ slug: i.slug }}
+                        className="font-sans text-[13px] sm:text-sm font-semibold text-[#16201A] hover:text-[#145A45] line-clamp-2 leading-[1.48]"
+                      >
+                        {displayName}
+                      </Link>
+                      <p className="text-[11px] text-[#3D4C44] mt-0.5">{displayVariant}</p>
+                      <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
+                        <span className="text-xs sm:text-sm font-bold text-[#16201A] whitespace-nowrap">{inr(i.price)}</span>
+                        {i.mrp > i.price && (
+                          <>
+                            <span className="text-[11px] text-[#9CA3AF] line-through whitespace-nowrap">{inr(i.mrp)}</span>
+                            <span className="whitespace-nowrap shrink-0 text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 leading-none">
+                              {Math.round(((i.mrp - i.price) / i.mrp) * 100)}%{" "}
+                              {lang === "hi" ? "छूट" : "OFF"}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {i.stock !== undefined && i.stock <= 0 && (
+                        <span className="inline-block mt-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
+                          {lang === "hi" ? "आउट ऑफ स्टॉक" : "Out of stock"}
+                        </span>
                       )}
                     </div>
-                    {i.stock !== undefined && i.stock <= 0 && (
-                      <span className="inline-block mt-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5">
-                        {lang === "hi" ? "आउट ऑफ स्टॉक" : "Out of stock"}
-                      </span>
-                    )}
-                  </div>
 
-                  {/* Quantity Stepper (Compact h-7.5) */}
-                  <div className="flex h-7.5 items-center rounded-lg border border-[#145A45]/25 bg-[#EBF3ED] shadow-xs px-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setQty(i.variantId, i.qty - 1)}
-                      className="flex size-6 items-center justify-center rounded text-[#145A45] hover:bg-white transition-colors cursor-pointer"
-                      aria-label="Decrease"
-                    >
-                      <Minus className="size-3" />
-                    </button>
-                    <span className="w-5 sm:w-6 text-center text-xs font-bold text-[#145A45]">
-                      {i.qty}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={i.qty >= i.stock}
-                      onClick={() => setQty(i.variantId, i.qty + 1)}
-                      className="flex size-6 items-center justify-center rounded text-[#145A45] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
-                      aria-label="Increase"
-                    >
-                      <Plus className="size-3" />
-                    </button>
-                  </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 shrink-0">
+                      {/* Quantity Stepper (Compact h-7.5) */}
+                      <div className="flex h-7.5 items-center rounded-lg border border-[#145A45]/25 bg-[#EBF3ED] shadow-xs px-0.5">
+                        <button
+                          type="button"
+                          onClick={() => setQty(i.variantId, i.qty - 1)}
+                          className="flex size-6 items-center justify-center rounded text-[#145A45] hover:bg-white transition-colors cursor-pointer"
+                          aria-label="Decrease"
+                        >
+                          <Minus className="size-3" />
+                        </button>
+                        <span className="w-5 sm:w-6 text-center text-xs font-bold text-[#145A45]">
+                          {i.qty}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={i.qty >= i.stock}
+                          onClick={() => setQty(i.variantId, i.qty + 1)}
+                          className="flex size-6 items-center justify-center rounded text-[#145A45] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                          aria-label="Increase"
+                        >
+                          <Plus className="size-3" />
+                        </button>
+                      </div>
 
-                  {/* Actions (Delete & Save for later) */}
-                  <div className="flex flex-col items-end gap-1">
-                    <button
-                      type="button"
-                      onClick={() => remove(i.variantId)}
-                      className="flex size-7 items-center justify-center rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                      title={t.removeBtn}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => saveForLater(i.variantId)}
-                      className="text-[10px] font-medium text-[#3D4C44] hover:text-[#145A45] hover:underline cursor-pointer whitespace-nowrap"
-                    >
-                      {t.saveForLaterBtn}
-                    </button>
+                      {/* Actions (Delete & Save for later) */}
+                      <div className="flex flex-row-reverse sm:flex-col items-center sm:items-end gap-1.5 sm:gap-1">
+                        <button
+                          type="button"
+                          aria-label={t.removeBtn}
+                          onClick={() => remove(i.variantId)}
+                          className="flex size-8 items-center justify-center rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                          title={t.removeBtn}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => saveForLater(i.variantId)}
+                          className="min-h-[28px] px-1 text-[10px] font-medium text-[#3D4C44] hover:text-[#145A45] hover:underline cursor-pointer whitespace-nowrap"
+                        >
+                          {t.saveForLaterBtn}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -568,8 +665,10 @@ function CartPage() {
                       {t.moveToCartBtn}
                     </Button>
                     <button
+                      type="button"
+                      aria-label={t.removeBtn}
                       onClick={() => removeSaved(i.variantId)}
-                      className="size-7 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                      className="size-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                       title={t.removeBtn}
                     >
                       <Trash2 className="size-3.5" />
@@ -625,15 +724,37 @@ function CartPage() {
               </div>
             )}
 
-            <Button
-              asChild
-              className="w-full h-9.5 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-xs font-bold text-white shadow-[0_3px_10px_rgba(20,90,69,0.25)] active:scale-[0.99] transition-all cursor-pointer"
-            >
-              <Link to="/checkout" className="flex items-center justify-center gap-1.5">
-                <span>{t.proceedToCheckout}</span>
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
+            {belowMinDelivery && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200/80 p-2 text-[11px] text-amber-900 font-medium flex items-start gap-1.5">
+                <AlertCircle className="size-3.5 shrink-0 text-amber-700 mt-0.5" />
+                <span>
+                  {lang === "hi"
+                    ? `होम डिलीवरी के लिए न्यूनतम ऑर्डर ${inr(minOrderValue)} है (दुकान से पिकअप किसी भी राशि पर मुफ़्त है)।`
+                    : `Home delivery minimum order is ${inr(minOrderValue)} (Store pickup has no minimum).`}
+                </span>
+              </div>
+            )}
+
+            {hasOutOfStockItem ? (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-2 text-[11px] text-red-700 font-semibold flex items-start gap-1.5">
+                <AlertCircle className="size-3.5 shrink-0 mt-0.5" />
+                <span>
+                  {lang === "hi"
+                    ? "आगे बढ़ने से पहले कृपया आउट-ऑफ़-स्टॉक सामान हटाएं।"
+                    : "Please remove out-of-stock items before checkout."}
+                </span>
+              </div>
+            ) : (
+              <Button
+                asChild
+                className="w-full h-9.5 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-xs font-bold text-white shadow-[0_3px_10px_rgba(20,90,69,0.25)] active:scale-[0.99] transition-all cursor-pointer"
+              >
+                <Link to="/checkout" className="flex items-center justify-center gap-1.5">
+                  <span>{t.proceedToCheckout}</span>
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Local Trust Card */}
@@ -651,7 +772,7 @@ function CartPage() {
 
       {/* Mobile Sticky Bottom Checkout Bar */}
       {items.length > 0 && (
-        <div className="fixed bottom-[3.75rem] left-0 right-0 z-40 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 lg:hidden shadow-[0_-4px_16px_rgba(20,90,69,0.08)]">
+        <div className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 lg:hidden shadow-[0_-4px_16px_rgba(20,90,69,0.08)]">
           <div className="container-page flex items-center justify-between gap-3">
             <div>
               <p className="text-[10px] text-[#3D4C44] uppercase font-bold tracking-wider">{t.totalAmount}</p>
@@ -659,7 +780,7 @@ function CartPage() {
                 <p className="text-base font-extrabold text-[#16201A]">{inr(subtotal + fee)}</p>
                 {savings > 0 && (
                   <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/60">
-                    बचत: {inr(savings)}
+                    {lang === "hi" ? "बचत:" : "Save:"} {inr(savings)}
                   </span>
                 )}
               </div>

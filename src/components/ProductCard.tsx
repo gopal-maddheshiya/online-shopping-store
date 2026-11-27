@@ -143,11 +143,11 @@ function ProductCardInner({ product }: { product: Product }) {
 
       {/* 2. Product Details Section (Clean comfortable padding) */}
       <div className="flex flex-1 flex-col justify-between min-w-0 w-full p-2.5 sm:p-3 pt-2">
-        {/* Product Name Title: natural height with line-clamp-2, no artificial min-h */}
+        {/* Product Name Title: generous Devanagari line-height without pb-* bleed on clamped line */}
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 text-sm sm:text-[15px] font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-snug break-words min-h-[2.6em]"
+          className="line-clamp-2 text-sm sm:text-[15px] font-bold text-[#16201A] group-hover:text-[#145A45] transition-colors leading-[1.48] break-words min-h-[2.96em]"
           title={localizedProductName}
         >
           {localizedProductName}

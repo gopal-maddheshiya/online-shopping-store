@@ -24,7 +24,7 @@
 
   <!-- Essential Product Categories -->
   <url>
-    <loc>https://arun-gopal-traders.vercel.app/shop?category=atta-flour-grains</loc>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=atta-flour</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -49,7 +49,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://arun-gopal-traders.vercel.app/shop?category=salt-sugar-jaggery</loc>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=salt-sugar</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -59,7 +59,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://arun-gopal-traders.vercel.app/shop?category=snacks-namkeen</loc>
+    <loc>https://arun-gopal-traders.vercel.app/shop?category=namkeen-snacks</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

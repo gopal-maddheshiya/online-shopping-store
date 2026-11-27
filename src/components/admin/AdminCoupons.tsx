@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Tag, Trash2, CheckCircle2, XCircle, Percent, IndianRupee } from "lucide-react";
+import { Plus, Tag, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ type AdminCouponsProps = {
 export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
@@ -32,44 +33,101 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
   const [value, setValue] = useState(10);
   const [minOrder, setMinOrder] = useState(299);
   const [maxDiscount, setMaxDiscount] = useState<number | undefined>(100);
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+  const [usageLimit, setUsageLimit] = useState<number | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
 
+  function toDateInput(iso: string | null | undefined): string {
+    if (!iso) return "";
+    return iso.slice(0, 10);
+  }
+
   function openCreateModal() {
+    setEditingCoupon(null);
     setCode("");
     setDescription("");
     setDiscountType("percent");
     setValue(10);
     setMinOrder(299);
     setMaxDiscount(100);
+    setStartsAt("");
+    setEndsAt("");
+    setUsageLimit(undefined);
     setIsModalOpen(true);
   }
 
-  async function handleCreateCoupon(e: React.FormEvent) {
+  function openEditModal(c: Coupon) {
+    setEditingCoupon(c);
+    setCode(c.code);
+    setDescription(c.description ?? "");
+    setDiscountType(c.discount_type);
+    setValue(Number(c.value));
+    setMinOrder(Number(c.min_order));
+    setMaxDiscount(c.max_discount != null ? Number(c.max_discount) : undefined);
+    setStartsAt(toDateInput(c.starts_at));
+    setEndsAt(toDateInput(c.ends_at));
+    setUsageLimit(c.usage_limit != null ? Number(c.usage_limit) : undefined);
+    setIsModalOpen(true);
+  }
+
+  async function handleSaveCoupon(e: React.FormEvent) {
     e.preventDefault();
-    if (!code.trim()) {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) {
       toast.error("Please enter coupon code");
+      return;
+    }
+
+    const numericVal = Number(value);
+    if (!Number.isFinite(numericVal) || numericVal <= 0) {
+      toast.error("Discount value must be greater than 0");
+      return;
+    }
+    if (discountType === "percent" && numericVal > 100) {
+      toast.error("Percentage discount cannot exceed 100%");
+      return;
+    }
+    if (startsAt && endsAt && startsAt > endsAt) {
+      toast.error("Expiry date must be after start date");
       return;
     }
 
     setIsSaving(true);
     try {
-      const { error } = await supabase.from("coupons").insert({
-        code: code.trim().toUpperCase(),
+      const payload = {
+        code: cleanCode,
         description: description.trim() || null,
         discount_type: discountType,
-        value: Number(value),
-        min_order: Number(minOrder),
-        max_discount: maxDiscount ? Number(maxDiscount) : null,
-        is_active: true,
-      });
+        value: numericVal,
+        min_order: Math.max(0, Number(minOrder) || 0),
+        max_discount: maxDiscount && Number(maxDiscount) > 0 ? Number(maxDiscount) : null,
+        starts_at: startsAt ? new Date(`${startsAt}T00:00:00+05:30`).toISOString() : null,
+        ends_at: endsAt ? new Date(`${endsAt}T23:59:59+05:30`).toISOString() : null,
+        usage_limit: usageLimit && Number(usageLimit) > 0 ? Math.floor(Number(usageLimit)) : null,
+      };
 
-      if (error) throw error;
-      toast.success(`Coupon code ${code.toUpperCase()} created!`);
+      if (editingCoupon) {
+        const { error } = await supabase
+          .from("coupons")
+          .update(payload)
+          .eq("id", editingCoupon.id);
+        if (error) throw error;
+        toast.success(`Coupon code ${cleanCode} updated!`);
+      } else {
+        const { error } = await supabase.from("coupons").insert({
+          ...payload,
+          is_active: true,
+        });
+        if (error) throw error;
+        toast.success(`Coupon code ${cleanCode} created!`);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
       setIsModalOpen(false);
       onRefresh();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to create coupon";
+      const msg = err instanceof Error ? err.message : "Failed to save coupon";
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -184,11 +242,32 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
                 )}
                 <div className="flex justify-between">
                   <span className="text-[#6B746F]">Times Used:</span>
-                  <span className="font-semibold text-[#1F2924]">{c.used_count ?? 0}</span>
+                  <span className="font-semibold text-[#1F2924]">
+                    {c.used_count ?? 0}
+                    {c.usage_limit ? ` / ${c.usage_limit}` : ""}
+                  </span>
                 </div>
+                {(c.starts_at || c.ends_at) && (
+                  <div className="flex justify-between">
+                    <span className="text-[#6B746F]">Valid Window:</span>
+                    <span className="font-medium text-[#1F2924]">
+                      {c.starts_at ? c.starts_at.slice(0, 10) : "Now"} →{" "}
+                      {c.ends_at ? c.ends_at.slice(0, 10) : "No expiry"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-[#E8E4DA]">
+                <Button
+                  onClick={() => openEditModal(c)}
+                  variant="outline"
+                  size="icon"
+                  className="size-10 rounded-xl border-[#E8E4DA] text-[#145A45] hover:bg-[#FAF8F2]"
+                  aria-label="Edit coupon"
+                >
+                  <Pencil className="size-4" />
+                </Button>
                 <Button
                   onClick={() => handleToggleCoupon(c)}
                   variant="outline"
@@ -216,16 +295,17 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
         <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-3xl border-[#E8E4DA] bg-white">
           <DialogHeader className="border-b border-[#E8E4DA] pb-3">
             <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924]">
-              Create Discount Coupon
+              {editingCoupon ? `Edit Coupon: ${editingCoupon.code}` : "Create Discount Coupon"}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreateCoupon} className="space-y-3.5 py-2">
+          <form onSubmit={handleSaveCoupon} className="space-y-3.5 py-2">
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">
+              <Label htmlFor="coupon-code-input" className="text-xs font-semibold text-[#1F2924]">
                 Coupon Code <span className="text-red-500">*</span>
               </Label>
               <Input
+                id="coupon-code-input"
                 required
                 placeholder="e.g. WELCOME50, FESTIVE10"
                 value={code}
@@ -235,8 +315,9 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Description</Label>
+              <Label htmlFor="coupon-desc-input" className="text-xs font-semibold text-[#1F2924]">Description</Label>
               <Input
+                id="coupon-desc-input"
                 placeholder="e.g. 10% discount on orders above ₹299"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -246,12 +327,12 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Discount Type</Label>
+                <Label htmlFor="coupon-type-select" className="text-xs font-semibold text-[#1F2924]">Discount Type</Label>
                 <Select
                   value={discountType}
                   onValueChange={(v) => setDiscountType(v as "percent" | "flat")}
                 >
-                  <SelectTrigger className="rounded-xl border-[#E8E4DA] text-xs h-9">
+                  <SelectTrigger id="coupon-type-select" className="rounded-xl border-[#E8E4DA] text-xs h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -262,9 +343,11 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Discount Value</Label>
+                <Label htmlFor="coupon-value-input" className="text-xs font-semibold text-[#1F2924]">Discount Value</Label>
                 <Input
+                  id="coupon-value-input"
                   type="number"
+                  min="1"
                   required
                   value={value}
                   onChange={(e) => setValue(Number(e.target.value))}
@@ -275,9 +358,11 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Minimum Order (₹)</Label>
+                <Label htmlFor="coupon-min-input" className="text-xs font-semibold text-[#1F2924]">Minimum Order (₹)</Label>
                 <Input
+                  id="coupon-min-input"
                   type="number"
+                  min="0"
                   required
                   value={minOrder}
                   onChange={(e) => setMinOrder(Number(e.target.value))}
@@ -286,13 +371,54 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Max Cap (₹)</Label>
+                <Label htmlFor="coupon-cap-input" className="text-xs font-semibold text-[#1F2924]">Max Cap (₹)</Label>
                 <Input
+                  id="coupon-cap-input"
                   type="number"
+                  min="1"
                   placeholder="Optional limit"
                   value={maxDiscount ?? ""}
                   onChange={(e) =>
                     setMaxDiscount(e.target.value ? Number(e.target.value) : undefined)
+                  }
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="coupon-start-input" className="text-xs font-semibold text-[#1F2924]">Starts On</Label>
+                <Input
+                  id="coupon-start-input"
+                  type="date"
+                  value={startsAt}
+                  onChange={(e) => setStartsAt(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="coupon-end-input" className="text-xs font-semibold text-[#1F2924]">Expires On</Label>
+                <Input
+                  id="coupon-end-input"
+                  type="date"
+                  value={endsAt}
+                  onChange={(e) => setEndsAt(e.target.value)}
+                  className="rounded-xl border-[#E8E4DA] text-xs h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="coupon-limit-input" className="text-xs font-semibold text-[#1F2924]">Max Uses</Label>
+                <Input
+                  id="coupon-limit-input"
+                  type="number"
+                  min="1"
+                  placeholder="∞"
+                  value={usageLimit ?? ""}
+                  onChange={(e) =>
+                    setUsageLimit(e.target.value ? Number(e.target.value) : undefined)
                   }
                   className="rounded-xl border-[#E8E4DA] text-xs h-9"
                 />
@@ -313,7 +439,7 @@ export function AdminCoupons({ coupons, onRefresh }: AdminCouponsProps) {
                 disabled={isSaving}
                 className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] h-9 text-xs shadow-xs"
               >
-                {isSaving ? "Saving…" : "Create Coupon"}
+                {isSaving ? "Saving…" : editingCoupon ? "Save Changes" : "Create Coupon"}
               </Button>
             </div>
           </form>

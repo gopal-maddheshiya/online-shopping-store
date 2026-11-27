@@ -344,29 +344,87 @@ function getCachedProductsFallback(): Product[] {
   return [];
 }
 
+const PUBLIC_STORE_SETTINGS_COLUMNS = [
+  "id",
+  "store_name",
+  "tagline",
+  "phone",
+  "whatsapp",
+  "email",
+  "address",
+  "maps_link",
+  "announcement",
+  "announcement_hi",
+  "hero_title",
+  "hero_subtitle",
+  "delivery_fee",
+  "delivery_enabled",
+  "free_delivery_threshold",
+  "min_order_value",
+  "payment_methods",
+  "business_hours",
+  "gstin",
+  "legal_name",
+  "state",
+  "state_code",
+  "tax_enabled",
+  "default_tax_rate",
+  "invoice_prefix",
+  "invoice_footer_note",
+  "terms_and_conditions",
+  "upi_vpa",
+  "upi_merchant_name",
+  "upi_registered_phone",
+  "qr_code_mode",
+  "qr_custom_note",
+  "enabled_payment_methods",
+  "razorpay_key_id",
+  "online_payment_enabled",
+  "hero_image_url",
+  "hero2_image_url",
+  "hero3_image_url",
+  "hero4_image_url",
+  "category_headings",
+].join(", ");
+
 export const settingsQuery = queryOptions({
   queryKey: ["store-settings"],
   queryFn: async (): Promise<StoreSettings> => {
     return withTimeout(
       (async () => {
         try {
-          const { data, error } = await supabase
-            .from("store_settings")
-            .select("*")
-            .eq("id", 1)
-            .single();
-          if (error || !data) return getCachedSettingsFallback();
+          let raw: StoreSettings | null = null;
+          const { data: rpcData, error: rpcErr } = await (supabase.rpc as Function)(
+            "get_public_store_settings",
+          );
+          if (!rpcErr && rpcData && typeof rpcData === "object") {
+            raw = rpcData as StoreSettings;
+          } else {
+            const { data, error } = await supabase
+              .from("store_settings")
+              .select(PUBLIC_STORE_SETTINGS_COLUMNS)
+              .eq("id", 1)
+              .single();
+            if (error || !data) return getCachedSettingsFallback();
+            raw = data as unknown as StoreSettings;
+          }
 
-          const raw = data as unknown as StoreSettings;
+          if (!raw) return getCachedSettingsFallback();
           const isOldPhone = !raw.phone || raw.phone.includes("9621617360");
           const isOldWhatsApp = !raw.whatsapp || raw.whatsapp.includes("9621617360");
           const isOldEmail = !raw.email || raw.email.includes("ashokmaddheshiya51");
 
-          const finalSettings = {
+          const finalSettings: StoreSettings = {
             ...raw,
             phone: isOldPhone ? "+91 6388354988" : raw.phone,
             whatsapp: isOldWhatsApp ? "916388354988" : raw.whatsapp,
             email: isOldEmail ? "gopalmaddheshiya138@gmail.com" : raw.email,
+            telegram_bot_token: null,
+            telegram_chat_id: null,
+            bank_account_number: null,
+            bank_ifsc: null,
+            bank_account_holder: null,
+            bank_name: null,
           };
 
           if (typeof window !== "undefined") {
@@ -386,6 +444,33 @@ export const settingsQuery = queryOptions({
   },
   staleTime: 1000 * 60 * 5, // 5 minutes in-memory freshness (Realtime handles instant updates)
 });
+
+export type StoreSecrets = {
+  id: number;
+  telegram_bot_token?: string | null;
+  telegram_chat_id?: string | null;
+  bank_account_holder?: string | null;
+  bank_name?: string | null;
+  bank_account_number?: string | null;
+  bank_ifsc?: string | null;
+};
+
+export function storeSecretsQuery(enabled = false) {
+  return queryOptions({
+    queryKey: ["store-secrets"],
+    queryFn: async (): Promise<StoreSecrets | null> => {
+      const { data, error } = await supabase
+        .from("store_secrets" as never)
+        .select("*")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error || !data) return null;
+      return data as unknown as StoreSecrets;
+    },
+    enabled,
+    staleTime: 1000 * 60 * 2,
+  });
+}
 
 export const categoriesQuery = queryOptions({
   queryKey: ["categories"],
@@ -496,6 +581,7 @@ export function productQuery(slug: string) {
               .from("products")
               .select(PRODUCT_SELECT)
               .eq("slug", slug)
+              .eq("is_active", true)
               .maybeSingle();
             if (!error && data) return data as unknown as Product;
           } catch {
@@ -554,15 +640,43 @@ export const couponsQuery = queryOptions({
 
 export function isOpenNow(settings: StoreSettings | undefined): { open: boolean; text: string } {
   if (!settings) return { open: false, text: "" };
-  const keys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const now = new Date();
-  const today = settings.business_hours?.[keys[now.getDay()] ?? "mon"];
+  let dayKey = "mon";
+  let curMins = now.getHours() * 60 + now.getMinutes();
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+    const weekday = (parts.find((p) => p.type === "weekday")?.value ?? "Mon").toLowerCase().slice(0, 3);
+    const dayMap: Record<string, string> = {
+      sun: "sun",
+      mon: "mon",
+      tue: "tue",
+      wed: "wed",
+      thu: "thu",
+      fri: "fri",
+      sat: "sat",
+    };
+    dayKey = dayMap[weekday] ?? "mon";
+    const hh = Number(parts.find((p) => p.type === "hour")?.value ?? 0) % 24;
+    const mm = Number(parts.find((p) => p.type === "minute")?.value ?? 0);
+    curMins = hh * 60 + mm;
+  } catch {
+    const keys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    dayKey = keys[now.getDay()] ?? "mon";
+  }
+
+  const today = settings.business_hours?.[dayKey];
   if (!today || today.closed) return { open: false, text: "Closed today" };
   const toMins = (t: string) => {
     const [h, m] = (t || "00:00").split(":").map(Number);
     return (h || 0) * 60 + (m || 0);
   };
-  const curMins = now.getHours() * 60 + now.getMinutes();
   const openMins = toMins(today.open);
   const closeMins = toMins(today.close);
   const open = curMins >= openMins && curMins <= closeMins;
@@ -674,8 +788,8 @@ export function lookupInvoiceQuery(orderNo?: string | null, phone?: string | nul
     queryFn: async () => {
       if (!orderNo || !phone) return null;
       const { data, error } = await supabase.rpc("lookup_order_invoice", {
-        p_order_no: orderNo.trim(),
-        p_phone: phone.trim(),
+        _order_no: orderNo.trim(),
+        _phone: phone.trim(),
       });
       if (error) {
         console.warn("Lookup invoice error:", error.message);

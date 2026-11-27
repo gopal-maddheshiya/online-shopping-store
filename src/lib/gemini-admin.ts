@@ -6,15 +6,7 @@
  */
 
 import type { Category, Product } from "@/lib/queries";
-
-const GEMINI_API_KEY =
-  (typeof import.meta !== "undefined" && import.meta.env
-    ? (import.meta.env as Record<string, string | undefined>)["VITE_GEMINI_API_KEY"]
-    : undefined) ||
-  (typeof process !== "undefined"
-    ? (process.env?.["VITE_GEMINI_API_KEY"] || process.env?.["GEMINI_API_KEY"])
-    : undefined) ||
-  "";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ParsedAiProductVariant {
   label: string;
@@ -666,57 +658,49 @@ export function sanitizeVariantUnits(
   });
 }
 
-async function callGeminiApi(requestBody: Record<string, unknown>): Promise<string | null> {
-  if (!GEMINI_API_KEY) {
-    throw new Error("Gemini API Key सेट नहीं है। कृपया Vercel/Environment में VITE_GEMINI_API_KEY सेट करें।");
-  }
+type AdminAiProxyAction =
+  | "semantic_search"
+  | "admin_parse_bill"
+  | "admin_translate"
+  | "admin_autocomplete";
 
-  // Fast official Gemini production models (verified active 200 OK)
-  const models = [
-    "gemini-3.5-flash",
-    "gemini-3-flash-preview",
-    "gemini-flash-latest",
-  ];
-
-  // Standardize generationConfig format
+async function callGeminiApi(
+  requestBody: Record<string, unknown>,
+  action: AdminAiProxyAction = "admin_autocomplete",
+): Promise<string | null> {
   const payload = { ...requestBody };
   if (payload["generation_config"] && !payload["generationConfig"]) {
     payload["generationConfig"] = payload["generation_config"];
+    delete payload["generation_config"];
   }
 
-  for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
-
-        if (!res.ok) {
-          const err = await res.text();
-          console.warn(`[Gemini Admin] ${model} attempt ${attempt + 1} HTTP ${res.status}:`, err.slice(0, 150));
-          if (res.status === 503 && attempt === 0) {
-            await new Promise((r) => setTimeout(r, 400));
-            continue;
-          }
-          break;
-        }
-
-        const json = await res.json();
-        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-      } catch (err) {
-        console.warn(`[Gemini Admin] ${model} fetch failed:`, err);
-        break;
+  try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (action !== "semantic_search") {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        headers["Authorization"] = `Bearer ${data.session.access_token}`;
       }
     }
-  }
 
-  return null;
+    const res = await fetch("/api/ai/gemini", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action, requestBody: payload }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`[Gemini Proxy] ${action} HTTP ${res.status}:`, errText.slice(0, 180));
+      return null;
+    }
+
+    const json = (await res.json()) as { success?: boolean; text?: string };
+    return json.success && json.text ? json.text : null;
+  } catch (err) {
+    console.warn(`[Gemini Proxy] ${action} failed:`, err);
+    return null;
+  }
 }
 
 function cleanJsonFence(text: string): string {
@@ -828,7 +812,7 @@ OUTPUT JSON SCHEMA:
       contents: [{ parts }],
       system_instruction: { parts: [{ text: systemInstruction }] },
       generation_config: { temperature: 0.15, response_mime_type: "application/json" },
-    });
+    }, "admin_parse_bill");
 
     if (!rawText) {
       return { success: false, products: [], error: "AI ने कोई परिणाम नहीं दिया। कृपया साफ फोटो या टेक्स्ट दें।" };
@@ -989,7 +973,7 @@ CRITICAL RULES:
       contents: [{ parts: [{ text: `Translate this product title to pure Hindi: "${trimmed}"` }] }],
       system_instruction: { parts: [{ text: systemInstruction }] },
       generation_config: { temperature: 0.1 },
-    });
+    }, "admin_translate");
 
     if (rawText && rawText.trim()) {
       const clean = rawText.replace(/["'*`]/g, "").trim();
@@ -1152,7 +1136,7 @@ OR FOR UNBRANDED / LOOSE ITEM:
       contents: [{ parts: [{ text: `Generate complete metadata for product: "${trimmedInput}"` }] }],
       system_instruction: { parts: [{ text: systemInstruction }] },
       generation_config: { temperature: 0.15, response_mime_type: "application/json" },
-    });
+    }, "admin_autocomplete");
 
     if (!rawText) {
       const fallbackData = generateHeuristicProductData(trimmedInput, categories);
@@ -1466,7 +1450,7 @@ Return raw JSON only.`;
       contents: [{ parts: [{ text: `Customer Search: "${query.trim()}"` }] }],
       system_instruction: { parts: [{ text: systemInstruction }] },
       generation_config: { temperature: 0.2, response_mime_type: "application/json" },
-    });
+    }, "semantic_search");
 
     if (!rawText) return { success: false, matchedProductIds: [] };
 

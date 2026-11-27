@@ -810,7 +810,10 @@ export function AdminProducts({
     setIsSavingExternalFront(true);
     const toastId = toast.loading("इंटरनेट फोटो को HD में क्लाउड पर सेव किया जा रहा है...");
     try {
-      const storageUrl = await uploadExternalImageServerFn({ data: raw });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const storageUrl = await uploadExternalImageServerFn({
+        data: { url: raw, accessToken: sessionData.session?.access_token || "" },
+      });
       setFrontImageUrl(storageUrl);
       toast.success("फोटो सफलतापूर्वक Supabase क्लाउड में सुरक्षित हो गई!", { id: toastId });
     } catch (err: any) {
@@ -827,7 +830,10 @@ export function AdminProducts({
     setIsSavingExternalBack(true);
     const toastId = toast.loading("पीछे की फोटो को HD में क्लाउड पर सेव किया जा रहा है...");
     try {
-      const storageUrl = await uploadExternalImageServerFn({ data: raw });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const storageUrl = await uploadExternalImageServerFn({
+        data: { url: raw, accessToken: sessionData.session?.access_token || "" },
+      });
       setBackImageUrl(storageUrl);
       toast.success("पीछे की फोटो Supabase क्लाउड में सुरक्षित हो गई!", { id: toastId });
     } catch (err: any) {
@@ -945,14 +951,22 @@ export function AdminProducts({
       return;
     }
 
-    // Validate that every variant has a label and price
+    // Validate that every variant has a unique label and valid positive price
+    const seenVariantLabels = new Set<string>();
     for (let i = 0; i < variants.length; i++) {
       const v = variants[i]!;
-      if (!v.label.trim()) {
+      const normalizedLabel = v.label.trim().toLowerCase();
+      if (!normalizedLabel) {
         setModalTab("pricing");
         toast.error(`पैक #${i + 1} का साइज या वज़न (उदा. 1 kg, 500 g) दर्ज करें`);
         return;
       }
+      if (seenVariantLabels.has(normalizedLabel)) {
+        setModalTab("pricing");
+        toast.error(`पैक "${v.label.trim()}" दो बार लिखा गया है — कृपया अलग साइज दर्ज करें`);
+        return;
+      }
+      seenVariantLabels.add(normalizedLabel);
       if (v.price === "" || Number(v.price) <= 0) {
         setModalTab("pricing");
         toast.error(`पैक "${v.label}" का बिक्री मूल्य (Price) दर्ज करें`);
@@ -1033,7 +1047,11 @@ export function AdminProducts({
         const existingDbVariants = editingProduct.product_variants ?? [];
         for (const dbv of existingDbVariants) {
           if (!activeVariantIds.has(dbv.id)) {
-            await supabase.from("product_variants").delete().eq("id", dbv.id);
+            const { error: delVarErr } = await supabase
+              .from("product_variants")
+              .delete()
+              .eq("id", dbv.id);
+            if (delVarErr) throw delVarErr;
           }
         }
 
@@ -1043,12 +1061,12 @@ export function AdminProducts({
           const cleanLabel = (v.label || "Standard").trim();
           const cleanLabelHi = translateVariantLabel(cleanLabel, "hi");
           const vPrice = Number(v.price) || 0;
-          const vMrp = Number(v.mrp) > 0 ? Number(v.mrp) : vPrice;
+          const vMrp = Math.max(vPrice, Number(v.mrp) > 0 ? Number(v.mrp) : vPrice);
           const vStock = v.stock === "" ? 50 : Math.max(0, Number(v.stock));
           const vLowStock = v.low_stock_threshold === "" ? 5 : Math.max(0, Number(v.low_stock_threshold));
 
           if (v.id) {
-            await supabase
+            const { error: updVarErr } = await supabase
               .from("product_variants")
               .update({
                 label: cleanLabel,
@@ -1060,8 +1078,9 @@ export function AdminProducts({
                 sort_order: i,
               })
               .eq("id", v.id);
+            if (updVarErr) throw updVarErr;
           } else {
-            await supabase.from("product_variants").insert({
+            const { error: insVarErr } = await supabase.from("product_variants").insert({
               product_id: editingProduct.id,
               label: cleanLabel,
               label_hi: cleanLabelHi,
@@ -1071,6 +1090,7 @@ export function AdminProducts({
               low_stock_threshold: vLowStock,
               sort_order: i,
             });
+            if (insVarErr) throw insVarErr;
           }
         }
 
@@ -1105,7 +1125,7 @@ export function AdminProducts({
         const varPayload = variants.map((v, i) => {
           const cleanLabel = (v.label || "Standard").trim();
           const vPrice = Number(v.price) || 0;
-          const vMrp = Number(v.mrp) > 0 ? Number(v.mrp) : vPrice;
+          const vMrp = Math.max(vPrice, Number(v.mrp) > 0 ? Number(v.mrp) : vPrice);
           const vStock = v.stock === "" ? 50 : Math.max(0, Number(v.stock));
           const vLowStock = v.low_stock_threshold === "" ? 5 : Math.max(0, Number(v.low_stock_threshold));
           return {
@@ -1120,7 +1140,8 @@ export function AdminProducts({
           };
         });
 
-        await supabase.from("product_variants").insert(varPayload);
+        const { error: varInsertError } = await supabase.from("product_variants").insert(varPayload);
+        if (varInsertError) throw varInsertError;
 
         toast.success(`Product "${name}" added to catalogue!`);
       }

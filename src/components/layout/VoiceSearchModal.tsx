@@ -270,7 +270,7 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
     [activeLang, cleanUp, triggerSearch]
   );
 
-  // Manage modal lifecycle
+  // Manage modal lifecycle (auto-starts and restarts cleanly on activeLang change)
   useEffect(() => {
     if (!isOpen) {
       cleanUp();
@@ -283,29 +283,39 @@ export function VoiceSearchModal({ isOpen, onClose, onSearch }: VoiceSearchModal
       return;
     }
 
-    // Auto-start listening on open
-    startListening();
+    startListening(activeLang);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
+      window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = prevOverflow;
       cleanUp();
     };
-  }, [isOpen, startListening, cleanUp]);
+  }, [isOpen, activeLang, startListening, cleanUp, onClose]);
 
   function switchLang(newLang: "hi" | "en") {
+    if (newLang === activeLang) return;
     setActiveLang(newLang);
     setTranscript("");
     transcriptRef.current = "";
-    startListening(newLang);
   }
 
   if (!isOpen || !mounted) return null;
 
   return createPortal(
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={activeLang === "hi" ? "बोलकर सामान खोजें" : "Voice grocery search"}
       className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >

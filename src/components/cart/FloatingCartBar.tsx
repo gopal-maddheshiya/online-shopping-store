@@ -21,10 +21,11 @@ export function FloatingCartBar() {
     return undefined;
   }, [cartCount, subtotal]);
 
-  // Hide on admin routes, or when the user is already inside the checkout / cart funnel
+  // Hide on admin routes, or inside product/cart/checkout funnels that already render dedicated bottom CTA bars
   if (
     cartCount <= 0 ||
     currentPath.startsWith("/admin") ||
+    currentPath.startsWith("/product/") ||
     currentPath === "/cart" ||
     currentPath === "/checkout"
   ) {
@@ -79,7 +80,7 @@ export function FloatingCartBar() {
 
         {/* Right Side: Quick Action Button Pill */}
         <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-white text-[#0A3326] font-extrabold text-xs sm:text-sm shadow-[0_2px_6px_rgba(0,0,0,0.15)] group-hover:bg-[#FAF8F5] transition-all shrink-0">
-          <span>{isHindi ? "कार्ट देखें" : "View Cart"}</span>
+          <span>{isHindi ? "थैला देखें" : "View Cart"}</span>
           <ArrowRight className="size-3.5 sm:size-4 text-[#145A45] group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
         </div>
       </Link>

@@ -29,9 +29,18 @@ interface InvoiceViewProps {
   lang?: "en" | "hi";
 }
 
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /**
  * Builds a 100% self-contained, print-perfect HTML document.
- * This guarantees ZERO blank pages, no modal clipping, and flawless PDF saves across all browsers.
+ * Escapes all dynamic text fields to prevent stored HTML/XSS injection.
  */
 function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "pos"): string {
   const isTax = invoice.tax_enabled && Boolean(invoice.store_gstin);
@@ -68,7 +77,7 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
 <html lang="${lang}">
 <head>
   <meta charset="utf-8">
-  <title>Receipt_${invoice.invoice_no}</title>
+  <title>Receipt_${escapeHtml(invoice.invoice_no)}</title>
   <style>
     @page { size: 80mm auto; margin: 0; }
     body {
@@ -97,19 +106,19 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
 </head>
 <body>
   <div class="text-center border-b">
-    <div class="bold" style="font-size: 14px;">${invoice.store_name}</div>
-    <div>${invoice.store_address}</div>
-    <div class="bold">Ph: ${invoice.store_phone}</div>
-    ${invoice.store_gstin ? `<div>GSTIN: ${invoice.store_gstin}</div>` : ""}
-    <div style="margin-top: 4px; font-size: 10px;" class="bold">*** ${title} ***</div>
+    <div class="bold" style="font-size: 14px;">${escapeHtml(invoice.store_name)}</div>
+    <div>${escapeHtml(invoice.store_address)}</div>
+    <div class="bold">Ph: ${escapeHtml(invoice.store_phone)}</div>
+    ${invoice.store_gstin ? `<div>GSTIN: ${escapeHtml(invoice.store_gstin)}</div>` : ""}
+    <div style="margin-top: 4px; font-size: 10px;" class="bold">*** ${escapeHtml(title)} ***</div>
   </div>
 
   <div class="border-b">
-    <div class="row"><span>INV NO:</span><span class="bold">${invoice.invoice_no}</span></div>
-    <div class="row"><span>ORDER NO:</span><span class="bold">#${invoice.order_no}</span></div>
-    <div class="row"><span>DATE:</span><span>${formatDate(invoice.created_at)}</span></div>
-    <div class="row"><span>CUSTOMER:</span><span class="bold">${invoice.customer_name}</span></div>
-    <div class="row"><span>PHONE:</span><span>+91 ${invoice.customer_phone}</span></div>
+    <div class="row"><span>INV NO:</span><span class="bold">${escapeHtml(invoice.invoice_no)}</span></div>
+    <div class="row"><span>ORDER NO:</span><span class="bold">#${escapeHtml(invoice.order_no)}</span></div>
+    <div class="row"><span>DATE:</span><span>${escapeHtml(formatDate(invoice.created_at))}</span></div>
+    <div class="row"><span>CUSTOMER:</span><span class="bold">${escapeHtml(invoice.customer_name)}</span></div>
+    <div class="row"><span>PHONE:</span><span>+91 ${escapeHtml(invoice.customer_phone)}</span></div>
   </div>
 
   <div class="border-b">
@@ -128,9 +137,9 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
               const nameText = lang === "hi" ? (i.name_hi || i.name) : (i.name_en || i.name);
               return `
           <tr>
-            <td>${nameText}</td>
-            <td class="text-right">${i.qty} x ${i.price}</td>
-            <td class="text-right bold">${i.line_total || i.price * i.qty}</td>
+            <td>${escapeHtml(nameText)}</td>
+            <td class="text-right">${escapeHtml(i.qty)} x ${escapeHtml(i.price)}</td>
+            <td class="text-right bold">${escapeHtml(i.line_total || i.price * i.qty)}</td>
           </tr>`;
             }
           )
@@ -140,19 +149,19 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
   </div>
 
   <div class="border-b">
-    <div class="row"><span>Subtotal:</span><span>₹${invoice.subtotal}</span></div>
-    ${invoice.item_discount > 0 ? `<div class="row"><span>Item Discount:</span><span>-₹${invoice.item_discount}</span></div>` : ""}
-    ${invoice.coupon_discount > 0 ? `<div class="row"><span>Coupon Discount:</span><span>-₹${invoice.coupon_discount}</span></div>` : ""}
-    ${invoice.total_tax > 0 ? `<div class="row"><span>Tax (GST):</span><span>+₹${invoice.total_tax}</span></div>` : ""}
-    <div class="row"><span>Delivery Fee:</span><span>${invoice.delivery_fee === 0 ? "FREE" : "₹" + invoice.delivery_fee}</span></div>
-    <div class="row total-row"><span>GRAND TOTAL:</span><span>₹${invoice.grand_total}</span></div>
+    <div class="row"><span>Subtotal:</span><span>₹${escapeHtml(invoice.subtotal)}</span></div>
+    ${invoice.item_discount > 0 ? `<div class="row"><span>Item Discount:</span><span>-₹${escapeHtml(invoice.item_discount)}</span></div>` : ""}
+    ${invoice.coupon_discount > 0 ? `<div class="row"><span>Coupon Discount:</span><span>-₹${escapeHtml(invoice.coupon_discount)}</span></div>` : ""}
+    ${invoice.total_tax > 0 ? `<div class="row"><span>Tax (GST):</span><span>+₹${escapeHtml(invoice.total_tax)}</span></div>` : ""}
+    <div class="row"><span>Delivery Fee:</span><span>${invoice.delivery_fee === 0 ? "FREE" : "₹" + escapeHtml(invoice.delivery_fee)}</span></div>
+    <div class="row total-row"><span>GRAND TOTAL:</span><span>₹${escapeHtml(invoice.grand_total)}</span></div>
   </div>
 
   <div class="border-b">
-    <div class="row"><span>PAYMENT MODE:</span><span class="bold">${invoice.payment_method.toUpperCase()}</span></div>
-    <div class="row"><span>STATUS:</span><span class="bold">${statusLabel}</span></div>
-    <div class="row"><span>AMOUNT PAID:</span><span>₹${invoice.amount_paid}</span></div>
-    ${invoice.amount_due > 0 ? `<div class="row bold"><span>AMOUNT DUE:</span><span>₹${invoice.amount_due}</span></div>` : ""}
+    <div class="row"><span>PAYMENT MODE:</span><span class="bold">${escapeHtml(invoice.payment_method.toUpperCase())}</span></div>
+    <div class="row"><span>STATUS:</span><span class="bold">${escapeHtml(statusLabel)}</span></div>
+    <div class="row"><span>AMOUNT PAID:</span><span>₹${escapeHtml(invoice.amount_paid)}</span></div>
+    ${invoice.amount_due > 0 ? `<div class="row bold"><span>AMOUNT DUE:</span><span>₹${escapeHtml(invoice.amount_due)}</span></div>` : ""}
   </div>
 
   <div class="text-center" style="margin-top: 8px;">
@@ -168,7 +177,7 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
 <html lang="${lang}">
 <head>
   <meta charset="utf-8">
-  <title>Invoice_${invoice.invoice_no}</title>
+  <title>Invoice_${escapeHtml(invoice.invoice_no)}</title>
   <style>
     @page { size: A4 portrait; margin: 12mm 10mm; }
     * { box-sizing: border-box; }
@@ -348,39 +357,39 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
     <div class="store-brand">
       <div class="logo-badge">AGT</div>
       <div>
-        <h1 class="store-title">${invoice.store_name}</h1>
-        <p class="store-sub">${invoice.store_legal_name || "Arun Gopal Traders"} • महाराजगंज</p>
+        <h1 class="store-title">${escapeHtml(invoice.store_name)}</h1>
+        <p class="store-sub">${escapeHtml(invoice.store_legal_name || "Arun Gopal Traders")} • महाराजगंज</p>
       </div>
     </div>
     <div class="inv-meta">
-      <div class="inv-badge">${title}</div>
-      <div style="font-weight: 800; color: #145A45; margin-top: 4px; font-family: monospace; font-size: 13px;">#${invoice.invoice_no}</div>
-      <div style="color: #5A655F; font-size: 10px;">${lang === "hi" ? "दिनांक:" : "Date:"} ${formatDate(invoice.created_at)}</div>
+      <div class="inv-badge">${escapeHtml(title)}</div>
+      <div style="font-weight: 800; color: #145A45; margin-top: 4px; font-family: monospace; font-size: 13px;">#${escapeHtml(invoice.invoice_no)}</div>
+      <div style="color: #5A655F; font-size: 10px;">${lang === "hi" ? "दिनांक:" : "Date:"} ${escapeHtml(formatDate(invoice.created_at))}</div>
     </div>
   </div>
 
   <div class="grid-2">
     <div class="card">
       <div class="card-title">${lang === "hi" ? "दुकान विवरण (Billed By)" : "Store Details"}</div>
-      <div style="font-weight: 700; font-size: 12px;">${invoice.store_name}</div>
-      <div style="color: #5A655F;">${invoice.store_address}</div>
-      <div style="color: #5A655F;">Ph: <strong>${invoice.store_phone}</strong></div>
-      ${invoice.store_gstin ? `<div style="color: #145A45; font-weight: 700;">GSTIN: ${invoice.store_gstin} (${invoice.store_state})</div>` : ""}
+      <div style="font-weight: 700; font-size: 12px;">${escapeHtml(invoice.store_name)}</div>
+      <div style="color: #5A655F;">${escapeHtml(invoice.store_address)}</div>
+      <div style="color: #5A655F;">Ph: <strong>${escapeHtml(invoice.store_phone)}</strong></div>
+      ${invoice.store_gstin ? `<div style="color: #145A45; font-weight: 700;">GSTIN: ${escapeHtml(invoice.store_gstin)} (${escapeHtml(invoice.store_state)})</div>` : ""}
     </div>
 
     <div class="card">
       <div class="card-title">${lang === "hi" ? "ग्राहक विवरण (Billed To)" : "Customer Details"}</div>
-      <div style="font-weight: 700; font-size: 12px;">${invoice.customer_name}</div>
-      <div style="color: #5A655F;">Phone: <strong>+91 ${invoice.customer_phone}</strong></div>
-      <div style="color: #5A655F;">${addressText}</div>
+      <div style="font-weight: 700; font-size: 12px;">${escapeHtml(invoice.customer_name)}</div>
+      <div style="color: #5A655F;">Phone: <strong>+91 ${escapeHtml(invoice.customer_phone)}</strong></div>
+      <div style="color: #5A655F;">${escapeHtml(addressText)}</div>
     </div>
   </div>
 
   <div class="strip">
-    <div><strong>${lang === "hi" ? "ऑर्डर नं:" : "Order No:"}</strong> <span style="font-family: monospace; font-weight: bold; color: #145A45;">#${invoice.order_no}</span></div>
-    <div><strong>${lang === "hi" ? "भुगतान विधि:" : "Payment Mode:"}</strong> <span style="text-transform: uppercase; font-weight: bold;">${invoice.payment_method}</span></div>
-    <div><strong>${lang === "hi" ? "स्थिति:" : "Status:"}</strong> <span style="font-weight: bold; color: ${isPaid ? "#15803D" : "#D97706"};">${statusLabel}</span></div>
-    ${invoice.transaction_id ? `<div><strong>${lang === "hi" ? "लेनदेन आईडी:" : "Txn Ref:"}</strong> <span style="font-family: monospace; font-size: 10px; font-weight: bold;">${invoice.transaction_id}</span></div>` : ""}
+    <div><strong>${lang === "hi" ? "ऑर्डर नं:" : "Order No:"}</strong> <span style="font-family: monospace; font-weight: bold; color: #145A45;">#${escapeHtml(invoice.order_no)}</span></div>
+    <div><strong>${lang === "hi" ? "भुगतान विधि:" : "Payment Mode:"}</strong> <span style="text-transform: uppercase; font-weight: bold;">${escapeHtml(invoice.payment_method)}</span></div>
+    <div><strong>${lang === "hi" ? "स्थिति:" : "Status:"}</strong> <span style="font-weight: bold; color: ${isPaid ? "#15803D" : "#D97706"};">${escapeHtml(statusLabel)}</span></div>
+    ${invoice.transaction_id ? `<div><strong>${lang === "hi" ? "लेनदेन आईडी:" : "Txn Ref:"}</strong> <span style="font-family: monospace; font-size: 10px; font-weight: bold;">${escapeHtml(invoice.transaction_id)}</span></div>` : ""}
   </div>
 
   <table>
@@ -401,12 +410,12 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
           (item, idx) => `
         <tr>
           <td class="text-center" style="color: #5A655F;">${idx + 1}</td>
-          <td><strong>${item.name}</strong></td>
-          <td class="text-right" style="color: #5A655F;">${item.variant_label || "Standard"}</td>
-          <td class="text-right"><strong>${item.qty}</strong></td>
-          <td class="text-right" style="color: #5A655F; text-decoration: line-through;">₹${item.mrp || item.price}</td>
-          <td class="text-right">₹${item.price}</td>
-          <td class="text-right" style="font-weight: 800; color: #145A45;">₹${item.line_total || item.price * item.qty}</td>
+          <td><strong>${escapeHtml(item.name)}</strong></td>
+          <td class="text-right" style="color: #5A655F;">${escapeHtml(item.variant_label || "Standard")}</td>
+          <td class="text-right"><strong>${escapeHtml(item.qty)}</strong></td>
+          <td class="text-right" style="color: #5A655F; text-decoration: line-through;">₹${escapeHtml(item.mrp || item.price)}</td>
+          <td class="text-right">₹${escapeHtml(item.price)}</td>
+          <td class="text-right" style="font-weight: 800; color: #145A45;">₹${escapeHtml(item.line_total || item.price * item.qty)}</td>
         </tr>`
         )
         .join("")}
@@ -417,28 +426,28 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
     <div class="summary-left">
       <div class="card" style="font-size: 10px;">
         <div class="card-title">${lang === "hi" ? "डिजिटल भुगतान व सहायता" : "Digital Payment & Support"}</div>
-        <div>UPI ID: <strong>${invoice.store_upi_vpa || "6388354988@okbizaxis"}</strong></div>
-        <div>WhatsApp / Phone: <strong>${invoice.store_phone || "+91 6388354988"}</strong></div>
+        <div>UPI ID: <strong>${escapeHtml(invoice.store_upi_vpa || "6388354988@okbizaxis")}</strong></div>
+        <div>WhatsApp / Phone: <strong>${escapeHtml(invoice.store_phone || "+91 6388354988")}</strong></div>
       </div>
-      ${invoice.notes ? `<div style="margin-top: 6px; font-size: 10px; color: #5A655F;"><em>Note: ${invoice.notes}</em></div>` : ""}
+      ${invoice.notes ? `<div style="margin-top: 6px; font-size: 10px; color: #5A655F;"><em>Note: ${escapeHtml(invoice.notes)}</em></div>` : ""}
     </div>
 
     <div class="summary-right">
-      <div class="sum-row"><span>${lang === "hi" ? "उप-कुल (Subtotal):" : "Subtotal:"}</span><span>₹${invoice.subtotal}</span></div>
-      ${invoice.item_discount > 0 ? `<div class="sum-row" style="color: #15803D;"><span>${lang === "hi" ? "छूट (MRP Savings):" : "Discount:"}</span><span>-₹${invoice.item_discount}</span></div>` : ""}
-      ${invoice.coupon_discount > 0 ? `<div class="sum-row" style="color: #15803D;"><span>${lang === "hi" ? "कूपन छूट:" : "Coupon:"} (${invoice.coupon_code})</span><span>-₹${invoice.coupon_discount}</span></div>` : ""}
-      ${invoice.total_tax > 0 ? `<div class="sum-row"><span>Tax (GST):</span><span>+₹${invoice.total_tax}</span></div>` : ""}
-      <div class="sum-row"><span>${lang === "hi" ? "डिलीवरी शुल्क:" : "Delivery Charges:"}</span><span>${invoice.delivery_fee === 0 ? "FREE" : "₹" + invoice.delivery_fee}</span></div>
-      ${invoice.round_off !== 0 ? `<div class="sum-row"><span>Round Off:</span><span>₹${invoice.round_off}</span></div>` : ""}
+      <div class="sum-row"><span>${lang === "hi" ? "उप-कुल (Subtotal):" : "Subtotal:"}</span><span>₹${escapeHtml(invoice.subtotal)}</span></div>
+      ${invoice.item_discount > 0 ? `<div class="sum-row" style="color: #15803D;"><span>${lang === "hi" ? "छूट (MRP Savings):" : "Discount:"}</span><span>-₹${escapeHtml(invoice.item_discount)}</span></div>` : ""}
+      ${invoice.coupon_discount > 0 ? `<div class="sum-row" style="color: #15803D;"><span>${lang === "hi" ? "कूपन छूट:" : "Coupon:"} (${escapeHtml(invoice.coupon_code)})</span><span>-₹${escapeHtml(invoice.coupon_discount)}</span></div>` : ""}
+      ${invoice.total_tax > 0 ? `<div class="sum-row"><span>Tax (GST):</span><span>+₹${escapeHtml(invoice.total_tax)}</span></div>` : ""}
+      <div class="sum-row"><span>${lang === "hi" ? "डिलीवरी शुल्क:" : "Delivery Charges:"}</span><span>${invoice.delivery_fee === 0 ? "FREE" : "₹" + escapeHtml(invoice.delivery_fee)}</span></div>
+      ${invoice.round_off !== 0 ? `<div class="sum-row"><span>Round Off:</span><span>₹${escapeHtml(invoice.round_off)}</span></div>` : ""}
 
       <div class="grand-total-banner">
         <span>${lang === "hi" ? "कुल देय राशि:" : "Grand Total:"}</span>
-        <span>₹${invoice.grand_total}</span>
+        <span>₹${escapeHtml(invoice.grand_total)}</span>
       </div>
 
       <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; font-weight: bold;">
-        <span>${lang === "hi" ? "प्राप्त राशि:" : "Paid:"} ₹${invoice.amount_paid}</span>
-        <span style="color: ${invoice.amount_due > 0 ? "#D97706" : "#5A655F"};">${lang === "hi" ? "बकाया राशि:" : "Due:"} ₹${invoice.amount_due}</span>
+        <span>${lang === "hi" ? "प्राप्त राशि:" : "Paid:"} ₹${escapeHtml(invoice.amount_paid)}</span>
+        <span style="color: ${invoice.amount_due > 0 ? "#D97706" : "#5A655F"};">${lang === "hi" ? "बकाया राशि:" : "Due:"} ₹${escapeHtml(invoice.amount_due)}</span>
       </div>
     </div>
   </div>
@@ -446,8 +455,8 @@ function buildPrintableHtml(invoice: Invoice, lang: "en" | "hi", mode: "a4" | "p
   <div class="footer">
     <div style="max-width: 380px;">
       <div style="font-weight: bold; color: #16201A; text-transform: uppercase;">${lang === "hi" ? "नियम एवं शर्तें" : "Terms & Conditions"}:</div>
-      <div>${invoice.terms || "1. Goods once sold can only be returned within 24 hours in original condition.\n2. Retain this invoice for verification."}</div>
-      <div style="color: #145A45; font-style: italic; margin-top: 2px;">${invoice.footer_note || "Thank you for choosing Arun Gopal Traders!"}</div>
+      <div>${escapeHtml(invoice.terms || "1. Goods once sold can only be returned within 24 hours in original condition.\n2. Retain this invoice for verification.")}</div>
+      <div style="color: #145A45; font-style: italic; margin-top: 2px;">${escapeHtml(invoice.footer_note || "Thank you for choosing Arun Gopal Traders!")}</div>
     </div>
     <div style="text-align: right;">
       <div style="height: 25px;"></div>
@@ -471,6 +480,7 @@ function printDocument(htmlContent: string) {
     if (!iframe) {
       iframe = document.createElement("iframe");
       iframe.id = "agt-invoice-print-frame";
+      iframe.setAttribute("sandbox", "allow-same-origin allow-modals");
       iframe.style.position = "fixed";
       iframe.style.right = "0";
       iframe.style.bottom = "0";

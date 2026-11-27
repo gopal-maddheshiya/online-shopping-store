@@ -21,13 +21,14 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "low" | "out">("all");
-  const [stockChanges, setStockChanges] = useState<Record<string, number>>({});
+  const [stockChanges, setStockChanges] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
 
   // Flatten products into variant rows
   const rows: Array<{
     variantId: string;
     productName: string;
+    nameHi: string | null;
     slug: string;
     brand: string | null;
     variantLabel: string;
@@ -42,6 +43,7 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
       rows.push({
         variantId: v.id,
         productName: p.name,
+        nameHi: p.name_hi ?? null,
         slug: p.slug,
         brand: p.brand,
         variantLabel: v.label,
@@ -59,8 +61,13 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
       return false;
 
     if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      return r.productName.toLowerCase().includes(q) || (r.brand ?? "").toLowerCase().includes(q);
+      const q = searchTerm.trim().toLowerCase();
+      return (
+        r.productName.toLowerCase().includes(q) ||
+        (r.nameHi ?? "").toLowerCase().includes(q) ||
+        (r.brand ?? "").toLowerCase().includes(q) ||
+        r.variantLabel.toLowerCase().includes(q)
+      );
     }
     return true;
   });
@@ -176,6 +183,11 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
             {filteredRows.map((r) => {
               const isLow = r.currentStock <= r.threshold && r.currentStock > 0;
               const isOut = r.currentStock === 0;
+              const draftStr = stockChanges[r.variantId] ?? String(r.currentStock);
+              const parsedDraft =
+                draftStr.trim() === "" ? null : Math.max(0, Math.floor(Number(draftStr)));
+              const hasDraftChange =
+                parsedDraft !== null && !Number.isNaN(parsedDraft) && parsedDraft !== r.currentStock;
 
               return (
                 <div
@@ -222,32 +234,71 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#E8E4DA]">
-                    <span className="text-xs font-semibold text-[#6B746F]">Adjust Stock:</span>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] p-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={r.currentStock <= 0 || savingId === r.variantId}
-                        onClick={() => updateStock(r.variantId, r.currentStock - 1)}
-                        className="size-9 rounded-full bg-white shadow-2xs text-[#1F2924] hover:bg-[#FAF8F2]"
-                      >
-                        <Minus className="size-4" />
-                      </Button>
+                  <div className="space-y-2 pt-2 border-t border-[#E8E4DA]">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-semibold text-[#6B746F]">Quick Adjust:</span>
+                      <div className="inline-flex items-center gap-2 rounded-full border border-[#E8E4DA] bg-[#FAF8F2] p-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={r.currentStock <= 0 || savingId === r.variantId}
+                          onClick={() => updateStock(r.variantId, r.currentStock - 1)}
+                          className="size-9 rounded-full bg-white shadow-2xs text-[#1F2924] hover:bg-[#FAF8F2]"
+                        >
+                          <Minus className="size-4" />
+                        </Button>
 
-                      <span className="w-10 text-center text-base font-extrabold text-[#1F2924]">
-                        {r.currentStock}
-                      </span>
+                        <span className="w-10 text-center text-base font-extrabold text-[#1F2924]">
+                          {r.currentStock}
+                        </span>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={savingId === r.variantId}
-                        onClick={() => updateStock(r.variantId, r.currentStock + 1)}
-                        className="size-9 rounded-full bg-white shadow-2xs text-[#1F2924] hover:bg-[#FAF8F2]"
-                      >
-                        <Plus className="size-4" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={savingId === r.variantId}
+                          onClick={() => updateStock(r.variantId, r.currentStock + 1)}
+                          className="size-9 rounded-full bg-white shadow-2xs text-[#1F2924] hover:bg-[#FAF8F2]"
+                        >
+                          <Plus className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-[#6B746F]">Direct Set:</span>
+                      <div className="inline-flex items-center gap-1.5">
+                        <Input
+                          type="number"
+                          min="0"
+                          aria-label={`Direct stock for ${r.productName}`}
+                          value={draftStr}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            setStockChanges((prev) => ({
+                              ...prev,
+                              [r.variantId]: raw === "" ? "" : String(Math.max(0, Math.floor(Number(raw)))),
+                            }));
+                          }}
+                          className="h-8 w-20 rounded-lg text-center text-xs font-bold border-[#E8E4DA] bg-[#FAF8F2]"
+                        />
+                        {hasDraftChange && parsedDraft !== null && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              void updateStock(r.variantId, parsedDraft);
+                              setStockChanges((prev) => {
+                                const next = { ...prev };
+                                delete next[r.variantId];
+                                return next;
+                              });
+                            }}
+                            disabled={savingId === r.variantId}
+                            className="h-8 rounded-lg text-xs font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
+                          >
+                            <Save className="size-3 mr-1" /> Set
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -271,7 +322,11 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
                 </thead>
                 <tbody className="divide-y divide-[#E8E4DA]">
                   {filteredRows.map((r) => {
-                    const draftVal = stockChanges[r.variantId] ?? r.currentStock;
+                    const draftStr = stockChanges[r.variantId] ?? String(r.currentStock);
+                    const parsedDraft =
+                      draftStr.trim() === "" ? null : Math.max(0, Math.floor(Number(draftStr)));
+                    const hasDraftChange =
+                      parsedDraft !== null && !Number.isNaN(parsedDraft) && parsedDraft !== r.currentStock;
                     const isLow = r.currentStock <= r.threshold && r.currentStock > 0;
                     const isOut = r.currentStock === 0;
 
@@ -353,19 +408,29 @@ export function AdminInventory({ products, onRefresh }: AdminInventoryProps) {
                           <div className="inline-flex items-center gap-1.5 justify-end">
                             <Input
                               type="number"
-                              value={draftVal}
-                              onChange={(e) =>
+                              min="0"
+                              aria-label={`Direct stock for ${r.productName}`}
+                              value={draftStr}
+                              onChange={(e) => {
+                                const raw = e.target.value;
                                 setStockChanges((prev) => ({
                                   ...prev,
-                                  [r.variantId]: Math.max(0, Number(e.target.value)),
-                                }))
-                              }
+                                  [r.variantId]: raw === "" ? "" : String(Math.max(0, Math.floor(Number(raw)))),
+                                }));
+                              }}
                               className="h-7.5 w-16 rounded-lg text-center text-xs border-[#E8E4DA] bg-[#FAF8F2]"
                             />
-                            {draftVal !== r.currentStock && (
+                            {hasDraftChange && parsedDraft !== null && (
                               <Button
                                 size="sm"
-                                onClick={() => updateStock(r.variantId, draftVal)}
+                                onClick={() => {
+                                  void updateStock(r.variantId, parsedDraft);
+                                  setStockChanges((prev) => {
+                                    const next = { ...prev };
+                                    delete next[r.variantId];
+                                    return next;
+                                  });
+                                }}
                                 disabled={savingId === r.variantId}
                                 className="h-7.5 rounded-lg text-xs font-semibold bg-[#145A45] text-white hover:bg-[#0E4333]"
                               >

@@ -754,7 +754,7 @@ export const translations: Record<Language, Translations> = {
     clearAllFiltersBtn: "सभी फिल्टर हटाएं",
     filterBtn: "फिल्टर",
     filterCatalogueTitle: "किराना फिल्टर",
-    sortRelevance: "लोकप्रियता (Relevance)",
+    sortRelevance: "लोकप्रियता अनुसार",
     sortPriceLowToHigh: "कीमत: कम से ज्यादा",
     sortPriceHighToLow: "कीमत: ज्यादा से कम",
     sortHighestDiscount: "ज्यादा छूट पहले",
@@ -777,7 +777,7 @@ export const translations: Record<Language, Translations> = {
 
     // Cart
     haveCouponPrompt: "क्या आपके पास कूपन कोड है?",
-    couponPlaceholder: "कूपन कोड दर्ज करें (उदा. WELCOME50)",
+    couponPlaceholder: "कूपन कोड (उदा. SAVE50)",
     applyBtn: "लागू करें",
     couponAppliedMsg: "कूपन सफलतापूर्वक लागू हो गया!",
     removeCouponBtn: "हटाएं",

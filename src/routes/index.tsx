@@ -210,62 +210,12 @@ const BLINKIT_CATEGORY_TINTS = [
    ═══════════════════════════════════════════════════════════════ */
 function LazySection({
   children,
-  minHeight = "330px",
-  rootMargin = "500px",
 }: {
   children: React.ReactNode;
   minHeight?: string;
   rootMargin?: string;
 }) {
-  const [inView, setInView] = useState(() => typeof window === "undefined");
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (inView) return;
-    if (typeof window === "undefined") return;
-
-    if (!("IntersectionObserver" in window)) {
-      setInView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    // Safety fallback: if user doesn't scroll within 1.5 seconds, mount during idle
-    const timer = setTimeout(() => {
-      setInView(true);
-    }, 1500);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
-  }, [inView, rootMargin]);
-
-  if (inView) {
-    return <>{children}</>;
-  }
-
-  return (
-    <div
-      ref={ref}
-      style={{ minHeight }}
-      className="shelf-viewport-contain pointer-events-none"
-      aria-hidden="true"
-    />
-  );
+  return <>{children}</>;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -529,8 +479,17 @@ function CategoryThumbnail({
   name: string;
 }) {
   const src = getCategoryThumbnail(category);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const [loaded, setLoaded] = useState(() => isImageLoaded(src));
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+      markImageLoaded(src);
+      setLoaded(true);
+    }
+  }, [src, loaded]);
 
   return (
     <div className="relative size-full flex items-center justify-center overflow-hidden p-1 sm:p-1.5">
@@ -543,6 +502,13 @@ function CategoryThumbnail({
         </div>
       ) : (
         <img
+          ref={(el) => {
+            imgRef.current = el;
+            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+              markImageLoaded(src);
+              setLoaded(true);
+            }
+          }}
           src={src}
           alt={name}
           loading="lazy"
@@ -552,7 +518,7 @@ function CategoryThumbnail({
             setLoaded(true);
           }}
           onError={() => setHasError(true)}
-          className={`size-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.10)] transition-transform duration-200 group-hover:scale-105 ${
+          className={`size-full object-contain drop-shadow-[0_3px_5px_rgba(0,0,0,0.10)] transition-all duration-200 group-hover:scale-105 ${
             loaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         />
@@ -570,7 +536,7 @@ function CategoryGridSkeleton() {
             <Skeleton className="h-5 sm:h-6 w-36 sm:w-52 rounded-md" />
             <Skeleton className="size-7 sm:size-8 rounded-full" />
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="flex flex-col items-center w-full">
                 <div className="w-full aspect-[1/1.02] rounded-[13px] overflow-hidden bg-[#E6F5EC]/60 border border-[#C5E7D2]/70 p-1.5 flex items-center justify-center shadow-2xs">
@@ -589,7 +555,7 @@ function CategoryGridSkeleton() {
 
 function HomepageSkeleton() {
   return (
-    <div className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+    <div className="space-y-3 sm:space-y-5 pb-6 sm:pb-10 overflow-x-hidden pt-0">
       {/* 0. Smart Ration Bar */}
       <SmartRationBar onOpenModal={() => {}} />
 
@@ -603,7 +569,7 @@ function HomepageSkeleton() {
 
       {/* 3. Mini Trust Strip Skeleton */}
       <section className="container-page">
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -797,19 +763,19 @@ function PremiumStoreHome() {
           sec.setAttribute("data-gsap-revealed", "true");
           gsap.fromTo(
             sec,
-            { opacity: 0.9, y: 12 },
+            { opacity: 1, y: 8 },
             {
               opacity: 1,
               y: 0,
-              duration: 0.4,
+              duration: 0.3,
               ease: "power2.out",
               scrollTrigger: {
                 trigger: sec,
-                start: "top 95%",
+                start: "top 96%",
                 toggleActions: "play none none none",
                 once: true,
               },
-              clearProps: "opacity,transform",
+              clearProps: "transform",
             }
           );
         });
@@ -965,7 +931,7 @@ function PremiumStoreHome() {
   }, [featuredProducts, allDisplayProducts, getProductCategorySlug]);
 
   return (
-    <div ref={homeContainerRef} className="space-y-3 sm:space-y-5 pb-24 overflow-x-hidden pt-0">
+    <div ref={homeContainerRef} className="space-y-3 sm:space-y-5 pb-6 sm:pb-10 overflow-x-hidden pt-0">
       {/* ═══════════════════════════════════════════════════════
           AI SMART RATION QUICK-BAR (Flipkart-style seamless strip)
           ═══════════════════════════════════════════════════════ */}
@@ -1025,7 +991,7 @@ function PremiumStoreHome() {
                     </Link>
                   </div>
 
-                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
                     {items.map((c) => {
                       return (
                         <Link
@@ -1037,9 +1003,9 @@ function PremiumStoreHome() {
                           <div
                             className="relative w-full aspect-[1/1.02] rounded-[14px] overflow-hidden transition-all duration-200 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_4px_10px_-2px_rgba(20,90,69,0.13),0_2px_4px_-1px_rgba(0,0,0,0.05),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-2px_0_rgba(20,90,69,0.09)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_18px_-3px_rgba(20,90,69,0.22),0_4px_6px_-2px_rgba(0,0,0,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(20,90,69,0.12)] group-hover:border-[#98D8AF] group-active:translate-y-0 group-active:scale-[0.97]"
                           >
-                            <CategoryThumbnail category={c} name={c.name} />
+                            <CategoryThumbnail category={c} name={getCategoryName(c)} />
                           </div>
-                          <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.38] tracking-normal text-center line-clamp-2 min-h-[2.85em] flex items-start justify-center px-0.5 transition-colors">
+                          <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.48] tracking-normal text-center line-clamp-2 min-h-[2.96em] flex items-start justify-center px-0.5 transition-colors">
                             {getCategoryName(c)}
                           </span>
                         </Link>
@@ -1067,7 +1033,7 @@ function PremiumStoreHome() {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-2.5 sm:gap-3 lg:gap-3.5 xl:gap-4">
                   {uncategorizedCategories.map((c) => {
                     return (
                       <Link
@@ -1079,9 +1045,9 @@ function PremiumStoreHome() {
                         <div
                           className="relative w-full aspect-[1/1.02] rounded-[14px] overflow-hidden transition-all duration-200 bg-gradient-to-b from-[#F2FAF5] via-[#E8F6ED] to-[#D5EFE0] border border-[#BEE7CE] shadow-[0_4px_10px_-2px_rgba(20,90,69,0.13),0_2px_4px_-1px_rgba(0,0,0,0.05),inset_0_1.5px_0_rgba(255,255,255,0.85),inset_0_-2px_0_rgba(20,90,69,0.09)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_18px_-3px_rgba(20,90,69,0.22),0_4px_6px_-2px_rgba(0,0,0,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(20,90,69,0.12)] group-hover:border-[#98D8AF] group-active:translate-y-0 group-active:scale-[0.97]"
                         >
-                          <CategoryThumbnail category={c} name={c.name} />
+                          <CategoryThumbnail category={c} name={getCategoryName(c)} />
                         </div>
-                        <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.38] tracking-normal text-center line-clamp-2 min-h-[2.85em] flex items-start justify-center px-0.5 transition-colors">
+                        <span className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[14px] lg:text-[14.5px] font-semibold text-[#18221D] group-hover:text-[#145A45] leading-[1.48] tracking-normal text-center line-clamp-2 min-h-[2.96em] flex items-start justify-center px-0.5 transition-colors">
                           {getCategoryName(c)}
                         </span>
                       </Link>
@@ -1095,10 +1061,10 @@ function PremiumStoreHome() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
-          3. MINI TRUST STRIP (Compact 3-col)
+          3. MINI TRUST STRIP (1-col clear cards on mobile, 3-col on tablet/desktop)
           ═══════════════════════════════════════════════════════ */}
       <section className="container-page">
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           {[
             {
               icon: isDeliveryEnabled ? (
@@ -1132,10 +1098,10 @@ function PremiumStoreHome() {
                 {item.icon}
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] sm:text-xs font-bold text-[#16201A] truncate">
+                <p className="text-xs font-bold text-[#16201A] sm:truncate">
                   {item.title}
                 </p>
-                <p className="text-[9px] sm:text-[10px] text-[#3D4C44] truncate">{item.sub}</p>
+                <p className="text-[10.5px] sm:text-[10px] text-[#3D4C44] sm:truncate">{item.sub}</p>
               </div>
             </div>
           ))}
@@ -1553,7 +1519,7 @@ function PremiumStoreHome() {
                 {
                   icon: <PhoneCall className="size-5 text-[#145A45]" />,
                   title: lang === "hi" ? "सीधा संपर्क" : "Direct Support",
-                  desc: "+91 6388354988",
+                  desc: settings?.phone || "+91 6388354988",
                 },
               ].map((item, idx) => (
                 <div
@@ -1574,7 +1540,12 @@ function PremiumStoreHome() {
             {/* WhatsApp CTA */}
             <div className="text-center pt-1">
               <a
-                href={waHref(storeWhatsApp, "Namaste! I want to order grocery.")}
+                href={waHref(
+                  storeWhatsApp,
+                  lang === "hi"
+                    ? "नमस्ते अरुण गोपाल ट्रेडर्स, मुझे किराने का सामान ऑर्डर करना है।"
+                    : "Namaste Arun Gopal Traders! I want to order grocery."
+                )}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-2xl bg-[#145A45] px-6 py-2.5 text-xs sm:text-sm font-bold text-white shadow-xs hover:bg-[#0E4333] transition-all"

@@ -27,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
-import { inr, formatDate, ORDER_STATUS_LABEL, PAYMENT_LABEL, telHref, waHref } from "@/lib/format";
+import { inr, formatDate, getOrderStatusLabel, PAYMENT_LABEL, telHref, waHref } from "@/lib/format";
 import { settingsQuery, type Order } from "@/lib/queries";
 import { OrderTimeline } from "@/components/OrderTimeline";
 import { getProductImage } from "@/lib/product-images";
@@ -116,7 +116,7 @@ function TrackPage() {
   const [phoneInput, setPhoneInput] = useState(search.phone ?? "");
   const [searchedOrder, setSearchedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorCode, setErrorCode] = useState<"empty_order" | "empty_phone" | "not_found" | "network" | null>(null);
 
   // Reorder state
   const [reorderLoading, setReorderLoading] = useState(false);
@@ -132,6 +132,25 @@ function TrackPage() {
 
   const storePhone = settings?.phone ?? "+91 6388354988";
   const storeWhatsApp = settings?.whatsapp ?? "916388354988";
+
+  const errorMsg =
+    errorCode === "empty_order"
+      ? language === "hi"
+        ? "कृपया अपना ऑर्डर नंबर दर्ज करें (उदा. AGT-1001)"
+        : "Please enter your Order Number (e.g. AGT-1001)"
+      : errorCode === "empty_phone"
+        ? language === "hi"
+          ? "कृपया अपना 10 अंकों का मोबाइल नंबर दर्ज करें"
+          : "Please enter your 10-digit mobile number"
+        : errorCode === "not_found"
+          ? language === "hi"
+            ? "इस ऑर्डर नंबर और मोबाइल नंबर से कोई ऑर्डर नहीं मिला। कृपया नंबर जांचें।"
+            : "No order found matching this Order Number and Mobile Number. Please check and try again."
+          : errorCode === "network"
+            ? language === "hi"
+              ? `ऑर्डर की जानकारी लोड करने में समस्या हुई। कृपया स्टोर से सीधे संपर्क करें: ${storePhone}`
+              : `Unable to fetch order details. Please contact the store directly at ${storePhone}.`
+            : "";
 
   async function handleRepeatOrder(order: Order) {
     const itemsList =
@@ -165,7 +184,7 @@ function TrackPage() {
         if (variants) {
           variants.forEach((v) => {
             liveStockMap.set(v.id, {
-              stock: Number(v.stock ?? 99),
+              stock: Number(v.stock ?? 0),
               price: Number(v.price),
               isActive: v.is_active !== false,
             });
@@ -198,7 +217,7 @@ function TrackPage() {
         const vId = item.variant_id ?? `temp-${item.id}`;
         const liveInfo = item.variant_id ? liveStockMap.get(item.variant_id) : null;
 
-        if (liveInfo && (!liveInfo.isActive || liveInfo.stock <= 0)) {
+        if (item.variant_id && (!liveInfo || !liveInfo.isActive || liveInfo.stock <= 0)) {
           outOfStockCount++;
           continue;
         }
@@ -274,18 +293,16 @@ function TrackPage() {
           .eq("id", item.variant_id)
           .maybeSingle();
 
-        if (v) {
-          if (v.is_active === false || Number(v.stock ?? 0) <= 0) {
-            toast.error(
-              language === "hi"
-                ? `${getProductName(item)} अभी आउट-ऑफ़-स्टॉक है`
-                : `${getProductName(item)} is currently out of stock`,
-            );
-            return;
-          }
-          stock = Number(v.stock ?? 99);
-          price = Number(v.price);
+        if (!v || v.is_active === false || Number(v.stock ?? 0) <= 0) {
+          toast.error(
+            language === "hi"
+              ? `${getProductName(item)} अभी आउट-ऑफ़-स्टॉक है`
+              : `${getProductName(item)} is currently out of stock`,
+          );
+          return;
         }
+        stock = Number(v.stock ?? 0);
+        price = Number(v.price);
       }
 
       add(
@@ -320,8 +337,8 @@ function TrackPage() {
     setInvoiceLoading(true);
     try {
       const { data, error } = await supabase.rpc("lookup_order_invoice", {
-        p_order_no: order.order_no,
-        p_phone: order.customer_phone,
+        _order_no: order.order_no,
+        _phone: order.customer_phone,
       });
 
       if (error || !data) {
@@ -341,26 +358,18 @@ function TrackPage() {
     if (!orderNo.trim() || !phone.trim()) return;
 
     setLoading(true);
-    setErrorMsg("");
+    setErrorCode(null);
     try {
       const { order, error } = await fetchOrderForTracking(orderNo, phone);
       if (error || !order) {
-        setErrorMsg(
-          language === "hi"
-            ? "इस ऑर्डर नंबर और मोबाइल नंबर से कोई ऑर्डर नहीं मिला। कृपया नंबर जांचें।"
-            : "No order found matching this Order Number and Mobile Number. Please check and try again."
-        );
+        setErrorCode("not_found");
         setSearchedOrder(null);
       } else {
         setSearchedOrder(order);
       }
     } catch (err: unknown) {
       console.error("Order lookup error:", err);
-      setErrorMsg(
-        language === "hi"
-          ? "ऑर्डर की जानकारी लोड करने में समस्या हुई। कृपया स्टोर से सीधे संपर्क करें: +91 6388354988"
-          : "Unable to fetch order details. Please contact the store directly at +91 6388354988."
-      );
+      setErrorCode("network");
       setSearchedOrder(null);
     } finally {
       setLoading(false);
@@ -381,10 +390,15 @@ function TrackPage() {
           if (!prev) return null;
           const newStatus = partial.status ?? prev.status;
           if (newStatus && newStatus !== prev.status) {
+            const statusText = getOrderStatusLabel(
+              newStatus,
+              language,
+              prev.order_type === "pickup" ? "pickup" : "delivery",
+            );
             toast.info(
               language === "hi"
-                ? `🔔 ऑर्डर स्थिति अपडेट: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
-                : `🔔 Order status updated: ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`
+                ? `🔔 ऑर्डर स्थिति अपडेट: ${statusText}`
+                : `🔔 Order status updated: ${statusText}`
             );
           }
           return {
@@ -436,11 +450,11 @@ function TrackPage() {
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!orderNoInput.trim()) {
-      setErrorMsg(language === "hi" ? "कृपया अपना ऑर्डर नंबर दर्ज करें (उदा. AGT-1001)" : "Please enter your Order Number (e.g. AGT-1001)");
+      setErrorCode("empty_order");
       return;
     }
     if (!phoneInput.trim()) {
-      setErrorMsg(language === "hi" ? "कृपया अपना 10 अंकों का मोबाइल नंबर दर्ज करें" : "Please enter your 10-digit mobile number");
+      setErrorCode("empty_phone");
       return;
     }
     void fetchOrder(orderNoInput, phoneInput);
@@ -467,14 +481,15 @@ function TrackPage() {
 
       {/* Lookup Form */}
       <div className="mx-auto mt-6 sm:mt-7 max-w-xl rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 sm:p-6 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
-        <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2">
+        <form noValidate onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="track-order-no" className="text-xs font-bold text-[#1F2A24]">
               {language === "hi" ? "ऑर्डर आईडी / नंबर" : "Order ID / Number"}
             </Label>
             <Input
               id="track-order-no"
-              placeholder="e.g. AGT-1001"
+              autoComplete="off"
+              placeholder={language === "hi" ? "उदा. AGT-1001" : "e.g. AGT-1001"}
               value={orderNoInput}
               onChange={(e) => setOrderNoInput(e.target.value.toUpperCase())}
               className="rounded-xl font-mono text-sm border-[rgba(20,90,69,0.12)] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
@@ -489,7 +504,8 @@ function TrackPage() {
             <Input
               id="track-phone"
               type="tel"
-              placeholder="10-digit mobile number"
+              autoComplete="tel"
+              placeholder={language === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-digit mobile number"}
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
               className="rounded-xl text-sm border-[rgba(20,90,69,0.12)] bg-[#F9FAFB] focus:bg-white h-10 shadow-2xs"
@@ -519,6 +535,17 @@ function TrackPage() {
             <span>{errorMsg}</span>
           </div>
         ) : null}
+
+        <div className="mt-3 text-center">
+          <Link
+            to="/account"
+            className="text-xs font-semibold text-[#145A45] hover:underline"
+          >
+            {language === "hi"
+              ? "ऑर्डर नंबर भूल गए? खाते में लॉगिन कर सभी ऑर्डर देखें →"
+              : "Forgot Order ID? Sign in to your Account to view all orders →"}
+          </Link>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -541,7 +568,11 @@ function TrackPage() {
                     {searchedOrder.order_no}
                   </h2>
                   <span className="rounded-full bg-[#145A45]/10 border border-[#145A45]/20 px-3 py-0.5 text-xs font-bold text-[#145A45]">
-                    {ORDER_STATUS_LABEL[searchedOrder.status] ?? searchedOrder.status}
+                    {getOrderStatusLabel(
+                      searchedOrder.status,
+                      language,
+                      searchedOrder.order_type === "pickup" ? "pickup" : "delivery",
+                    )}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-[#66746C]">
@@ -592,7 +623,7 @@ function TrackPage() {
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#25D366] to-[#15803D] text-white px-3.5 py-2 text-xs font-bold shadow-[0_2px_6px_rgba(37,211,102,0.2),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#1EBE5D] hover:to-[#166534] transition-all cursor-pointer"
                 >
-                  <MessageCircle className="size-3.5" /> WhatsApp Support
+                  <MessageCircle className="size-3.5" /> {language === "hi" ? "व्हाट्सएप सहायता" : "WhatsApp Support"}
                 </a>
               </div>
             </div>
@@ -612,37 +643,44 @@ function TrackPage() {
             {/* Fulfillment & Address */}
             <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
               <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
-                <MapPin className="size-4 text-[#145A45]" /> Delivery &amp; Contact Info
+                <MapPin className="size-4 text-[#145A45]" />{" "}
+                {language === "hi" ? "डिलीवरी और संपर्क विवरण" : "Delivery & Contact Info"}
               </h3>
 
               <div className="mt-4 space-y-2 text-xs">
                 <div>
-                  <span className="text-[#66746C]">Customer Name:</span>
+                  <span className="text-[#66746C]">{language === "hi" ? "ग्राहक का नाम:" : "Customer Name:"}</span>
                   <p className="font-semibold text-[#1F2A24]">{searchedOrder.customer_name}</p>
                 </div>
                 <div>
-                  <span className="text-[#66746C]">Contact Phone:</span>
+                  <span className="text-[#66746C]">{language === "hi" ? "संपर्क मोबाइल:" : "Contact Phone:"}</span>
                   <p className="font-semibold text-[#1F2A24]">
                     +91 {searchedOrder.customer_phone}
                   </p>
                 </div>
                 <div>
-                  <span className="text-[#66746C]">Order Type:</span>
-                  <p className="font-semibold capitalize text-[#1F2A24]">
-                    {searchedOrder.order_type === "delivery" ? "Home Delivery (महाराजगंज)" : "Store Pickup"}
+                  <span className="text-[#66746C]">{language === "hi" ? "ऑर्डर प्रकार:" : "Order Type:"}</span>
+                  <p className="font-semibold text-[#1F2A24]">
+                    {searchedOrder.order_type === "delivery"
+                      ? language === "hi"
+                        ? "होम डिलीवरी (महराजगंज)"
+                        : "Home Delivery (Maharajganj)"
+                      : language === "hi"
+                        ? "दुकान से पिकअप"
+                        : "Store Pickup"}
                   </p>
                 </div>
                 {searchedOrder.order_type === "delivery" && searchedOrder.address ? (
                   <div>
-                    <span className="text-[#66746C]">Delivery Address:</span>
+                    <span className="text-[#66746C]">{language === "hi" ? "डिलीवरी पता:" : "Delivery Address:"}</span>
                     <p className="font-medium text-[#1F2A24]">
                       {[
                         searchedOrder.address.house,
                         searchedOrder.address.area,
                         searchedOrder.address.landmark
-                          ? `(Landmark: ${searchedOrder.address.landmark})`
+                          ? `(${language === "hi" ? "पहचान चिह्न" : "Landmark"}: ${searchedOrder.address.landmark})`
                           : null,
-                        searchedOrder.address.city ?? "Maharajganj",
+                        searchedOrder.address.city ?? (language === "hi" ? "महराजगंज" : "Maharajganj"),
                         searchedOrder.address.pincode,
                       ]
                         .filter(Boolean)
@@ -651,15 +689,18 @@ function TrackPage() {
                   </div>
                 ) : (
                   <div>
-                    <span className="text-[#66746C]">Store Pickup Address:</span>
+                    <span className="text-[#66746C]">{language === "hi" ? "दुकान पिकअप पता:" : "Store Pickup Address:"}</span>
                     <p className="font-medium text-[#1F2A24]">
-                      {t.storeName}, Ramnagar, Adda Bazar Road, Maharajganj, UP
+                      {t.storeName},{" "}
+                      {language === "hi"
+                        ? "रामनगर चौराहा, अड्डा बाजार रोड, महराजगंज, उ.प्र."
+                        : "Ramnagar Chauraha, Adda Bazar Road, Maharajganj, UP"}
                     </p>
                   </div>
                 )}
                 {searchedOrder.notes ? (
                   <div className="pt-2">
-                    <span className="text-[#66746C]">Instructions:</span>
+                    <span className="text-[#66746C]">{language === "hi" ? "विशेष निर्देश:" : "Instructions:"}</span>
                     <p className="rounded-xl bg-[#F9FAFB] border border-[rgba(20,90,69,0.12)] p-2.5 italic text-[#1F2A24]">
                       {searchedOrder.notes}
                     </p>
@@ -672,7 +713,8 @@ function TrackPage() {
             <div className="rounded-2xl border border-[rgba(20,90,69,0.12)] bg-white p-5 shadow-[0_4px_16px_-4px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.95)]">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 font-sans text-base font-bold text-[#1F2A24]">
-                  <Package className="size-4 text-[#145A45]" /> Bill &amp; Payment Summary
+                  <Package className="size-4 text-[#145A45]" />{" "}
+                  {language === "hi" ? "बिल और भुगतान विवरण" : "Bill & Payment Summary"}
                 </h3>
                 {searchedOrder.payment_status === "paid" ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 shadow-[0_1px_2px_rgba(16,185,129,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
@@ -691,7 +733,7 @@ function TrackPage() {
 
               <dl className="mt-4 space-y-2 text-xs">
                 <div className="flex justify-between text-[#66746C]">
-                  <dt>Payment Mode:</dt>
+                  <dt>{language === "hi" ? "भुगतान माध्यम:" : "Payment Mode:"}</dt>
                   <dd className="font-semibold text-[#1F2A24]">
                     {PAYMENT_LABEL[searchedOrder.payment_method] ?? searchedOrder.payment_method.toUpperCase()}
                   </dd>
@@ -699,7 +741,7 @@ function TrackPage() {
 
                 {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id ? (
                   <div className="flex justify-between text-[#66746C]">
-                    <dt>Transaction Ref:</dt>
+                    <dt>{language === "hi" ? "ट्रांजेक्शन रेफ:" : "Transaction Ref:"}</dt>
                     <dd className="font-mono text-[11px] font-bold text-[#0E3F31]">
                       {searchedOrder.transaction_id || (searchedOrder as { gateway_payment_id?: string }).gateway_payment_id}
                     </dd>
@@ -707,26 +749,30 @@ function TrackPage() {
                 ) : null}
 
                 <div className="flex justify-between text-[#66746C]">
-                  <dt>Items Subtotal:</dt>
+                  <dt>{language === "hi" ? "सामान कुल:" : "Items Subtotal:"}</dt>
                   <dd className="font-medium text-[#1F2A24]">{inr(searchedOrder.subtotal)}</dd>
                 </div>
                 {searchedOrder.discount > 0 ? (
                   <div className="flex justify-between text-[#145A45]">
                     <dt>
-                      Coupon Discount{" "}
+                      {language === "hi" ? "कूपन छूट" : "Coupon Discount"}{" "}
                       {searchedOrder.coupon_code ? `(${searchedOrder.coupon_code})` : ""}:
                     </dt>
                     <dd className="font-bold">-{inr(searchedOrder.discount)}</dd>
                   </div>
                 ) : null}
                 <div className="flex justify-between text-[#66746C]">
-                  <dt>Delivery Fee:</dt>
+                  <dt>{language === "hi" ? "डिलीवरी शुल्क:" : "Delivery Fee:"}</dt>
                   <dd className="font-medium text-[#1F2A24]">
-                    {searchedOrder.delivery_fee === 0 ? "FREE" : inr(searchedOrder.delivery_fee)}
+                    {searchedOrder.delivery_fee === 0
+                      ? language === "hi"
+                        ? "मुफ़्त"
+                        : "FREE"
+                      : inr(searchedOrder.delivery_fee)}
                   </dd>
                 </div>
                 <div className="flex justify-between border-t border-[rgba(20,90,69,0.12)] pt-2 text-base font-bold text-[#1F2A24]">
-                  <dt>Total Amount:</dt>
+                  <dt>{language === "hi" ? "कुल राशि:" : "Total Amount:"}</dt>
                   <dd className="font-sans font-bold text-[#145A45]">{inr(searchedOrder.total)}</dd>
                 </div>
               </dl>
@@ -801,7 +847,9 @@ function TrackPage() {
                         <div className="flex items-center gap-3">
                           <div className="text-right">
                             <p className="font-bold text-[#1F2A24]">{inr(item.price * item.qty)}</p>
-                            <p className="text-[10px] text-[#66746C]">{inr(item.price)} each</p>
+                            <p className="text-[10px] text-[#66746C]">
+                              {inr(item.price)} {language === "hi" ? "प्रति पीस" : "each"}
+                            </p>
                           </div>
                           <Button
                             size="sm"
@@ -835,7 +883,8 @@ function TrackPage() {
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Button asChild className="rounded-xl font-bold bg-[#145A45] text-white hover:bg-[#0E4333] shadow-xs">
                 <a href={telHref(storePhone)}>
-                  <Phone className="mr-1.5 size-4" /> Call {storePhone}
+                  <Phone className="mr-1.5 size-4" />{" "}
+                  {language === "hi" ? `कॉल करें ${storePhone}` : `Call ${storePhone}`}
                 </a>
               </Button>
               <Button
@@ -844,7 +893,8 @@ function TrackPage() {
                 className="rounded-xl border-[#E8E4DA] text-[#145A45] bg-white hover:bg-[#FBF7EF]"
               >
                 <Link to="/shop">
-                  Continue Shopping <ArrowRight className="ml-1.5 size-4" />
+                  {language === "hi" ? "खरीदारी जारी रखें" : "Continue Shopping"}{" "}
+                  <ArrowRight className="ml-1.5 size-4" />
                 </Link>
               </Button>
             </div>

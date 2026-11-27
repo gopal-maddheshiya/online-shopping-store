@@ -7,8 +7,14 @@ import type { Product, ProductImage, ProductImageType } from "./queries";
 export const DEFAULT_PRODUCT_PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='200' height='200'%3E%3Crect width='200' height='200' fill='%23FAF8F5'/%3E%3Cpath d='M60 75 L140 75 L132 155 L68 155 Z' fill='%23EAE5D9' stroke='%23145A45' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M82 75 C82 50 118 50 118 75' fill='none' stroke='%23145A45' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='100' cy='112' r='14' fill='%23145A45' fill-opacity='0.15'/%3E%3Cpath d='M94 112 L106 112 M100 106 L100 118' stroke='%23145A45' stroke-width='3' stroke-linecap='round'/%3E%3Ctext x='100' y='178' text-anchor='middle' font-family='system-ui,-apple-system,sans-serif' font-size='12' font-weight='600' fill='%235A655F'%3Eकिराना सामान%3C/text%3E%3C/svg%3E";
 
+const LEGACY_MISSING_IMAGES = ["/images/packaged.jpg", "/images/spices.jpg"];
+
+function isLegacyMissingImage(url: string): boolean {
+  return LEGACY_MISSING_IMAGES.some((legacy) => url.includes(legacy));
+}
+
 /**
- * Helper to append cache-busting version query parameter to dynamic image URLs.
+ * Helper to append or update cache-busting version query parameter on dynamic image URLs.
  */
 export function withImageVersion(url: string, updatedAt?: string | null): string {
   if (!url || !updatedAt) return url;
@@ -17,6 +23,9 @@ export function withImageVersion(url: string, updatedAt?: string | null): string
   try {
     const timestamp = new Date(updatedAt).getTime();
     if (isNaN(timestamp)) return url;
+    if (/([?&])v=[^&]*/.test(url)) {
+      return url.replace(/([?&])v=[^&]*/, `$1v=${timestamp}`);
+    }
     const separator = url.includes("?") ? "&" : "?";
     return `${url}${separator}v=${timestamp}`;
   } catch {
@@ -35,7 +44,7 @@ export function getCategoryThumbnail(category: {
   icon?: string | null;
 }): string {
   const url = (category.image_url ?? "").trim();
-  if (url.length > 0 && !url.includes("/images/packaged.jpg")) {
+  if (url.length > 0 && !isLegacyMissingImage(url)) {
     return url;
   }
   return "/agt-icon.png";
@@ -100,7 +109,7 @@ export function getProductImage(product?: {
     product.image_url &&
     typeof product.image_url === "string" &&
     product.image_url.trim().length > 0 &&
-    !product.image_url.includes("/images/packaged.jpg")
+    !isLegacyMissingImage(product.image_url)
   ) {
     const cleanUrl = optimizeProductImageUrl(product.image_url);
     if (
@@ -254,7 +263,7 @@ export function getOpenGraphProductImage(product?: {
     product.image_url &&
     !product.image_url.toLowerCase().endsWith(".svg") &&
     !product.image_url.startsWith("data:") &&
-    !product.image_url.includes("/images/packaged.jpg")
+    !isLegacyMissingImage(product.image_url)
   ) {
     return product.image_url;
   }

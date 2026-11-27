@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Phone, Mail, MapPin, MessageCircle, Clock, Send, CheckCircle2, Store } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Clock, Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery, isOpenNow } from "@/lib/queries";
 import { telHref, waHref } from "@/lib/format";
 import { useLanguage } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site-config";
 import { getBreadcrumbSchema, getStoreSchema, LOCAL_GEO_META, PUBLIC_ROBOTS_META } from "@/lib/seo";
 
@@ -85,17 +86,18 @@ export const Route = createFileRoute("/contact")({
 });
 
 const DAYS = [
-  { key: "mon", label: "Monday" },
-  { key: "tue", label: "Tuesday" },
-  { key: "wed", label: "Wednesday" },
-  { key: "thu", label: "Thursday" },
-  { key: "fri", label: "Friday" },
-  { key: "sat", label: "Saturday" },
-  { key: "sun", label: "Sunday" },
+  { key: "mon", labelEn: "Monday", labelHi: "सोमवार" },
+  { key: "tue", labelEn: "Tuesday", labelHi: "मंगलवार" },
+  { key: "wed", labelEn: "Wednesday", labelHi: "बुधवार" },
+  { key: "thu", labelEn: "Thursday", labelHi: "गुरुवार" },
+  { key: "fri", labelEn: "Friday", labelHi: "शुक्रवार" },
+  { key: "sat", labelEn: "Saturday", labelHi: "शनिवार" },
+  { key: "sun", labelEn: "Sunday", labelHi: "रविवार" },
 ];
 
 function ContactPage() {
-  const { t, lang } = useLanguage();
+  const { t, lang, formatStatus } = useLanguage();
+  const { profile } = useAuth();
   const { data: s } = useQuery(settingsQuery);
   const status = isOpenNow(s);
 
@@ -103,20 +105,67 @@ function ContactPage() {
   const cleanPhone = phone.replace(/\s+/g, "");
   const whatsapp = s?.whatsapp ?? "916388354988";
   const email = s?.email ?? "gopalmaddheshiya138@gmail.com";
-  const address = s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh";
+  const address = lang === "hi" ? t.storeAddress : (s?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh");
 
   // Help Request Form
   const [name, setName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [topic, setTopic] = useState("Order Inquiry");
   const [message, setMessage] = useState("");
+  const [formErrorCode, setFormErrorCode] = useState<"missing_name" | "invalid_phone" | "missing_msg" | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  useEffect(() => {
+    if (profile?.full_name) {
+      setName((prev) => prev || profile.full_name || "");
+    }
+    const profileDigits = (profile?.phone || "").replace(/\D/g, "").slice(-10);
+    if (profileDigits.length === 10) {
+      setCustomerPhone((prev) => prev || profileDigits);
+    } else if (typeof window !== "undefined") {
+      const savedPhone = (localStorage.getItem("agt.last_phone") || "").replace(/\D/g, "").slice(-10);
+      if (savedPhone.length === 10) {
+        setCustomerPhone((prev) => prev || savedPhone);
+      }
+    }
+  }, [profile?.full_name, profile?.phone]);
+
+  const formErrorMsg =
+    formErrorCode === "missing_name"
+      ? lang === "hi"
+        ? "कृपया अपना पूरा नाम लिखें।"
+        : "Please enter your name."
+      : formErrorCode === "invalid_phone"
+        ? lang === "hi"
+          ? "कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।"
+          : "Please enter a valid 10-digit mobile number."
+        : formErrorCode === "missing_msg"
+          ? lang === "hi"
+            ? "कृपया अपना संदेश या सामान का विवरण लिखें।"
+            : "Please enter your message or item details."
+          : "";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !customerPhone.trim() || !message.trim()) {
-      toast.error("Please fill your name, phone number, and message");
+    setFormErrorCode(null);
+
+    if (!name.trim()) {
+      setFormErrorCode("missing_name");
+      document.getElementById("contact-name")?.focus();
+      return;
+    }
+
+    const digits = customerPhone.replace(/\D/g, "").slice(-10);
+    if (digits.length !== 10) {
+      setFormErrorCode("invalid_phone");
+      document.getElementById("contact-phone")?.focus();
+      return;
+    }
+
+    if (!message.trim()) {
+      setFormErrorCode("missing_msg");
+      document.getElementById("contact-message")?.focus();
       return;
     }
 
@@ -124,19 +173,23 @@ function ContactPage() {
     try {
       const { error } = await supabase.from("help_requests").insert({
         name: name.trim(),
-        phone: customerPhone.trim(),
+        phone: digits,
         problem_type: topic,
         message: message.trim(),
       });
 
       if (error) throw error;
       setIsSuccess(true);
-      toast.success("Help request submitted! Our store team will call you shortly.");
+      toast.success(
+        lang === "hi"
+          ? "सहायता अनुरोध भेज दिया गया है! हमारी दुकान टीम जल्द कॉल करेगी।"
+          : "Help request submitted! Our store team will call you shortly."
+      );
       setName("");
       setCustomerPhone("");
       setMessage("");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to submit request";
+      const msg = err instanceof Error ? err.message : (lang === "hi" ? "अनुरोध भेजने में समस्या आई" : "Failed to submit request");
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -167,7 +220,7 @@ function ContactPage() {
               <Phone className="size-5" />
             </div>
             <h3 className="font-sans text-base font-bold text-[#1F2A24]">
-              {lang === "hi" ? "कॉल करें" : "Call Us"}
+              {lang === "hi" ? "फोन पर बात करें" : "Talk on Phone"}
             </h3>
             <p className="text-xs text-[#66746C]">{phone}</p>
           </div>
@@ -266,20 +319,28 @@ function ContactPage() {
       </div>
 
       {/* Main Support Grid: Help Ticket + Business Hours */}
-      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         {/* Help Form */}
         <div className="card-base p-6 sm:p-8 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
-          <h2 className="font-sans text-xl font-bold text-[#1F2A24]">Send us a message</h2>
+          <h2 className="font-sans text-xl font-bold text-[#1F2A24]">
+            {lang === "hi" ? "हमें संदेश भेजें" : "Send us a message"}
+          </h2>
           <p className="mt-1 text-xs text-[#66746C]">
-            Need a product not listed on the website? Submit your request and we will arrange it.
+            {lang === "hi"
+              ? "कोई सामान वेबसाइट पर नहीं मिल रहा? अपनी लिस्ट या सवाल भेजें, हम व्यवस्था कर देंगे।"
+              : "Need a product not listed on the website? Submit your request and we will arrange it."}
           </p>
 
           {isSuccess ? (
             <div className="mt-6 rounded-xl bg-[#E8F1EC] p-6 text-center border border-[#145A45]/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
               <CheckCircle2 className="mx-auto size-8 text-[#145A45]" />
-              <h3 className="mt-2 font-bold text-[#0E3F31]">Message Received!</h3>
+              <h3 className="mt-2 font-bold text-[#0E3F31]">
+                {lang === "hi" ? "संदेश प्राप्त हुआ!" : "Message Received!"}
+              </h3>
               <p className="mt-1 text-xs text-[#66746C]">
-                We'll call you at your provided phone number shortly.
+                {lang === "hi"
+                  ? "हम जल्द ही आपके दिए गए मोबाइल नंबर पर कॉल करेंगे।"
+                  : "We'll call you at your provided phone number shortly."}
               </p>
               <Button
                 variant="outline"
@@ -287,58 +348,109 @@ function ContactPage() {
                 onClick={() => setIsSuccess(false)}
                 className="mt-4 rounded-lg text-xs border-[#145A45] text-[#0E3F31] bg-white cursor-pointer"
               >
-                Send another message
+                {lang === "hi" ? "एक और संदेश भेजें" : "Send another message"}
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <form noValidate onSubmit={handleSubmit} className="mt-6 space-y-4">
+              {formErrorMsg && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-medium text-red-700"
+                >
+                  <AlertCircle className="size-4 shrink-0 text-red-600 mt-0.5" />
+                  <span>{formErrorMsg}</span>
+                </div>
+              )}
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#1F2A24]">Your Full Name</Label>
+                  <Label htmlFor="contact-name" className="text-xs font-semibold text-[#1F2A24]">
+                    {t.name}
+                  </Label>
                   <Input
+                    id="contact-name"
+                    name="name"
+                    autoComplete="name"
                     required
-                    placeholder="e.g. Ramesh Kumar"
+                    placeholder={lang === "hi" ? "जैसे: रमेश कुमार" : "e.g. Ramesh Kumar"}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (formErrorCode === "missing_name") setFormErrorCode(null);
+                    }}
                     className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-[#1F2A24]">10-Digit Mobile Number</Label>
+                  <Label htmlFor="contact-phone" className="text-xs font-semibold text-[#1F2A24]">
+                    {lang === "hi" ? "10 अंकों का मोबाइल नंबर" : "10-Digit Mobile Number"}
+                  </Label>
                   <Input
+                    id="contact-phone"
+                    name="phone"
+                    autoComplete="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     required
                     type="tel"
-                    placeholder="9876543210"
+                    placeholder={lang === "hi" ? "10 अंकों का नंबर (जैसे 9876543210)" : "10-digit number (e.g. 9876543210)"}
                     value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                      if (formErrorCode === "invalid_phone") setFormErrorCode(null);
+                    }}
                     className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#1F2A24]">Topic / Inquiry Type</Label>
+                <Label htmlFor="contact-topic" className="text-xs font-semibold text-[#1F2A24]">
+                  {lang === "hi" ? "विषय / पूछताछ का प्रकार" : "Topic / Inquiry Type"}
+                </Label>
                 <Select value={topic} onValueChange={setTopic}>
-                  <SelectTrigger className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
+                  <SelectTrigger
+                    id="contact-topic"
+                    className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Order Inquiry">Order Inquiry / Help</SelectItem>
-                    <SelectItem value="Product Request">Request unlisted grocery item</SelectItem>
-                    <SelectItem value="Delivery Question">Delivery Area &amp; Timings</SelectItem>
-                    <SelectItem value="Store Pickup">Store Pickup Confirmation</SelectItem>
-                    <SelectItem value="Other">Other Feedback</SelectItem>
+                    <SelectItem value="Order Inquiry">
+                      {lang === "hi" ? "ऑर्डर से जुड़ी पूछताछ / सहायता" : "Order Inquiry / Help"}
+                    </SelectItem>
+                    <SelectItem value="Product Request">
+                      {lang === "hi" ? "वेबसाइट पर न मिलने वाला सामान मंगवाएं" : "Request unlisted grocery item"}
+                    </SelectItem>
+                    <SelectItem value="Delivery Question">
+                      {lang === "hi" ? "डिलीवरी क्षेत्र व समय की जानकारी" : "Delivery Area & Timings"}
+                    </SelectItem>
+                    <SelectItem value="Store Pickup">
+                      {lang === "hi" ? "दुकान से पिकअप की जानकारी" : "Store Pickup Confirmation"}
+                    </SelectItem>
+                    <SelectItem value="Other">
+                      {lang === "hi" ? "अन्य सुझाव / शिकायत" : "Other Feedback"}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-[#1F2A24]">Your Message / Item List</Label>
+                <Label htmlFor="contact-message" className="text-xs font-semibold text-[#1F2A24]">
+                  {t.message}
+                </Label>
                 <Textarea
+                  id="contact-message"
+                  name="message"
                   required
                   rows={4}
-                  placeholder="Describe your requirement or list items you need..."
+                  placeholder={
+                    lang === "hi"
+                      ? "अपनी जरूरत का विवरण या सामान की सूची लिखें..."
+                      : "Describe your requirement or list items you need..."
+                  }
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="rounded-lg text-xs border-[rgba(20,90,69,0.12)] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
@@ -350,7 +462,8 @@ function ContactPage() {
                 disabled={isSubmitting}
                 className="w-full rounded-lg bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] py-3.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] hover:from-[#0F4A38] hover:to-[#07271D] cursor-pointer"
               >
-                <Send className="mr-2 size-4" /> {isSubmitting ? "Sending..." : "Submit Inquiry"}
+                <Send className="mr-2 size-4" />
+                {isSubmitting ? (lang === "hi" ? "भेजा जा रहा है..." : "Sending...") : t.submitInquiry}
               </Button>
             </form>
           )}
@@ -360,19 +473,21 @@ function ContactPage() {
         <div className="card-base p-6 sm:p-8 space-y-6 bg-white border border-[rgba(20,90,69,0.12)] shadow-[0_2px_8px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-[#0E3F31]">
-              Store Schedule
+              {lang === "hi" ? "दुकान समय-सारणी" : "Store Schedule"}
             </span>
             <h2 className="font-sans text-xl font-bold text-[#1F2A24] mt-0.5">
-              Weekly Business Hours
+              {lang === "hi" ? "साप्ताहिक दुकान खुलने का समय" : "Weekly Business Hours"}
             </h2>
             <p className="mt-1 text-xs text-[#66746C]">
-              Current status:{" "}
-              <strong className="text-[#0E3F31]">{status.text || "Open Daily"}</strong>
+              {lang === "hi" ? "वर्तमान स्थिति:" : "Current status:"}{" "}
+              <strong className="text-[#0E3F31]">
+                {formatStatus(status) || (lang === "hi" ? "प्रतिदिन खुली है" : "Open Daily")}
+              </strong>
             </p>
           </div>
 
           <div className="divide-y divide-[#E4DFD5] text-xs">
-            {DAYS.map(({ key, label }) => {
+            {DAYS.map(({ key, labelEn, labelHi }) => {
               const h = s?.business_hours?.[key] ?? {
                 open: "07:00",
                 close: "21:00",
@@ -380,10 +495,10 @@ function ContactPage() {
               };
               return (
                 <div key={key} className="flex items-center justify-between py-2.5">
-                  <span className="font-medium text-[#1F2A24]">{label}</span>
+                  <span className="font-medium text-[#1F2A24]">{lang === "hi" ? labelHi : labelEn}</span>
                   <span className="text-[#66746C]">
                     {h.closed ? (
-                      <span className="text-red-600 font-semibold">Closed</span>
+                      <span className="text-red-600 font-semibold">{lang === "hi" ? "बंद" : "Closed"}</span>
                     ) : (
                       `${h.open} – ${h.close}`
                     )}

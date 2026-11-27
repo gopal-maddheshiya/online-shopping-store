@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL } from "@/lib/site-config";
 
 export type Profile = {
   id: string;
@@ -30,7 +31,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export async function signInWithGoogle(redirectTo?: string): Promise<{ error: Error | null }> {
   try {
     const targetUrl =
-      redirectTo || (typeof window !== "undefined" ? window.location.href : "http://localhost:5173/account");
+      redirectTo || (typeof window !== "undefined" ? window.location.href : `${SITE_URL}/account`);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

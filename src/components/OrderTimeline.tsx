@@ -1,9 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, Package, Truck, Check, XCircle, Store } from "lucide-react";
 import {
   ORDER_STATUS_FLOW_DELIVERY,
   ORDER_STATUS_FLOW_PICKUP,
   getOrderStatusLabel,
 } from "@/lib/format";
+import { settingsQuery } from "@/lib/queries";
 import { useLanguage } from "@/lib/i18n";
 
 export type OrderTimelineProps = {
@@ -24,6 +26,8 @@ const STEP_ICONS: Record<string, typeof Package> = {
 
 export function OrderTimeline({ currentStatus, orderType = "delivery", events }: OrderTimelineProps) {
   const { lang, language = lang } = useLanguage();
+  const { data: settings } = useQuery(settingsQuery);
+  const storePhone = settings?.phone ?? "+91 6388354988";
   const isCancelled = currentStatus === "cancelled" || currentStatus === "rejected";
   const isReturned = currentStatus === "returned";
 
@@ -39,8 +43,8 @@ export function OrderTimeline({ currentStatus, orderType = "delivery", events }:
         </h4>
         <p className="mt-1 text-xs text-muted-foreground">
           {language === "hi"
-            ? "यदि इस रद्दीकरण के संबंध में आपका कोई प्रश्न है, तो कृपया अरुण गोपाल ट्रेडर्स से +91 6388354988 पर संपर्क करें।"
-            : "If you have questions regarding this cancellation, please contact Arun गोपाल Traders at +91 6388354988."}
+            ? `यदि इस रद्दीकरण के संबंध में आपका कोई प्रश्न है, तो कृपया अरुण गोपाल ट्रेडर्स से ${storePhone} पर संपर्क करें।`
+            : `If you have questions regarding this cancellation, please contact Arun Gopal Traders at ${storePhone}.`}
         </p>
       </div>
     );
@@ -49,9 +53,12 @@ export function OrderTimeline({ currentStatus, orderType = "delivery", events }:
   // Calculate current index in the active flow
   let currentIndex = (statusFlow as readonly string[]).indexOf(currentStatus);
   if (currentIndex === -1) {
-    // Fallback if status is out_for_delivery on a pickup order
-    if (currentStatus === "out_for_delivery") currentIndex = 3;
-    else currentIndex = 0;
+    if (currentStatus === "out_for_delivery" && isPickup) {
+      const readyIdx = (statusFlow as readonly string[]).indexOf("ready");
+      currentIndex = readyIdx >= 0 ? readyIdx : 0;
+    } else {
+      currentIndex = 0;
+    }
   }
 
   return (

@@ -219,12 +219,12 @@
     color: #18221d;
   }
 
-  /* Line-Clamp Headroom Safety so top vowel marks never get sliced off */
+  /* Line-Clamp Headroom Safety: top clearance protects Devanagari ascenders without exposing clamped line 3 */
   .line-clamp-1,
   .line-clamp-2,
   .line-clamp-3 {
     padding-top: 2px;
-    padding-bottom: 2px;
+    padding-bottom: 0;
   }
 }
 
@@ -795,4 +795,10 @@ html.lenis body {
 .variant-dropdown-animated[data-state="closed"] {
   opacity: 0;
   transition: opacity 0.08s ease-out;
+}
+
+input,
+select,
+textarea {
+  scroll-margin-top: 8.5rem;
 }

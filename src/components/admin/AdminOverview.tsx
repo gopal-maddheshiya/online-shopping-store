@@ -22,7 +22,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { inr, formatDate, ORDER_STATUS_LABEL, telHref } from "@/lib/format";
+import { inr, formatDate, getOrderStatusLabel, telHref } from "@/lib/format";
 import type { Order, Product } from "@/lib/queries";
 
 type AdminOverviewProps = {
@@ -40,10 +40,20 @@ export function AdminOverview({
   onNavigateTab,
   onOpenAddProduct,
 }: AdminOverviewProps) {
-  // Compute analytics
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayOrders = orders.filter((o) => o.created_at.startsWith(todayStr));
-  const todaySales = todayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+  // Compute analytics in Asia/Kolkata timezone
+  const toIstDateKey = (input: string | Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(typeof input === "string" ? new Date(input) : input);
+
+  const todayStr = toIstDateKey(new Date());
+  const todayOrders = orders.filter((o) => toIstDateKey(o.created_at) === todayStr);
+  const todaySales = todayOrders
+    .filter((o) => o.status !== "cancelled" && o.status !== "rejected")
+    .reduce((sum, o) => sum + Number(o.total || 0), 0);
 
   const pendingOrders = orders.filter((o) =>
     ["placed", "confirmed", "preparing", "ready", "out_for_delivery"].includes(o.status),
@@ -76,18 +86,21 @@ export function AdminOverview({
     });
   });
 
-  // Recent 7 days chart data
+  // Recent 7 days chart data (IST dates, excluding cancelled & rejected)
   const daysData = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    const dStr = d.toISOString().slice(0, 10);
+    const dStr = toIstDateKey(d);
     const dayOrders = orders.filter(
-      (o) => o.created_at.startsWith(dStr) && o.status !== "cancelled",
+      (o) =>
+        toIstDateKey(o.created_at) === dStr &&
+        o.status !== "cancelled" &&
+        o.status !== "rejected",
     );
     const sales = dayOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
     return {
-      day: d.toLocaleDateString("en-IN", { weekday: "short" }),
-      date: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+      day: d.toLocaleDateString("en-IN", { weekday: "short", timeZone: "Asia/Kolkata" }),
+      date: d.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }),
       sales,
       orders: dayOrders.length,
     };
@@ -423,7 +436,11 @@ export function AdminOverview({
                       </p>
                     </div>
                     <span className="rounded-full bg-[#145A45]/10 px-2 py-0.5 text-[10px] font-bold text-[#145A45]">
-                      {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                      {getOrderStatusLabel(
+                        order.status,
+                        "en",
+                        order.order_type === "pickup" ? "pickup" : "delivery",
+                      )}
                     </span>
                   </div>
 
@@ -480,7 +497,11 @@ export function AdminOverview({
                       <td className="py-2.5 px-3 font-bold text-[#1F2924]">{inr(order.total)}</td>
                       <td className="py-2.5 px-3">
                         <span className="inline-block rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#145A45]">
-                          {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                          {getOrderStatusLabel(
+                            order.status,
+                            "en",
+                            order.order_type === "pickup" ? "pickup" : "delivery",
+                          )}
                         </span>
                       </td>
                       <td className="py-2.5 pl-3 text-right">

@@ -35,14 +35,13 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { broadcastSettingsSync } from "@/lib/realtime-sync";
-import type { StoreSettings } from "@/lib/queries";
+import { storeSecretsQuery, type StoreSettings } from "@/lib/queries";
 import { generateUpiUri, generateQrCodeUrl } from "@/lib/payment-gateway";
 import { inr } from "@/lib/format";
 import { compressAndOptimizeImage } from "@/lib/image-upload";
 import { HeroImageUploader } from "@/components/admin/HeroImageUploader";
-import { DEFAULT_TELEGRAM_BOT_TOKEN, DEFAULT_TELEGRAM_CHAT_ID } from "@/lib/notifications";
 import { isOrderSoundEnabled, setOrderSoundEnabled, playNewOrderChime } from "@/lib/sound";
 
 type AdminSettingsProps = {
@@ -119,9 +118,10 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
   const [razorpayKeyId, setRazorpayKeyId] = useState("");
   const [testQrCopied, setTestQrCopied] = useState(false);
 
-  // Telegram Order Alerts Configuration
-  const [telegramBotToken, setTelegramBotToken] = useState(DEFAULT_TELEGRAM_BOT_TOKEN);
-  const [telegramChatId, setTelegramChatId] = useState(DEFAULT_TELEGRAM_CHAT_ID);
+  // Telegram Order Alerts Configuration (stored privately in admin-only store_secrets table)
+  const { data: secrets } = useQuery(storeSecretsQuery(true));
+  const [telegramBotToken, setTelegramBotToken] = useState("");
+  const [telegramChatId, setTelegramChatId] = useState("");
   const [isTestingTelegram, setIsTestingTelegram] = useState(false);
 
   // Web Counter Sound Alert Configuration
@@ -159,30 +159,18 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         return { ...old, [field]: url };
       });
 
-      await supabase
+      const { error } = await supabase
         .from("store_settings")
-        .upsert({ id: 1, [field]: url } as never, { onConflict: "id" });
+        .update({ [field]: url } as never)
+        .eq("id", 1);
 
-      const supabaseUrl = import.meta.env["VITE_SUPABASE_URL"] || "https://rvpskkgrobztgcfznawl.supabase.co";
-      const supabaseKey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2cHNra2dyb2J6dGdjZnpuYXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NDc0MzAsImV4cCI6MjEwMzQyMzQzMH0.FCO6H2AWcHQ_QznsOVBsAuJxOUjMLs_qTjvrnsCxK4k";
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-
-      await fetch(`${supabaseUrl}/rest/v1/store_settings?id=eq.1`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": supabaseKey,
-          "Authorization": `Bearer ${accessToken || supabaseKey}`,
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({ [field]: url }),
-      });
+      if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
       return true;
     } catch (err) {
       console.error(`Hero image ${field} save error:`, err);
+      toast.error("फोटो सेव करने के लिए Admin लॉगिन आवश्यक है।");
       return false;
     }
   }
@@ -242,10 +230,19 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
       setQrCodeMode(settings.qr_code_mode ?? "dynamic");
       setQrCustomNote(settings.qr_custom_note ?? "Arun Gopal Traders Grocery Order");
       setRazorpayKeyId(settings.razorpay_key_id ?? "");
-      setTelegramBotToken(settings.telegram_bot_token || DEFAULT_TELEGRAM_BOT_TOKEN);
-      setTelegramChatId(settings.telegram_chat_id || DEFAULT_TELEGRAM_CHAT_ID);
     }
   }, [settings]);
+
+  useEffect(() => {
+    if (secrets) {
+      setBankAccountHolder(secrets.bank_account_holder ?? "");
+      setBankName(secrets.bank_name ?? "");
+      setBankAccountNumber(secrets.bank_account_number ?? "");
+      setBankIfsc(secrets.bank_ifsc ?? "");
+      setTelegramBotToken(secrets.telegram_bot_token ?? "");
+      setTelegramChatId(secrets.telegram_chat_id ?? "");
+    }
+  }, [secrets]);
 
   function togglePaymentMethod(methodKey: string) {
     setEnabledPaymentMethods((prev) =>
@@ -309,15 +306,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         upi_vpa: upiVpa.trim() || "6388354988@okbizaxis",
         upi_merchant_name: upiMerchantName.trim() || "Arun Gopal Traders",
         upi_registered_phone: upiRegisteredPhone.trim() || "6388354988",
-        bank_account_holder: bankAccountHolder.trim() || null,
-        bank_name: bankName.trim() || null,
-        bank_account_number: bankAccountNumber.trim() || null,
-        bank_ifsc: bankIfsc.trim().toUpperCase() || null,
         qr_code_mode: qrCodeMode.trim() || "dynamic",
         qr_custom_note: qrCustomNote.trim() || "Arun Gopal Traders Grocery Order",
         razorpay_key_id: razorpayKeyId.trim() || null,
-        telegram_bot_token: telegramBotToken.trim() || DEFAULT_TELEGRAM_BOT_TOKEN,
-        telegram_chat_id: telegramChatId.trim() || DEFAULT_TELEGRAM_CHAT_ID,
       };
 
       let { error } = await supabase
@@ -325,15 +316,7 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
         .update(updatePayload as never)
         .eq("id", 1);
 
-      // Graceful fallback if telegram columns, delivery_enabled or announcement_hi column is not yet created in Supabase
-      if (
-        error &&
-        (error.message?.includes("telegram") ||
-          error.message?.includes("delivery_enabled") ||
-          error.message?.includes("announcement_hi"))
-      ) {
-        if (error.message?.includes("telegram_bot_token")) delete updatePayload["telegram_bot_token"];
-        if (error.message?.includes("telegram_chat_id")) delete updatePayload["telegram_chat_id"];
+      if (error && (error.message?.includes("delivery_enabled") || error.message?.includes("announcement_hi"))) {
         if (error.message?.includes("delivery_enabled")) delete updatePayload["delivery_enabled"];
         if (error.message?.includes("announcement_hi")) delete updatePayload["announcement_hi"];
         const fallbackRes = await supabase
@@ -341,14 +324,31 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
           .update(updatePayload as never)
           .eq("id", 1);
         error = fallbackRes.error;
-        if (!error) {
-          toast.info("Settings saved! (Telegram alerts active using configured credentials).");
-        }
       }
 
       if (error) throw error;
+
+      // Save sensitive credentials strictly to admin-only store_secrets table
+      const { error: secretsError } = await supabase
+        .from("store_secrets" as never)
+        .upsert(
+          {
+            id: 1,
+            bank_account_holder: bankAccountHolder.trim() || null,
+            bank_name: bankName.trim() || null,
+            bank_account_number: bankAccountNumber.trim() || null,
+            bank_ifsc: bankIfsc.trim().toUpperCase() || null,
+            telegram_bot_token: telegramBotToken.trim() || null,
+            telegram_chat_id: telegramChatId.trim() || null,
+            updated_at: new Date().toISOString(),
+          } as never,
+          { onConflict: "id" },
+        );
+      if (secretsError) throw secretsError;
+
       toast.success("Store settings updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["store-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["store-secrets"] });
       broadcastSettingsSync();
       onRefresh();
     } catch (err: unknown) {
@@ -403,8 +403,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
             <div className="grid gap-3 sm:grid-cols-2 pt-1">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Store Name</Label>
+                <Label htmlFor="setting-store-name" className="text-xs font-semibold text-[#1F2924]">Store Name</Label>
                 <Input
+                  id="setting-store-name"
                   required
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
@@ -413,8 +414,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Store Tagline / Slogan</Label>
+                <Label htmlFor="setting-tagline" className="text-xs font-semibold text-[#1F2924]">Store Tagline / Slogan</Label>
                 <Input
+                  id="setting-tagline"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   className="rounded-xl border-[#E8E4DA] text-xs h-9"
@@ -422,8 +424,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Primary Phone Number</Label>
+                <Label htmlFor="setting-phone" className="text-xs font-semibold text-[#1F2924]">Primary Phone Number</Label>
                 <Input
+                  id="setting-phone"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -432,10 +435,11 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">
+                <Label htmlFor="setting-whatsapp" className="text-xs font-semibold text-[#1F2924]">
                   WhatsApp Number (with country code, no +)
                 </Label>
                 <Input
+                  id="setting-whatsapp"
                   required
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
@@ -444,8 +448,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Store Email</Label>
+                <Label htmlFor="setting-email" className="text-xs font-semibold text-[#1F2924]">Store Email</Label>
                 <Input
+                  id="setting-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -454,8 +459,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Physical Store Address</Label>
+                <Label htmlFor="setting-address" className="text-xs font-semibold text-[#1F2924]">Physical Store Address</Label>
                 <Input
+                  id="setting-address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="rounded-xl border-[#E8E4DA] text-xs h-9"
@@ -463,8 +469,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Google Maps URL / Location Link</Label>
+                <Label htmlFor="setting-maps-link" className="text-xs font-semibold text-[#1F2924]">Google Maps URL / Location Link</Label>
                 <Input
+                  id="setting-maps-link"
                   value={mapsLink}
                   onChange={(e) => setMapsLink(e.target.value)}
                   className="rounded-xl font-mono text-xs border-[#E8E4DA] h-9"
@@ -1000,8 +1007,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Account Holder Name</Label>
+                <Label htmlFor="setting-bank-holder" className="text-xs font-semibold text-[#1F2924]">Account Holder Name</Label>
                 <Input
+                  id="setting-bank-holder"
                   value={bankAccountHolder}
                   onChange={(e) => setBankAccountHolder(e.target.value)}
                   placeholder="e.g. Arun Gopal Traders"
@@ -1010,8 +1018,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Bank Name</Label>
+                <Label htmlFor="setting-bank-name" className="text-xs font-semibold text-[#1F2924]">Bank Name</Label>
                 <Input
+                  id="setting-bank-name"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   placeholder="e.g. State Bank of India"
@@ -1020,8 +1029,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Account Number</Label>
+                <Label htmlFor="setting-bank-account" className="text-xs font-semibold text-[#1F2924]">Account Number</Label>
                 <Input
+                  id="setting-bank-account"
                   value={bankAccountNumber}
                   onChange={(e) => setBankAccountNumber(e.target.value)}
                   placeholder="e.g. 123456789012"
@@ -1030,8 +1040,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">IFSC Code</Label>
+                <Label htmlFor="setting-bank-ifsc" className="text-xs font-semibold text-[#1F2924]">IFSC Code</Label>
                 <Input
+                  id="setting-bank-ifsc"
                   value={bankIfsc}
                   onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
                   placeholder="e.g. SBIN0001234"
@@ -1059,8 +1070,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Business Legal Name</Label>
+                <Label htmlFor="setting-legal-name" className="text-xs font-semibold text-[#1F2924]">Business Legal Name</Label>
                 <Input
+                  id="setting-legal-name"
                   value={legalName}
                   onChange={(e) => setLegalName(e.target.value)}
                   placeholder="e.g. Arun Gopal Traders"
@@ -1069,10 +1081,11 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">
+                <Label htmlFor="setting-gstin" className="text-xs font-semibold text-[#1F2924]">
                   GSTIN (Optional / वैकल्पिक)
                 </Label>
                 <Input
+                  id="setting-gstin"
                   value={gstin}
                   onChange={(e) => setGstin(e.target.value.toUpperCase())}
                   placeholder="e.g. 09ABCDE1234F1Z5"
@@ -1081,8 +1094,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Store State</Label>
+                <Label htmlFor="setting-state" className="text-xs font-semibold text-[#1F2924]">Store State</Label>
                 <Input
+                  id="setting-state"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
                   placeholder="Uttar Pradesh"
@@ -1091,8 +1105,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">State Code (e.g. 09 for UP)</Label>
+                <Label htmlFor="setting-state-code" className="text-xs font-semibold text-[#1F2924]">State Code (e.g. 09 for UP)</Label>
                 <Input
+                  id="setting-state-code"
                   value={stateCode}
                   onChange={(e) => setStateCode(e.target.value)}
                   placeholder="09"
@@ -1101,8 +1116,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Invoice Number Prefix</Label>
+                <Label htmlFor="setting-invoice-prefix" className="text-xs font-semibold text-[#1F2924]">Invoice Number Prefix</Label>
                 <Input
+                  id="setting-invoice-prefix"
                   value={invoicePrefix}
                   onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
                   placeholder="AGT-INV"
@@ -1111,8 +1127,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-[#1F2924]">Default Tax Rate (% if enabled)</Label>
+                <Label htmlFor="setting-tax-rate" className="text-xs font-semibold text-[#1F2924]">Default Tax Rate (% if enabled)</Label>
                 <Input
+                  id="setting-tax-rate"
                   type="number"
                   min="0"
                   max="28"
@@ -1142,8 +1159,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Invoice Footer Note (धन्यवाद संदेश)</Label>
+              <Label htmlFor="setting-footer-note" className="text-xs font-semibold text-[#1F2924]">Invoice Footer Note (धन्यवाद संदेश)</Label>
               <Input
+                id="setting-footer-note"
                 value={invoiceFooterNote}
                 onChange={(e) => setInvoiceFooterNote(e.target.value)}
                 className="rounded-xl border-[#E8E4DA] text-xs h-9"
@@ -1151,8 +1169,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-semibold text-[#1F2924]">Terms &amp; Return Policy (बिल की शर्तें)</Label>
+              <Label htmlFor="setting-terms" className="text-xs font-semibold text-[#1F2924]">Terms &amp; Return Policy (बिल की शर्तें)</Label>
               <Textarea
+                id="setting-terms"
                 rows={3}
                 value={termsAndConditions}
                 onChange={(e) => setTermsAndConditions(e.target.value)}
@@ -1194,8 +1213,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
 
             <div className="grid gap-3 sm:grid-cols-2 pt-1">
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Telegram Bot API Token</Label>
+                <Label htmlFor="setting-telegram-token" className="text-xs font-semibold text-[#1F2924]">Telegram Bot API Token</Label>
                 <Input
+                  id="setting-telegram-token"
                   type="password"
                   value={telegramBotToken}
                   onChange={(e) => setTelegramBotToken(e.target.value)}
@@ -1205,8 +1225,9 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
               </div>
 
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-xs font-semibold text-[#1F2924]">Telegram Chat ID / Group ID</Label>
+                <Label htmlFor="setting-telegram-chat-id" className="text-xs font-semibold text-[#1F2924]">Telegram Chat ID / Group ID</Label>
                 <Input
+                  id="setting-telegram-chat-id"
                   value={telegramChatId}
                   onChange={(e) => setTelegramChatId(e.target.value)}
                   placeholder="123456789"
@@ -1225,18 +1246,19 @@ export function AdminSettings({ settings, onRefresh }: AdminSettingsProps) {
                 onClick={async () => {
                   setIsTestingTelegram(true);
                   try {
-                    const token = telegramBotToken.trim();
-                    const chatId = telegramChatId.trim();
                     const testText = `🔔 *परीक्षण सूचना • अरुण गोपाल ट्रेडर्स*\n\nआपका टेलीग्राम ऑर्डर अलर्ट सिस्टम सक्रिय है! नया ऑर्डर आने पर तुरंत यहाँ सूचना भेजी जाएगी। 🚀`;
-                    
-                    const body: { message: string; token?: string; chatId?: string } = { message: testText };
-                    if (token) body.token = token;
-                    if (chatId) body.chatId = chatId;
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    const tokenHeader = sessionData.session?.access_token
+                      ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+                      : {};
 
                     const res = await fetch("/api/notify/telegram", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(body),
+                      headers: {
+                        "Content-Type": "application/json",
+                        ...tokenHeader,
+                      },
+                      body: JSON.stringify({ action: "test", message: testText }),
                     });
                     const data = await res.json();
                     if (data.success) {

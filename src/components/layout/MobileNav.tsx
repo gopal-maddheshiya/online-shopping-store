@@ -109,13 +109,19 @@ export function MobileNav() {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setHasLocalPhone(Boolean(localStorage.getItem("agt.last_phone")));
-    }
-  }, []);
+    if (typeof window === "undefined") return;
+    const syncPhone = () => setHasLocalPhone(Boolean(localStorage.getItem("agt.last_phone")));
+    syncPhone();
+    window.addEventListener("storage", syncPhone);
+    window.addEventListener("agt:phone-updated", syncPhone);
+    return () => {
+      window.removeEventListener("storage", syncPhone);
+      window.removeEventListener("agt:phone-updated", syncPhone);
+    };
+  }, [currentPath]);
 
-  // Don't show mobile bottom nav on admin workspace
-  if (currentPath.startsWith("/admin")) {
+  // Don't show mobile bottom nav on admin workspace or focused checkout flow
+  if (currentPath.startsWith("/admin") || currentPath === "/checkout") {
     return null;
   }
 

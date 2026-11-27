@@ -3,7 +3,7 @@ import { Search, Phone, Mail, ShoppingBag, Eye, Calendar, IndianRupee, Users } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { inr, formatDate, telHref, ORDER_STATUS_LABEL } from "@/lib/format";
+import { inr, formatDate, telHref, getOrderStatusLabel } from "@/lib/format";
 import type { Order } from "@/lib/queries";
 
 type AdminCustomersProps = {
@@ -30,10 +30,12 @@ export function AdminCustomers({ orders, onSelectOrder }: AdminCustomersProps) {
 
   orders.forEach((o) => {
     const cleanPhone = o.customer_phone.replace(/\D/g, "").slice(-10);
+    const isBillable = o.status !== "cancelled" && o.status !== "rejected";
+    const orderSpend = isBillable ? Number(o.total || 0) : 0;
     const existing = customersMap.get(cleanPhone);
     if (existing) {
       existing.orders.push(o);
-      existing.totalSpend += Number(o.total || 0);
+      existing.totalSpend += orderSpend;
       if (new Date(o.created_at) > new Date(existing.lastOrderDate)) {
         existing.lastOrderDate = o.created_at;
         existing.name = o.customer_name;
@@ -45,7 +47,7 @@ export function AdminCustomers({ orders, onSelectOrder }: AdminCustomersProps) {
         name: o.customer_name,
         email: o.customer_email,
         orders: [o],
-        totalSpend: Number(o.total || 0),
+        totalSpend: orderSpend,
         lastOrderDate: o.created_at,
       });
     }
@@ -240,7 +242,11 @@ export function AdminCustomers({ orders, onSelectOrder }: AdminCustomersProps) {
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-[#1F2924]">{order.order_no}</span>
                       <span className="rounded-full bg-[#145A45]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
-                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                        {getOrderStatusLabel(
+                          order.status,
+                          "en",
+                          order.order_type === "pickup" ? "pickup" : "delivery",
+                        )}
                       </span>
                     </div>
 

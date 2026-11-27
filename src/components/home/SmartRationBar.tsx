@@ -188,7 +188,7 @@ export function SmartRationBar({ onOpenModal }: SmartRationBarProps) {
                 </p>
                 <p className="text-[11px] sm:text-xs text-[#3D4841] leading-relaxed mt-0.5">
                   {lang === "hi"
-                    ? "पूरा सामान कार्ट में जुड़ जाएगा। घर बैठे होम डिलीवरी पाएं या दुकान से सीधा पिकअप लें।"
+                    ? "पूरा सामान थैले में जुड़ जाएगा। घर बैठे होम डिलीवरी पाएं या दुकान से सीधा पिकअप लें।"
                     : "Review your items and checkout with fast home delivery or in-store pickup."}
                 </p>
               </div>

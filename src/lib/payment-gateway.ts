@@ -169,7 +169,14 @@ export async function verifyHmacSha256(
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    return expectedSignature.toLowerCase() === signature.trim().toLowerCase();
+    const a = expectedSignature.toLowerCase();
+    const b = signature.trim().toLowerCase();
+    if (a.length !== b.length) return false;
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) {
+      diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return diff === 0;
   } catch (err) {
     console.error("HMAC verification error:", err);
     return false;
@@ -215,8 +222,7 @@ export async function recordPaymentAttemptOnServer(params: {
 }
 
 /**
- * 7. Server-Side Verification Endpoint Caller
- * Sends transaction proof to secure verification procedure
+ * 7. Server-Side Verification Endpoint Caller (Fail-Closed — never trusts client RPC fallback)
  */
 export async function verifyPaymentWithServer(params: {
   orderId: string;
@@ -234,69 +240,67 @@ export async function verifyPaymentWithServer(params: {
   error?: string;
 }> {
   try {
-    // 1. Primary: Call backend API route if available
-    try {
-      const apiRes = await fetch("/api/payment/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      });
-
-      if (apiRes.ok) {
-        const apiData = (await apiRes.json()) as { success?: boolean; alreadyPaid?: boolean; transactionId?: string };
-        if (apiData.success) {
-          const resObj: { success: boolean; alreadyPaid?: boolean; transactionId?: string } = {
-            success: true,
-          };
-          if (apiData.alreadyPaid !== undefined) resObj.alreadyPaid = apiData.alreadyPaid;
-          if (apiData.transactionId || params.gatewayPaymentId) {
-            resObj.transactionId = apiData.transactionId || params.gatewayPaymentId;
-          }
-          return resObj;
-        }
-      }
-    } catch {
-      // Fall through to database procedure verification
-    }
-
-    // 2. Authoritative Database Verification Procedure
-    const { data, error } = await (supabase.rpc as Function)("verify_and_confirm_payment", {
-      p_order_id: params.orderId,
-      p_gateway_order_id: params.gatewayOrderId,
-      p_gateway_payment_id: params.gatewayPaymentId,
-      p_signature: params.signature,
-      p_amount: params.amount,
-      p_method: params.paymentMethod,
-      p_metadata: params.metadata || {},
+    const apiRes = await fetch("/api/payment/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
     });
 
-    if (error) throw error;
-
-    const res = data as {
+    const apiData = (await apiRes.json()) as {
       success?: boolean;
-      already_paid?: boolean;
-      transaction_id?: string;
+      alreadyPaid?: boolean;
+      transactionId?: string;
       error?: string;
-    } | null;
+    };
 
-    if (!res?.success) {
-      throw new Error(res?.error || "Payment verification failed on server");
+    if (!apiRes.ok || !apiData.success) {
+      throw new Error(apiData.error || "Payment verification failed on server");
     }
 
-    const output: { success: boolean; alreadyPaid?: boolean; transactionId?: string } = {
+    const resObj: { success: boolean; alreadyPaid?: boolean; transactionId?: string } = {
       success: true,
     };
-    if (res.already_paid !== undefined) output.alreadyPaid = res.already_paid;
-    if (res.transaction_id || params.gatewayPaymentId) {
-      output.transactionId = res.transaction_id || params.gatewayPaymentId;
+    if (apiData.alreadyPaid !== undefined) resObj.alreadyPaid = apiData.alreadyPaid;
+    if (apiData.transactionId || params.gatewayPaymentId) {
+      resObj.transactionId = apiData.transactionId || params.gatewayPaymentId;
     }
-
-    return output;
+    return resObj;
   } catch (err: unknown) {
     console.error("Payment verification failure:", err);
     return {
       success: false,
       error: err instanceof Error ? err.message : "Payment verification failed",
+    };
+  }
+}
+
+/**
+ * 7b. Customer self-attestation for direct UPI/QR transfers (records claim & optional UTR,
+ * keeps payment_status='pending' until verified by store admin).
+ */
+export async function claimUpiPaymentOnServer(params: {
+  orderId: string;
+  phone: string;
+  method: "upi" | "qr";
+  utrRef?: string | undefined;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await (supabase.rpc as Function)("claim_upi_payment_submitted", {
+      p_order_id: params.orderId,
+      p_phone: params.phone,
+      p_method: params.method,
+      p_utr_ref: params.utrRef?.trim() || null,
+    });
+    if (error) throw error;
+    const res = data as { success?: boolean; error?: string } | null;
+    if (!res?.success) {
+      return { success: false, error: res?.error || "Could not record UPI claim" };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Could not record UPI claim",
     };
   }
 }

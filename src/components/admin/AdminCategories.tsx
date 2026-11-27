@@ -76,7 +76,7 @@ export function AdminCategories({
   const [nameHi, setNameHi] = useState("");
   const [slug, setSlug] = useState("");
   const [icon, setIcon] = useState("🛒");
-  const [imageUrl, setImageUrl] = useState("/images/packaged.jpg");
+  const [imageUrl, setImageUrl] = useState("");
   const [selectedHeadingId, setSelectedHeadingId] = useState<string>("food");
   const [sortOrder, setSortOrder] = useState(0);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
@@ -123,7 +123,7 @@ export function AdminCategories({
     setNameHi("");
     setSlug("");
     setIcon("🛒");
-    setImageUrl("/images/packaged.jpg");
+    setImageUrl("");
     setSelectedHeadingId(targetHeadingId || headings[0]?.id || "food");
     setSortOrder(categories.length);
     setIsCategoryModalOpen(true);
@@ -135,7 +135,7 @@ export function AdminCategories({
     setNameHi(cat.name_hi || "");
     setSlug(cat.slug);
     setIcon(cat.icon ?? "🛒");
-    setImageUrl(cat.image_url ?? "/images/packaged.jpg");
+    setImageUrl(cat.image_url ?? "");
     setSelectedHeadingId(getCategoryHeadingId(cat.slug));
     setSortOrder(cat.sort_order || 0);
     setIsCategoryModalOpen(true);
@@ -173,7 +173,7 @@ export function AdminCategories({
         name_hi: nameHi.trim() || null,
         slug: slug.trim(),
         icon: icon.trim() || "🛒",
-        image_url: imageUrl.trim() || "/images/packaged.jpg",
+        image_url: imageUrl.trim() || null,
         parent_id: null,
         sort_order: sortOrder,
         is_active: true,
@@ -271,7 +271,10 @@ export function AdminCategories({
             icon: headingIcon.trim() || "📦",
             sort_order: headingSortOrder,
           };
-          await saveCategoryHeadings(currentList);
+          const saved = await saveCategoryHeadings(currentList);
+          if (!saved) {
+            throw new Error("Supabase save failed");
+          }
           setHeadings(currentList);
           queryClient.setQueryData(["store-settings"], (old: any) =>
             old ? { ...old, category_headings: currentList } : old,
@@ -292,7 +295,10 @@ export function AdminCategories({
           slugs: [],
         };
         currentList.push(newHeading);
-        await saveCategoryHeadings(currentList);
+        const saved = await saveCategoryHeadings(currentList);
+        if (!saved) {
+          throw new Error("Supabase save failed");
+        }
         setHeadings(currentList);
         queryClient.setQueryData(["store-settings"], (old: any) =>
           old ? { ...old, category_headings: currentList } : old,
@@ -324,7 +330,9 @@ export function AdminCategories({
     if (currentList[0] && h.slugs.length > 0) {
       currentList[0].slugs = Array.from(new Set([...currentList[0].slugs, ...h.slugs]));
     }
-    saveCategoryHeadings(currentList);
+    void saveCategoryHeadings(currentList).then((ok) => {
+      if (!ok) toast.error("डेटाबेस में हेडिंग अपडेट नहीं हो सकी");
+    });
     setHeadings(currentList);
     toast.success(`हेडिंग "${h.title_hi}" हटा दी गई`);
   }
@@ -435,14 +443,20 @@ export function AdminCategories({
                   className="group rounded-2xl border border-amber-200 bg-white p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
                 >
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
-                    <img
-                      src={cat.image_url || "/images/packaged.jpg"}
-                      alt={primaryName ?? ""}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                      }}
-                    />
+                    {cat.image_url ? (
+                      <img
+                        src={cat.image_url}
+                        alt={primaryName ?? ""}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <span className="text-3xl" aria-hidden="true">
+                        {cat.icon || "🛒"}
+                      </span>
+                    )}
                   </div>
 
                   <div className="text-center min-w-0 px-0.5 space-y-0.5 flex-1 flex flex-col justify-center">
@@ -597,14 +611,20 @@ export function AdminCategories({
                       >
                         {/* Thumbnail */}
                         <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-[#FAF8F2] border border-[#E8E4DA]/70 mb-2 p-2 flex items-center justify-center">
-                          <img
-                            src={cat.image_url || "/images/packaged.jpg"}
-                            alt={primaryName ?? ""}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/images/packaged.jpg";
-                            }}
-                          />
+                          {cat.image_url ? (
+                            <img
+                              src={cat.image_url}
+                              alt={primaryName ?? ""}
+                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-3xl" aria-hidden="true">
+                              {cat.icon || "🛒"}
+                            </span>
+                          )}
                           {cat.icon && (
                             <span className="absolute top-1.5 left-1.5 text-xs bg-white/90 backdrop-blur-xs rounded-md size-5 flex items-center justify-center shadow-2xs border border-[#E8E4DA]/60">
                               {cat.icon}
@@ -820,7 +840,7 @@ export function AdminCategories({
                     alt="Preview"
                     className="w-full h-full object-contain rounded-lg"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = "/images/packaged.jpg";
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 </div>

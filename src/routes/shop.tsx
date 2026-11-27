@@ -141,9 +141,14 @@ const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
   "stationery": "agarbatti",
   "pots-cceaners": "pots-cleaners",
   "flour-atta": "atta-flour",
+  "atta-flour-grains": "atta-flour",
   "rice-grains": "rice",
+  "salt-sugar-jaggery": "salt-sugar",
+  "sugar-salt": "salt-sugar",
   "cleaning-supplies": "household-cleaning",
   "snacks-namkeen": "namkeen-snacks",
+  "puja-samagri": "dhoop-batti",
+  "pooja-items": "dhoop-batti",
 };
 
 function RailCategoryThumbnail({
@@ -205,16 +210,22 @@ function Shop() {
     setDisplayLimit(16);
   }, [search.category, search.subcategory, search.q, search.sort, search.min, search.max, search.instock]);
 
-  // Auto-redirect legacy mismatched slugs (e.g. pet-supplies -> dhoop-batti)
+  // Auto-redirect legacy mismatched slugs only when not an active category slug
   useEffect(() => {
-    if (search.category && LEGACY_CATEGORY_REDIRECTS[search.category]) {
+    if (
+      search.category &&
+      categories &&
+      categories.length > 0 &&
+      !categories.some((c) => c.slug === search.category) &&
+      LEGACY_CATEGORY_REDIRECTS[search.category]
+    ) {
       const target = LEGACY_CATEGORY_REDIRECTS[search.category];
       void navigate({
         search: (prev) => ({ ...prev, category: target }),
         replace: true,
       });
     }
-  }, [search.category, navigate]);
+  }, [search.category, categories, navigate]);
 
   // Dynamic Headings & Database Categories (synchronized with Homepage & Supabase store_settings)
   const [headings, setHeadings] = useState<CategoryHeading[]>(() =>
@@ -453,6 +464,8 @@ function Shop() {
         </h3>
         <div className="flex items-center gap-2">
           <Input
+            id="shop-min-price"
+            name="min_price"
             type="number"
             inputMode="numeric"
             placeholder={t.minPricePlaceholder}
@@ -462,6 +475,8 @@ function Shop() {
           />
           <span className="text-[#3D4C44]">–</span>
           <Input
+            id="shop-max-price"
+            name="max_price"
             type="number"
             inputMode="numeric"
             placeholder={t.maxPricePlaceholder}

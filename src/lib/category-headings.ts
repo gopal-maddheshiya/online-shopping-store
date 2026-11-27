@@ -93,7 +93,7 @@ export function getCategoryHeadings(fromDb?: CategoryHeading[] | null): Category
   return CANONICAL_HEADINGS;
 }
 
-export async function saveCategoryHeadings(headings: CategoryHeading[]) {
+export async function saveCategoryHeadings(headings: CategoryHeading[]): Promise<boolean> {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(HEADINGS_STORAGE_KEY, JSON.stringify(headings));
@@ -105,12 +105,18 @@ export async function saveCategoryHeadings(headings: CategoryHeading[]) {
 
   // Persist directly to Supabase store_settings table
   try {
-    await supabase
+    const { error } = await supabase
       .from("store_settings")
       .update({ category_headings: headings } as never)
       .eq("id", 1);
+    if (error) {
+      console.error("Failed to save headings to store_settings:", error);
+      return false;
+    }
+    return true;
   } catch (err) {
     console.warn("Could not save headings to store_settings table:", err);
+    return false;
   }
 }
 

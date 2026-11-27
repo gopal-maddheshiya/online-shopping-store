@@ -39,19 +39,27 @@ const GoogleAuthPromptModal = lazy(() =>
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="font-display text-7xl font-bold text-[#145A45]">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="flex min-h-[75vh] items-center justify-center bg-[#FAF8F5] px-4 py-12">
+      <div className="max-w-md rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-8 text-center shadow-xs">
+        <h1 className="font-display text-7xl font-black text-[#145A45]">404</h1>
+        <h2 className="mt-3 text-xl font-bold text-[#16201A]">
+          यह पेज उपलब्ध नहीं है • Page Not Found
+        </h2>
+        <p className="mt-2 text-xs sm:text-sm text-[#546059]">
+          क्षमा करें, आप जिस पेज को खोज रहे हैं वह हटा दिया गया है या लिंक गलत है।
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/shop"
+            className="inline-flex items-center justify-center rounded-2xl border border-[#145A45]/25 bg-[#FAF8F2] px-5 py-2.5 text-xs font-bold text-[#145A45] hover:bg-[#E8F1EC] transition-all"
+          >
+            सभी सामान देखें
+          </Link>
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-6 py-3 text-sm font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all"
+            className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] px-6 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95 transition-all"
           >
-            Return to Store
+            मुख्य पृष्ठ (Home) पर जाएं
           </Link>
         </div>
       </div>
@@ -61,30 +69,29 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error("Application root error boundary caught error:", error);
-  const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Something went wrong
+    <div className="flex min-h-[75vh] items-center justify-center bg-[#FAF8F5] px-4 py-12">
+      <div className="max-w-md rounded-3xl border border-[rgba(20,90,69,0.12)] bg-white p-8 text-center shadow-xs">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-[#16201A]">
+          कुछ तकनीकी समस्या आई • Something went wrong
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Unable to load this section. Please try again or return to homepage.
+        <p className="mt-2 text-xs sm:text-sm text-[#546059]">
+          पेज लोड करने में समस्या हुई। कृपया दोबारा प्रयास करें या मुख्य स्टोर पर वापस जाएं।
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => reset()}
-            className="inline-flex items-center justify-center rounded-xl border border-[#D5E0D5] bg-white px-4 py-2 text-sm font-semibold text-[#16201A] shadow-xs hover:bg-[#F4F7F4] active:scale-95 transition-all"
+            className="inline-flex items-center justify-center rounded-xl border border-[#D5E0D5] bg-white px-4 py-2 text-xs font-bold text-[#16201A] shadow-xs hover:bg-[#F4F7F4] active:scale-95 transition-all cursor-pointer"
           >
-            Try again
+            पुनः प्रयास करें (Try again)
           </button>
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-xl bg-[#145A45] px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#104E3C] active:scale-95 transition-all"
+            className="inline-flex items-center justify-center rounded-xl bg-[#145A45] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#104E3C] active:scale-95 transition-all"
           >
-            Return to Store
+            स्टोर पर वापस जाएं
           </Link>
         </div>
       </div>
@@ -290,6 +297,10 @@ function RootDocument({ children }: { children: ReactNode }) {
 function RootComponent() {
   const router = useRouter();
   const { queryClient } = Route.useRouteContext();
+  const loaderData = Route.useLoaderData();
+  if (loaderData?.settings && !queryClient.getQueryData(settingsQuery.queryKey)) {
+    queryClient.setQueryData(settingsQuery.queryKey, loaderData.settings);
+  }
   const isAdminRoute = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
 
   // Centralized real-time synchronization across all tabs and database updates
@@ -307,7 +318,7 @@ function RootComponent() {
                     className={
                       isAdminRoute
                         ? "min-h-screen flex flex-col bg-[#F8FAF9]"
-                        : "flex min-h-screen flex-col pb-16 lg:pb-0"
+                        : "flex min-h-screen flex-col"
                     }
                   >
                     {!isAdminRoute && <Header />}

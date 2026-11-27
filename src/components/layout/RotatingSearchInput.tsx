@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, X, Mic } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ interface RotatingSearchInputProps {
   setTerm: (val: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onVoiceSearch?: (val: string) => void;
-  onPhoneClick?: () => void;
   onFocus?: () => void;
   onBlur?: () => void;
   variant?: "desktop" | "mobile";
@@ -23,7 +22,6 @@ export function RotatingSearchInput({
   setTerm,
   onSubmit,
   onVoiceSearch,
-  onPhoneClick,
   onFocus,
   onBlur,
   variant = "desktop",
@@ -35,6 +33,7 @@ export function RotatingSearchInput({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isResetting, setIsResetting] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const suggestions = useMemo(() => {
     return t.searchSuggestions && t.searchSuggestions.length > 0
@@ -64,8 +63,9 @@ export function RotatingSearchInput({
         const next = prev + 1;
         // If we reached the cloned item at the end of the extended list
         if (next >= suggestions.length) {
+          if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
           // After the 1200ms transition to the clone completes, seamlessly snap back to index 0
-          setTimeout(() => {
+          resetTimerRef.current = setTimeout(() => {
             setIsResetting(true);
             setCurrentIndex(0);
             requestAnimationFrame(() => {
@@ -79,7 +79,13 @@ export function RotatingSearchInput({
       });
     }, 3200);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+    };
   }, [isFocused, term.length, suggestions.length]);
 
   function handleVoiceSearch(spokenQuery: string) {
@@ -94,8 +100,8 @@ export function RotatingSearchInput({
   }
 
   const isDesktop = variant === "desktop";
-  // Full height of input box: h-11.5 = 46px on desktop, h-10.5 = 42px on mobile
-  const itemHeight = isDesktop ? 46 : 42;
+  // Match inner borderless box height: h-11.5 (46px - 2px border) = 44px desktop, h-10.5 (42px - 2px border) = 40px mobile
+  const itemHeight = isDesktop ? 44 : 40;
 
   return (
     <>
@@ -122,6 +128,8 @@ export function RotatingSearchInput({
 
           <Input
             type="text"
+            id={isDesktop ? "desktop-grocery-search" : "mobile-grocery-search"}
+            name="q"
             value={term}
             onChange={(e) => setTerm(e.target.value)}
             onFocus={() => {
@@ -133,12 +141,10 @@ export function RotatingSearchInput({
               onBlur?.();
             }}
             placeholder=""
-            aria-label={ariaLabel || (isDesktop ? "Search grocery items" : "Mobile search")}
+            aria-label={ariaLabel || t.searchPlaceholder}
             className={cn(
               "w-full rounded-full border border-[#D1D5DB] bg-[#F8FAFC] text-[#16201A] placeholder:text-transparent hover:border-[#145A45]/60 hover:bg-white focus:bg-white focus-visible:border-[#145A45] focus-visible:ring-3 focus-visible:ring-[#145A45]/15 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.03),inset_0_1px_2px_rgba(0,0,0,0.02)] focus:shadow-[0_4px_16px_rgba(20,90,69,0.12),inset_0_1px_0_rgba(255,255,255,1)] font-medium",
-              isDesktop
-                ? (onPhoneClick ? "h-11.5 pl-11.5 pr-26 text-[13.5px]" : "h-11.5 pl-11.5 pr-22 text-[13.5px]")
-                : (onPhoneClick ? "h-10.5 pl-10 pr-22 text-[12.5px]" : "h-10.5 pl-10 pr-18 text-[12.5px]")
+              isDesktop ? "h-11.5 pl-11.5 pr-22 text-[13.5px]" : "h-10.5 pl-10 pr-18 text-[12.5px]"
             )}
           />
 
@@ -146,14 +152,12 @@ export function RotatingSearchInput({
           {!isFocused && term.length === 0 && (
             <div
               className={cn(
-                "pointer-events-none absolute inset-y-0 flex items-center overflow-hidden select-none",
-                isDesktop
-                  ? (onPhoneClick ? "left-11.5 right-26 text-[13.5px]" : "left-11.5 right-22 text-[13.5px]")
-                  : (onPhoneClick ? "left-10 right-22 text-[12.5px]" : "left-10 right-18 text-[12.5px]")
+                "pointer-events-none absolute inset-y-[1px] flex items-center overflow-hidden select-none",
+                isDesktop ? "left-11.5 right-22 text-[13.5px]" : "left-10 right-18 text-[12.5px]"
               )}
             >
               <div
-                className="relative w-full h-full overflow-hidden"
+                className="relative w-full overflow-hidden"
                 style={{ height: `${itemHeight}px` }}
               >
                 <div
@@ -168,10 +172,10 @@ export function RotatingSearchInput({
                   {extendedList.map((text, idx) => (
                     <div
                       key={`${lang}-${idx}`}
-                      className="flex items-center truncate text-[#3D4C44]"
+                      className="flex shrink-0 items-center truncate text-[#3D4C44] leading-none"
                       style={{ height: `${itemHeight}px` }}
                     >
-                      <span className="truncate">{text}</span>
+                      <span className="truncate py-0.5 leading-normal">{text}</span>
                     </div>
                   ))}
                 </div>

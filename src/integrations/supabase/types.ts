@@ -807,8 +807,8 @@ export type Database = {
       };
       lookup_order_invoice: {
         Args: {
-          p_order_no: string;
-          p_phone: string;
+          _order_no: string;
+          _phone: string;
         };
         Returns: Json;
       };

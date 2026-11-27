@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
+import type { Product, Variant } from "@/lib/queries";
 
 export type CartItem = {
   variantId: string;
@@ -32,6 +33,7 @@ type CartContextValue = {
   moveToCart: (variantId: string) => void;
   removeSaved: (variantId: string) => void;
   clear: () => void;
+  syncWithCatalog: (products: Product[]) => void;
   hydrated: boolean;
 };
 
@@ -44,6 +46,7 @@ export type CartActions = {
   moveToCart: (variantId: string) => void;
   removeSaved: (variantId: string) => void;
   clear: () => void;
+  syncWithCatalog: (products: Product[]) => void;
 };
 
 const STORAGE_KEY = "agt.cart.v1";
@@ -109,6 +112,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(read(STORAGE_KEY));
     setSavedItems(read(SAVED_KEY));
     setHydrated(true);
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        const next = read(STORAGE_KEY);
+        setItems(next);
+        notifyQtySubscribers(next);
+      } else if (e.key === SAVED_KEY) {
+        setSavedItems(read(SAVED_KEY));
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   useEffect(() => {
@@ -129,16 +144,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [savedItems, hydrated]);
 
   const add = useCallback((item: Omit<CartItem, "qty">, qty = 1) => {
+    if (item.stock <= 0) return;
+    const requested = Math.max(1, qty);
     setItems((prev) => {
       const existing = prev.find((i) => i.variantId === item.variantId);
       if (existing) {
         return prev.map((i) =>
           i.variantId === item.variantId
-            ? { ...i, ...item, qty: Math.min(i.qty + qty, Math.max(item.stock, 1)) }
+            ? { ...i, ...item, qty: Math.min(i.qty + requested, item.stock) }
             : i,
         );
       }
-      return [...prev, { ...item, qty }];
+      return [...prev, { ...item, qty: Math.min(requested, item.stock) }];
     });
   }, []);
 
@@ -147,13 +164,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setItems((prev) => {
         const next = [...prev];
         for (const { item, qty = 1 } of itemsToAdd) {
+          if (item.stock <= 0) continue;
+          const requested = Math.max(1, qty);
           const existingIdx = next.findIndex((i) => i.variantId === item.variantId);
           const current = existingIdx >= 0 ? next[existingIdx] : undefined;
           if (current && existingIdx >= 0) {
-            const updatedQty = Math.min(current.qty + qty, Math.max(item.stock, 1));
+            const updatedQty = Math.min(current.qty + requested, item.stock);
             next[existingIdx] = { ...current, ...item, qty: updatedQty };
           } else {
-            next.push({ ...item, qty: Math.min(qty, Math.max(item.stock, 1)) });
+            next.push({ ...item, qty: Math.min(requested, item.stock) });
           }
         }
         return next;
@@ -166,7 +185,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       qty <= 0
         ? prev.filter((i) => i.variantId !== variantId)
-        : prev.map((i) => (i.variantId === variantId ? { ...i, qty } : i)),
+        : prev.flatMap((i) => {
+            if (i.variantId !== variantId) return [i];
+            if (i.stock <= 0) return [];
+            return [{ ...i, qty: Math.min(qty, i.stock) }];
+          }),
     );
   }, []);
 
@@ -174,27 +197,107 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
   }, []);
 
-  const saveForLater = useCallback((variantId: string) => {
-    setItems((prev) => {
-      const item = prev.find((i) => i.variantId === variantId);
-      if (item) setSavedItems((s) => (s.some((x) => x.variantId === variantId) ? s : [...s, item]));
-      return prev.filter((i) => i.variantId !== variantId);
-    });
-  }, []);
+  const saveForLater = useCallback(
+    (variantId: string) => {
+      const target = items.find((i) => i.variantId === variantId);
+      if (!target) return;
+      setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+      setSavedItems((s) => (s.some((x) => x.variantId === variantId) ? s : [...s, target]));
+    },
+    [items],
+  );
 
-  const moveToCart = useCallback((variantId: string) => {
-    setSavedItems((prev) => {
-      const item = prev.find((i) => i.variantId === variantId);
-      if (item) setItems((c) => (c.some((x) => x.variantId === variantId) ? c : [...c, item]));
-      return prev.filter((i) => i.variantId !== variantId);
-    });
-  }, []);
+  const moveToCart = useCallback(
+    (variantId: string) => {
+      const target = savedItems.find((i) => i.variantId === variantId);
+      if (!target) return;
+      setSavedItems((prev) => prev.filter((i) => i.variantId !== variantId));
+      if (target.stock > 0) {
+        setItems((c) => {
+          const existing = c.find((x) => x.variantId === variantId);
+          if (existing) {
+            return c.map((x) =>
+              x.variantId === variantId
+                ? { ...x, qty: Math.min(x.qty + target.qty, Math.max(1, target.stock)) }
+                : x,
+            );
+          }
+          return [...c, { ...target, qty: Math.min(Math.max(1, target.qty), target.stock) }];
+        });
+      }
+    },
+    [savedItems],
+  );
 
   const removeSaved = useCallback((variantId: string) => {
     setSavedItems((prev) => prev.filter((i) => i.variantId !== variantId));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
+
+  const syncWithCatalog = useCallback((products: Product[]) => {
+    if (!products || products.length === 0) return;
+
+    const variantMap = new Map<string, { product: Product; variant: Variant }>();
+    for (const product of products) {
+      for (const variant of product.product_variants ?? []) {
+        variantMap.set(variant.id, { product, variant });
+      }
+    }
+    if (variantMap.size === 0) return;
+
+    const reconcile = (list: CartItem[], clampQty: boolean): CartItem[] => {
+      let changed = false;
+      const next = list.map((item) => {
+        const match = variantMap.get(item.variantId);
+        if (!match) return item;
+        const { product, variant } = match;
+        const nextStock =
+          product.is_active === false || variant.is_active === false
+            ? 0
+            : Math.max(0, Number(variant.stock ?? 0));
+        const nextPrice = Number(variant.price);
+        const nextMrp = Number(variant.mrp || variant.price);
+        const nextQty = clampQty && nextStock > 0 ? Math.min(item.qty, nextStock) : item.qty;
+        const nextNameEn = product.name_en || product.name;
+        const nextNameHi = product.name_hi ?? null;
+        const nextVariantEn = variant.label_en || variant.label;
+        const nextVariantHi = variant.label_hi ?? null;
+        const nextImage = product.image_url ?? item.imageUrl;
+
+        if (
+          item.stock !== nextStock ||
+          item.price !== nextPrice ||
+          item.mrp !== nextMrp ||
+          item.qty !== nextQty ||
+          item.name_en !== nextNameEn ||
+          item.name_hi !== nextNameHi ||
+          item.variantLabel_en !== nextVariantEn ||
+          item.variantLabel_hi !== nextVariantHi ||
+          item.imageUrl !== nextImage
+        ) {
+          changed = true;
+          return {
+            ...item,
+            name_en: nextNameEn,
+            name_hi: nextNameHi,
+            variantLabel_en: nextVariantEn,
+            variantLabel_hi: nextVariantHi,
+            price: nextPrice,
+            mrp: nextMrp,
+            stock: nextStock,
+            qty: nextQty,
+            imageUrl: nextImage,
+          };
+        }
+        return item;
+      });
+      return changed ? next : list;
+    };
+
+    setItems((prev) => reconcile(prev, true));
+    setSavedItems((prev) => reconcile(prev, false));
+  }, []);
 
   const actionsValue = useMemo<CartActions>(() => ({
     add,
@@ -205,6 +308,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     moveToCart,
     removeSaved,
     clear,
+    syncWithCatalog,
   }), [
     add,
     addMultiple,
@@ -214,6 +318,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     moveToCart,
     removeSaved,
     clear,
+    syncWithCatalog,
   ]);
 
   const value = useMemo<CartContextValue>(() => {
@@ -233,6 +338,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       moveToCart,
       removeSaved,
       clear,
+      syncWithCatalog,
       hydrated,
     };
   }, [
@@ -246,6 +352,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     moveToCart,
     removeSaved,
     clear,
+    syncWithCatalog,
     hydrated,
   ]);
 

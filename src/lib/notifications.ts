@@ -91,25 +91,27 @@ ${SITE_URL}/admin?order=${payload.orderNo}`;
 
 /**
  * Sends Instant Order Alert to Telegram Bot via secure server-side API.
- * The token is NEVER sent from the browser — server reads it from env vars.
+ * Server validates the order directly in DB and reads Telegram bot credentials strictly from server env/secrets.
  */
 export async function sendTelegramOrderNotification(
-  payload: TelegramOrderAlertPayload,
-  settings?: StoreSettings | null
+  payload: TelegramOrderAlertPayload & { action?: "order_alert" | "upi_claimed"; utrRef?: string | undefined },
+  _settings?: StoreSettings | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const message = buildTelegramOrderMessage(payload);
+    const cleanPhone = payload.customerPhone.replace(/\D/g, "").slice(-10);
+    if (!payload.orderNo || cleanPhone.length !== 10) {
+      return { success: false, error: "Invalid order metadata for notification" };
+    }
 
-    // Pass DB-stored token/chatId to server if available (server will use env fallback if not)
-    const body: { message: string; token?: string; chatId?: string } = { message };
-    if (settings?.telegram_bot_token?.trim()) body.token = settings.telegram_bot_token.trim();
-    if (settings?.telegram_chat_id?.trim()) body.chatId = settings.telegram_chat_id.trim();
-
-    // Call secure server-side route — token never leaves the server
     const res = await fetch("/api/notify/telegram", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        action: payload.action || "order_alert",
+        orderNo: payload.orderNo,
+        phone: cleanPhone,
+        utrRef: payload.utrRef,
+      }),
     });
 
     const data = (await res.json()) as { success?: boolean; skipped?: boolean; error?: string };

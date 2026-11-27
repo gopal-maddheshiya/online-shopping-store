@@ -67,13 +67,17 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>(() => {
+  // Always start with SSR default "hi" to avoid HTML hydration mismatches; sync saved lang post-mount
+  const [lang, setLangState] = useState<Language>("hi");
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("agt.lang") as Language;
-      if (saved === "hi" || saved === "en") return saved;
+      const saved = localStorage.getItem("agt.lang") as Language | null;
+      if (saved === "hi" || saved === "en") {
+        setLangState(saved);
+      }
     }
-    return "hi";
-  });
+  }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -131,7 +135,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return name_en || name || "";
     }
 
-    return name_en || name || name_hi || "";
+    const resolvedEn = name_en || name || name_hi || "";
+    if (/^maida\s+and\s+besan$/i.test(resolvedEn.trim())) {
+      return "Atta, Maida & Besan";
+    }
+    return resolvedEn;
   }
 
   function getProductName(productOrName: ProductLike | string, slugParam?: string): string {

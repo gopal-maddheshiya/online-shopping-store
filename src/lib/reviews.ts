@@ -79,19 +79,32 @@ export const productReviewsQuery = (productId?: string | null) =>
       if (!productId) return [];
 
       try {
+        // Read from safe public_product_reviews view (omits customer_phone PII)
         const { data, error } = await (supabase as any)
-          .from("product_reviews")
-          .select("*")
+          .from("public_product_reviews")
+          .select("id, product_id, customer_name, locality, rating, title, comment, is_verified, is_approved, created_at")
           .eq("product_id", productId)
           .eq("is_approved", true)
           .order("created_at", { ascending: false });
 
-        if (error) {
-          console.warn("Could not fetch product reviews from database:", error.message);
+        if (!error && data) {
+          return (data as ProductReview[]) || [];
+        }
+
+        // Fallback if migration view isn't created yet: select explicit non-PII columns
+        const { data: fallbackData, error: fallbackErr } = await (supabase as any)
+          .from("product_reviews")
+          .select("id, product_id, customer_name, locality, rating, title, comment, is_verified, is_approved, created_at")
+          .eq("product_id", productId)
+          .eq("is_approved", true)
+          .order("created_at", { ascending: false });
+
+        if (fallbackErr) {
+          console.warn("Could not fetch product reviews from database:", fallbackErr.message);
           return [];
         }
 
-        return (data as ProductReview[]) || [];
+        return (fallbackData as ProductReview[]) || [];
       } catch (e) {
         console.warn("Reviews fetch exception:", e);
         return [];
@@ -125,7 +138,7 @@ export async function submitProductReview(input: SubmitReviewInput): Promise<{ s
       rating: Math.min(5, Math.max(1, input.rating)),
       title: input.title ? input.title.trim() : null,
       comment: input.comment ? input.comment.trim() : null,
-      is_verified: true,
+      is_verified: false,
       is_approved: true,
     });
 

@@ -113,8 +113,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
       // Invalidate queries so review immediately shows
       await queryClient.invalidateQueries({ queryKey: ["product-reviews", product.id] });
-    } catch (err) {
-      toast.error("An error occurred while submitting review");
+    } catch {
+      toast.error(
+        lang === "hi"
+          ? "समीक्षा सबमिट करने में समस्या आई। कृपया पुनः प्रयास करें।"
+          : "An error occurred while submitting review",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -261,13 +265,15 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 text-[10.5px] text-[#6B7280]">
-                        {rev.locality && (
-                          <span className="inline-flex items-center gap-0.5">
-                            <MapPin className="size-2.5" />
-                            <span>{rev.locality}</span>
-                          </span>
-                        )}
-                        <span>•</span>
+                        {rev.locality ? (
+                          <>
+                            <span className="inline-flex items-center gap-0.5">
+                              <MapPin className="size-2.5" />
+                              <span>{rev.locality}</span>
+                            </span>
+                            <span>•</span>
+                          </>
+                        ) : null}
                         <span>
                           {new Date(rev.created_at).toLocaleDateString(
                             lang === "hi" ? "hi-IN" : "en-IN",
@@ -311,7 +317,9 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
                       {lang === "hi" ? "मददगार लगा" : "Helpful"} {isHelpful ? "(1)" : ""}
                     </span>
                   </button>
-                  <span className="text-[9.5px] text-[#9CA3AF]">अरुण गोपाल ट्रेडर्स प्रमाणित</span>
+                  <span className="text-[9.5px] text-[#9CA3AF]">
+                    {lang === "hi" ? "अरुण गोपाल ट्रेडर्स प्रमाणित" : "Arun Gopal Traders Verified"}
+                  </span>
                 </div>
               </div>
             );
@@ -369,10 +377,13 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
             {/* Customer Name */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#374151] block">
+              <label htmlFor="review-name" className="text-xs font-bold text-[#374151] block">
                 {lang === "hi" ? "आपका नाम *" : "Your Name *"}
               </label>
               <Input
+                id="review-name"
+                name="name"
+                autoComplete="name"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -383,10 +394,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
             {/* Locality / Area */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#374151] block">
+              <label htmlFor="review-locality" className="text-xs font-bold text-[#374151] block">
                 {lang === "hi" ? "इलाका / मोहल्ला (ऐच्छिक)" : "Locality (Optional)"}
               </label>
               <Input
+                id="review-locality"
+                name="locality"
                 value={locality}
                 onChange={(e) => setLocality(e.target.value)}
                 placeholder={
@@ -398,10 +411,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
             {/* Review Title */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#374151] block">
+              <label htmlFor="review-title" className="text-xs font-bold text-[#374151] block">
                 {lang === "hi" ? "एक लाइन में बताएं (Title)" : "Review Title"}
               </label>
               <Input
+                id="review-title"
+                name="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={
@@ -415,10 +430,12 @@ export function ProductReviewsSection({ product, localizedName }: ProductReviews
 
             {/* Review Comment */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#374151] block">
+              <label htmlFor="review-comment" className="text-xs font-bold text-[#374151] block">
                 {lang === "hi" ? "कैसा लगा यह सामान? (गुणवत्ता, स्वाद आदि)" : "Your Experience"}
               </label>
               <Textarea
+                id="review-comment"
+                name="comment"
                 rows={3}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}

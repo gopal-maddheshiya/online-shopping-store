@@ -5,6 +5,7 @@ import { renderErrorPage } from "./lib/error-page";
 import { dispatchPaymentApiRoute } from "./lib/server-payment-api";
 import { handleTelegramNotify } from "./lib/server-telegram-api";
 import { handleWebImageSearchRoute } from "./lib/server-image-search";
+import { handleGeminiProxyRoute } from "./lib/server-ai-api";
 import { handleSitemapRoute } from "./lib/server-sitemap";
 
 type ServerEntry = {
@@ -63,7 +64,12 @@ export default {
         return await handleTelegramNotify(request, env);
       }
 
-      // 3. Intercept Web Image Search route (/api/search/images)
+      // 3. Intercept Gemini AI Proxy route (/api/ai/gemini)
+      if (request.method === "POST" && url.pathname === "/api/ai/gemini") {
+        return await handleGeminiProxyRoute(request, env);
+      }
+
+      // 4. Intercept Web Image Search route (/api/search/images)
       if (url.pathname === "/api/search/images") {
         return await handleWebImageSearchRoute(request);
       }

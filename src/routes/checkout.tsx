@@ -63,6 +63,7 @@ import {
   generateQrCodeUrl,
   recordPaymentAttemptOnServer,
   verifyPaymentWithServer,
+  claimUpiPaymentOnServer,
   recordPaymentFailureOnServer,
   type PaymentMethod,
   type RazorpayOptions,
@@ -74,7 +75,7 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       ...NOINDEX_ROBOTS_META,
-      { title: "Arun Gopal Traders | Checkout" },
+      { title: "चेकआउट और ऑर्डर कन्फर्म करें | Checkout | Arun Gopal Traders" },
       {
         name: "description",
         content: "Complete your grocery order with home delivery in Maharajganj or store pickup.",
@@ -115,6 +116,7 @@ function CheckoutPage() {
 
   // Coupon State
   const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
 
@@ -132,6 +134,7 @@ function CheckoutPage() {
   } | null>(null);
   const [activeUpiUri, setActiveUpiUri] = useState<string>("");
   const [upiCopied, setUpiCopied] = useState(false);
+  const [upiUtrRef, setUpiUtrRef] = useState("");
   const [isVerifyingQrPayment, setIsVerifyingQrPayment] = useState(false);
 
   // Prefill customer details if user is authenticated or has stored info
@@ -207,7 +210,12 @@ function CheckoutPage() {
       return;
     }
     if (subtotal < appliedCoupon.min_order) {
-      toast.error(`Coupon requires minimum order of ${inr(appliedCoupon.min_order)}`);
+      const msg =
+        lang === "hi"
+          ? `इस कूपन के लिए न्यूनतम ऑर्डर ${inr(appliedCoupon.min_order)} होना चाहिए`
+          : `Coupon requires minimum order of ${inr(appliedCoupon.min_order)}`;
+      setCouponError(msg);
+      toast.error(msg);
       setAppliedCoupon(null);
       setCouponDiscount(0);
       return;
@@ -254,26 +262,69 @@ function CheckoutPage() {
 
   function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
+    setCouponError(null);
     const code = couponCode.trim().toUpperCase();
-    if (!code) return;
+    if (!code) {
+      const msg = lang === "hi" ? "कृपया कूपन कोड दर्ज करें" : "Please enter a coupon code";
+      setCouponError(msg);
+      return;
+    }
 
     const found = (coupons ?? []).find((c) => c.code.toUpperCase() === code && c.is_active);
     if (!found) {
-      toast.error(
+      const msg =
         lang === "hi"
           ? "अमान्य या समाप्त कूपन कोड दर्ज किया गया है"
-          : "Invalid or expired coupon code"
-      );
+          : "Invalid or expired coupon code";
+      setCouponError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    const nowMs = Date.now();
+    if (found.starts_at && nowMs < new Date(found.starts_at).getTime()) {
+      const msg = lang === "hi" ? "यह कूपन अभी शुरू नहीं हुआ है" : "This coupon is not active yet";
+      setCouponError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (found.ends_at && nowMs > new Date(found.ends_at).getTime()) {
+      const msg = lang === "hi" ? "यह कूपन कोड समाप्त हो चुका है" : "This coupon code has expired";
+      setCouponError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (found.usage_limit !== null && found.usage_limit !== undefined && found.used_count >= found.usage_limit) {
+      const msg = lang === "hi" ? "इस कूपन की उपयोग सीमा पूरी हो चुकी है" : "Coupon usage limit reached";
+      setCouponError(msg);
+      toast.error(msg);
       return;
     }
 
     if (subtotal < found.min_order) {
-      toast.error(`Minimum order value of ${inr(found.min_order)} required for this coupon`);
+      const msg =
+        lang === "hi"
+          ? `इस कूपन के लिए न्यूनतम ऑर्डर ${inr(found.min_order)} होना आवश्यक है`
+          : `Minimum order value of ${inr(found.min_order)} required for this coupon`;
+      setCouponError(msg);
+      toast.error(msg);
       return;
     }
 
+    setCouponError(null);
     setAppliedCoupon(found);
-    toast.success(`Coupon ${found.code} applied successfully!`);
+    toast.success(
+      lang === "hi" ? `कूपन ${found.code} सफलतापूर्वक लागू हो गया!` : `Coupon ${found.code} applied successfully!`
+    );
+  }
+
+  function focusFieldById(id: string) {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => el.focus({ preventScroll: true }), 180);
+    }
   }
 
   async function handlePlaceOrder(e: React.FormEvent) {
@@ -281,22 +332,26 @@ function CheckoutPage() {
 
     if (isSubmitting || isProcessingPayment) return;
 
-    // Validation
-    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
-    if (cleanPhone.length !== 10) {
-      toast.error(lang === "hi" ? "कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें" : "Please enter a valid 10-digit Indian mobile number");
-      return;
-    }
     if (!name.trim()) {
+      focusFieldById("cust-name");
       toast.error(lang === "hi" ? "कृपया अपना पूरा नाम दर्ज करें" : "Please provide your full name");
       return;
     }
-    if (orderType === "delivery" && (!area.trim() || !house.trim())) {
+    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+    if (cleanPhone.length !== 10) {
+      focusFieldById("cust-phone");
+      toast.error(lang === "hi" ? "कृपया 10 अंकों का मान्य भारतीय मोबाइल नंबर दर्ज करें" : "Please enter a valid 10-digit Indian mobile number");
+      return;
+    }
+    if (orderType === "delivery" && (!house.trim() || !area.trim())) {
+      focusFieldById(!house.trim() ? "addr-house" : "addr-area");
       toast.error(lang === "hi" ? "कृपया अपना डिलीवरी पता दर्ज करें" : "Please provide your delivery address (house/shop no and area)");
       return;
     }
     if (subtotal < minOrderValue) {
-      toast.error(`Minimum order amount is ${inr(minOrderValue)}`);
+      toast.error(
+        lang === "hi" ? `न्यूनतम ऑर्डर राशि ${inr(minOrderValue)} होनी चाहिए` : `Minimum order amount is ${inr(minOrderValue)}`
+      );
       return;
     }
 
@@ -358,101 +413,72 @@ function CheckoutPage() {
         image_url: it.imageUrl,
       }));
 
-      // Generate order number with fallback
-      let orderNo = `AGT-${Date.now().toString().slice(-6)}`;
-      let orderId = "";
-
-      // 1. Primary: Secure stored procedure
-      const { data: rpcRes, error: rpcErr } = await supabase.rpc(
-        "admin_place_secure_order" as never,
+      // 1. Authoritative server-side order creation via place_order RPC (locks stock, validates prices & coupon)
+      const { data: rpcRes, error: rpcErr } = await (supabase.rpc as Function)(
+        "place_order",
         {
-          _order_data: orderPayload,
-          _items_data: itemsPayload,
-        } as never,
+          _order_payload: orderPayload,
+          _items_payload: itemsPayload,
+        },
       );
 
-      if (!rpcErr && rpcRes && typeof rpcRes === "object" && (rpcRes as { success?: boolean }).success) {
-        const payload = rpcRes as { order_no?: string; order_id?: string };
-        if (payload.order_no) orderNo = payload.order_no;
-        if (payload.order_id) orderId = payload.order_id;
-      } else {
-        // 2. Fallback: Direct table insertion
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert(orderPayload as never)
-          .select("id, order_no")
-          .single();
-
-        if (orderError) throw orderError;
-        if (orderData?.order_no) orderNo = orderData.order_no;
-        if (orderData?.id) orderId = orderData.id;
-
-        if (orderData?.id) {
-          const itemsWithOrderId = itemsPayload.map((it) => ({
-            ...it,
-            order_id: orderData.id,
-          }));
-          await supabase.from("order_items").insert(itemsWithOrderId as never);
-        }
+      if (rpcErr || !rpcRes || typeof rpcRes !== "object" || !(rpcRes as { success?: boolean }).success) {
+        throw new Error(rpcErr?.message || "Could not place order safely. Please try again.");
       }
 
-      // Auto-decrement inventory stock in product_variants for purchased items
-      for (const it of items) {
-        if (!it.variantId) continue;
-        try {
-          const { data: vData } = await supabase
-            .from("product_variants")
-            .select("stock")
-            .eq("id", it.variantId)
-            .maybeSingle();
+      const rpcPayload = rpcRes as {
+        order_no?: string;
+        order_id?: string;
+        total?: number;
+      };
+      const orderNo = rpcPayload.order_no || `AGT-${Date.now().toString().slice(-6)}`;
+      const orderId = rpcPayload.order_id || "";
+      const authoritativeTotal = typeof rpcPayload.total === "number" ? rpcPayload.total : grandTotal;
 
-          if (vData && typeof vData.stock === "number") {
-            const updatedStock = Math.max(0, vData.stock - (it.qty || 1));
-            await supabase
-              .from("product_variants")
-              .update({ stock: updatedStock } as never)
-              .eq("id", it.variantId);
-          }
-        } catch (stockErr) {
-          console.warn("[Checkout] Stock decrement warning:", stockErr);
-        }
-      }
-
-      // Register order for admin manifest and broadcast in realtime
+      // Register order locally and broadcast in realtime
       registerPlacedOrder({ order_no: orderNo, phone: cleanPhone, id: orderId });
       broadcastNewOrder({
         orderId: orderId || orderNo,
         orderNo,
-        total: grandTotal,
+        total: authoritativeTotal,
         customerName: name.trim(),
         createdAt: new Date().toISOString(),
       });
 
-      // Dispatch Instant Telegram Order Alert to Store Owner (100% automated & zero-cost)
-      void sendTelegramOrderNotification(
-        {
-          orderNo,
-          customerName: name.trim(),
-          customerPhone: cleanPhone,
-          orderType,
-          address: orderType === "delivery" ? orderPayload.address : null,
-          items: items.map((it) => ({
-            name: it.name_hi || it.name,
-            qty: it.qty,
-            price: it.price,
-            variant_label: it.variantLabel_hi || it.variantLabel,
-          })),
-          total: grandTotal,
-          paymentMethod,
-          createdAt: new Date().toISOString(),
-          customerNote: instructions.trim() || null,
-        },
-        settings
-      );
+      const dispatchOrderTelegram = (action: "order_alert" | "upi_claimed" = "order_alert", utrRef?: string) => {
+        void sendTelegramOrderNotification(
+          {
+            action,
+            orderNo,
+            customerName: name.trim(),
+            customerPhone: cleanPhone,
+            orderType,
+            address: orderType === "delivery" ? orderPayload.address : null,
+            items: items.map((it) => ({
+              name: it.name_hi || it.name,
+              qty: it.qty,
+              price: it.price,
+              variant_label: it.variantLabel_hi || it.variantLabel,
+            })),
+            total: authoritativeTotal,
+            paymentMethod,
+            createdAt: new Date().toISOString(),
+            customerNote: instructions.trim() || null,
+            utrRef,
+          },
+          settings
+        );
+      };
 
-      // Save customer info locally for instant future checkout
+      // Dispatch instant Telegram immediately ONLY for Cash / Counter Pay orders
+      if (paymentMethod === "cod" || paymentMethod === "pay_at_store") {
+        dispatchOrderTelegram("order_alert");
+      }
+
+      // Save customer info locally for instant future checkout & sync MobileNav
       localStorage.setItem("agt.last_phone", cleanPhone);
       localStorage.setItem("agt.last_name", name.trim());
+      window.dispatchEvent(new Event("agt:phone-updated"));
       if (orderType === "delivery") {
         localStorage.setItem(
           "agt.last_address",
@@ -524,7 +550,7 @@ function CheckoutPage() {
       const upiUri = generateUpiUri({
         vpa: upiVpa,
         payeeName,
-        amount: grandTotal,
+        amount: authoritativeTotal,
         orderNo,
         note: qrNote,
       });
@@ -532,10 +558,11 @@ function CheckoutPage() {
       // Flow 1: Dynamic QR Code Flow (ONLY when customer selects Dynamic QR)
       if (paymentMethod === "qr") {
         setIsSubmitting(false);
+        setUpiUtrRef("");
         setActiveOrderForPayment({
           id: orderId,
           orderNo,
-          amount: grandTotal,
+          amount: authoritativeTotal,
           cleanPhone,
         });
         setActiveUpiUri(upiUri);
@@ -545,46 +572,48 @@ function CheckoutPage() {
           orderId,
           orderNo,
           method: "qr",
-          amount: grandTotal,
+          gateway: "manual",
+          amount: authoritativeTotal,
           metadata: { vpa: upiVpa, uri: upiUri },
         });
         return;
       }
 
-      // Flow 2: Direct UPI App Intent Launch on Mobile
+      // Flow 2: Direct UPI App Intent Launch on Mobile (keeps order pending verification until UTR/claim)
       const isMobileDevice = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (paymentMethod === "upi" && isMobileDevice) {
         setIsSubmitting(false);
         setIsProcessingPayment(false);
+        setUpiUtrRef("");
+        setActiveOrderForPayment({
+          id: orderId,
+          orderNo,
+          amount: authoritativeTotal,
+          cleanPhone,
+        });
+        setActiveUpiUri(upiUri);
+        setUpiModalOpen(true);
 
         void recordPaymentAttemptOnServer({
           orderId,
           orderNo,
           method: "upi",
-          amount: grandTotal,
+          gateway: "manual",
+          amount: authoritativeTotal,
           metadata: { vpa: upiVpa, uri: upiUri, mode: "direct_mobile_intent" },
         });
 
-        // Trigger native UPI deep link directly to launch installed Google Pay / PhonePe / Paytm / BHIM
+        // Launch native UPI intent; user stays on modal to confirm payment / enter UTR after returning
         window.location.href = upiUri;
-        clear();
-        toast.success(
-          lang === "hi"
-            ? "UPI ऐप खोला जा रहा है... भुगतान पूरा करें।"
-            : "Opening UPI app to complete payment...",
-        );
-        void navigate({
-          to: "/track",
-          search: { orderNo, phone: cleanPhone } as never,
-        });
         return;
       }
 
-      // Flow 3: Online Gateway Flow (UPI or Card)
+      // Flow 3: Online Gateway Flow (Razorpay Card/UPI SDK or UPI fallback modal)
       setIsProcessingPayment(true);
 
       let gatewayOrderId = `order_agt_${orderNo}_${Date.now().toString(36)}`;
       let keyId = (settings?.razorpay_key_id || "").trim() || getPublicRazorpayKey();
+      let isGatewayReady = false;
 
       try {
         const createRes = await fetch("/api/payment/create-order", {
@@ -593,7 +622,8 @@ function CheckoutPage() {
           body: JSON.stringify({
             orderId,
             orderNo,
-            amount: grandTotal,
+            phone: cleanPhone,
+            amount: authoritativeTotal,
             currency: "INR",
             customerName: name.trim(),
             customerPhone: cleanPhone,
@@ -602,9 +632,16 @@ function CheckoutPage() {
         });
 
         if (createRes.ok) {
-          const createData = (await createRes.json()) as { gatewayOrderId?: string; keyId?: string };
-          if (createData.gatewayOrderId) gatewayOrderId = createData.gatewayOrderId;
-          if (createData.keyId) keyId = createData.keyId;
+          const createData = (await createRes.json()) as {
+            success?: boolean;
+            gatewayOrderId?: string;
+            keyId?: string;
+          };
+          if (createData.success && createData.gatewayOrderId) {
+            gatewayOrderId = createData.gatewayOrderId;
+            if (createData.keyId) keyId = createData.keyId;
+            isGatewayReady = true;
+          }
         }
       } catch (orderErr) {
         console.warn("Server order creation warning:", orderErr);
@@ -614,22 +651,21 @@ function CheckoutPage() {
         orderId,
         orderNo,
         method: paymentMethod as PaymentMethod,
-        gateway: "razorpay",
+        gateway: isGatewayReady ? "razorpay" : "manual",
         gatewayOrderId,
-        amount: grandTotal,
+        amount: authoritativeTotal,
       });
 
-      const scriptLoaded = await loadRazorpayScript();
+      const scriptLoaded = isGatewayReady ? await loadRazorpayScript() : false;
 
-      if (scriptLoaded && window.Razorpay && keyId && keyId !== "rzp_test_fallback") {
-        const isServerOrder = gatewayOrderId.startsWith("order_") && !gatewayOrderId.startsWith("order_agt_");
+      if (scriptLoaded && window.Razorpay && keyId && isGatewayReady) {
         const rzpOptions: RazorpayOptions = {
           key: keyId,
-          amount: Math.round(grandTotal * 100),
+          amount: Math.round(authoritativeTotal * 100),
           currency: "INR",
           name: "Arun Gopal Traders",
-          description: `Order ${orderNo} • ₹${grandTotal}`,
-          ...(isServerOrder ? { order_id: gatewayOrderId } : {}),
+          description: `Order ${orderNo} • ₹${authoritativeTotal}`,
+          order_id: gatewayOrderId,
           prefill: {
             name: name.trim(),
             contact: cleanPhone,
@@ -675,13 +711,14 @@ function CheckoutPage() {
               gatewayOrderId: resp.razorpay_order_id || gatewayOrderId,
               gatewayPaymentId: resp.razorpay_payment_id,
               signature: resp.razorpay_signature || "",
-              amount: grandTotal,
+              amount: authoritativeTotal,
               paymentMethod: paymentMethod as PaymentMethod,
             });
 
             setIsProcessingPayment(false);
 
             if (verifyRes.success) {
+              dispatchOrderTelegram("order_alert");
               clear();
               toast.success(t.paymentSuccess);
               void navigate({
@@ -689,7 +726,7 @@ function CheckoutPage() {
                 search: { orderNo, phone: cleanPhone } as never,
               });
             } else {
-              toast.error(t.paymentFailedMessage);
+              toast.error(verifyRes.error || t.paymentFailedMessage);
             }
           },
           modal: {
@@ -713,10 +750,11 @@ function CheckoutPage() {
         // Fallback when Gateway SDK is not configured
         setIsProcessingPayment(false);
         setIsSubmitting(false);
+        setUpiUtrRef("");
         setActiveOrderForPayment({
           id: orderId,
           orderNo,
-          amount: grandTotal,
+          amount: authoritativeTotal,
           cleanPhone,
           gatewayOrderId,
         });
@@ -731,40 +769,68 @@ function CheckoutPage() {
         } else {
           toast.error(
             lang === "hi"
-              ? "कार्ड गेटवे वर्तमान में सक्रिय नहीं है। कृपया UPI या कैश ऑन डिलीवरी चुनें।"
-              : "Card gateway is currently offline. Please choose UPI or Cash on Delivery."
+              ? "कार्ड गेटवे वर्तमान में सक्रिय नहीं है। कृपया UPI या दुकान पर भुगतान चुनें।"
+              : "Card gateway is currently offline. Please choose UPI or Pay at Store."
           );
         }
       }
     } catch (err: unknown) {
       console.error("Order placement failed:", err);
       const msg = err instanceof Error ? err.message : "Could not place order";
-      toast.error(`Order failed: ${msg}. You can also call us at +91 6388354988 to place it.`);
+      const storePhoneDisplay = settings?.phone ?? "+91 6388354988";
+      toast.error(
+        lang === "hi"
+          ? `ऑर्डर दर्ज करने में समस्या: ${msg}। मदद के लिए ${storePhoneDisplay} पर कॉल करें।`
+          : `Order failed: ${msg}. You can also call us at ${storePhoneDisplay} to place it.`
+      );
     } finally {
       setIsSubmitting(false);
       setIsProcessingPayment(false);
     }
   }
 
-  async function handleConfirmDynamicQrPayment() {
+  async function handleConfirmUpiOrQrPayment(method: "upi" | "qr") {
     if (!activeOrderForPayment) return;
     setIsVerifyingQrPayment(true);
 
     try {
-      const verifyRes = await verifyPaymentWithServer({
+      const claimRes = await claimUpiPaymentOnServer({
         orderId: activeOrderForPayment.id,
-        orderNo: activeOrderForPayment.orderNo,
-        gatewayOrderId: activeOrderForPayment.gatewayOrderId || `qr_${activeOrderForPayment.orderNo}`,
-        gatewayPaymentId: `upi_qr_${Date.now().toString(36)}`,
-        signature: "verified_dynamic_qr",
-        amount: activeOrderForPayment.amount,
-        paymentMethod: "qr",
+        phone: activeOrderForPayment.cleanPhone,
+        method,
+        utrRef: upiUtrRef,
       });
 
-      if (verifyRes.success) {
+      if (claimRes.success) {
+        void sendTelegramOrderNotification(
+          {
+            action: "upi_claimed",
+            orderNo: activeOrderForPayment.orderNo,
+            customerName: name.trim() || "Customer",
+            customerPhone: activeOrderForPayment.cleanPhone,
+            orderType,
+            address: orderType === "delivery" ? { house, area, landmark, city, pincode } : null,
+            items: items.map((it) => ({
+              name: it.name_hi || it.name,
+              qty: it.qty,
+              price: it.price,
+              variant_label: it.variantLabel_hi || it.variantLabel,
+            })),
+            total: activeOrderForPayment.amount,
+            paymentMethod: method,
+            utrRef: upiUtrRef.trim() || undefined,
+          },
+          settings,
+        );
         setDynamicQrModalOpen(false);
+        setUpiModalOpen(false);
+        setUpiUtrRef("");
         clear();
-        toast.success(t.paymentSuccess);
+        toast.success(
+          lang === "hi"
+            ? "भुगतान विवरण दर्ज हो गया! दुकानदार पुष्टि के बाद आपका ऑर्डर कन्फर्म होगा।"
+            : "Payment claim recorded! Store admin will verify and confirm shortly.",
+        );
         void navigate({
           to: "/track",
           search: {
@@ -773,10 +839,10 @@ function CheckoutPage() {
           } as never,
         });
       } else {
-        toast.error(t.paymentFailedMessage);
+        toast.error(claimRes.error || t.paymentFailedMessage);
       }
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Payment verification failed");
+      toast.error(err instanceof Error ? err.message : "Could not record payment confirmation");
     } finally {
       setIsVerifyingQrPayment(false);
     }
@@ -788,19 +854,25 @@ function CheckoutPage() {
         <div className="mx-auto grid size-16 place-items-center rounded-full bg-[#FAF8F2] text-[#145A45]">
           <ShoppingBag className="size-8" />
         </div>
-        <h1 className="mt-4 font-sans text-2xl font-bold text-[#1F2924]">Your basket is empty</h1>
+        <h1 className="mt-4 font-sans text-2xl font-bold text-[#1F2924]">
+          {t.emptyCartTitle}
+        </h1>
         <p className="mt-2 text-sm text-[#3D4C44]">
-          Add items to your cart before proceeding to checkout.
+          {lang === "hi"
+            ? "चेकआउट करने से पहले कृपया अपने थैले में किराना सामान जोड़ें।"
+            : "Add items to your cart before proceeding to checkout."}
         </p>
         <Button asChild className="mt-6 rounded-full bg-[#145A45] text-white hover:bg-[#0E4333]">
-          <Link to="/shop">Browse Catalogue</Link>
+          <Link to="/shop">{lang === "hi" ? "सामान चुनें" : "Browse Catalogue"}</Link>
         </Button>
       </div>
     );
   }
 
+  const storePhoneDisplay = settings?.phone ?? "+91 6388354988";
+
   return (
-    <div className="container-page py-6 sm:py-8 pb-28 lg:pb-12">
+    <div className="container-page py-6 sm:py-8 pb-24 lg:pb-12">
       {/* Top Header */}
       <div className="mb-6 flex items-center justify-between border-b border-[rgba(20,90,69,0.12)] pb-4">
         <div>
@@ -808,14 +880,14 @@ function CheckoutPage() {
             to="/cart"
             className="flex items-center gap-1.5 text-xs font-semibold text-[#145A45] hover:underline"
           >
-            <ArrowLeft className="size-3.5" /> Back to Cart
+            <ArrowLeft className="size-3.5" /> {lang === "hi" ? "थैले पर वापस जाएं" : "Back to Cart"}
           </Link>
           <h1 className="font-sans text-2xl font-bold tracking-tight text-[#1F2924] sm:text-3xl mt-1">
-            {lang === "hi" ? "चेकआउट व ऑर्डर" : "Checkout"}
+            {t.checkoutPageTitle}
           </h1>
         </div>
         <a
-          href={telHref(settings?.phone ?? "+916388354988")}
+          href={telHref(storePhoneDisplay)}
           className="flex items-center gap-1.5 rounded-full border border-[#145A45]/30 bg-white px-3 py-1.5 text-xs font-semibold text-[#145A45] hover:bg-[#FAF8F2] shadow-[0_1px_2px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,1)] transition-all"
         >
           <PhoneCall className="size-3.5" /> {lang === "hi" ? "फोन पर ऑर्डर?" : "Order on Phone?"}
@@ -824,7 +896,7 @@ function CheckoutPage() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
         {/* Left Form Column */}
-        <form onSubmit={handlePlaceOrder} className="space-y-8">
+        <form id="checkout-order-form" noValidate onSubmit={handlePlaceOrder} className="space-y-8">
           {/* Guest One-Click Google Login Banner */}
           {!user && (
             <div className="rounded-2xl border border-[#145A45]/20 bg-[#FAF8F2] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)]">
@@ -970,7 +1042,7 @@ function CheckoutPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-sm text-[#16201A]">
-                        {lang === "hi" ? "दुकान से पिकअप (Store Pickup Only)" : "Store Pickup Only"}
+                        {lang === "hi" ? "दुकान से पिकअप" : "Store Pickup Only"}
                       </h3>
                       <span className="rounded-full bg-[#145A45] text-white px-2 py-0.5 text-[10px] font-bold">
                         {lang === "hi" ? "डिलीवरी शुल्क: ₹0 (मुफ़्त)" : "Delivery Fee: ₹0 (FREE)"}
@@ -981,10 +1053,6 @@ function CheckoutPage() {
                         ? "वर्तमान में होम डिलीवरी सेवा बंद है। कृपया ऑर्डर ऑनलाइन बुक करके सीधे दुकान पर आकर प्राप्त करें।"
                         : "Home delivery service is currently paused. Please book your order online and collect it directly from the store."}
                     </p>
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#145A45] pt-1">
-                      <MapPin className="size-3.5 shrink-0" />
-                      <span>{settings?.address || "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh"}</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1339,7 +1407,7 @@ function CheckoutPage() {
 
             ) : (
               <div className="mt-4 rounded-xl bg-[#FAF8F2] border border-[#E5E0D5] p-4 text-xs text-[#3D4C44]">
-                📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> {t.storeName}, {t.storeAddressShort}.
+                📍 <strong>{lang === "hi" ? "पिकअप स्थान:" : "Pickup Location:"}</strong> {t.storeName}, {lang === "hi" ? t.storeAddressShort.replace(/\.+$/, "") : (settings?.address ?? "Ramnagar, Adda Bazar Road, Maharajganj, Uttar Pradesh")}.
                 <br />
                 {lang === "hi"
                   ? "आपका ऑर्डर 30-45 मिनट में पैक करके तैयार रखा जाएगा।"
@@ -1367,7 +1435,7 @@ function CheckoutPage() {
             <RadioGroup
               value={paymentMethod}
               onValueChange={setPaymentMethod}
-              className="mt-4 grid gap-2.5 sm:grid-cols-2"
+              className="mt-4 grid gap-2.5 sm:grid-cols-2 [&>*:last-child:nth-child(odd)]:sm:col-span-2"
             >
               {/* Option 1: Direct UPI (GPay, PhonePe, Paytm, BHIM) */}
               {isUpiAllowed && (
@@ -1533,36 +1601,6 @@ function CheckoutPage() {
               ) : null}
             </RadioGroup>
           </div>
-
-          {/* Mobile Full-Width Place Order / Pay Button */}
-          <div className="lg:hidden">
-            <Button
-              type="submit"
-              size="lg"
-              disabled={isSubmitting || isProcessingPayment || items.length === 0}
-              className="w-full rounded-xl py-4 text-base font-bold shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer"
-            >
-              {isSubmitting || isProcessingPayment ? (
-                <span className="flex items-center gap-2">
-                  <RefreshCw className="size-4 animate-spin" /> {t.paymentProcessing}
-                </span>
-              ) : paymentMethod === "upi" ? (
-                `${t.payWithUpi} • ${inr(grandTotal)}`
-              ) : paymentMethod === "card" ? (
-                `${t.payWithCard} • ${inr(grandTotal)}`
-              ) : paymentMethod === "qr" ? (
-                `${t.payWithQr} • ${inr(grandTotal)}`
-              ) : paymentMethod === "cod" ? (
-                t.placeOrderCod.replace("{amount}", inr(grandTotal))
-              ) : (
-                `${t.placeOrderBtn} • ${inr(grandTotal)}`
-              )}
-            </Button>
-            <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-[#3D4C44] mt-2.5 text-center">
-              <Lock className="size-3 text-[#15803D] shrink-0" />
-              <span>{t.securityBadgeText}</span>
-            </div>
-          </div>
         </form>
 
         {/* Right Order Summary Column */}
@@ -1572,7 +1610,7 @@ function CheckoutPage() {
               {lang === "hi" ? "ऑर्डर का विवरण" : "Order Summary"}
             </h2>
             <p className="text-xs text-[#3D4C44]">
-              {items.length} {lang === "hi" ? "सामान आपके ऑर्डर में" : "items in your order"}
+              {hydrated ? items.length : "—"} {lang === "hi" ? "सामान आपके ऑर्डर में" : "items in your order"}
             </p>
 
             {/* Items mini list */}
@@ -1596,20 +1634,32 @@ function CheckoutPage() {
             <div className="mt-4 border-b border-[rgba(20,90,69,0.12)] pb-4">
               <form onSubmit={handleApplyCoupon} className="flex gap-2">
                 <Input
-                  placeholder="Coupon code (e.g. WELCOME50)"
+                  id="checkout-coupon-code"
+                  name="coupon_code"
+                  aria-label={t.couponPlaceholder}
+                  placeholder={t.couponPlaceholder}
                   value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value.toUpperCase());
+                    if (couponError) setCouponError(null);
+                  }}
                   className="h-9 rounded-lg text-xs border-[#E4DFD5] bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
                 />
                 <Button
                   type="submit"
                   size="sm"
                   variant="secondary"
-                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[rgba(20,90,69,0.12)] text-[#0F4A38] hover:bg-[#E6EFE8] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer"
+                  className="h-9 rounded-lg text-xs font-semibold bg-[#FAF8F2] border border-[rgba(20,90,69,0.12)] text-[#0F4A38] hover:bg-[#E6EFE8] shadow-[0_1px_2px_rgba(0,0,0,0.02),inset_0_1px_0_rgba(255,255,255,1)] cursor-pointer shrink-0"
                 >
-                  Apply
+                  {t.applyBtn}
                 </Button>
               </form>
+              {couponError ? (
+                <p role="alert" className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-red-600">
+                  <AlertCircle className="size-3.5 shrink-0" />
+                  <span>{couponError}</span>
+                </p>
+              ) : null}
               {appliedCoupon ? (
                 <div className="mt-2 flex items-center justify-between rounded-lg bg-[#E6EFE8] border border-[#145A45]/20 px-2.5 py-1.5 text-xs text-[#0F4A38] shadow-[0_1px_2px_rgba(20,90,69,0.06),inset_0_1px_0_rgba(255,255,255,0.8)]">
                   <span className="flex items-center gap-1 font-semibold">
@@ -1620,10 +1670,11 @@ function CheckoutPage() {
                     onClick={() => {
                       setAppliedCoupon(null);
                       setCouponCode("");
+                      setCouponError(null);
                     }}
                     className="text-[11px] font-bold underline hover:opacity-75 cursor-pointer"
                   >
-                    Remove
+                    {t.removeCouponBtn}
                   </button>
                 </div>
               ) : null}
@@ -1638,7 +1689,7 @@ function CheckoutPage() {
 
               {couponDiscount > 0 ? (
                 <div className="flex justify-between text-[#15803D]">
-                  <dt>Coupon Discount</dt>
+                  <dt>{lang === "hi" ? "कूपन छूट" : "Coupon Discount"}</dt>
                   <dd className="font-bold">-{inr(couponDiscount)}</dd>
                 </div>
               ) : null}
@@ -1647,7 +1698,7 @@ function CheckoutPage() {
                 <dt>{t.deliveryFee}</dt>
                 <dd className="font-medium text-[#16201A]">
                   {deliveryFee === 0 ? (
-                    <span className="text-[#15803D] font-bold">FREE</span>
+                    <span className="text-[#15803D] font-bold">{lang === "hi" ? "मुफ़्त" : "FREE"}</span>
                   ) : (
                     inr(deliveryFee)
                   )}
@@ -1656,8 +1707,7 @@ function CheckoutPage() {
 
               {subtotal > 0 && subtotal < freeDeliveryThreshold && orderType === "delivery" ? (
                 <div className="rounded-lg bg-[#FAF8F2] border border-[rgba(20,90,69,0.12)] p-2 text-[11px] text-[#3D4C44] shadow-[inset_0_1px_0_rgba(255,255,255,1)]">
-                  💡 Add <strong>{inr(freeDeliveryThreshold - subtotal)}</strong> more for{" "}
-                  <strong>FREE Delivery</strong>!
+                  {t.freeDeliveryMeter.replace("{amount}", inr(freeDeliveryThreshold - subtotal))}
                 </div>
               ) : null}
 
@@ -1667,12 +1717,12 @@ function CheckoutPage() {
               </div>
             </dl>
 
-            {/* Desktop Pay Now Button */}
+            {/* Unified Pay Now Button inside Order Summary */}
             <Button
               onClick={handlePlaceOrder}
               disabled={isSubmitting || isProcessingPayment || items.length === 0}
               size="lg"
-              className="mt-5 hidden w-full rounded-xl py-6 font-bold shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] lg:flex bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer"
+              className="mt-5 flex w-full rounded-xl py-6 font-bold shadow-[0_4px_14px_rgba(20,90,69,0.28),inset_0_1px_0_rgba(255,255,255,0.2)] bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] hover:from-[#0F4A38] hover:to-[#07271D] text-white active:scale-[0.99] transition-all cursor-pointer"
             >
               {isSubmitting || isProcessingPayment ? (
                 <span className="flex items-center gap-2">
@@ -1700,20 +1750,55 @@ function CheckoutPage() {
 
             <div className="mt-4 space-y-1.5 text-center text-[11px] text-[#3D4C44] border-t border-[#E4DFD5] pt-3">
               <p className="flex items-center justify-center gap-1">
-                <ShieldCheck className="size-3.5 text-[#145A45]" /> 100% शुद्ध राशन • अरुण गोपाल ट्रेडर्स
+                <ShieldCheck className="size-3.5 text-[#145A45]" />{" "}
+                {lang === "hi"
+                  ? `100% शुद्ध राशन • ${t.storeName}`
+                  : `100% Genuine Groceries • ${t.storeName}`}
               </p>
               <p>
-                Need help ordering? Call{" "}
+                {lang === "hi" ? "ऑर्डर में मदद चाहिए? कॉल करें " : "Need help ordering? Call "}
                 <a
-                  href={telHref(settings?.phone ?? "+916388354988")}
+                  href={telHref(storePhoneDisplay)}
                   className="font-semibold text-[#145A45] hover:underline"
                 >
-                  +91 6388354988
+                  {storePhoneDisplay}
                 </a>
               </p>
             </div>
           </div>
         </aside>
+      </div>
+
+      {/* Sticky Mobile Bottom Checkout Action Bar (flush to bottom since MobileNav is hidden on /checkout) */}
+      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-[rgba(20,90,69,0.12)] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 pb-[calc(0.625rem+env(safe-area-inset-bottom))] lg:hidden shadow-[0_-4px_16px_rgba(20,90,69,0.08)]">
+        <div className="container-page flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] text-[#3D4C44] uppercase font-bold tracking-wider">{t.totalAmount}</p>
+            <p className="text-base font-extrabold text-[#16201A]">
+              {hydrated ? inr(grandTotal) : "—"}
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={handlePlaceOrder}
+            disabled={!hydrated || isSubmitting || isProcessingPayment || items.length === 0}
+            className="flex-1 max-w-[230px] h-10 rounded-xl bg-gradient-to-r from-[#145A45] via-[#104E3C] to-[#0A3628] text-xs font-bold text-white shadow-[0_2px_8px_rgba(20,90,69,0.25)] active:scale-95 transition-all cursor-pointer"
+          >
+            {!hydrated
+              ? (lang === "hi" ? "लोड हो रहा है..." : "Loading...")
+              : isSubmitting || isProcessingPayment
+                ? t.paymentProcessing
+                : paymentMethod === "upi"
+                  ? `${t.payWithUpi} • ${inr(grandTotal)}`
+                  : paymentMethod === "card"
+                    ? `${t.payWithCard} • ${inr(grandTotal)}`
+                    : paymentMethod === "qr"
+                      ? `${t.payWithQr} • ${inr(grandTotal)}`
+                      : paymentMethod === "cod"
+                        ? t.placeOrderCod.replace("{amount}", inr(grandTotal))
+                        : `${t.placeOrderBtn} • ${inr(grandTotal)}`}
+          </Button>
+        </div>
       </div>
 
       {/* Dynamic UPI Payment QR Dialog (Strictly for Dynamic QR method) */}
@@ -1793,10 +1878,23 @@ function CheckoutPage() {
               </div>
 
               {/* Confirmation Action */}
-              <div className="w-full pt-2 border-t border-[#E5E0D5]">
+              <div className="w-full pt-2 border-t border-[#E5E0D5] space-y-2.5">
+                <div className="space-y-1 text-left">
+                  <Label htmlFor="qr-utr-ref" className="text-[11px] font-semibold text-[#3D4C44]">
+                    {lang === "hi" ? "UTR / लेनदेन नंबर (वैकल्पिक)" : "UTR / UPI Ref No. (Optional)"}
+                  </Label>
+                  <Input
+                    id="qr-utr-ref"
+                    name="qr_utr_ref"
+                    value={upiUtrRef}
+                    onChange={(e) => setUpiUtrRef(e.target.value)}
+                    placeholder={lang === "hi" ? "उदा. 432198765432" : "e.g. 12-digit UTR number"}
+                    className="h-9 rounded-xl text-xs font-mono border-[#E5E0D5]"
+                  />
+                </div>
                 <Button
                   type="button"
-                  onClick={handleConfirmDynamicQrPayment}
+                  onClick={() => void handleConfirmUpiOrQrPayment("qr")}
                   disabled={isVerifyingQrPayment}
                   className="w-full h-11 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-md cursor-pointer"
                 >
@@ -1913,41 +2011,23 @@ function CheckoutPage() {
               </div>
 
               {/* Confirmation Action */}
-              <div className="w-full pt-2 border-t border-[#E5E0D5]">
+              <div className="w-full pt-2 border-t border-[#E5E0D5] space-y-2.5">
+                <div className="space-y-1 text-left">
+                  <Label htmlFor="upi-utr-ref" className="text-[11px] font-semibold text-[#3D4C44]">
+                    {lang === "hi" ? "UTR / लेनदेन नंबर (वैकल्पिक)" : "UTR / UPI Ref No. (Optional)"}
+                  </Label>
+                  <Input
+                    id="upi-utr-ref"
+                    name="upi_utr_ref"
+                    value={upiUtrRef}
+                    onChange={(e) => setUpiUtrRef(e.target.value)}
+                    placeholder={lang === "hi" ? "उदा. 432198765432" : "e.g. 12-digit UTR number"}
+                    className="h-9 rounded-xl text-xs font-mono border-[#E5E0D5]"
+                  />
+                </div>
                 <Button
                   type="button"
-                  onClick={async () => {
-                    if (!activeOrderForPayment) return;
-                    setIsVerifyingQrPayment(true);
-                    try {
-                      const verifyRes = await verifyPaymentWithServer({
-                        orderId: activeOrderForPayment.id,
-                        orderNo: activeOrderForPayment.orderNo,
-                        gatewayOrderId: activeOrderForPayment.gatewayOrderId || `upi_${activeOrderForPayment.orderNo}`,
-                        gatewayPaymentId: `upi_direct_${Date.now().toString(36)}`,
-                        signature: "verified_upi_direct",
-                        amount: activeOrderForPayment.amount,
-                        paymentMethod: "upi",
-                      });
-
-                      if (verifyRes.success) {
-                        setUpiModalOpen(false);
-                        clear();
-                        toast.success(t.paymentSuccess);
-                        void navigate({
-                          to: "/track",
-                          search: { orderNo: activeOrderForPayment.orderNo, phone: activeOrderForPayment.cleanPhone } as never,
-                        });
-                      } else {
-                        toast.error(t.paymentFailedMessage);
-                      }
-                    } catch (err: unknown) {
-                      const msg = err instanceof Error ? err.message : "Verification failed";
-                      toast.error(`Verification error: ${msg}`);
-                    } finally {
-                      setIsVerifyingQrPayment(false);
-                    }
-                  }}
+                  onClick={() => void handleConfirmUpiOrQrPayment("upi")}
                   disabled={isVerifyingQrPayment}
                   className="w-full h-11 rounded-xl bg-[#15803D] hover:bg-[#166534] text-white font-bold text-xs shadow-md cursor-pointer"
                 >

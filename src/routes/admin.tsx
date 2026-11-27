@@ -20,11 +20,14 @@ import {
   Volume2,
   VolumeX,
   Star,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { isOrderSoundEnabled, setOrderSoundEnabled, playNewOrderChime } from "@/lib/sound";
 import {
@@ -52,7 +55,16 @@ import type { CategoryHeading } from "@/lib/category-headings";
 
 
 
+type AdminSearchParams = {
+  order?: string | undefined;
+  tab?: string | undefined;
+};
+
 export const Route = createFileRoute("/admin")({
+  validateSearch: (search: Record<string, unknown>): AdminSearchParams => ({
+    order: typeof search["order"] === "string" ? (search["order"] as string) : undefined,
+    tab: typeof search["tab"] === "string" ? (search["tab"] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Arun Gopal Traders | Admin" },
@@ -88,9 +100,14 @@ const TABS = [
 
 function AdminPage() {
   const { user, isAdmin, profile, refreshProfile } = useAuth();
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const { lang, setLang } = useLanguage();
+  const search = Route.useSearch();
+  const [activeTab, setActiveTab] = useState<string>(
+    search.tab || (search.order ? "orders" : "overview"),
+  );
   const [adminIdentifier, setAdminIdentifier] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -150,6 +167,22 @@ function AdminPage() {
     ...adminOrdersQuery,
     enabled: isAuthorizedAdmin,
   });
+
+  useEffect(() => {
+    if (search.tab) {
+      setActiveTab(search.tab);
+    }
+    if (search.order) {
+      setActiveTab("orders");
+      const target = search.order.trim().toLowerCase();
+      const matched = orders.find(
+        (o) => o.order_no.toLowerCase() === target || o.id.toLowerCase() === target,
+      );
+      if (matched) {
+        setSelectedOrder(matched);
+      }
+    }
+  }, [search.order, search.tab, orders]);
 
 
   async function handleUnlock(e: React.FormEvent) {
@@ -235,29 +268,52 @@ function AdminPage() {
     return (
       <div className="container-page min-h-screen flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md rounded-2xl border border-[#E5E0D5] bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              onClick={() => setLang(lang === "hi" ? "en" : "hi")}
+              className="inline-flex items-center gap-1 rounded-full border border-[#E5E0D5] bg-[#FAF8F2] px-3 py-1 text-[11px] font-bold text-[#145A45] hover:bg-[#E8F1EC] cursor-pointer"
+            >
+              {lang === "hi" ? "English" : "हिंदी"}
+            </button>
+          </div>
+
           <div className="text-center">
             <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-[#FAF8F2] text-[#0F4A38] border border-[#E5E0D5] shadow-2xs">
               <Lock className="size-7 text-[#145A45]" />
             </div>
             <h1 className="mt-4 font-sans text-2xl font-bold text-[#16201A]">
-              Store Management Portal
+              {lang === "hi" ? "स्टोर प्रबंधन पोर्टल" : "Store Management Portal"}
             </h1>
             <p className="mt-1 text-xs text-[#3D4C44]">
-              Restricted owner authentication for Arun Gopal Traders.
+              {lang === "hi"
+                ? "अरुण गोपाल ट्रेडर्स के मालिक व एडमिन के लिए सुरक्षित लॉगिन।"
+                : "Restricted owner authentication for Arun Gopal Traders."}
             </p>
           </div>
 
           <form onSubmit={handleUnlock} className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-[#16201A]">Admin Email / Phone</label>
-                <span className="text-[10px] text-[#3D4C44] bg-[#FAF8F2] px-2 py-0.5 rounded-full font-medium border border-[#E5E0D5]">Authorized Access</span>
+                <label htmlFor="admin-identifier" className="text-xs font-bold text-[#16201A]">
+                  {lang === "hi" ? "एडमिन ईमेल या मोबाइल" : "Admin Email / Phone"}
+                </label>
+                <span className="text-[10px] text-[#3D4C44] bg-[#FAF8F2] px-2 py-0.5 rounded-full font-medium border border-[#E5E0D5]">
+                  {lang === "hi" ? "अधिकृत प्रवेश" : "Authorized Access"}
+                </span>
               </div>
               <Input
+                id="admin-identifier"
+                name="username"
+                autoComplete="username"
                 type="text"
                 required
                 autoFocus
-                placeholder="अपना एडमिन ईमेल या मोबाइल नंबर दर्ज करें"
+                placeholder={
+                  lang === "hi"
+                    ? "अपना एडमिन ईमेल या 10 अंकों का मोबाइल दर्ज करें"
+                    : "Enter admin email or 10-digit phone"
+                }
                 value={adminIdentifier}
                 onChange={(e) => setAdminIdentifier(e.target.value)}
                 className="h-11 rounded-lg border-[#E5E0D5] bg-white text-sm font-medium focus-visible:border-[#145A45]"
@@ -265,15 +321,40 @@ function AdminPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#16201A]">Admin Password</label>
-              <Input
-                type="password"
-                required
-                placeholder="अपना एडमिन पासवर्ड दर्ज करें"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                className="h-11 rounded-lg border-[#E5E0D5] bg-white focus-visible:border-[#145A45]"
-              />
+              <label htmlFor="admin-password" className="text-xs font-bold text-[#16201A]">
+                {lang === "hi" ? "एडमिन पासवर्ड" : "Admin Password"}
+              </label>
+              <div className="relative">
+                <Input
+                  id="admin-password"
+                  name="password"
+                  autoComplete="current-password"
+                  type={showAdminPassword ? "text" : "password"}
+                  required
+                  placeholder={
+                    lang === "hi" ? "अपना एडमिन पासवर्ड दर्ज करें" : "Enter admin password"
+                  }
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="h-11 rounded-lg border-[#E5E0D5] bg-white pr-10 focus-visible:border-[#145A45]"
+                />
+                <button
+                  type="button"
+                  aria-label={
+                    showAdminPassword
+                      ? lang === "hi"
+                        ? "पासवर्ड छिपाएं"
+                        : "Hide password"
+                      : lang === "hi"
+                        ? "पासवर्ड दिखाएं"
+                        : "Show password"
+                  }
+                  onClick={() => setShowAdminPassword(!showAdminPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B746F] hover:text-[#16201A] cursor-pointer"
+                >
+                  {showAdminPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
 
             <Button
@@ -281,16 +362,29 @@ function AdminPage() {
               disabled={isAuthenticating}
               className="h-11 w-full rounded-lg font-bold shadow-xs bg-[#145A45] text-white hover:bg-[#0A3628] active:scale-95 transition-all text-sm disabled:opacity-50 cursor-pointer"
             >
-              {isAuthenticating ? "Authenticating..." : "Login to Admin Dashboard"} <ShieldCheck className="ml-2 size-4" />
+              {isAuthenticating
+                ? lang === "hi"
+                  ? "सत्यापन हो रहा है..."
+                  : "Authenticating..."
+                : lang === "hi"
+                  ? "एडमिन डैशबोर्ड में लॉगिन करें"
+                  : "Login to Admin Dashboard"}{" "}
+              <ShieldCheck className="ml-2 size-4" />
             </Button>
+
+            <p className="text-[11px] text-center text-[#5A665F]">
+              {lang === "hi"
+                ? "पासवर्ड भूलने पर मोबाइल नंबर वाले ग्राहक लॉगिन पोर्टल से या स्टोर डेटाबेस एडमिन द्वारा रीसेट करें।"
+                : "Forgot password? Recover via your registered phone or ask the store owner admin."}
+            </p>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-5 text-center">
             <Link
               to="/"
               className="inline-flex items-center min-h-[44px] px-3 text-xs font-semibold text-[#145A45] hover:underline"
             >
-              ← Return to Customer Store
+              {lang === "hi" ? "← ग्राहक स्टोर पर वापस जाएं" : "← Return to Customer Store"}
             </Link>
           </div>
         </div>

@@ -80,18 +80,8 @@ export async function updateOrderStatus(
   note?: string,
   orderNo?: string
 ): Promise<{ success: boolean; order?: Partial<Order>; error?: string }> {
-  // Always record status in persistent local overrides
-  saveLocalStatusOverride(orderId, newStatus, note);
-
-  // Broadcast to all connected customer devices and admin panels in realtime
-  broadcastOrderSync({
-    orderId,
-    orderNo,
-    status: newStatus,
-  });
-
   try {
-    // 1. Primary: Try secure database procedure
+    // 1. Primary: Secure RBAC database procedure
     const { data: rpcData, error: rpcError } = await supabase.rpc(
       "admin_update_order_status" as never,
       {
@@ -101,7 +91,10 @@ export async function updateOrderStatus(
       } as never
     );
 
-    if (!rpcError && rpcData && typeof rpcData === "object" && (rpcData as { success?: boolean }).success) {
+    const rpcPayload = rpcData as { success?: boolean; error?: string } | null;
+    if (!rpcError && rpcPayload?.success) {
+      saveLocalStatusOverride(orderId, newStatus, note);
+      broadcastOrderSync({ orderId, orderNo, status: newStatus });
       return {
         success: true,
         order: {
@@ -113,7 +106,11 @@ export async function updateOrderStatus(
       };
     }
 
-    // 2. Direct table update
+    if (rpcPayload && rpcPayload.success === false && rpcPayload.error) {
+      return { success: false, error: rpcPayload.error };
+    }
+
+    // 2. Direct table update fallback (strictly guarded by admin RLS)
     const { error: directError } = await supabase
       .from("orders")
       .update({
@@ -128,14 +125,11 @@ export async function updateOrderStatus(
       return {
         success: false,
         error: directError.message,
-        order: {
-          id: orderId,
-          status: newStatus,
-          updated_at: new Date().toISOString(),
-          notes: note ?? null,
-        },
       };
     }
+
+    saveLocalStatusOverride(orderId, newStatus, note);
+    broadcastOrderSync({ orderId, orderNo, status: newStatus });
 
     return {
       success: true,
@@ -151,12 +145,6 @@ export async function updateOrderStatus(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Unknown error updating order",
-      order: {
-        id: orderId,
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-        notes: note ?? null,
-      },
     };
   }
 }
@@ -169,33 +157,36 @@ export async function updatePaymentStatus(
   paymentStatus: "pending" | "paid" | "failed" | "refunded",
   orderNo?: string
 ): Promise<{ success: boolean; error?: string }> {
-  saveLocalStatusOverride(orderId, undefined, undefined, paymentStatus);
-
-  // Broadcast to all connected customer devices and admin panels in realtime
-  broadcastOrderSync({
-    orderId,
-    orderNo,
-    paymentStatus,
-  });
-
   try {
-    await supabase.rpc("admin_update_payment_status" as never, {
-      _order_id: orderId,
-      _payment_status: paymentStatus,
-    } as never);
+    const { data: rpcData, error: rpcErr } = await supabase.rpc(
+      "admin_update_payment_status" as never,
+      {
+        _order_id: orderId,
+        _payment_status: paymentStatus,
+      } as never,
+    );
 
-    await supabase
-      .from("orders")
-      .update({
-        payment_status: paymentStatus,
-        paid_at: paymentStatus === "paid" ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      } as never)
-      .eq("id", orderId);
+    const rpcPayload = rpcData as { success?: boolean; error?: string } | null;
+    if (rpcErr || (rpcPayload && rpcPayload.success === false)) {
+      return {
+        success: false,
+        error: rpcErr?.message || rpcPayload?.error || "Payment status update denied",
+      };
+    }
+
+    saveLocalStatusOverride(orderId, undefined, undefined, paymentStatus);
+    broadcastOrderSync({
+      orderId,
+      orderNo,
+      paymentStatus,
+    });
 
     return { success: true };
-  } catch {
-    return { success: true };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to update payment status",
+    };
   }
 }
 
@@ -545,34 +536,12 @@ export function getRegisteredOrders(): RegisteredOrderMeta[] {
   try {
     const raw = typeof window !== "undefined" ? localStorage.getItem(PLACED_ORDERS_REGISTRY_KEY) : null;
     const fromStorage: RegisteredOrderMeta[] = raw ? JSON.parse(raw) : [];
-    
-    // Comprehensive seed of all store orders
-    const defaultKnown: RegisteredOrderMeta[] = [
-      { order_no: "AGT-1002", phone: "6388354988" },
-      { order_no: "AGT-1006", phone: "9621617360" },
-      { order_no: "AGT-1009", phone: "6388354988" },
-      { order_no: "AGT-1010", phone: "6388354988" },
-      { order_no: "AGT-1011", phone: "9876543210" },
-      { order_no: "AGT-1039", phone: "6388354988" },
-      { order_no: "AGT-1040", phone: "6388354988" },
-      { order_no: "AGT-1041", phone: "6388354988" },
-      { order_no: "AGT-1042", phone: "6388354988" },
-      { order_no: "AGT-1043", phone: "6388354988" },
-      { order_no: "AGT-1044", phone: "6388354988" },
-      { order_no: "AGT-1045", phone: "6388354988" },
-      { order_no: "AGT-1050", phone: "6388354988" },
-      { order_no: "AGT-1051", phone: "6388354988" },
-      { order_no: "AGT-1052", phone: "6388354988" },
-      { order_no: "AGT-1054", phone: "6388354988" },
-      { order_no: "AGT-1055", phone: "8960908972" },
-      { order_no: "AGT-1056", phone: "8960908972" },
-      { order_no: "AGT-1057", phone: "6388354988" },
-      { order_no: "AGT-1058", phone: "6388354988" },
-    ];
 
     const map = new Map<string, RegisteredOrderMeta>();
-    for (const item of [...defaultKnown, ...fromStorage]) {
-      map.set(item.order_no.toUpperCase(), item);
+    for (const item of fromStorage) {
+      if (item?.order_no) {
+        map.set(item.order_no.toUpperCase(), item);
+      }
     }
     return Array.from(map.values());
   } catch {

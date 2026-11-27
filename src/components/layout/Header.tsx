@@ -54,6 +54,7 @@ export function Header() {
   const { lang, setLang, t, formatStatus, getCategoryName, getProductName } = useLanguage();
   const navigate = useNavigate();
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
+  const isCheckoutRoute = currentPath === "/checkout";
 
   const [term, setTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -91,24 +92,43 @@ export function Header() {
   const { data: categories = [] } = useQuery(categoriesQuery);
   const { data: products = [] } = useQuery(productsQuery());
 
-  const matchingCategories = term.trim().length >= 2
-    ? categories.filter((c) =>
-      c.name.toLowerCase().includes(term.toLowerCase()) ||
-      c.slug.toLowerCase().includes(term.toLowerCase())
-    ).slice(0, 3)
+  const normalizedTerm = term.trim().toLowerCase();
+
+  const matchingCategories = normalizedTerm.length >= 2
+    ? categories
+        .filter((c) => {
+          const localized = getCategoryName(c).toLowerCase();
+          return (
+            c.name.toLowerCase().includes(normalizedTerm) ||
+            (c.name_hi && c.name_hi.toLowerCase().includes(normalizedTerm)) ||
+            (c.name_en && c.name_en.toLowerCase().includes(normalizedTerm)) ||
+            localized.includes(normalizedTerm) ||
+            c.slug.toLowerCase().includes(normalizedTerm)
+          );
+        })
+        .slice(0, 3)
     : [];
 
-  const matchingProducts = term.trim().length >= 2
-    ? products.filter((p) => {
-      const hName = getProductName(p);
-      const enName = p.name_en || p.name;
-      return (
-        p.name.toLowerCase().includes(term.toLowerCase()) ||
-        enName.toLowerCase().includes(term.toLowerCase()) ||
-        hName.toLowerCase().includes(term.toLowerCase()) ||
-        (p.brand && p.brand.toLowerCase().includes(term.toLowerCase()))
-      );
-    }).slice(0, 5)
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
+
+  const matchingProducts = normalizedTerm.length >= 2
+    ? products
+        .filter((p) => {
+          const hName = getProductName(p).toLowerCase();
+          const enName = (p.name_en || p.name).toLowerCase();
+          const cat = p.category_id ? categoryById.get(p.category_id) : undefined;
+          const catText = cat
+            ? `${cat.name} ${cat.name_hi ?? ""} ${cat.name_en ?? ""} ${getCategoryName(cat)}`.toLowerCase()
+            : "";
+          return (
+            p.name.toLowerCase().includes(normalizedTerm) ||
+            enName.includes(normalizedTerm) ||
+            hName.includes(normalizedTerm) ||
+            (p.brand && p.brand.toLowerCase().includes(normalizedTerm)) ||
+            (catText && catText.includes(normalizedTerm))
+          );
+        })
+        .slice(0, 5)
     : [];
 
   function submitSearch(e?: React.FormEvent, customTerm?: string) {
@@ -164,6 +184,13 @@ export function Header() {
               activeText = activeText.replace("आपका अपना किराने की दुकान", "आपकी अपनी किराना दुकान");
             } else if (activeText.includes("Aapka Apna Kirane Ki Dukan")) {
               activeText = activeText.replace("Aapka Apna Kirane Ki Dukan", "Aapki Apni Kirana Dukan");
+            }
+            if (lang === "en") {
+              if (/ramnagar\s+chaurahe/i.test(activeText) || /kirane?\s+ki\s+dukan/i.test(activeText) || /kirana\s+dukan/i.test(activeText)) {
+                activeText = "Your Trusted Local Grocery Store • Ramnagar Chauraha, Adda Bazar";
+              } else if (/[\u0900-\u097F]/.test(activeText)) {
+                activeText = "100% Pure & Genuine Daily Groceries • Ramnagar Chauraha, Maharajganj";
+              }
             }
 
             // Fulfillment Badge strictly respects the admin delivery toggle
@@ -259,20 +286,9 @@ export function Header() {
               </div>
             );
 
-            if (!activeText) return (
-              <div className="flex items-center justify-between w-full">
-                <div className="hidden md:flex items-center justify-start shrink-0">
-                  {fulfillmentBadge}
-                </div>
-                <div className="flex items-center justify-end flex-1">
-                  {languageAndTiming}
-                </div>
-              </div>
-            );
+            const parts = activeText ? activeText.split("•") : [];
 
-            const parts = activeText.split("•");
-
-            const mobileSnippet = (
+            const mobileSnippet = activeText ? (
               <span className="inline-flex items-center gap-1.5">
                 {parts.length > 1 ? (
                   <>
@@ -284,9 +300,9 @@ export function Header() {
                   <span className="text-[#F5D061] font-bold">{activeText}</span>
                 )}
               </span>
-            );
+            ) : null;
 
-            const announcementPill = (
+            const announcementPill = activeText ? (
               <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 px-3.5 py-1 shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-all max-w-full backdrop-blur-xs">
                 <span className="grid size-4.5 place-items-center rounded-full bg-gradient-to-br from-[#E3B341]/35 to-[#F5D061]/20 border border-[#E3B341]/60 text-[#F5D061] shrink-0 shadow-[0_1px_4px_rgba(227,179,65,0.3)]">
                   <Megaphone className="size-2.5 text-[#F5D061] -rotate-12" strokeWidth={2.4} />
@@ -310,7 +326,7 @@ export function Header() {
                   )}
                 </p>
               </div>
-            );
+            ) : null;
 
             return (
               <>
@@ -324,21 +340,23 @@ export function Header() {
                     )}
                   </span>
                   <div className="relative flex-1 overflow-hidden min-w-0">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-[#07271D] to-transparent z-10" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-2.5 bg-gradient-to-l from-[#07271D] to-transparent z-10" />
-                    <div className="animate-marquee-smooth flex items-center gap-2.5 py-0.5 text-[11px] whitespace-nowrap">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 w-5 bg-gradient-to-r from-[#07271D] via-[#07271D]/75 to-transparent z-10" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 w-5 bg-gradient-to-l from-[#07271D] via-[#07271D]/75 to-transparent z-10" />
+                    <div className="animate-marquee-smooth flex items-center gap-2.5 pl-4 pr-4 py-0.5 text-[11px] whitespace-nowrap">
                       {mobileSnippet}
-                      <span className="text-[#E3B341]/60 font-bold">•</span>
+                      {mobileSnippet ? <span className="text-[#E3B341]/60 font-bold">•</span> : null}
                       {isDeliveryEnabled ? (
                         <span className="text-emerald-200 font-bold">
-                          {lang === "hi" ? "तेज़ होम डिलीवरी (₹499+ पर मुफ़्त)" : "Express Delivery (Free ₹499+)"}
+                          {lang === "hi"
+                            ? `तेज़ होम डिलीवरी (₹${settings?.free_delivery_threshold ?? 499}+ पर मुफ़्त)`
+                            : `Express Delivery (Free ₹${settings?.free_delivery_threshold ?? 499}+)`}
                         </span>
                       ) : (
                         <span className="text-amber-200 font-bold">
                           {lang === "hi" ? "दुकान से पिकअप उपलब्ध (रामनगर चौराहा)" : "Store Pickup Available"}
                         </span>
                       )}
-                      <span className="text-[#E3B341]/60 font-bold">•</span>
+                      {mobileSnippet ? <span className="text-[#E3B341]/60 font-bold">•</span> : null}
                       {mobileSnippet}
                     </div>
                   </div>
@@ -791,7 +809,8 @@ export function Header() {
         </SheetContent>
       </Sheet>
 
-        {/* Desktop Row 2: Search View on Left + AI Quick Actions beside it (Laptop & Desktop) */}
+        {/* Desktop Row 2: Search View on Left + AI Quick Actions beside it (hidden on focused /checkout flow) */}
+        {!isCheckoutRoute && (
         <div className="border-t border-[#EAE6DC]/75 bg-white/95 backdrop-blur-md hidden md:block relative z-30">
           <div className="container-page py-2 flex items-center justify-between gap-3 lg:gap-4">
             {/* Search View on Left - Expanded & Long */}
@@ -969,8 +988,7 @@ export function Header() {
                     </span>
                   </div>
                   <span className="text-[11px] font-bold text-[#1E543D] flex items-center gap-0.5 mt-0.5 whitespace-nowrap">
-                    <span>{lang === "hi" ? "कैसे काम करता है?" : "How it works"}</span>
-                    <span className="text-[8.5px] font-bold">ⓘ</span>
+                    <span>{lang === "hi" ? "1-क्लिक थैला भरें" : "1-Click Basket"}</span>
                   </span>
                 </div>
               </button>
@@ -1032,8 +1050,10 @@ export function Header() {
             </div>
           </div>
         </div>
+        )}
 
-        {/* Mobile Search Bar Row (Slim, Roomy & Clean White) */}
+        {/* Mobile Search Bar Row (Slim, Roomy & Clean White; hidden on /checkout) */}
+        {!isCheckoutRoute && (
         <div className="border-t border-[#E5E7EB] bg-white px-3.5 py-2 md:hidden relative">
           <RotatingSearchInput
             term={term}
@@ -1173,6 +1193,7 @@ export function Header() {
             </>
           )}
         </div>
+        )}
       </header>
 
       <PhoneOrderModal open={orderModalOpen} onOpenChange={setOrderModalOpen} />
@@ -1240,7 +1261,7 @@ export function Header() {
                 </p>
                 <p className="text-[11px] sm:text-xs text-[#3D4841] leading-relaxed mt-0.5">
                   {lang === "hi"
-                    ? "पूरा सामान कार्ट में जुड़ जाएगा। घर बैठे होम डिलीवरी पाएं या दुकान से सीधा पिकअप लें।"
+                    ? "पूरा सामान थैले में जुड़ जाएगा। घर बैठे होम डिलीवरी पाएं या दुकान से सीधा पिकअप लें।"
                     : "Review your items and checkout with 30-min home delivery or in-store pickup."}
                 </p>
               </div>

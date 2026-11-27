@@ -303,50 +303,147 @@ export const searchImagesServerFn = createServerFn({ method: "GET" })
     return await executeServerImageSearch(rawQuery);
   });
 
+function isPrivateOrBlockedHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!host) return true;
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    host === "::1" ||
+    host === "::" ||
+    host.startsWith("fe80:") ||
+    host.startsWith("fc") ||
+    host.startsWith("fd")
+  ) {
+    return true;
+  }
+
+  // Block raw numeric / IPv4 loopback, private, link-local, and metadata ranges
+  const ipv4Match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const a = Number(ipv4Match[1]);
+    const b = Number(ipv4Match[2]);
+    if (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a >= 224
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function assertSafeExternalImageUrl(rawUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl.trim());
+  } catch {
+    throw new Error("Invalid image URL provided");
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new Error("Only http/https image URLs are allowed");
+  }
+  if (parsed.username || parsed.password || isPrivateOrBlockedHostname(parsed.hostname)) {
+    throw new Error("Blocked or unsafe external image host");
+  }
+  return parsed;
+}
+
 /**
- * Server Function: Fetches an external image URL (no CORS restrictions),
- * optimizes it, uploads to Supabase Storage 'product-images', and returns
- * the public Supabase storage URL.
+ * Server Function: Fetches a verified public external image URL,
+ * validates SSRF safety, content-type and size, and uploads to
+ * Supabase Storage 'product-images' under authenticated Store Admin permissions.
  */
 export const uploadExternalImageServerFn = createServerFn({ method: "POST" })
-  .validator((d: string) => String(d || ""))
-  .handler(async ({ data: rawUrl }) => {
-    if (!rawUrl || !rawUrl.startsWith("http")) {
-      throw new Error("Invalid image URL provided");
+  .validator((d: { url?: string; accessToken?: string } | string) => {
+    if (typeof d === "string") {
+      return { url: d, accessToken: "" };
+    }
+    return {
+      url: String(d?.url || ""),
+      accessToken: String(d?.accessToken || ""),
+    };
+  })
+  .handler(async ({ data }) => {
+    const rawUrl = data.url;
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const { verifyAdminJwtToken, verifyAdminRequest } = await import(
+      "../integrations/supabase/auth-middleware"
+    );
+
+    // Require Store Admin authentication via request Authorization header or passed accessToken
+    let adminAuth = await verifyAdminRequest(getRequest());
+    if (!adminAuth.isAdmin && data.accessToken) {
+      adminAuth = await verifyAdminJwtToken(data.accessToken);
+    }
+    if (!adminAuth.isAdmin || !adminAuth.supabase) {
+      throw new Error("Unauthorized: Store Admin authentication required");
     }
 
-    // Dynamic import with relative path for SSR compatibility
     const { optimizeProductImageUrl } = await import("./product-images");
-    const { supabase } = await import("../integrations/supabase/client");
-
     const cleanUrl = optimizeProductImageUrl(rawUrl);
-    const res = await fetch(cleanUrl, {
+    const safeUrl = assertSafeExternalImageUrl(cleanUrl);
+
+    const res = await fetch(safeUrl.toString(), {
+      redirect: "follow",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        Accept: "image/avif,image/webp,image/apng,image/jpeg,image/png,*/*;q=0.8",
       },
     });
+
+    // Re-check final redirected URL against SSRF blocklist
+    if (res.url) {
+      assertSafeExternalImageUrl(res.url);
+    }
 
     if (!res.ok) {
       throw new Error(`Failed to download image from external source (status: ${res.status})`);
     }
 
-    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const contentType = (res.headers.get("content-type") || "").toLowerCase().split(";")[0]?.trim() || "";
+    const allowedMimeTypes = new Set([
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/gif",
+      "image/avif",
+    ]);
+    if (!allowedMimeTypes.has(contentType)) {
+      throw new Error(`Unsupported external file type: ${contentType || "unknown"}`);
+    }
+
+    const contentLengthHeader = Number(res.headers.get("content-length") || "0");
+    const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (contentLengthHeader > MAX_BYTES) {
+      throw new Error("External image exceeds 10 MB size limit");
+    }
+
     const buffer = await res.arrayBuffer();
-    if (!buffer || buffer.byteLength === 0) {
-      throw new Error("Empty image data received");
+    if (!buffer || buffer.byteLength === 0 || buffer.byteLength > MAX_BYTES) {
+      throw new Error("Invalid external image payload size");
     }
 
     const fileExt = contentType.includes("png")
       ? "png"
       : contentType.includes("webp")
       ? "webp"
+      : contentType.includes("gif")
+      ? "gif"
       : "jpg";
     const fileName = `ext_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
     const filePath = `products/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await adminAuth.supabase.storage
       .from("product-images")
       .upload(filePath, Buffer.from(buffer), {
         contentType,
@@ -358,7 +455,7 @@ export const uploadExternalImageServerFn = createServerFn({ method: "POST" })
       throw new Error(`Storage upload error: ${uploadError.message}`);
     }
 
-    const { data: pubData } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    const { data: pubData } = adminAuth.supabase.storage.from("product-images").getPublicUrl(filePath);
     return pubData.publicUrl;
   });
 

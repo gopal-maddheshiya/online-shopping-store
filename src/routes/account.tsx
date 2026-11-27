@@ -42,7 +42,7 @@ import { useCart } from "@/lib/cart";
 import { useLanguage } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { customerOrdersQuery, type Order } from "@/lib/queries";
-import { inr, formatDate, ORDER_STATUS_LABEL } from "@/lib/format";
+import { inr, formatDate, getOrderStatusLabel } from "@/lib/format";
 import { getProductImage } from "@/lib/product-images";
 import { InvoiceView } from "@/components/InvoiceView";
 import { CancelOrderModal } from "@/components/CancelOrderModal";
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
       ...NOINDEX_ROBOTS_META,
-      { title: "Arun Gopal Traders | Customer Account & Orders" },
+      { title: "मेरा खाता और ऑर्डर इतिहास | My Account | Arun Gopal Traders" },
       {
         name: "description",
         content:
@@ -78,7 +78,7 @@ type CustomerAddress = {
   created_at: string;
 };
 
-export function AccountPage() {
+function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, profile, isAdmin, refreshProfile, loading: authLoading } = useAuth();
@@ -499,6 +499,16 @@ export function AccountPage() {
               ? "इस मोबाइल नंबर से कोई खाता नहीं मिला।"
               : "No account found with this mobile number.",
           );
+        } else if (
+          error.message.toLowerCase().includes("provider") ||
+          error.message.toLowerCase().includes("sms") ||
+          error.message.toLowerCase().includes("unsupported")
+        ) {
+          setAuthErrorMessage(
+            lang === "hi"
+              ? "SMS OTP सेवा अभी सक्रिय नहीं है। कृपया 'Google के साथ जारी रखें' से लॉगिन करें या मदद के लिए +91 6388354988 पर कॉल करें।"
+              : "SMS OTP is currently unavailable. Please sign in with Google or call +91 6388354988 for help.",
+          );
         } else {
           setAuthErrorMessage(error.message);
         }
@@ -559,41 +569,7 @@ export function AccountPage() {
     try {
       const fullPhone = `+91${clean}`;
 
-      // Method A: Check if dev_reset_password RPC is available
-      if (code && code.trim().length >= 4) {
-        const { data: rpcRes, error: rpcErr } = await supabase.rpc(
-          "dev_reset_password" as never,
-          {
-            p_phone: fullPhone,
-            p_code: code.trim(),
-            p_new_password: newPassword,
-          } as never,
-        );
-
-        if (!rpcErr && rpcRes && typeof rpcRes === "object") {
-          const resObj = rpcRes as { success?: boolean; error?: string; message?: string };
-          if (resObj.success) {
-            await supabase.auth.signOut();
-            toast.success(
-              lang === "hi"
-                ? "पासवर्ड सफलतापूर्वक बदल गया! कृपया नए पासवर्ड के साथ लॉगिन करें।"
-                : "Password successfully changed. Please login with your new password.",
-            );
-            setAuthView("signin");
-            setSignInPhone(clean);
-            setSignInPassword("");
-            setRecoveryCode("");
-            setNewPassword("");
-            setConfirmNewPassword("");
-            return;
-          } else if (resObj.error) {
-            setAuthErrorMessage(resObj.error);
-            return;
-          }
-        }
-      }
-
-      // Method B: Supabase Auth verifyOtp + updateUser
+      // Verify OTP strictly via Supabase Auth SMS OTP (legacy hardcoded dev_reset_password removed)
       const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
         phone: fullPhone,
         token: code,
@@ -852,7 +828,7 @@ export function AccountPage() {
         if (variants) {
           variants.forEach((v) => {
             liveStockMap.set(v.id, {
-              stock: Number(v.stock ?? 99),
+              stock: Number(v.stock ?? 0),
               price: Number(v.price),
               isActive: v.is_active !== false,
             });
@@ -885,7 +861,7 @@ export function AccountPage() {
         const vId = item.variant_id ?? `temp-${item.id}`;
         const liveInfo = item.variant_id ? liveStockMap.get(item.variant_id) : null;
 
-        if (liveInfo && (!liveInfo.isActive || liveInfo.stock <= 0)) {
+        if (item.variant_id && (!liveInfo || !liveInfo.isActive || liveInfo.stock <= 0)) {
           outOfStockCount++;
           continue;
         }
@@ -1111,6 +1087,8 @@ export function AccountPage() {
                     </span>
                     <Input
                       id="signin-phone"
+                      name="phone"
+                      autoComplete="tel"
                       required
                       type="tel"
                       inputMode="numeric"
@@ -1143,6 +1121,8 @@ export function AccountPage() {
                   <div className="relative">
                     <Input
                       id="signin-password"
+                      name="password"
+                      autoComplete="current-password"
                       required
                       type={showSignInPassword ? "text" : "password"}
                       placeholder={lang === "hi" ? "पासवर्ड दर्ज करें" : "Enter password"}
@@ -1152,8 +1132,17 @@ export function AccountPage() {
                     />
                     <button
                       type="button"
+                      aria-label={
+                        showSignInPassword
+                          ? lang === "hi"
+                            ? "पासवर्ड छिपाएं"
+                            : "Hide password"
+                          : lang === "hi"
+                            ? "पासवर्ड दिखाएं"
+                            : "Show password"
+                      }
                       onClick={() => setShowSignInPassword(!showSignInPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24] cursor-pointer"
                     >
                       {showSignInPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -1173,6 +1162,13 @@ export function AccountPage() {
                       ? "लॉगिन करें"
                       : "Sign In"}
                 </Button>
+                {(signInPhone.replace(/\D/g, "").length !== 10 || !signInPassword) && (
+                  <p className="text-[11px] text-center text-[#6B7280]">
+                    {lang === "hi"
+                      ? "आगे बढ़ने के लिए 10 अंकों का मोबाइल नंबर और पासवर्ड भरें।"
+                      : "Enter your 10-digit mobile number and password to continue."}
+                  </p>
+                )}
               </form>
             )}
 
@@ -1185,6 +1181,8 @@ export function AccountPage() {
                   </Label>
                   <Input
                     id="signup-name"
+                    name="name"
+                    autoComplete="name"
                     required
                     placeholder={lang === "hi" ? "उदा. रमेश कुमार" : "e.g. Ramesh Kumar"}
                     value={signUpName}
@@ -1203,6 +1201,8 @@ export function AccountPage() {
                     </span>
                     <Input
                       id="signup-phone"
+                      name="phone"
+                      autoComplete="tel"
                       required
                       type="tel"
                       inputMode="numeric"
@@ -1218,22 +1218,33 @@ export function AccountPage() {
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label htmlFor="signup-password" className="text-xs font-bold text-[#1F2A24]">
-                      {lang === "hi" ? "पासवर्ड (min 6)" : "Password (min 6)"}
+                      {lang === "hi" ? "पासवर्ड (कम से कम 6)" : "Password (min 6)"}
                     </Label>
                     <div className="relative">
                       <Input
                         id="signup-password"
+                        name="new-password"
+                        autoComplete="new-password"
                         required
                         type={showSignUpPassword ? "text" : "password"}
-                        placeholder="••••••"
+                        placeholder={lang === "hi" ? "कम से कम 6 अक्षर" : "Min 6 characters"}
                         value={signUpPassword}
                         onChange={(e) => setSignUpPassword(e.target.value)}
                         className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] pr-8 text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
                       />
                       <button
                         type="button"
+                        aria-label={
+                          showSignUpPassword
+                            ? lang === "hi"
+                              ? "पासवर्ड छिपाएं"
+                              : "Hide password"
+                            : lang === "hi"
+                              ? "पासवर्ड दिखाएं"
+                              : "Show password"
+                        }
                         onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24]"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2A24] cursor-pointer"
                       >
                         {showSignUpPassword ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                       </button>
@@ -1246,9 +1257,11 @@ export function AccountPage() {
                     </Label>
                     <Input
                       id="signup-confirm-password"
+                      name="confirm-password"
+                      autoComplete="new-password"
                       required
                       type="password"
-                      placeholder="••••••"
+                      placeholder={lang === "hi" ? "कम से कम 6 अक्षर" : "Min 6 characters"}
                       value={signUpConfirmPassword}
                       onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                       className="h-10 rounded-xl border-[rgba(20,90,69,0.12)] text-xs font-medium placeholder:text-[#9CA3AF] shadow-2xs focus-visible:border-[#065F46]"
@@ -1258,7 +1271,7 @@ export function AccountPage() {
 
                 <Button
                   type="submit"
-                  disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || !signUpPassword}
+                  disabled={isSigningUp || signUpPhone.replace(/\D/g, "").length !== 10 || signUpPassword.length < 6}
                   className="w-full h-10.5 rounded-xl font-bold shadow-2xs bg-[#145A45] hover:bg-[#0E3F31] text-white active:scale-[0.99] transition-all cursor-pointer text-xs sm:text-sm mt-1"
                 >
                   {isSigningUp
@@ -1269,6 +1282,13 @@ export function AccountPage() {
                       ? "खाता बनाएं"
                       : "Create Account"}
                 </Button>
+                {(signUpPhone.replace(/\D/g, "").length !== 10 || signUpPassword.length < 6) && (
+                  <p className="text-[11px] text-center text-[#6B7280]">
+                    {lang === "hi"
+                      ? "खाता बनाने के लिए 10 अंकों का नंबर और कम से कम 6 अक्षरों का पासवर्ड दर्ज करें।"
+                      : "Enter a 10-digit number and a password of at least 6 characters."}
+                  </p>
+                )}
               </form>
             )}
 
@@ -1301,10 +1321,13 @@ export function AccountPage() {
                     </span>
                     <Input
                       id="forgot-phone"
+                      name="phone"
+                      autoComplete="tel"
                       required
                       type="tel"
+                      inputMode="numeric"
                       maxLength={10}
-                      placeholder="10-digit number"
+                      placeholder={lang === "hi" ? "10 अंकों का नंबर" : "10-digit number"}
                       value={forgotPhone}
                       onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ""))}
                       className="border-0 rounded-none focus-visible:ring-0 text-sm font-semibold text-[#1F2A24] h-10.5 placeholder:text-[#A8B2AC] placeholder:text-xs"
@@ -1318,8 +1341,11 @@ export function AccountPage() {
                   </Label>
                   <Input
                     id="recovery-code"
+                    name="otp"
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
                     required
-                    placeholder="6-digit code"
+                    placeholder={lang === "hi" ? "6 अंकों का कोड" : "6-digit code"}
                     value={recoveryCode}
                     onChange={(e) => setRecoveryCode(e.target.value)}
                     className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] font-mono text-xs font-bold shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
@@ -1333,9 +1359,11 @@ export function AccountPage() {
                     </Label>
                     <Input
                       id="new-password"
+                      name="new-password"
+                      autoComplete="new-password"
                       required
                       type="password"
-                      placeholder="••••••"
+                      placeholder={lang === "hi" ? "कम से कम 6 अक्षर" : "Min 6 characters"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
@@ -1347,9 +1375,11 @@ export function AccountPage() {
                     </Label>
                     <Input
                       id="confirm-new-password"
+                      name="confirm-new-password"
+                      autoComplete="new-password"
                       required
                       type="password"
-                      placeholder="••••••"
+                      placeholder={lang === "hi" ? "कम से कम 6 अक्षर" : "Min 6 characters"}
                       value={confirmNewPassword}
                       onChange={(e) => setConfirmNewPassword(e.target.value)}
                       className="h-10.5 rounded-2xl border-[rgba(20,90,69,0.12)] text-xs shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] focus-visible:border-[#145A45]"
@@ -1547,7 +1577,11 @@ export function AccountPage() {
                         #{order.order_no}
                       </span>
                       <span className="rounded-full bg-[#E8F1EC] border border-[#145A45]/20 px-2.5 py-0.5 text-[10px] font-bold text-[#145A45]">
-                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                        {getOrderStatusLabel(
+                          order.status,
+                          lang,
+                          order.order_type === "pickup" ? "pickup" : "delivery",
+                        )}
                       </span>
                     </div>
                     <p className="text-[11px] text-[#66746C] mt-0.5">
@@ -1713,17 +1747,36 @@ export function AccountPage() {
                       <span className="text-xs font-black text-[#145A45]">{inr(item.price)}</span>
                       <Button
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
+                          let liveStock = 99;
+                          let livePrice = item.price;
+                          if (item.variantId && !item.variantId.startsWith("temp-")) {
+                            const { data: v } = await supabase
+                              .from("product_variants")
+                              .select("stock, price, is_active")
+                              .eq("id", item.variantId)
+                              .maybeSingle();
+                            if (!v || v.is_active === false || Number(v.stock ?? 0) <= 0) {
+                              toast.error(
+                                lang === "hi"
+                                  ? `${item.name} अभी आउट-ऑफ़-स्टॉक है`
+                                  : `${item.name} is currently out of stock`,
+                              );
+                              return;
+                            }
+                            liveStock = Number(v.stock ?? 0);
+                            livePrice = Number(v.price);
+                          }
                           add({
                             variantId: item.variantId,
                             productId: item.productId,
                             slug: item.name.toLowerCase().replace(/\s+/g, "-"),
                             name: item.name,
                             variantLabel: item.variantLabel,
-                            price: item.price,
+                            price: livePrice,
                             mrp: item.mrp,
                             imageUrl: item.imageUrl ?? null,
-                            stock: 99,
+                            stock: liveStock,
                           });
                         }}
                         className="h-7.5 rounded-xl bg-gradient-to-r from-[#145A45] to-[#0E4333] hover:from-[#0F4A38] hover:to-[#07271D] px-2.5 text-[11px] font-bold text-white shadow-[0_1px_3px_rgba(20,90,69,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-[0.97] transition-all cursor-pointer"

@@ -15,45 +15,100 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /checkout
 Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
 Disallow: /api/
 
 # OpenAI Search & ChatGPT Crawlers
 User-agent: GPTBot
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
 Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
 Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
+Disallow: /api/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
+Disallow: /api/
 
 # Perplexity AI Answer Engine Crawler
 User-agent: PerplexityBot
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
 Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
 Disallow: /api/
 
 # Anthropic Claude Crawler
 User-agent: ClaudeBot
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
 Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
 Disallow: /api/
 
 # Google Gemini / Extended Crawlers
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
+Disallow: /api/
 
 # Apple Intelligence Crawler
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /account
+Disallow: /track
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /order/
+Disallow: /api/
 
 # Sitemaps and AI Machine Documentation
 Sitemap: https://arun-gopal-traders.vercel.app/sitemap.xml

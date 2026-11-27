@@ -58,16 +58,22 @@ export interface SmartRationModalProps {
 
 const SAMPLE_LISTS = [
   {
-    label: "दैनिक राशन",
-    text: "2 किलो चीनी, 1 लीटर फॉर्च्यून सरसों तेल, 1 किलो टाटा नमक, 1 किलो अरहर दाल",
+    labelHi: "दैनिक राशन",
+    labelEn: "Daily Ration",
+    textHi: "2 किलो चीनी, 1 लीटर फॉर्च्यून सरसों तेल, 1 किलो टाटा नमक, 1 किलो अरहर दाल",
+    textEn: "2 kg Sugar, 1 L Fortune Mustard Oil, 1 kg Tata Salt, 1 kg Toor Dal",
   },
   {
-    label: "मसाला व पूजा",
-    text: "200 ग्राम एवरेस्ट हल्दी, 100 ग्राम जीरा, 1 डिब्बी हींग, 500 ग्राम अमूल देसी घी",
+    labelHi: "मसाला व पूजा",
+    labelEn: "Spices & Ghee",
+    textHi: "200 ग्राम एवरेस्ट हल्दी, 100 ग्राम जीरा, 1 डिब्बी हींग, 500 ग्राम अमूल देसी घी",
+    textEn: "200g Everest Turmeric, 100g Jeera, 1 pack Hing, 500g Amul Pure Ghee",
   },
   {
-    label: "नाश्ता व स्नैक्स",
-    text: "2 पैकेट मैगी 4-पैक, 1 पैकेट पारले-जी, 250 ग्राम टाटा टी गोल्ड",
+    labelHi: "नाश्ता व स्नैक्स",
+    labelEn: "Tea & Snacks",
+    textHi: "2 पैकेट मैगी 4-पैक, 1 पैकेट पारले-जी, 250 ग्राम टाटा टी गोल्ड",
+    textEn: "2 packs Maggi 4-Pack, 1 pack Parle-G, 250g Tata Tea Gold",
   },
 ];
 
@@ -391,12 +397,40 @@ export function SmartRationModal({
     }
   };
 
-  // Quantity adjustments in results
+  const getMatchedAvailability = (item: MatchedRationItem) => {
+    if (!item.matched || !item.variant_id || !item.product_id) {
+      return {
+        available: false,
+        liveStock: 0,
+        livePrice: item.unit_price,
+        liveMrp: item.mrp || item.unit_price,
+      };
+    }
+    const matchedProd = products.find((p) => p.id === item.product_id);
+    const matchedVariant = matchedProd?.product_variants?.find((v) => v.id === item.variant_id);
+    const liveStock = matchedVariant
+      ? matchedProd?.is_active === false || matchedVariant.is_active === false
+        ? 0
+        : Math.max(0, Number(matchedVariant.stock ?? 0))
+      : Math.max(0, Number(item.stock ?? 0));
+    const livePrice = matchedVariant ? Number(matchedVariant.price) : item.unit_price;
+    const liveMrp = matchedVariant ? Number(matchedVariant.mrp || matchedVariant.price) : item.mrp || item.unit_price;
+    return {
+      available: liveStock > 0,
+      liveStock,
+      livePrice,
+      liveMrp,
+    };
+  };
+
+  // Quantity adjustments in results (clamped to live stock)
   const handleUpdateQty = (index: number, delta: number) => {
     setRecognizedItems((prev) =>
       prev.map((item, i) => {
         if (i !== index) return item;
-        const newQty = Math.max(1, item.quantity + delta);
+        const { liveStock } = getMatchedAvailability(item);
+        const cap = Math.max(1, liveStock);
+        const newQty = Math.min(Math.max(1, item.quantity + delta), cap);
         return { ...item, quantity: newQty };
       })
     );
@@ -406,26 +440,39 @@ export function SmartRationModal({
     setRecognizedItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Add all matched items to cart in 1 click
+  // Add all in-stock matched items to cart in 1 click
   const handleAddAllToCart = () => {
-    const matched = recognizedItems.filter((i) => i.matched && i.variant_id && i.product_id);
-    if (matched.length === 0) {
+    const matchedAll = recognizedItems.filter((i) => i.matched && i.variant_id && i.product_id);
+    const availableItems = matchedAll.filter((i) => getMatchedAvailability(i).available);
+    const outOfStockCount = matchedAll.length - availableItems.length;
+
+    if (availableItems.length === 0) {
       toast.error(
         lang === "hi"
-          ? "थैले में जोड़ने योग्य कोई सामान नहीं है।"
-          : "No items available to add to cart."
+          ? "मिले हुए सामान अभी आउट-ऑफ़-स्टॉक हैं।"
+          : "Matched items are currently out of stock."
       );
       return;
     }
 
-    const payload = matched.map((item) => {
+    const payload = availableItems.map((item) => {
+      const matchedProd = products.find((p) => p.id === item.product_id);
+      const matchedVariant = matchedProd?.product_variants?.find((v) => v.id === item.variant_id);
+      const { liveStock, livePrice, liveMrp } = getMatchedAvailability(item);
       const prodObj: ProductLike = {
         name: item.product_name,
-        name_hi: item.product_name_hi ?? null,
+        name_en: item.product_name_en ?? matchedProd?.name_en ?? item.product_name,
+        name_hi: item.product_name_hi ?? matchedProd?.name_hi ?? null,
         slug: item.slug,
       };
       const localizedName = getProductName(prodObj, item.slug);
-      const localizedVariant = getVariantLabel(item.variant_label);
+      const variantLabelEn = item.variant_label_en ?? matchedVariant?.label_en ?? item.variant_label;
+      const variantLabelHi = item.variant_label_hi ?? matchedVariant?.label_hi ?? null;
+      const localizedVariant = getVariantLabel({
+        label: item.variant_label,
+        label_en: variantLabelEn,
+        label_hi: variantLabelHi,
+      });
 
       return {
         item: {
@@ -433,14 +480,17 @@ export function SmartRationModal({
           productId: item.product_id!,
           slug: item.slug,
           name: localizedName,
-          name_hi: item.product_name_hi ?? null,
+          name_en: prodObj.name_en || item.product_name,
+          name_hi: prodObj.name_hi || null,
           variantLabel: localizedVariant || item.variant_label || "1 Unit",
-          price: item.unit_price,
-          mrp: item.mrp || item.unit_price,
+          variantLabel_en: variantLabelEn || item.variant_label || null,
+          variantLabel_hi: variantLabelHi,
+          price: livePrice,
+          mrp: liveMrp,
           imageUrl: item.image_url,
-          stock: 99,
+          stock: liveStock,
         },
-        qty: item.quantity,
+        qty: Math.min(item.quantity, liveStock),
       };
     });
 
@@ -449,20 +499,24 @@ export function SmartRationModal({
 
     toast.success(
       lang === "hi"
-        ? `${matched.length} सामान तुरंत आपके थैले में जुड़ गए!`
-        : `${matched.length} items added to your cart!`
+        ? outOfStockCount > 0
+          ? `${availableItems.length} सामान थैले में जुड़ गए (${outOfStockCount} आउट-ऑफ़-स्टॉक छोड़ा गया)`
+          : `${availableItems.length} सामान तुरंत आपके थैले में जुड़ गए!`
+        : outOfStockCount > 0
+          ? `${availableItems.length} items added to cart (${outOfStockCount} skipped out of stock)`
+          : `${availableItems.length} items added to your cart!`
     );
 
-    // Voice response confirming the exact user request: "aapke kaheanusar ye kam ho gya"
     speakVoiceConfirmation("task_done", lang);
 
     onOpenChange(false);
   };
 
-  const matchedCount = recognizedItems.filter((i) => i.matched).length;
-  const totalPrice = recognizedItems
-    .filter((i) => i.matched)
-    .reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+  const matchedCount = recognizedItems.filter((i) => getMatchedAvailability(i).available).length;
+  const totalPrice = recognizedItems.reduce((sum, item) => {
+    const avail = getMatchedAvailability(item);
+    return avail.available ? sum + avail.livePrice * Math.min(item.quantity, avail.liveStock) : sum;
+  }, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -672,12 +726,12 @@ export function SmartRationModal({
                     <div className="flex flex-wrap gap-1.5">
                       {SAMPLE_LISTS.map((sample) => (
                         <button
-                          key={sample.label}
+                          key={sample.labelEn}
                           type="button"
-                          onClick={() => setInputText(sample.text)}
+                          onClick={() => setInputText(lang === "hi" ? sample.textHi : sample.textEn)}
                           className="rounded-lg bg-[#FAF8F2] border border-[#E4DFD5] px-2.5 py-1 text-xs font-bold text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
                         >
-                          + {sample.label}
+                          + {lang === "hi" ? sample.labelHi : sample.labelEn}
                         </button>
                       ))}
                     </div>
@@ -909,15 +963,16 @@ export function SmartRationModal({
                         <div className="flex flex-wrap justify-center gap-1.5">
                           {SAMPLE_LISTS.map((sample) => (
                             <button
-                              key={sample.label}
+                              key={sample.labelEn}
                               type="button"
                               onClick={() => {
-                                setInputText(sample.text);
-                                finalAccumulatorRef.current = sample.text;
+                                const text = lang === "hi" ? sample.textHi : sample.textEn;
+                                setInputText(text);
+                                finalAccumulatorRef.current = text;
                               }}
                               className="rounded-lg bg-white border border-[#D5CEBF] px-2.5 py-1 text-[11px] font-medium text-[#145A45] hover:bg-[#E6EFE8] hover:border-[#145A45]/30 transition-colors cursor-pointer"
                             >
-                              + {sample.label}
+                              + {lang === "hi" ? sample.labelHi : sample.labelEn}
                             </button>
                           ))}
                         </div>
@@ -970,8 +1025,8 @@ export function SmartRationModal({
                     </h4>
                     <p className="text-[10px] text-[#3D4C44]">
                       {lang === "hi"
-                        ? `${matchedCount} में से ${matchedCount} सामान दुकान में उपलब्ध हैं`
-                        : `${matchedCount} items matched in store inventory`}
+                        ? `${recognizedItems.length} में से ${matchedCount} सामान दुकान में उपलब्ध हैं`
+                        : `${matchedCount} of ${recognizedItems.length} items matched in store inventory`}
                     </p>
                   </div>
                 </div>
@@ -984,11 +1039,13 @@ export function SmartRationModal({
 
               {/* Items List */}
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {recognizedItems.map((item, idx) => (
+                {recognizedItems.map((item, idx) => {
+                  const avail = getMatchedAvailability(item);
+                  return (
                   <div
                     key={idx}
                     className={`p-2.5 sm:p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
-                      item.matched
+                      avail.available
                         ? "border-[#E4DFD5] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
                         : "border-amber-200 bg-amber-50/50"
                     }`}
@@ -1019,7 +1076,11 @@ export function SmartRationModal({
                             )}
                           </p>
                           <span className="text-[10px] font-semibold text-[#145A45] bg-[#E6EFE8] px-1.5 py-0.2 rounded-md">
-                            {getVariantLabel(item.variant_label)}
+                            {getVariantLabel({
+                              label: item.variant_label,
+                              label_en: item.variant_label_en ?? null,
+                              label_hi: item.variant_label_hi ?? null,
+                            })}
                           </span>
                         </div>
                         <p className="text-[10px] text-[#3D4C44] truncate mt-0.5">
@@ -1030,23 +1091,26 @@ export function SmartRationModal({
 
                     {/* Quantity & Price */}
                     <div className="flex items-center gap-2.5 shrink-0">
-                      {item.matched ? (
+                      {avail.available ? (
                         <>
                           <div className="flex items-center rounded-xl border border-[#E4DFD5] bg-[#FAF8F2] p-0.5">
                             <button
                               type="button"
+                              aria-label={lang === "hi" ? "मात्रा घटाएं" : "Decrease quantity"}
                               onClick={() => handleUpdateQty(idx, -1)}
                               className="size-6 rounded-lg bg-white flex items-center justify-center text-[#16201A] hover:bg-stone-100 cursor-pointer shadow-2xs"
                             >
                               <Minus className="size-3" />
                             </button>
                             <span className="w-7 text-center text-xs font-bold text-[#16201A]">
-                              {item.quantity}
+                              {Math.min(item.quantity, avail.liveStock)}
                             </span>
                             <button
                               type="button"
+                              aria-label={lang === "hi" ? "मात्रा बढ़ाएं" : "Increase quantity"}
+                              disabled={item.quantity >= avail.liveStock}
                               onClick={() => handleUpdateQty(idx, 1)}
-                              className="size-6 rounded-lg bg-white flex items-center justify-center text-[#16201A] hover:bg-stone-100 cursor-pointer shadow-2xs"
+                              className="size-6 rounded-lg bg-white flex items-center justify-center text-[#16201A] hover:bg-stone-100 disabled:opacity-40 cursor-pointer shadow-2xs"
                             >
                               <Plus className="size-3" />
                             </button>
@@ -1054,15 +1118,20 @@ export function SmartRationModal({
 
                           <div className="text-right min-w-[55px]">
                             <span className="text-xs font-black text-[#145A45] block">
-                              {inr(item.unit_price * item.quantity)}
+                              {inr(avail.livePrice * Math.min(item.quantity, avail.liveStock))}
                             </span>
-                            {item.mrp && item.mrp > item.unit_price && (
+                            {avail.liveMrp > avail.livePrice && (
                               <span className="text-[10px] text-[#8C827A] line-through block">
-                                {inr(item.mrp * item.quantity)}
+                                {inr(avail.liveMrp * Math.min(item.quantity, avail.liveStock))}
                               </span>
                             )}
                           </div>
                         </>
+                      ) : item.matched ? (
+                        <div className="flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-100/80 px-2 py-1 rounded-xl">
+                          <AlertCircle className="size-3.5" />
+                          <span>{lang === "hi" ? "आउट ऑफ स्टॉक" : "Out of stock"}</span>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-100/80 px-2 py-1 rounded-xl">
                           <AlertCircle className="size-3.5" />
@@ -1072,15 +1141,17 @@ export function SmartRationModal({
 
                       <button
                         type="button"
+                        aria-label={lang === "hi" ? "सामान हटाएं" : "Remove item"}
                         onClick={() => handleRemoveItem(idx)}
                         className="text-[#8C827A] hover:text-red-600 p-1 transition-colors cursor-pointer"
-                        title="हटाएं"
+                        title={lang === "hi" ? "हटाएं" : "Remove"}
                       >
                         <Trash2 className="size-3.5" />
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

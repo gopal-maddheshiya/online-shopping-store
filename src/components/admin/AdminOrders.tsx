@@ -39,7 +39,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { inr, formatDate, telHref, waHref, ORDER_STATUS_LABEL } from "@/lib/format";
+import { inr, formatDate, telHref, waHref, getOrderStatusLabel } from "@/lib/format";
 import { buildCustomerWhatsAppMessage } from "@/lib/notifications";
 import { getProductImage } from "@/lib/product-images";
 import type { Order } from "@/lib/queries";
@@ -111,7 +111,9 @@ export function AdminOrders({
   const [refundReason, setRefundReason] = useState("");
 
   // Queue Counts
-  const activeCount = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").length;
+  const activeCount = orders.filter(
+    (o) => !["delivered", "cancelled", "rejected", "returned"].includes(o.status),
+  ).length;
   const placedCount = orders.filter((o) => o.status === "placed").length;
   const preparingCount = orders.filter(
     (o) => o.status === "confirmed" || o.status === "preparing" || o.status === "ready",
@@ -173,23 +175,29 @@ export function AdminOrders({
     setUpdatingId(refundOrderId);
     try {
       const targetOrder = orders.find((o) => o.id === refundOrderId);
+      if (!targetOrder || (targetOrder.payment_status !== "paid" && targetOrder.payment_status !== "refunded")) {
+        toast.error("Refund can only be recorded for paid orders");
+        return;
+      }
+
       const refundVal = Number(refundAmount);
       if (refundVal <= 0) {
         toast.error("Please enter a valid refund amount greater than 0");
         return;
       }
 
-      const maxPaid = targetOrder?.payment_status === "paid" ? targetOrder.total : targetOrder?.total || 0;
-      if (refundVal > maxPaid) {
-        toast.error(`Refund amount cannot exceed ₹${maxPaid}`);
+      const alreadyRefunded = Number(targetOrder.refund_amount ?? 0);
+      const remainingRefundable = Math.max(Number(targetOrder.total) - alreadyRefunded, 0);
+      if (refundVal > remainingRefundable) {
+        toast.error(`Refund amount cannot exceed remaining balance ₹${remainingRefundable}`);
         return;
       }
 
       const { data, error } = await supabase.rpc("admin_update_payment_and_refund", {
         p_order_id: refundOrderId,
         p_payment_status: "refunded",
-        p_amount_paid: Math.max(maxPaid - refundVal, 0),
-        p_refund_amount: refundVal,
+        p_amount_paid: Math.max(remainingRefundable - refundVal, 0),
+        p_refund_amount: alreadyRefunded + refundVal,
         p_refund_reason: refundReason.trim() || "Refund requested by customer",
       });
 
@@ -228,7 +236,7 @@ export function AdminOrders({
     .filter((o) => {
       // 1. Queue Tab Filtering
       if (activeQueueTab === "active") {
-        if (o.status === "delivered" || o.status === "cancelled") return false;
+        if (["delivered", "cancelled", "rejected", "returned"].includes(o.status)) return false;
       } else if (activeQueueTab === "placed") {
         if (o.status !== "placed") return false;
       } else if (activeQueueTab === "preparing") {
@@ -278,10 +286,15 @@ export function AdminOrders({
         throw new Error(res.error || "Failed to update order status in database");
       }
 
+      const localizedLabel = getOrderStatusLabel(
+        newStatus,
+        language === "en" ? "en" : "hi",
+        targetOrder?.order_type === "pickup" ? "pickup" : "delivery",
+      );
       toast.success(
         language === "hi"
-          ? `ऑर्डर स्थिति बदलकर "${ORDER_STATUS_LABEL[newStatus] ?? newStatus}" कर दी गई!`
-          : `Order status updated to "${ORDER_STATUS_LABEL[newStatus] ?? newStatus}"`
+          ? `ऑर्डर स्थिति बदलकर "${localizedLabel}" कर दी गई!`
+          : `Order status updated to "${localizedLabel}"`
       );
 
       setAdminNote("");
@@ -303,8 +316,17 @@ export function AdminOrders({
   async function handlePaymentStatusChange(orderId: string, paymentStatus: "pending" | "paid" | "failed" | "refunded") {
     if (paymentStatus === "refunded") {
       const target = orders.find((o) => o.id === orderId);
+      if (!target || (target.payment_status !== "paid" && target.payment_status !== "refunded")) {
+        toast.error("Only paid orders can be refunded");
+        return;
+      }
+      const remaining = Math.max(Number(target.total) - Number(target.refund_amount ?? 0), 0);
+      if (remaining <= 0) {
+        toast.error("Order is already fully refunded");
+        return;
+      }
       setRefundOrderId(orderId);
-      setRefundAmount(target?.total ?? 0);
+      setRefundAmount(remaining);
       setRefundReason("Admin processed refund");
       setRefundDialogOpen(true);
       return;
@@ -809,7 +831,11 @@ export function AdminOrders({
                   <DialogTitle className="font-sans text-lg sm:text-xl font-bold text-[#1F2924] flex items-center gap-2">
                     <span>{selectedOrder.order_no}</span>
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#145A45]/10 text-[#145A45] font-bold">
-                      {ORDER_STATUS_LABEL[selectedOrder.status] ?? selectedOrder.status}
+                      {getOrderStatusLabel(
+                        selectedOrder.status,
+                        "en",
+                        selectedOrder.order_type === "pickup" ? "pickup" : "delivery",
+                      )}
                     </span>
                     {selectedOrder.refund_amount && selectedOrder.refund_amount > 0 ? (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">
@@ -1004,18 +1030,20 @@ export function AdminOrders({
                   >
                     Failed
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={selectedOrder.payment_status === "refunded" ? "default" : "outline"}
-                    onClick={() => handlePaymentStatusChange(selectedOrder.id, "refunded")}
-                    className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
-                      selectedOrder.payment_status === "refunded"
-                        ? "bg-purple-700 text-white"
-                        : "border-[#E8E4DA] text-purple-700 hover:bg-purple-50"
-                    }`}
-                  >
-                    <RotateCcw className="size-3 mr-1" /> Refund
-                  </Button>
+                  {(selectedOrder.payment_status === "paid" || selectedOrder.payment_status === "refunded") && (
+                    <Button
+                      size="sm"
+                      variant={selectedOrder.payment_status === "refunded" ? "default" : "outline"}
+                      onClick={() => handlePaymentStatusChange(selectedOrder.id, "refunded")}
+                      className={`h-7 text-[11px] font-bold rounded-lg uppercase ${
+                        selectedOrder.payment_status === "refunded"
+                          ? "bg-purple-700 text-white"
+                          : "border-[#E8E4DA] text-purple-700 hover:bg-purple-50"
+                      }`}
+                    >
+                      <RotateCcw className="size-3 mr-1" /> Refund
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -1025,13 +1053,21 @@ export function AdminOrders({
                   Update Order Lifecycle Status:
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: "confirmed", label: "Confirm Order" },
-                    { id: "preparing", label: "Start Packing" },
-                    { id: "ready", label: "Ready" },
-                    { id: "out_for_delivery", label: "Out for Delivery" },
-                    { id: "delivered", label: "Mark Delivered" },
-                  ].map((btn) => (
+                  {(selectedOrder.order_type === "pickup"
+                    ? [
+                        { id: "confirmed", label: "Confirm Order" },
+                        { id: "preparing", label: "Start Packing" },
+                        { id: "ready", label: "Ready for Pickup" },
+                        { id: "delivered", label: "Mark Picked Up" },
+                      ]
+                    : [
+                        { id: "confirmed", label: "Confirm Order" },
+                        { id: "preparing", label: "Start Packing" },
+                        { id: "ready", label: "Ready" },
+                        { id: "out_for_delivery", label: "Out for Delivery" },
+                        { id: "delivered", label: "Mark Delivered" },
+                      ]
+                  ).map((btn) => (
                     <Button
                       key={btn.id}
                       size="sm"

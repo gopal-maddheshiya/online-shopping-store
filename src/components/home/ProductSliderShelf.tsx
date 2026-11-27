@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard, ProductCardSkeleton } from "@/components/ProductCard";
 import { type Product } from "@/lib/queries";
+import { useLanguage } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface ProductSliderShelfProps {
@@ -35,28 +36,22 @@ export function ProductSliderShelf({
   intervalMs = 4500,
   isLoading = false,
 }: ProductSliderShelfProps) {
+  const { lang } = useLanguage();
+
   // Cap at 10 items for optimal memory, rendering speed and instant navigation
   const visibleProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
     return products.slice(0, 10);
   }, [products]);
 
-  // Ensure enough items for a truly seamless, unbroken infinite loop
-  const loopProducts = useMemo(() => {
-    if (visibleProducts.length === 0) return [];
-    if (visibleProducts.length < 5) {
-      return [...visibleProducts, ...visibleProducts, ...visibleProducts];
-    }
-    if (visibleProducts.length < 8) {
-      return [...visibleProducts, ...visibleProducts];
-    }
-    return visibleProducts;
-  }, [visibleProducts]);
+  // Never duplicate product cards side-by-side; only enable infinite loop/autoslide when enough items fill the track
+  const loopProducts = visibleProducts;
+  const canLoop = visibleProducts.length > 5;
 
   // Embla setup optimized for silky smooth 60-120 FPS glide (no jerky drag feeling)
   // align offset prevents leftmost product card from getting clipped when paused
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
+    loop: canLoop,
     align: (viewSize) => (viewSize < 640 ? 10 : 14),
     skipSnaps: true,
     duration: 48, // Gentle, progressive, buttery glide curve
@@ -81,6 +76,7 @@ export function ProductSliderShelf({
     emblaApi.on("reInit", onSelect);
     return () => {
       emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
     };
   }, [emblaApi, onSelect]);
 
@@ -96,6 +92,14 @@ export function ProductSliderShelf({
     }, 6000);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+      }
+    };
+  }, []);
+
   // Listen to pointerDown only once per touch/click (NOT on every scroll frame)
   useEffect(() => {
     if (!emblaApi) return;
@@ -105,9 +109,9 @@ export function ProductSliderShelf({
     };
   }, [emblaApi, handleUserInteraction]);
 
-  // Auto-Slide Interval with zero re-rendering overhead
+  // Auto-Slide Interval only when enough unique slides exist to scroll meaningfully
   useEffect(() => {
-    if (!emblaApi || !autoSlide || loopProducts.length <= 2) return;
+    if (!emblaApi || !autoSlide || !canLoop) return;
 
     const timer = setInterval(() => {
       if (isInteractingRef.current) return;
@@ -115,16 +119,16 @@ export function ProductSliderShelf({
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [emblaApi, autoSlide, loopProducts.length, intervalMs]);
+  }, [emblaApi, autoSlide, canLoop, intervalMs]);
 
   if (!isLoading && products.length === 0) {
     return null;
   }
 
   // Dots calculation
-  const totalOriginal = products.length;
+  const totalOriginal = visibleProducts.length;
   const activeDotIndex = totalOriginal > 0 ? selectedIndex % totalOriginal : 0;
-  const maxDots = Math.min(totalOriginal, 6);
+  const maxDots = canLoop ? Math.min(totalOriginal, 6) : 0;
 
   return (
     <section
@@ -144,7 +148,7 @@ export function ProductSliderShelf({
           <Link
             to={linkTo as any}
             search={linkSearch as any}
-            aria-label={`View all ${title}`}
+            aria-label={lang === "hi" ? `${title} - सभी देखें` : `View all ${title}`}
             className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-white hover:bg-[#145A45] text-[#18221D] hover:text-white border border-[#D5E4D9] hover:border-[#145A45] shadow-2xs hover:shadow-xs transition-all shrink-0 active:scale-90 cursor-pointer"
           >
             <ChevronRight className="size-4" />
@@ -189,30 +193,34 @@ export function ProductSliderShelf({
         </div>
 
         {/* Previous Button (Desktop / Tablet) */}
-        <button
-          type="button"
-          onClick={() => {
-            emblaApi?.scrollPrev();
-            handleUserInteraction();
-          }}
-          className="hidden md:flex absolute -left-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft className="size-4" />
-        </button>
+        {canLoop && (
+          <button
+            type="button"
+            onClick={() => {
+              emblaApi?.scrollPrev();
+              handleUserInteraction();
+            }}
+            className="hidden md:flex absolute -left-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
+            aria-label={lang === "hi" ? "पिछला उत्पाद" : "Previous Slide"}
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+        )}
 
         {/* Next Button (Desktop / Tablet) */}
-        <button
-          type="button"
-          onClick={() => {
-            emblaApi?.scrollNext();
-            handleUserInteraction();
-          }}
-          className="hidden md:flex absolute -right-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
-          aria-label="Next Slide"
-        >
-          <ChevronRight className="size-4" />
-        </button>
+        {canLoop && (
+          <button
+            type="button"
+            onClick={() => {
+              emblaApi?.scrollNext();
+              handleUserInteraction();
+            }}
+            className="hidden md:flex absolute -right-3.5 top-1/2 -translate-y-1/2 size-9 rounded-full bg-white/95 hover:bg-[#145A45] border border-[#E0DACF] hover:border-[#145A45] text-[#16201A] hover:text-white shadow-md hover:shadow-lg items-center justify-center transition-all z-20 cursor-pointer opacity-0 group-hover/reel:opacity-100 active:scale-95 duration-200"
+            aria-label={lang === "hi" ? "अगला उत्पाद" : "Next Slide"}
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        )}
       </div>
 
       {/* 3. Subtle Interactive Dots Indicator */}

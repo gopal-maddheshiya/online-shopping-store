@@ -45,7 +45,9 @@ export const Route = createFileRoute("/product/$slug")({
   },
   head: ({ loaderData, params }) => {
     const p = loaderData?.product;
-    const title = p ? `${p.name} — Arun Gopal Traders` : `${params.slug.replace(/-/g, " ")} — Arun Gopal Traders`;
+    const title = p
+      ? `${p.name_hi ? `${p.name_hi} (${p.name})` : p.name} — अरुण गोपाल ट्रेडर्स (Arun Gopal Traders)`
+      : `${params.slug.replace(/-/g, " ")} — अरुण गोपाल ट्रेडर्स`;
     const desc = p?.description || "Product details, pack sizes, live price and stock at Arun Gopal Traders, Maharajganj.";
     
     // Resolve absolute image URL for WhatsApp / Facebook / Twitter rich preview crawlers
@@ -152,7 +154,10 @@ function ProductPage() {
   const { data: reviews = [] } = useQuery(productReviewsQuery(product?.id));
   const reviewStats = computeReviewStats(reviews);
   const isDeliveryEnabled = Boolean(settings?.delivery_enabled);
-  const { add, setQty: setCartQty, remove: removeFromCart, items } = useCart();
+  const { add, setQty: setCartQty, remove: removeFromCart, items, count: cartCount } = useCart();
+  const storePhone = settings?.phone ?? "+91 6388354988";
+  const cleanStorePhone = storePhone.replace(/\s+/g, "");
+  const storeWhatsApp = (settings?.whatsapp ?? "916388354988").replace(/\D/g, "") || "916388354988";
   const { lang, t, getProductName, getProductDescription, getVariantLabel } = useLanguage();
   const [variantId, setVariantId] = useState<string | null>(null);
 
@@ -297,7 +302,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="container-page py-3 sm:py-5 pb-40 md:pb-12 space-y-5 sm:space-y-7">
+    <div className="container-page py-3 sm:py-5 pb-40 lg:pb-12 space-y-5 sm:space-y-7">
       {/* 1. BREADCRUMB NAVIGATION (Blinkit Clean Style) */}
       <nav className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
         <Link to="/" className="hover:text-emerald-800 transition-colors">
@@ -344,7 +349,9 @@ function ProductPage() {
                   <span className="size-2 rounded-full bg-emerald-600" />
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200/80 rounded px-2 py-0.5">
-                  {product.brand || (lang === "hi" ? "दुकान प्रमाणित" : "Store Certified")}
+                  {product.brand && !/^(generic|unknown)$/i.test(product.brand.trim())
+                    ? product.brand
+                    : (lang === "hi" ? "दुकान प्रमाणित" : "Store Certified")}
                 </span>
               </div>
 
@@ -362,7 +369,7 @@ function ProductPage() {
                   type="button"
                   onClick={handleShare}
                   className="flex size-8 items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:text-emerald-800 hover:border-emerald-300 transition-all cursor-pointer active:scale-95 shadow-2xs"
-                  title="Share product"
+                  title={lang === "hi" ? "शेयर करें" : "Share product"}
                 >
                   <Share2 className="size-4" />
                 </button>
@@ -477,7 +484,7 @@ function ProductPage() {
                   {off > 0 && variant?.mrp ? (
                     <>
                       <span className="text-xs sm:text-sm text-gray-400 font-normal line-through price-flipkart">
-                        MRP {inr(variant.mrp)}
+                        {lang === "hi" ? "अधिकतम मूल्य" : "MRP"} {inr(variant.mrp)}
                       </span>
                       <span className="rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-1.5 py-0.5 text-[11px] font-bold tracking-tight">
                         {off}% {lang === "hi" ? "छूट" : "OFF"}
@@ -486,7 +493,7 @@ function ProductPage() {
                   ) : null}
                 </div>
                 <p className="text-[11px] text-gray-400 mt-0.5">
-                  {lang === "hi" ? "सभी कर शामिल (Inclusive of all taxes)" : "(Inclusive of all taxes)"}
+                  {lang === "hi" ? "सभी कर सहित मूल्य" : "(Inclusive of all taxes)"}
                 </p>
               </div>
 
@@ -561,8 +568,10 @@ function ProductPage() {
           {/* Quick WhatsApp & Phone Call Actions */}
           <div className="flex items-center gap-2.5 pt-0.5">
             <a
-              href={`https://wa.me/916388354988?text=${encodeURIComponent(
-                `Namaste Arun Gopal Traders, I want to order ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for ${isDeliveryEnabled ? "home delivery" : "store pickup"} in Maharajganj.`,
+              href={`https://wa.me/${storeWhatsApp}?text=${encodeURIComponent(
+                lang === "hi"
+                  ? `नमस्ते अरुण गोपाल ट्रेडर्स, मुझे ${localizedName} (${getVariantLabel(variant?.label ?? "")}) ${isDeliveryEnabled ? "होम डिलीवरी" : "दुकान से पिकअप"} के लिए ऑर्डर करना है।`
+                  : `Namaste Arun Gopal Traders, I want to order ${localizedName} (${getVariantLabel(variant?.label ?? "")}) for ${isDeliveryEnabled ? "home delivery" : "store pickup"} in Maharajganj.`,
               )}`}
               target="_blank"
               rel="noreferrer"
@@ -573,7 +582,7 @@ function ProductPage() {
             </a>
 
             <a
-              href="tel:+916388354988"
+              href={`tel:${cleanStorePhone}`}
               className="flex-1 h-9 inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all active:scale-95"
             >
               <Phone className="size-3.5 text-emerald-800" />
@@ -590,16 +599,26 @@ function ProductPage() {
             <div className="space-y-3.5">
               <div className="flex items-start gap-3">
                 <div className="size-10 rounded-full bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700 shrink-0">
-                  <Truck className="size-5" />
+                  {isDeliveryEnabled ? <Truck className="size-5" /> : <Store className="size-5" />}
                 </div>
                 <div>
                   <h4 className="text-xs sm:text-[13px] font-bold text-gray-900">
-                    {lang === "hi" ? "तेज़ और भरोसेमंद डिलीवरी" : "Round The Clock & Fast Delivery"}
+                    {isDeliveryEnabled
+                      ? lang === "hi"
+                        ? "तेज़ और भरोसेमंद डिलीवरी"
+                        : "Fast & Reliable Delivery"
+                      : lang === "hi"
+                        ? "15 मिनट में दुकान पर तैयार"
+                        : "Ready for Pickup in 15 Mins"}
                   </h4>
                   <p className="text-[11px] sm:text-xs text-gray-500 leading-normal mt-0.5">
-                    {lang === "hi"
-                      ? "रामनगर चौराहा व महराजगंज में सीधे आपके दरवाज़े तक सुरक्षित डिलीवरी।"
-                      : "Get items delivered safely to your doorstep in Ramnagar & Maharajganj."}
+                    {isDeliveryEnabled
+                      ? lang === "hi"
+                        ? "रामनगर चौराहा व महराजगंज में सीधे आपके दरवाज़े तक सुरक्षित डिलीवरी।"
+                        : "Get items delivered safely to your doorstep in Ramnagar & Maharajganj."
+                      : lang === "hi"
+                        ? "ऑनलाइन बुक करें और रामनगर चौराहा दुकान से बिना इंतज़ार किए तुरंत पैकेट प्राप्त करें।"
+                        : "Order online and collect your freshly packed items at Ramnagar Chauraha store without waiting."}
                   </p>
                 </div>
               </div>
@@ -653,18 +672,32 @@ function ProductPage() {
                 : "All grocery products at Arun Gopal Traders are 100% pure, authentic, and freshly packed. Ramnagar Chauraha, Adda Bazar.")}
             </p>
 
-            <div className="grid grid-cols-3 gap-2 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
               <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
-                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">ब्रांड</span>
-                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">{product.brand || "Arun Gopal"}</span>
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">
+                  {lang === "hi" ? "ब्रांड" : "Brand"}
+                </span>
+                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">
+                  {product.brand && !/^(generic|unknown)$/i.test(product.brand.trim())
+                    ? product.brand
+                    : (lang === "hi" ? "अरुण गोपाल" : "Arun Gopal")}
+                </span>
               </div>
               <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
-                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">पैकिंग</span>
-                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">{variant ? getVariantLabel(variant) : "Standard"}</span>
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">
+                  {lang === "hi" ? "पैकिंग" : "Pack Size"}
+                </span>
+                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">
+                  {variant ? getVariantLabel(variant) : (lang === "hi" ? "मानक" : "Standard")}
+                </span>
               </div>
-              <div className="rounded-lg bg-white border border-gray-200/80 p-2 text-center">
-                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">लोकेशन</span>
-                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">रामनगर, महराजगंज</span>
+              <div className="col-span-2 sm:col-span-1 rounded-lg bg-white border border-gray-200/80 p-2 text-center">
+                <span className="text-[9.5px] font-bold text-gray-400 uppercase block">
+                  {lang === "hi" ? "लोकेशन" : "Location"}
+                </span>
+                <span className="text-xs font-bold text-gray-900 leading-tight block mt-0.5">
+                  {lang === "hi" ? "रामनगर, महराजगंज" : "Ramnagar, Maharajganj"}
+                </span>
               </div>
             </div>
           </div>
@@ -703,15 +736,15 @@ function ProductPage() {
         </section>
       )}
 
-      {/* 4. STICKY MOBILE BOTTOM BUY BAR (Blinkit Style) */}
-      <div className="fixed bottom-[3.75rem] inset-x-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-md px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:hidden">
-        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+      {/* 4. STICKY MOBILE BOTTOM BUY BAR (Blinkit Style — aligned above MobileNav with integrated Cart pill) */}
+      <div className="fixed bottom-[calc(3.75rem+env(safe-area-inset-bottom))] inset-x-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur-md px-3.5 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] lg:hidden">
+        <div className="flex items-center justify-between gap-2 max-w-lg mx-auto">
           <div className="min-w-0">
             <span className="text-[11px] font-semibold text-gray-500 truncate block">
               {variant ? getVariantLabel(variant) : ""}
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-black text-gray-900 tracking-tight price-flipkart">
+              <span className="text-lg sm:text-xl font-black text-gray-900 tracking-tight price-flipkart">
                 {inr(variant?.price ?? 0)}
               </span>
               {off > 0 && variant?.mrp && (
@@ -722,13 +755,24 @@ function ProductPage() {
             </div>
           </div>
 
-          <div>
+          <div className="flex items-center gap-2 shrink-0">
+            {cartCount > 0 && (
+              <Link
+                to="/cart"
+                className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-emerald-600/30 bg-emerald-50 px-2.5 text-xs font-bold text-[#0F4A38] hover:bg-emerald-100 active:scale-95 transition-all"
+                aria-label={lang === "hi" ? `थैला देखें (${cartCount})` : `View Cart (${cartCount})`}
+              >
+                <ShoppingBag className="size-3.5 text-[#145A45]" />
+                <span>{lang === "hi" ? `थैला (${cartCount})` : `Cart (${cartCount})`}</span>
+              </Link>
+            )}
+
             {!variant || variant.stock <= 0 ? (
               <div className="h-10 px-4 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-xs font-semibold flex items-center justify-center select-none">
                 {t.outOfStock}
               </div>
             ) : inCartQty > 0 ? (
-              <div className="flex h-10 min-w-[120px] items-center justify-between rounded-lg bg-[#145A45] text-white px-2 shadow-xs">
+              <div className="flex h-10 min-w-[110px] items-center justify-between rounded-lg bg-[#145A45] text-white px-2 shadow-xs">
                 <button
                   type="button"
                   onClick={handleDecreaseQty}
@@ -754,7 +798,7 @@ function ProductPage() {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="h-10 px-6 rounded-lg bg-[#145A45] hover:bg-[#0F4A38] text-white font-bold text-xs sm:text-sm tracking-wide transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
+                className="h-10 px-4 sm:px-6 rounded-lg bg-[#145A45] hover:bg-[#0F4A38] text-white font-bold text-xs sm:text-sm tracking-wide transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center"
               >
                 <span>{lang === "hi" ? "थैले में जोड़ें" : "Add to cart"}</span>
               </button>

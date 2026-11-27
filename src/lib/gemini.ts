@@ -4,26 +4,22 @@
  */
 
 import type { Product } from "@/lib/queries";
-
-const GEMINI_API_KEY =
-  (typeof import.meta !== "undefined" && import.meta.env
-    ? (import.meta.env as Record<string, string | undefined>)["VITE_GEMINI_API_KEY"]
-    : undefined) ||
-  (typeof process !== "undefined"
-    ? (process.env?.["VITE_GEMINI_API_KEY"] || process.env?.["GEMINI_API_KEY"])
-    : undefined) ||
-  "";
+import { getProductImage } from "@/lib/product-images";
 
 export interface MatchedRationItem {
   original_item: string;
   product_id: string | null;
   variant_id: string | null;
   product_name: string;
+  product_name_en?: string | null;
   product_name_hi?: string | null;
   variant_label: string;
+  variant_label_en?: string | null;
+  variant_label_hi?: string | null;
   quantity: number;
   unit_price: number;
   mrp?: number | undefined;
+  stock?: number | undefined;
   image_url: string | null;
   slug: string;
   matched: boolean;
@@ -52,14 +48,6 @@ export async function parseGrocerySlipWithGemini({
   mimeType?: string | undefined;
   availableProducts?: Product[] | undefined;
 }): Promise<ParseRationResult> {
-  if (!GEMINI_API_KEY) {
-    return {
-      success: false,
-      items: [],
-      error: "Gemini API Key सेट नहीं है। कृपया Vercel/Environment में VITE_GEMINI_API_KEY सेट करें।",
-    };
-  }
-
   if (!text?.trim() && !imageBase64) {
     return {
       success: false,
@@ -68,21 +56,22 @@ export async function parseGrocerySlipWithGemini({
     };
   }
 
-  // Build condensed catalog index for Gemini context
-  const catalogSummary = availableProducts.slice(0, 150).map((p) => ({
+  // Build condensed full catalog index for Gemini context (omit image_url from prompt to fit full catalog)
+  const catalogSummary = availableProducts.map((p) => ({
     id: p.id,
     name: p.name,
     name_hi: p.name_hi || null,
     brand: p.brand || null,
     slug: p.slug,
-    image_url: p.image_url || null,
-    variants: (p.product_variants || []).map((v) => ({
-      id: v.id,
-      label: v.label,
-      price: v.price,
-      mrp: v.mrp,
-      stock: v.stock,
-    })),
+    variants: (p.product_variants || [])
+      .filter((v) => v.is_active)
+      .map((v) => ({
+        id: v.id,
+        label: v.label,
+        price: v.price,
+        mrp: v.mrp,
+        stock: v.stock,
+      })),
   }));
 
   const systemInstruction = `You are the expert Kirana Assistant for "Arun Gopal Traders" (अरुण गोपाल ट्रेडर्स, रामनगर चौराहा, महराजगंज, उत्तर प्रदेश).
@@ -155,82 +144,68 @@ OUTPUT FORMAT EXAMPLE:
     },
   };
 
-  // Fast official Gemini production models (verified active 200 OK)
-  const modelCandidates = [
-    "gemini-3.5-flash",
-    "gemini-3-flash-preview",
-    "gemini-flash-latest",
-  ];
+  try {
+    const response = await fetch("/api/ai/gemini", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "smart_ration",
+        requestBody,
+      }),
+    });
 
-  for (const model of modelCandidates) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+    const data = (await response.json()) as { success?: boolean; text?: string; error?: string };
 
-      if (!response.ok) {
-        const errText = await response.text();
-        console.warn(`Gemini API ${model} response status ${response.status}:`, errText);
-        continue; // Try fallback model
-      }
+    if (!response.ok || !data.success || !data.text) {
+      throw new Error(data.error || "AI सेवा उपलब्ध नहीं है");
+    }
 
-      const data = await response.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const rawText = data.text;
+    const cleanJson = rawText
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
-      if (!rawText) {
-        continue;
-      }
+    const parsed = JSON.parse(cleanJson);
 
-      // Clean any accidental markdown code fences
-      const cleanJson = rawText
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
-      const parsed = JSON.parse(cleanJson);
-
-      if (Array.isArray(parsed)) {
-        // Hydrate with full product metadata (slug, image_url) from client memory
-        const hydratedItems: MatchedRationItem[] = parsed.map((item) => {
-          const matchedProd = availableProducts.find((p) => p.id === item.product_id);
-          const matchedVariant = matchedProd?.product_variants?.find(
-            (v) => v.id === item.variant_id
-          );
-
-          return {
-            original_item: item.original_item || item.product_name || "सामग्री",
-            product_id: matchedProd?.id || null,
-            variant_id: matchedVariant?.id || null,
-            product_name: matchedProd?.name || item.product_name || "किराना सामान",
-            product_name_hi: matchedProd?.name_hi || null,
-            variant_label:
-              matchedVariant?.label || item.variant_label || "1 Unit",
-            quantity: Math.max(1, Number(item.quantity) || 1),
-            unit_price: matchedVariant?.price || Number(item.unit_price) || 0,
-            mrp: matchedVariant?.mrp || Number(item.mrp) || undefined,
-            image_url: matchedProd?.image_url || null,
-            slug: matchedProd?.slug || "shop",
-            matched: Boolean(matchedProd && matchedVariant),
-            notes: item.notes,
-          };
-        });
+    if (Array.isArray(parsed)) {
+      const hydratedItems: MatchedRationItem[] = parsed.map((item) => {
+        const matchedProd = availableProducts.find((p) => p.id === item.product_id);
+        const matchedVariant = matchedProd?.product_variants?.find(
+          (v) => v.id === item.variant_id
+        );
 
         return {
-          success: true,
-          items: hydratedItems,
-          rawSummary: `AI ने ${hydratedItems.filter((i) => i.matched).length} सामान दुकान की लिस्ट से मिलाए।`,
+          original_item: item.original_item || item.product_name || "सामग्री",
+          product_id: matchedProd?.id || null,
+          variant_id: matchedVariant?.id || null,
+          product_name: matchedProd?.name || item.product_name || "किराना सामान",
+          product_name_en: matchedProd?.name_en || matchedProd?.name || null,
+          product_name_hi: matchedProd?.name_hi || null,
+          variant_label: matchedVariant?.label || item.variant_label || "1 Unit",
+          variant_label_en: matchedVariant?.label_en || matchedVariant?.label || null,
+          variant_label_hi: matchedVariant?.label_hi || null,
+          quantity: Math.max(1, Number(item.quantity) || 1),
+          unit_price: matchedVariant?.price || Number(item.unit_price) || 0,
+          mrp: matchedVariant?.mrp || Number(item.mrp) || undefined,
+          stock: matchedVariant?.stock,
+          image_url: matchedProd ? getProductImage(matchedProd) : null,
+          slug: matchedProd?.slug || "shop",
+          matched: Boolean(matchedProd && matchedVariant && matchedVariant.stock > 0),
+          notes: item.notes,
         };
-      }
-    } catch (err) {
-      console.warn(`Attempt with ${model} failed:`, err);
+      });
+
+      return {
+        success: true,
+        items: hydratedItems,
+        rawSummary: `AI ने ${hydratedItems.filter((i) => i.matched).length} सामान दुकान की लिस्ट से मिलाए।`,
+      };
     }
+  } catch (err) {
+    console.warn("Smart ration AI proxy call failed:", err);
   }
 
   return {
